@@ -192,7 +192,17 @@ class MakeAMovie(object):
         
         pyplot.close(figure)
             
-        
+        #for i in range(number_of_plots):
+        #    filename1 = "frame_"+format(i+1, "05d")+".png"
+        #    filename2 = "frame_"+format(i+1, "05d")+".jpg"
+        #    subprocess.call([
+        #        "convert",
+        #        filename1,
+        #        filename2,
+        #    ])
+        #    os.remove(filename1)
+            
+            
         with open("frames.txt", "w") as f:
             for i in range(number_of_plots):
                 filename = "frame_"+format(i+1, "05d")+".png"
@@ -205,11 +215,29 @@ class MakeAMovie(object):
             "-mf",
             "w=480:h=480:fps=10:type=png",
             "-ovc",
-            "copy",
+            "lavc",
+            "-lavcopts",
+            "vcodec=mpeg4:mbd=2:trell",
             "-oac",
             "copy", 
             "-o",
-            "movie.avi"
+            "movie-cluster-10fps.avi"
+        ])
+        
+        
+        subprocess.call( [
+            "mencoder",
+            "mf://@frames.txt",
+            "-mf",
+            "w=480:h=480:fps=25:type=png",
+            "-ovc",
+            "lavc",
+            "-lavcopts",
+            "vcodec=mpeg4:mbd=2:trell",
+            "-oac",
+            "copy", 
+            "-o",
+            "movie-cluster-25fps.avi"
         ])
             
         
