@@ -187,7 +187,7 @@ class SolarSystemView(object):
                     if self.days <0:
                         self.days = 0
                 if event.key == K_l:
-                    self.days += 10
+                    self.days += 1
                     if self.days > 60000:
                         self.days = 0
                 if event.key == K_s:
