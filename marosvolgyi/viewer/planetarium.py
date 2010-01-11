@@ -6,6 +6,8 @@ import pygame
 from pygame.locals import *
 
 from amuse.support.io.horizons import LoadStar
+from amuse.support.data import core
+from amuse.support.units import units
 
 from datetime import date, timedelta
 import time
@@ -207,11 +209,23 @@ class SolarSystemView(object):
                     print "Help info...none yet :("
 
     def render(self, R):
-
         self.draw_scene(R)
         self.draw_plane()
         pygame.display.flip()
 
+    def renderamuse(self, stars):
+        R = [[0.05,0,0,0]]
+
+        for i, s in enumerate(stars):
+            r = s.position
+            x = r[0].value_in(units.AU)
+            y = r[1].value_in(units.AU)
+            z = r[2].value_in(units.AU)
+            R.append([0.1, x, y, z])
+
+        self.draw_scene(R)
+        self.draw_plane()
+        pygame.display.flip()
 
     def animate(self):
 
