@@ -246,6 +246,7 @@ if __name__ == '__main__':
     I.instance.setup_particles(I.stars)
     I.evolve(date(1978,1,3),date(1980,9,5),1)
     
+    
     fig = figure()
     ax = Axes3D(fig)
     ion()
@@ -270,6 +271,15 @@ if __name__ == '__main__':
     vz= (v[2]|units.AUd).value_in(units.m/units.s)-Jvz
     print m, ra, x, y, z, vx, vy, vz
     nb.new_particle(m, ra, x, y, z, vx, vy, vz)
+    
+    #examples of how to update the data of one particle or all of 'em
+
+    #I.stars[6].position = [x,y,z]|unit.AU
+    
+    #code.particles[6].postition = ...
+ 
+    #I.stars.copy_values_of_state_attributes_to(code.particles)
+    #I.stars.copy_values_of_state_attributes_to(code.particles)
 
     x_points = I.stars[6].get_timeline_of_attribute("x")
     y_points = I.stars[6].get_timeline_of_attribute("y")

@@ -235,7 +235,7 @@ class SolarSystemView(object):
         R = [[0.1, 0,0,0]]
 
         for i in self.planets:
-            r, v = i.get_vectors_at_date(date(1971,10,26)+timedelta(self.days))
+            r, v = i.get_vectors_at_date(date(1974,10,26)+timedelta(self.days))
             R.append([0.05, r[0], r[1], r[2]])
 
         self.omega += 0.05
@@ -245,7 +245,7 @@ if __name__ == "__main__":
     
     list_of_planets = []
 
-    for i in ['earth', 'moon','mars','jupiter','saturn','neptune','uranus','voyagerI','voyagerII']:
+    for i in ['earth', 'moon','mars','jupiter','saturn','neptune','uranus','pioneer10','pioneer11']:
         try:
             list_of_planets.append(LoadStar(i))
         except:
