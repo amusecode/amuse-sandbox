@@ -127,6 +127,16 @@ class SolarSystemModel(object):
     def cleanup(self):
         del self.instance
 
+class scenario(SolarSystemModel):
+
+    def __init__(self):
+        self.__init__(self)
+        self.event
+    
+    
+
+
+
 
 if __name__ == '__main__':
     
@@ -136,12 +146,16 @@ if __name__ == '__main__':
     #make bodies in mem
     I.stars = core.Stars(10)
 
+    two_body_mode_radius = 300
+
     bodies = [I.Sun, I.Mercury, I.Venus, I.Earth, I.Moon, I.Mars, 
               I.Jupiter, I.Saturn, I. Uranus,I.Neptune]
 
+
+
     #set IC for bodies in mem according to data set and date
     start_date = date(1978, 5, 1)
-    voyagerI_launch_date = date(1978, 8, 7)
+    voyagerI_launch_date = date(1977, 8, 7)
 
     for i, body in enumerate(bodies):
             
@@ -191,9 +205,9 @@ if __name__ == '__main__':
                 dy = (s.position[0]-I.stars[10].position[0]).value_in(units.AU)
                 dz = (s.position[0]-I.stars[10].position[0]).value_in(units.AU)
                 dist =  (dx**2+dy**2+dz**2)**0.5
-                if dist<50*s.radius.value_in(units.AU):
-                    print "two body integration with: "+bodies[i].name
+                if dist<two_body_mode_radius * s.radius.value_in(units.AU):
                     if not two_body_mode:
+                        print "two body integration with: "+bodies[i].name
                         print "close encounter, invoking two body integrator"
                         tb = twobody.twobody()
                         m = 1898.13e24#kg
@@ -208,8 +222,7 @@ if __name__ == '__main__':
                         vy= (dvy|units.AUd).value_in(units.m/units.s)
                         vz= (dvz|units.AUd).value_in(units.m/units.s)
                         tb.new_particle(m, ra, x,y,z,vx,vy,vz)
-                        
-                    two_body_mode = True
+                        two_body_mode = True
                     #tb.evolve((t-voyagerI_launch_date.toordinal())*3600.0*24)
                     tb.evolve(3600.0*24*0.2)
                     state, err = tb.get_state(0)
@@ -221,7 +234,7 @@ if __name__ == '__main__':
                     I.stars[10].position[2] = ((state['z']) | units.AU) + I.stars[6].position[2]
                     I.stars.synchronize_to(I.instance.particles)
                         
-                elif dist>50*s.radius.value_in(units.AU):
+                elif dist>two_body_mode_radius * s.radius.value_in(units.AU):
                     if two_body_mode:
                         #assuming leaving close encounter area
                         print "Quitting two body mode"
@@ -237,7 +250,7 @@ if __name__ == '__main__':
 
 
     S = []
-    
+"""    
     for i in range(len(I.stars)):
         S.append(NewStar())
         x_points = I.stars[i].get_timeline_of_attribute("x")
@@ -262,5 +275,5 @@ if __name__ == '__main__':
         P.handle_events()
         P.animate()
 
-
+"""
 

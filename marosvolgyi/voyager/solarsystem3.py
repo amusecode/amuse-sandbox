@@ -271,7 +271,7 @@ if __name__ == '__main__':
     vz= (v[2]|units.AUd).value_in(units.m/units.s)-Jvz
     print m, ra, x, y, z, vx, vy, vz
     nb.new_particle(m, ra, x, y, z, vx, vy, vz)
-    
+    g
     #examples of how to update the data of one particle or all of 'em
 
     #I.stars[6].position = [x,y,z]|unit.AU
