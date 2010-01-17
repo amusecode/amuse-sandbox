@@ -82,8 +82,8 @@ class SolarSystemModel(object):
     def load_integrator_and_units(self):
         self.convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         #self.instance = PhiGRAPE(self.convert_nbody)
-        self.instance = BHTree(self.convert_nbody)
-        #self.instance = Hermite(self.convert_nbody)
+        #self.instance = BHTree(self.convert_nbody)
+        self.instance = Hermite(self.convert_nbody)
         self.instance.parameters.epsilon_squared = 0.000000001 | units.AU**2
         #self.instance.set_eta(0.0001,0.0002)
         self.instance.dt_dia = 10
@@ -154,8 +154,8 @@ if __name__ == '__main__':
 
 
     #set IC for bodies in mem according to data set and date
-    start_date = date(1978, 5, 1)
-    voyagerI_launch_date = date(1977, 8, 7)
+    start_date = date(1975, 5, 1)
+    voyagerI_launch_date = date(1972, 3, 4)
 
     for i, body in enumerate(bodies):
             
@@ -181,7 +181,7 @@ if __name__ == '__main__':
 
     voyagers = core.Stars(1)
     voyagerI = voyagers[0]
-    VoyagerI = LoadStar('voyagerI')
+    VoyagerI = LoadStar('pioneer10')
     voyagerI.mass = units.kg(500)
     voyagerI.radius = units.m(20)
     r, v = VoyagerI.get_vectors_at_date(voyagerI_launch_date)
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     voyagerI.velocity = units.AUd(array((v[0],v[1],v[2])))
     I.stars.add_particles(voyagers)
     I.stars.synchronize_to(I.instance.particles)
-    I.instance.timestep = 0.0002 
+    I.instance.timestep = 0.002 
     #I.instance.setup_module()
     #I.instance.setup_particles(I.stars)
 
