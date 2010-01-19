@@ -127,19 +127,7 @@ class SolarSystemModel(object):
     def cleanup(self):
         del self.instance
 
-class scenario(SolarSystemModel):
-
-    def __init__(self):
-        self.__init__(self)
-        self.event
-    
-    
-
-
-
-
 if __name__ == '__main__':
-    
 
     I = SolarSystemModel()
     
@@ -151,11 +139,9 @@ if __name__ == '__main__':
     bodies = [I.Sun, I.Mercury, I.Venus, I.Earth, I.Moon, I.Mars, 
               I.Jupiter, I.Saturn, I. Uranus,I.Neptune]
 
-
-
     #set IC for bodies in mem according to data set and date
-    start_date = date(1975, 5, 1)
-    voyagerI_launch_date = date(1972, 3, 4)
+    start_date = date(1971, 10, 26)
+    voyagerI_launch_date = date(1977, 9, 7)
 
     for i, body in enumerate(bodies):
             
@@ -165,14 +151,15 @@ if __name__ == '__main__':
         I.stars[i].position = units.AU(array((r[0],r[1],r[2])))
         I.stars[i].velocity = units.AUd(array((v[0],v[1],v[2])))
 
-    I.instance.setup_particles(I.stars)
-    
+    #I.instance.setup_particles(I.stars)
+    I.stars.synchronize_to(I.instance.particles)
+        
     I.model_t0 = start_date#date(1971,10,26)    
 
-    P = planetarium.SolarSystemView((800,600))
+    P = planetarium.SolarSystemView((640,400))
 
     for t in range(start_date.toordinal(), voyagerI_launch_date.toordinal(),1):
-        I.evolve(t,t+1,1)#till voyager launch + some days
+        I.evolve(t,t+1,1)
         P.renderamuse(I.stars)
         P.handle_events()
         if not P.go:
@@ -181,7 +168,7 @@ if __name__ == '__main__':
 
     voyagers = core.Stars(1)
     voyagerI = voyagers[0]
-    VoyagerI = LoadStar('pioneer10')
+    VoyagerI = LoadStar('voyagerI')
     voyagerI.mass = units.kg(500)
     voyagerI.radius = units.m(20)
     r, v = VoyagerI.get_vectors_at_date(voyagerI_launch_date)
@@ -248,32 +235,4 @@ if __name__ == '__main__':
             P.go = True
             break
 
-
     S = []
-"""    
-    for i in range(len(I.stars)):
-        S.append(NewStar())
-        x_points = I.stars[i].get_timeline_of_attribute("x")
-        y_points = I.stars[i].get_timeline_of_attribute("y")
-        z_points = I.stars[i].get_timeline_of_attribute("z")
-
-        x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
-        y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
-        z_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), z_points)
-        #make date array
-
-        S[-1].ordinal = map(lambda (t,x) : t, x_points)
-        print S[-1].ordinal
-        #for some reason last timestamp is None !!!!
-        S[-1].max = S[-1].ordinal[-2]
-        S[-1].r = array([x_points_in_AU, y_points_in_AU, z_points_in_AU]).transpose()
-        S[-1].v = array([x_points_in_AU, y_points_in_AU, z_points_in_AU]).transpose()
-        P.add_planet(S[-1])
-        
-    while P.go:
-        
-        P.handle_events()
-        P.animate()
-
-"""
-
