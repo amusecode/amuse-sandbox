@@ -57,8 +57,8 @@ class SolarSystemModel(object):
 
         self.Jupiter = LoadStar('jupiter')
         self.Jupiter.mass = units.kg(1898.13e24)
-        #self.Jupiter.radius = units.km(71492)
-        self.Jupiter.radius = units.km(0.000001)
+        self.Jupiter.radius = units.km(71492)
+        #self.Jupiter.radius = units.km(0.000001)
 
         self.Saturn = LoadStar('saturn')
         self.Saturn.mass = units.kg(5.68319e26 )
@@ -83,7 +83,7 @@ class SolarSystemModel(object):
     def load_integrator_and_units(self):
         self.convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         #self.instance = PhiGRAPE(self.convert_nbody)
-        #self.instance = BHTree(self.convert_nbody)
+        self.instance = BHTree(self.convert_nbody)
         self.instance = Hermite(self.convert_nbody)
         self.instance.parameters.epsilon_squared = 0.000000001 | units.AU**2
         #self.instance.set_eta(0.0001,0.0002)
@@ -96,6 +96,7 @@ class SolarSystemModel(object):
 
         for x in arange(start_date, end_date, step):
             self.instance.evolve_model((x-self.model_t0.toordinal())|units.day)
+            print self.instance.get_indices_of_colliding_particles()
             self.instance.update_particles(self.stars)
             self.stars.savepoint(x)
 
@@ -120,7 +121,7 @@ if __name__ == '__main__':
     stop_date = date(1989, 10, 26)
 
     bodies = [I.Sun, I.Mercury, I.Venus, I.Earth, I.Moon, I.Mars, 
-              I.Jupiter, I.Saturn, I. Uranus,I.Neptune]
+              I.Jupiter, I.Saturn, I. Uranus, I.Neptune]
 
     #
     #set IC for bodies in mem according to data set and date
