@@ -111,11 +111,11 @@ if __name__ == '__main__':
     #make bodies in mem
     I.stars = core.Stars(10)
 
-    two_body_mode_radius_ratio = 200000000000000.0
+    two_body_mode_radius_ratio = 20000000000000.0
 
     yy = []
     #the events
-    start_date = date(1977, 5, 15)
+    start_date = date(1971, 10, 26)
     I.model_t0 = start_date
     voyagerI_launch_date = date(1977, 9, 7)
     stop_date = date(1989, 10, 26)
@@ -177,7 +177,9 @@ if __name__ == '__main__':
     for t in arange(voyagerI_launch_date.toordinal(),stop_date.toordinal(),1):
         r, v = voyagerI_data.get_vectors_at_date(date.fromordinal(t))
         DR = I.stars[10].position - units.AU([r[0],r[1],r[2]])
-        yy.append((dot(DR,DR)**0.5).value_in(units.AU))
+        #yy.append((dot(DR,DR)**0.5).value_in(units.AU))
+        vv = [v[0],v[1],v[2]]
+        yy.append((dot(vv,vv)**0.5))
         I.evolve(t, t+1, 1)
         #Check if voyager comes close to any object:
         for i, s in enumerate(I.stars):
@@ -210,12 +212,12 @@ if __name__ == '__main__':
                     print ".",
 
                     state, err = tb.get_state(0)
-                    I.stars[10].velocity[0] = ((state['vx']) | units.AUd) + I.stars[6].velocity[0]
-                    I.stars[10].velocity[1] = ((state['vy']) | units.AUd) + I.stars[6].velocity[1]
-                    I.stars[10].velocity[2] = ((state['vz']) | units.AUd) + I.stars[6].velocity[2]
-                    I.stars[10].position[0] = ((state['x']) | units.AU) + I.stars[6].position[0]
-                    I.stars[10].position[1] = ((state['y']) | units.AU) + I.stars[6].position[1]
-                    I.stars[10].position[2] = ((state['z']) | units.AU) + I.stars[6].position[2]
+                    #I.stars[10].velocity[0] = ((state['vx']) | units.AUd) + I.stars[6].velocity[0]
+                    #I.stars[10].velocity[1] = ((state['vy']) | units.AUd) + I.stars[6].velocity[1]
+                    #I.stars[10].velocity[2] = ((state['vz']) | units.AUd) + I.stars[6].velocity[2]
+                    #I.stars[10].position[0] = ((state['x']) | units.AU) + I.stars[6].position[0]
+                    #I.stars[10].position[1] = ((state['y']) | units.AU) + I.stars[6].position[1]
+                    #I.stars[10].position[2] = ((state['z']) | units.AU) + I.stars[6].position[2]
                     
                     #I.stars.synchronize_to(I.instance.particles)
                         
