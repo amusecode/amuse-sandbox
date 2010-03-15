@@ -8,9 +8,9 @@ import os
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 
-from amuse.legacy.hermite0.interface import HermiteNBody
-from amuse.legacy.bhtree.interface import BHTreeNBody
-from amuse.legacy.phiGRAPE.interface import PhiGRAPENBody
+from amuse.legacy.hermite0.interface import Hermite
+from amuse.legacy.bhtree.interface import BHTree
+from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 from amuse.legacy.support.core import is_mpd_running
 
 from amuse.support.io import store
@@ -48,8 +48,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time):
     
     particles = MakePlummerModel(number_of_stars, None).result;
    
-    gravity = PhiGRAPENBody()
-    #gravity = HermiteNBody()
+    gravity = PhiGRAPE(PhiGRAPE.NBODY)
+    #gravity = Hermite(Hermite.NBODY)
     
     gravity.setup_module()
     gravity.parameters.epsilon_squared = 0.15 | nbody_system.length ** 2
