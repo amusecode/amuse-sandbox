@@ -1,0 +1,10 @@
+reset
+unset title
+set terminal png font verdana 8
+set output "kin_pot_time.png"
+unset key
+set autoscale fix
+set ylabel "T/V"
+set grid
+plot "simple_ToverV.dat" using 1:2 title '' with lines
+
