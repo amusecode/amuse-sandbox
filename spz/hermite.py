@@ -21,18 +21,13 @@ from amuse.ext.salpeter import SalpeterIMF
 
 import LagrangianRadii as lr
 
-run_with_bug = True
-
 def scale(stars) :
     # function scales positions, such that Potential Energy = -1/2
     # and scales velocities, such that Kinetic Energy = 1/4
     Ek = stars.kinetic_energy()
-    print 'Ek=', Ek, Ek.number
     Ep = stars.potential_energy(G=nbody_system.G)
-    print 'Ep=', Ep, Ep.number
-    if run_with_bug :
-        Et = Ek + Ep
-        print "Time= 0, E= ", Et, Ek, Ep, " Q= ", Ek/Ep
+    Et = Ek + Ep
+    print "Time= 0, E= ", Et, Ek, Ep, " Q= ", Ek/Ep
 
     stars.position = stars.position * (-2.0*Ep.number)
     stars.velocity = stars.velocity / numpy.sqrt(4.0*Ek.number)
@@ -105,6 +100,8 @@ if __name__ == '__main__':
 #    gravity = Hermite(dynamic_converter)
     gravity = BHTree(dynamic_converter)
     gravity.initialize_code()
+    # Set the time step constant
+    gravity.legacy_interface.dt_param = 0.03
     if isinstance(gravity, BHTree) :
         gravity.parameters.timestep = 0.004 | time_unit
         eps = 1.0 / 20.0 / (nstars**0.33333) | length_unit 
@@ -130,6 +127,7 @@ if __name__ == '__main__':
     r10 = []
     r25 = []
     r50 = []
+    r75 = []
     while time < end_time:
         time += dt
         
@@ -145,12 +143,14 @@ if __name__ == '__main__':
         r10.append(Rl[4].value_in(length_unit))
         r25.append(Rl[5].value_in(length_unit))
         r50.append(Rl[6].value_in(length_unit))
+        r75.append(Rl[7].value_in(length_unit))
         print "Time= ", time, " E= ", Et, Ek, Ep, Ek/Ep, (Et-Et0)/Et0
 
     print Rl, t, r10
     plt.plot(t, r10)
     plt.plot(t, r25)
     plt.plot(t, r50)
+    plt.plot(t, r75)
 #    axis([0, 10, 1.1*amin(r), 2*amax(r)])
     plt.axis([0, end_time.value_in(time_unit), 0, 2])
     Tlabel = 'T [' + str(time_unit) + ']'
