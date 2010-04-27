@@ -21,6 +21,22 @@ from amuse.ext.salpeter import SalpeterIMF
 
 import LagrangianRadii as lr
 
+run_with_bug = True
+
+def scale(stars) :
+    # function scales positions, such that Potential Energy = -1/2
+    # and scales velocities, such that Kinetic Energy = 1/4
+    Ek = stars.kinetic_energy()
+    print 'Ek=', Ek, Ek.number
+    Ep = stars.potential_energy()
+    print 'Ep=', Ep, Ep.number
+    if run_with_bug :
+        Et0 = Ek0 + Ep0
+        print "Time= 0, E= ", Et0, Ek0, Ep0, " Q= ", Ek0/Ep0
+
+    stars.position = stars.position * (-2.0*Ep.number)
+    stars.velocity = stars.velocity / numpy.sqrt(4.0*Ek.number)
+
 def to_com(stars) :
     com = stars.center_of_mass()
     print  "com:" , com
@@ -81,6 +97,8 @@ if __name__ == '__main__':
     stars = MakePlummerModel(nstars, convert_nbody, random_state = seed).result;
     stars.mass = masses 
     to_com(stars)
+    scale(stars)
+
 #    print "Ek=", stars.kinetic_energy()
 #    print "Ep=", stars.potential_energy(gravitational_constant=1)
     
