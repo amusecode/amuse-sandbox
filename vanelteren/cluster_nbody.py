@@ -16,61 +16,50 @@ from amuse.legacy.support.core import is_mpd_running
 from amuse.support.io import store
 
 from amuse.ext.plummer import MakePlummerModel
+from amuse.support.data import particle_attributes
 
-def move_particles_to_center_of_mass(particles):
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
-    
-    center_of_mass = particles.center_of_mass()
-    center_of_mass_velocity = particles.center_of_mass_velocity()
-    
-    particles.position = particles.position - center_of_mass
-    particles.velocity = particles.velocity - center_of_mass_velocity     
-    
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
-   
-     
-
-def print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time):
+def print_log(time, gravity, particles, total_energy_at_t0):
+    kinetic_energy = gravity.kinetic_energy
+    potential_energy = gravity.potential_energy
+    total_energy_at_this_time = kinetic_energy + potential_energy
     print "T     : " , str(time)
     print "ERROR : " , (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
-    print "KE    : " , gravity.kinetic_energy #particles.kinetic_energy(), 
-    print "PE    : " , gravity.potential_energy #particles.potential_energy(gravity.parameters.epsilon_squared)
-    print "KE/PE : " , gravity.kinetic_energy / gravity.potential_energy
+    print "KE    : " , kinetic_energy 
+    print "PE    : " , potential_energy
+    print "KE/PE : " , kinetic_energy / potential_energy
+    print "KE+PE : " , kinetic_energy + potential_energy
+    
     #print  "center of mass:" , particles.center_of_mass()
     #print  "center of mass velocity:" , particles.center_of_mass_velocity()
     
-def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time):
-    random.seed()
+def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, number_of_workers = 1):
+    numpy.random.seed()
     
-    
-    
-    particles = MakePlummerModel(number_of_stars, None).result;
+    particles = MakePlummerModel(number_of_stars).result
+    particles.scale_to_standard()
    
-    gravity = PhiGRAPE(PhiGRAPE.NBODY)
-    #gravity = Hermite(Hermite.NBODY)
+    #gravity = PhiGRAPE(PhiGRAPE.NBODY)
+    gravity = Hermite(
+        Hermite.NBODY, 
+        number_of_workers = number_of_workers, 
+        #debugger = "xterm",
+        #redirection = "none"
+    )
+    gravity.initialize_code()
+    #gravity.parameters.epsilon_squared = 0.15 | nbody_system.length ** 2
     
-    gravity.setup_module()
-    gravity.parameters.epsilon_squared = 0.15 | nbody_system.length ** 2
-    gravity.parameters.timestep_parameter = 0.02 | units.none
-    gravity.parameters.initial_timestep_parameter = 0.01 | units.none
-        
-    print "setting masses of the stars"
     particles.radius = 0.0 | nbody_system.length
-    print "centering the particles"
-    move_particles_to_center_of_mass(particles)
     print  "center of mass:" , particles.center_of_mass()
     
     gravity.particles.add_particles(particles)
     from_model_to_gravity = particles.new_channel_to(gravity.particles)
     from_gravity_to_model = gravity.particles.new_channel_to(particles)
     
-        
+    gravity.commit_particles()
+    print "1"  
     time = 0.0 | end_time.unit
     particles.savepoint(time)
     
-    gravity.initialize_particles(0)
     
     total_energy_at_t0 = gravity.kinetic_energy + gravity.potential_energy
     
@@ -82,13 +71,11 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time):
         gravity.evolve_model(time)
         print "gravity evolve step done"
         
-        #gravity.synchronize_model()
         from_gravity_to_model.copy()
 
         particles.savepoint(time)  
         
-        total_energy_at_this_time = gravity.kinetic_energy + gravity.potential_energy
-        print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time)
+        print_log(time, gravity, particles, total_energy_at_t0)
         
     
     output_file = "nbody.hdf5"
@@ -97,22 +84,12 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time):
     storage = store.StoreHDF(output_file)
     storage.store(particles)
    
-    del gravity
+    gravity.stop()
     
-    
-        
-
-        
-def test_simulate_small_cluster():
-    """test_simulate_small_cluster
-    This method is found by the testing framework and automatically
-    run with all other tests. This method simulates
-    a too small cluster, this is done to limit the testing time.
-    """
-    assert is_mpd_running()
-    test_results_path = path_to_test_results.get_path_to_test_results()
-    output_file = os.path.join(test_results_path, "test-2.svg")
-    simulate_small_cluster(4, 4 | units.Myr, name_of_the_figure = output_file)
     
 if __name__ == '__main__':
-    simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | nbody_system.time)
+    simulate_small_cluster(
+        int(sys.argv[1]), 
+        int(sys.argv[2]) | nbody_system.time,
+        int(sys.argv[3])
+    )
