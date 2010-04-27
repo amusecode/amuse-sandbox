@@ -28,11 +28,11 @@ def scale(stars) :
     # and scales velocities, such that Kinetic Energy = 1/4
     Ek = stars.kinetic_energy()
     print 'Ek=', Ek, Ek.number
-    Ep = stars.potential_energy()
+    Ep = stars.potential_energy(G=nbody_system.G)
     print 'Ep=', Ep, Ep.number
     if run_with_bug :
-        Et0 = Ek0 + Ep0
-        print "Time= 0, E= ", Et0, Ek0, Ep0, " Q= ", Ek0/Ep0
+        Et = Ek + Ep
+        print "Time= 0, E= ", Et, Ek, Ep, " Q= ", Ek/Ep
 
     stars.position = stars.position * (-2.0*Ep.number)
     stars.velocity = stars.velocity / numpy.sqrt(4.0*Ek.number)
@@ -104,9 +104,10 @@ if __name__ == '__main__':
     
 #    gravity = Hermite(dynamic_converter)
     gravity = BHTree(dynamic_converter)
+    gravity.initialize_code()
     if isinstance(gravity, BHTree) :
-        gravity.initialize_code()
-        eps = 1/float(nstars**3) | length_unit
+        gravity.parameters.timestep = 0.004 | time_unit
+        eps = 1.0 / 20.0 / (nstars**0.33333) | length_unit 
     else :
         eps = 0 | length_unit
     gravity.parameters.epsilon_squared = eps**2 
