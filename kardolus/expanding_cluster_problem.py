@@ -108,36 +108,30 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
 
     gravity = PhiGRAPE(convert_nbody,mode="gpu")
-    gravity.setup_module()
-    gravity.set_eta(0.01,0.02)
-    gravity.parameters.epsilon_squared = 0.0015 | units.parsec ** 2
-
-    gravity.initialize_particles(0.0)
+    gravity.initialize_code()
+    gravity.parameters.timestep_parameter=0.01
+    gravity.parameters.initial_timestep_parameter=0.01 
+    gravity.parameters.epsilon_squared = 0.000001 | units.parsec ** 2
      
     stellar_evolution = SSE()
     stellar_evolution.initialize_module_with_default_parameters() 
     
     #print "setting masses of the stars"
     particles.radius = 0.0 | units.RSun
-    particles.mass = salpeter_masses
-
-    #print "initializing the particles"
-    stellar_evolution.particles.add_particles(particles)
-    from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(particles)
     
-    from_stellar_evolution_to_model.copy_attributes(["mass"])
+    #comment out to get plummer masses
+    particles.mass = salpeter_masses
     
     gravity.particles.add_particles(particles)
     gravity.initialize_particles(0.0)
 
-    #print "centering the particles"
-    move_particles_to_center_of_mass(particles)
-    
     from_model_to_gravity = particles.new_channel_to(gravity.particles)
     from_gravity_to_model = gravity.particles.new_channel_to(particles)
    
     time = 0.0 | units.Myr    
     particles.savepoint(time)
+ 
+    move_particles_to_center_of_mass(particles)
 
     kineticEnergy = gravity.kinetic_energy.value_in(units.J)
     potentialEnergy = gravity.potential_energy.value_in(units.J)
@@ -151,15 +145,16 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     while time < end_time:
         time += 0.25 | units.Myr
         gravity.evolve_model(time)
-        gravity.synchronize_model()
         from_gravity_to_model.copy()
         print "Evolved model to t    =", str(time)
+        print "Evolved model to t    =", str(convert_nbody.to_nbody( time.value_in(units.Myr)| units.Myr))
 
         kineticEnergy = gravity.kinetic_energy.value_in(units.J)
         potentialEnergy = gravity.potential_energy.value_in(units.J)
         ToverV = kineticEnergy / potentialEnergy
 
         print "Kin / Pot             =", ToverV
+        #print "Particle Mass         =", particles[1].mass
 
         file.write(str(time.value_in(units.Myr)))
         file.write(' ')
