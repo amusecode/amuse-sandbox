@@ -45,12 +45,10 @@ if __name__ == '__main__':
 
     end_time = 40 | nbody_system.time
     dt = 0.0625 | nbody_system.time 
-    dynamic_converter = Hermite.NBODY
-#    dynamic_converter = BHTree.NBODY
     convert_nbody = None
 
-    gravity = Hermite(dynamic_converter)
-#    gravity = BHTree(dynamic_converter)
+    gravity = Hermite()
+#    gravity = BHTree()
     if isinstance(gravity, BHTree) :
         gravity.initialize_code()
         eps = 0.001 | nbody_system.length

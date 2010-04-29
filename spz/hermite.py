@@ -73,8 +73,6 @@ if __name__ == '__main__':
     end_time = 10 | nbody_system.time
     dt = 0.25 | nbody_system.time 
     if not with_units :
-#        dynamic_converter = Hermite.NBODY
-        dynamic_converter = BHTree.NBODY
         convert_nbody = None
         masses /= m_tot.value_in(nbody_system.mass)     # scale to unit mass 
         m_tot = 1 | nbody_system.mass
@@ -82,7 +80,6 @@ if __name__ == '__main__':
     else :
         convert_nbody = nbody_system.nbody_to_si(m_tot, r_vir)
         convert_nbody.set_as_default()
-        dynamic_converter = convert_nbody
         end_time = convert_nbody.to_si(end_time).as_quantity_in(units.Myr)
         dt = convert_nbody.to_si(dt).as_quantity_in(units.Myr)
         print m_tot

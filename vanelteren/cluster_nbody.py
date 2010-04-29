@@ -40,7 +40,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
    
     #gravity = PhiGRAPE(PhiGRAPE.NBODY)
     gravity = Hermite(
-        Hermite.NBODY, 
         number_of_workers = number_of_workers, 
         #debugger = "xterm",
         #redirection = "none"

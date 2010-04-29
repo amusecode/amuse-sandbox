@@ -35,7 +35,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
     particles.radius = 0.0 | nbody_system.length
    
     gravity = Hermite(
-        Hermite.NBODY, 
         number_of_workers = number_of_workers, 
     )
     gravity.initialize_code()
