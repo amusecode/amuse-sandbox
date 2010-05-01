@@ -1,3 +1,5 @@
+run_with_Hermite = False
+
 import matplotlib.pyplot as plt
 
 import sys
@@ -14,12 +16,19 @@ from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.bhtree.interface import BHTree
 
 from amuse.legacy.support.core import is_mpd_running
-#from amuse.test.amusetest import get_path_to_test_results
 
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 
 import LagrangianRadii as lr
+
+"""
+   HermiteOrBHTree.py
+   Example code for running a simple N-body system either using either
+   the hermite0 or the BHTree code for integrating the equations of
+   motion.
+   Written in Spring 2010 by Simon Portegies Zwart <spz@strw.leidenuniv.nl>
+"""
 
 def scale(stars) :
     # function scales positions, such that Potential Energy = -1/2
@@ -28,6 +37,7 @@ def scale(stars) :
     Ep = stars.potential_energy(G=nbody_system.G)
     Et = Ek + Ep
     print "Time= 0, E= ", Et, Ek, Ep, " Q= ", Ek/Ep
+
 
     stars.position = stars.position * (-2.0*Ep.number)
     stars.velocity = stars.velocity / numpy.sqrt(4.0*Ek.number)
@@ -70,7 +80,7 @@ if __name__ == '__main__':
     initial_mass_function = SalpeterIMF(m_min, m_max, alpha)
     m_tot, masses = initial_mass_function.next_set(nstars)
 
-    end_time = 10 | nbody_system.time
+    end_time = 1 | nbody_system.time
     dt = 0.25 | nbody_system.time 
     if not with_units :
         convert_nbody = None
@@ -84,18 +94,15 @@ if __name__ == '__main__':
         dt = convert_nbody.to_si(dt).as_quantity_in(units.Myr)
         print m_tot
 
-
-
     stars = MakePlummerModel(nstars, convert_nbody, random_state = seed).result;
     stars.mass = masses 
     to_com(stars)
     scale(stars)
 
-#    print "Ek=", stars.kinetic_energy()
-#    print "Ep=", stars.potential_energy(gravitational_constant=1)
-    
-#    gravity = Hermite(dynamic_converter)
-    gravity = BHTree(dynamic_converter)
+    if run_with_Hermite :
+        gravity = Hermite()
+    else :
+        gravity = BHTree()
     gravity.initialize_code()
     # Set the time step constant
     gravity.legacy_interface.dt_param = 0.03
@@ -141,9 +148,11 @@ if __name__ == '__main__':
         r25.append(Rl[5].value_in(length_unit))
         r50.append(Rl[6].value_in(length_unit))
         r75.append(Rl[7].value_in(length_unit))
-        print "Time= ", time, " E= ", Et, Ek, Ep, Ek/Ep, (Et-Et0)/Et0
+        print "Time = ", time, \
+            "\n   E = ", Et, "\n  Ek = ", Ek, "\n  Ep = ", Ep, \
+            "\n   Q = ", Ek/Ep, (Et-Et0)/Et0
 
-    print Rl, t, r10
+#    print Rl, t, r10
     plt.plot(t, r10)
     plt.plot(t, r25)
     plt.plot(t, r50)
