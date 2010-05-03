@@ -1,6 +1,7 @@
 from amuse.legacy import *
+from amuse.legacy.support.lit import LiteratureRefs
     
-class PACOInterface(LegacyInterface):
+class PACOInterface(LegacyInterface, LiteratureRefs):
     """
     PACO - Pattern AutoCOrrelation orbit classification scheme developed
            Nicolas Faber etal (MNRAS 2010 submitted)
@@ -10,6 +11,7 @@ class PACOInterface(LegacyInterface):
            
     """
     include_headers = ['src/PACO.h']
+    
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         LiteratureRefs.__init__(self)
@@ -45,5 +47,5 @@ class PACOInterface(LegacyInterface):
 
 class PACO(CodeInterface):
 
-    def __init__(self):
-        CodeInterface.__init__(self,  PACOInterface())
+    def __init__(self, **options):
+        CodeInterface.__init__(self,  PACOInterface(**options),  **options)
