@@ -1,0 +1,49 @@
+
+PACO - Pattern AutoCOrrelation orbit classification scheme developed
+       Nicolas Faber etal (MNRAS 2010 submitted)
+
+This is a C++ coding of the algorithm described in the reference cited
+below. The code was written mainly by Sotiris Chatzopoulos (M2, Athens
+Acad. Science & Strasbourg Observatory) in the Spring of 2010, with
+additions by me (cmb).
+
+- Makefile: uses g++ as default compiler, amend as needed. Target is
+  paco.  In the auxiliary functions, the parameter method = 1 leads to
+  comparison test as opposed to term-by-term products as in the
+  original implementation by N. Faber, as that approach can be
+  extended beyond two-bit coding of the pattern (cf. Faber et al.,
+  preprint).
+
+- The sample orbit stored in signal.dat was obtained by integration in
+  the bar potential of NGC 4314 as defined in Quillen, Frogel, Jay &
+  Gonzalez 1994, ApJ...437..162. The rotation speed Omega was set to
+  zero (non-rotating bar) and the initial conditions (x,v) were x =
+  (1.28494, 0.0094428) and v = (-151.167, 94.9975) with a rough energy
+  conservation of 1%, sufficient to identify an 4:3 antifish resonant
+  orbit easily.
+
+- In general the notation for phase-space coordinates has w = (x,v) a
+  4-dimenstional array but this could easily be exported to higher
+  dimensions (including the z-axis position).
+
+- The threshold for identification Upsilon < 1 is an optional
+  command-line argument, set to Upsilon = 0.95 by default. A cap value
+  of 0.99 is set to avoid possible round-off errors.
+
+- The orbit signal.dat is stored as a rectangular table of time, x-
+  and y-positions, vx- vy velocities.  The time-steps are not presumed
+  to be constant as this is irrelevant to PACO.
+
+- The data files ACdata.dat, Delta.dat contain respectively the
+  identification by auto-correlation of a pattern of length shown in
+  the first column (the lowest harmonic is therefore the index for
+  which AC is non-zero); Delta.dat contains the result of matching the
+  pattern throughout the pattern P, with values 1 (TRUE) or 0 (FALSE),
+  of total length = number of orbit crossing - the length lp of the
+  unit pattern, p.
+
+Christian Boily 
+Leiden, May 2010
+
+Reference : Faber, N., Flitti, F. Boily, C.M., Collete, C., Patsis,
+            P.A., Portegies Zwart, SF., 2010, Preprint submitted to MNRAS
