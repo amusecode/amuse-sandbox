@@ -58,8 +58,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
     
 if __name__ == '__main__':
     result = []
-    for number_of_particles in [32, 64, 128, 256]: #, 512, 1024]: # 256, 512, 1024]:
-        for number_of_workers in [1, 2, 3]:
+    for number_of_particles in [32, 64]: #, 512, 1024]: # 256, 512, 1024]:
+        for number_of_workers in [2, 3]:
             for ignore in range(6):
                 numpy.random.seed(0)
                 t0 = time.time()
