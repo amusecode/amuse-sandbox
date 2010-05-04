@@ -44,10 +44,10 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
             pattern.append('Y' if sign1 else 'X')
         return "".join(pattern)
         
-    def AutoCorrelate(self, pattern, data, Y, method):
+#    def AutoCorrelate(self, pattern, data, Y, method):
 
 
-    def AutoCorrelate(char * pattern,float * data,int size,float Y=-1,int method = 1);
+#    def AutoCorrelate(char * pattern,float * data,int size,float Y=-1,int method = 1);
 
 
 class PACO(CodeInterface):
