@@ -14,7 +14,7 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
     
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
-        LiteratureRefs.__init__(self)
+#        LiteratureRefs.__init__(self)
 
     @legacy_function
     def PartialPatternConstruct():
@@ -44,6 +44,11 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
             pattern.append('Y' if sign1 else 'X')
         return "".join(pattern)
         
+    def AutoCorrelate(self, pattern, data, Y, method):
+
+
+    def AutoCorrelate(char * pattern,float * data,int size,float Y=-1,int method = 1);
+
 
 class PACO(CodeInterface):
 
