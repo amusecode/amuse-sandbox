@@ -16,7 +16,7 @@ paco: PACO.o PACO.h
 	$(CXX) $(CXXFLAGS) $(HEADERS) $(CSOURCE) -o $@ 
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(INCLUDE) $< -DTOOLBOX
+	$(CXX) -c $(CXXFLAGS) $< -DTOOLBOX
 
 clean:
 	rm -rf *.o *~ $(OUTPUTFILES) $(EXECUTABLES)
