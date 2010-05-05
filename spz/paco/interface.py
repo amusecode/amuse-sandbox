@@ -3,18 +3,19 @@ from amuse.legacy.support.lit import LiteratureRefs
     
 class PACOInterface(LegacyInterface, LiteratureRefs):
     """
-    PACO - Pattern AutoCOrrelation orbit classification scheme developed
-           Nicolas Faber etal (MNRAS 2010 submitted)
+    PACO - Pattern AutoCOrrelation orbit classification scheme
+           construct repeated patterns in cartesian crossings in
+           position and velocity space
+
        .. [#] Faber, N., Flitti, F. Boily, C.M., Collete, C., 
        .. [#] Patsis, P.A., Portegies Zwart, SF., 2010, 
-       .. [#] Preprint submitted to MNRAS
-           
+       .. [#] *Preprint submitted to MNRAS*
     """
     include_headers = ['src/PACO.h']
     
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
-#        LiteratureRefs.__init__(self)
+        LiteratureRefs.__init__(self)
 
     @legacy_function
     def PartialPatternConstruct():
@@ -43,13 +44,23 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
         if sign1>=0:
             pattern.append('Y' if sign1 else 'X')
         return "".join(pattern)
+
+    def auto_correlate(self, pattern, treshold) : 
+        import numpy as np
+        size = len(pattern)
+        data = np.zeros(size)
+        for ip in range(size) :
+          for id in range(size) :
+            if pattern[id] == pattern[(ip+id)%size] :
+              data[ip] += 1
+          data[ip] = data[ip]/size
+        for id in range(len(data)):
+          if data[id] >= treshold:
+            data[id] = 1
+          else :
+            data[id] = 0
+        return data
         
-#    def AutoCorrelate(self, pattern, data, Y, method):
-
-
-#    def AutoCorrelate(char * pattern,float * data,int size,float Y=-1,int method = 1);
-
-
 class PACO(CodeInterface):
 
     def __init__(self, **options):

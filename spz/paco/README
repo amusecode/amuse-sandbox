@@ -1,0 +1,11 @@
+PACO - Pattern AutoCOrrelation orbit classification scheme developed
+       Nicolas Faber etal (MNRAS 2010 submitted)
+
+Scientific papers written using this module should reference the paper:
+  Faber, N., Flitti, F. Boily, C.M., Collete, C., Patsis, P.A.,
+  Portegies Zwart, SF., 2010, 
+    "Classifying orbital structures using pattern recognition
+    techniques I. Non-rotating reference frames",
+  Preprint submitted to MNRAS
+
+For more details see src/README
