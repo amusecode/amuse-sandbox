@@ -15,16 +15,33 @@ def auto_correlate(pattern, treshold) :
       data[id] = 0
   return data
 
-def count_zeros(data) :
-  count = 0
-  for id in data :
-    if id == 0 :
-      count += 1
-      if count==1 or count == len(data) :
-        lp = 0
-      else :
-        lp = count
+def count_pattern_length(ACdata) :
+  count = 1
+  while ACdata[count] == 0 and count<len(ACdata) :
+    count += 1
+  if count==1 or count == len(ACdata) :
+    count = 0
   return count
+
+# Cumbing fonction delta which identifies sections of the signal that
+# contain the repeating pattern p of length lp.
+def calculate_delta_function(ACdata, pattern, lp) :
+  for id in range(len(pattern-2*lp)):
+    if pattern[id]==pattern[lp+1]:
+      ACdata[i] = 1
+  return ACdata
+
+def check_resulting_pattern(pattern, unique_pattern) :
+  lp = len(unique_pattern)
+  il=0
+  ir=lp
+  count_pattern = 0
+  for i in range(int(len(pattern)/lp)) :
+    if ir < len(pattern) and pattern[il:ir] == unique_pattern :
+      count_pattern += 1
+    il = ir
+    ir += lp
+  return count_pattern
 
 f = open("src/signal.dat")
 lines = f.readlines()
@@ -46,13 +63,23 @@ for line in lines:
 import interface as paco
 
 p = paco.PACOInterface()
+print "Processing pattern..."
 pattern = p.PatternConstruct(x, y, vx, vy)
-print pattern
+#print pattern
 
 treshold = 0.95
-data = auto_correlate(pattern, treshold)
-lp = count_zeros(data)
+print "Autocorrelate..."
+ACdata = auto_correlate(pattern, treshold)
+pattern_length = count_pattern_length(ACdata)
+unique_pattern = pattern[0:pattern_length]
+#print unique_pattern
 
+print "Check consistency..."
+count_pattern = check_resulting_pattern(pattern, unique_pattern)
+print "number of repeated patterns: ", count_pattern
 
-
+print "PACO output (treshold=", treshold, "): "
+print "   pattern: ",  unique_pattern 
+print "   length:  ",  pattern_length
+print "   repeats: ",  count_pattern
 
