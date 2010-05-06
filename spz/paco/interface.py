@@ -11,7 +11,7 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
        .. [#] Patsis, P.A., Portegies Zwart, SF., 2010, 
        .. [#] *Preprint submitted to MNRAS*
     """
-    include_headers = ['src/PACO.h']
+    include_headers = ['worker_code.h', 'src/PACO.h']
     
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
@@ -33,6 +33,8 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
         function.addParameter('sign0', 'i', function.OUT)
         function.addParameter('sign1', 'i', function.OUT)
         return function
+
+
 
     def PatternConstruct(self, x, y, vx, vy):
         pattern = []
@@ -60,6 +62,91 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
           else :
             data[id] = 0
         return data
+
+    @legacy_function
+    def cleanup_buffers():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        return function
+    
+    @legacy_function
+    def determine_pattern():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('x', 'd', function.IN)
+        function.addParameter('y', 'd', function.IN)
+        function.addParameter('vx', 'd', function.IN)
+        function.addParameter('vy', 'd', function.IN)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_upsilon():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', 'float32', function.OUT)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def set_upsilon():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', 'float32', function.IN)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def get_psratio():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', 'float32', function.OUT)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def get_repeating_pattern():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', 'string', function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_pattern_buffer():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', 'string', function.OUT)
+        function.result_type = 'int32'
+        return function 
+        
+    @legacy_function
+    def get_delta_length():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', 'int32', function.OUT)
+        function.result_type = 'int32'
+        return function 
+        
+    @legacy_function
+    def get_length_of_the_pattern():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', 'int32', function.OUT)
+        function.result_type = 'int32'
+        return function 
+
+    @legacy_function
+    def get_delta():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('output', 'int32', function.OUT)
+        function.addParameter('value', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        return function 
+        
+    @legacy_function
+    def get_autocorrelate_data():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('output', 'float32', function.OUT)
+        function.addParameter('value', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        return function 
         
 class PACO(CodeInterface):
 

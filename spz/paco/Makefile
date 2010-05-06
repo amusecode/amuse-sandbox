@@ -7,7 +7,7 @@ LDFLAGS = -lm $(MUSE_LD_FLAGS)
 CODEPATH = src
 $(warning make does: : $(MAKE))
 
-OBJS = src/PACO.o
+OBJS = src/PACO.o paco_worker.o
 CXX = g++
 
 all: compile worker_code
@@ -21,9 +21,9 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py PACOInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py PACOInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py PACOInterface -o $@
 
-worker_code: worker_code.cc $(OBJS)
+worker_code: worker_code.cc worker_code.h $(OBJS)
 	mpicxx $(CXXFLAGS) $@.cc $(LIBS) $(CODELIB) $(OBJS) -o $@
 
 cleanall: clean
