@@ -57,8 +57,15 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
     gravity.commit_particles()
     print "1"  
     time = 0.0 | end_time.unit
-    particles.savepoint(time)
+        
     
+    output_file = "nbody.hdf5"
+    if os.path.exists(output_file):
+        os.remove(output_file)
+    
+    storage = store.StoreHDF(output_file)
+
+    storage.store(particles.savepoint(time))
     
     total_energy_at_t0 = gravity.kinetic_energy + gravity.potential_energy
     
@@ -72,16 +79,9 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
         
         from_gravity_to_model.copy()
 
-        particles.savepoint(time)  
+        storage.store(particles.savepoint(time))
         
         print_log(time, gravity, particles, total_energy_at_t0)
-        
-    
-    output_file = "nbody.hdf5"
-    if os.path.exists(output_file):
-        os.remove(output_file)
-    storage = store.StoreHDF(output_file)
-    storage.store(particles)
    
     gravity.stop()
     
