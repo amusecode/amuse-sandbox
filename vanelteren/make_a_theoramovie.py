@@ -241,9 +241,9 @@ class MakeAMovie(object):
         ])
             
         
-        for i in range(number_of_plots):
-            filename = "frame_"+format(i+1, "05d")+".png"
-            os.remove(filename)
+        #for i in range(number_of_plots):
+        #    filename = "frame_"+format(i+1, "05d")+".png"
+        #    os.remove(filename)
             
 if __name__ == '__main__':
     use_case = MakeAMovie(sys.argv[1])
