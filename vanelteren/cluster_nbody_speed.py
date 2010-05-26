@@ -66,7 +66,7 @@ if __name__ == '__main__':
                 t0 = time.time()
                 simulate_small_cluster(
                     number_of_particles,
-                    1 | nbody_system.time,
+                    0.01 | nbody_system.time,
                     number_of_workers
                 )
                 t1 = time.time()

@@ -10,8 +10,8 @@ def demo1(N):
   parts=MakePlummerModel(N).result
   parts.radius=0. | nbody_system.length
 
-  interface=PhiGRAPE(use_gl=True)
-
+  #interface=PhiGRAPE(use_gl=True)
+  interface=PhiGRAPE()	
   eps=0.001 | nbody_system.length
   interface.parameters.epsilon_squared = eps**2 
 

@@ -191,7 +191,7 @@ class Viewer(object):
                         self.days = 0
                 if event.key == K_s:
                     #screenshot
-                    pygame.image.save(screen, 'screenshot.png')
+                    pygame.image.save(self.screen, 'screenshot.png')
                 if event.key == K_e:
                     print "Auto evolve mode toggle"
                     self.autoevolve = not self.autoevolve
@@ -242,6 +242,7 @@ if __name__ == "__main__":
 
     nstars = int(sys.argv[1])
     workers = int(sys.argv[2])
+    method = sys.argv[3]
     print nstars
     seed = None
     #convert_nbody = nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.AU)
@@ -255,20 +256,24 @@ if __name__ == "__main__":
     s = Viewer(stars ,(1024, 780))
 
     #stars.scale_to_standard()
-    #gravity = Octgrav()	
-    #gravity = PhiGRAPE(PhiGRAPE.NBODY)
-    #gravity = BHTree(number_of_workes = workers) 
-    gravity = Hermite(
-        number_of_workers = workers
-        #debugger = "xterm",
-        #redirection = "none"
-    )
+    if method == 'octgrav':
+        gravity = Octgrav()
+    elif method == 'phigrape':					
+        gravity = PhiGRAPE(PhiGRAPE.NBODY)
+    elif method == 'bhtree':
+        gravity = BHTree(number_of_workes = workers) 
+    elif method == 'hermite':
+        gravity = Hermite(
+                          number_of_workers = workers
+                          #debugger = "xterm",
+                          #redirection = "none"
+                          )
     gravity.initialize_code()
     gravity.parameters.epsilon_squared = 0.001 | nbody_system.length ** 2
     
     stars.radius = 0.000001 | nbody_system.length
     gravity.particles.add_particles(stars)
-    gravity.stopping_conditions.pair_detection.enable()
+    #gravity.stopping_conditions.pair_detection.enable()
     from_model_to_gravity = stars.new_channel_to(gravity.particles)
     from_gravity_to_model = gravity.particles.new_channel_to(stars)
     
@@ -288,10 +293,10 @@ if __name__ == "__main__":
         if rterr == 1: 
             print "realtime error"
 
-        if gravity.stopping_conditions.pair_detection.is_set():
-            pairs +=1
-            print "Pair % i" % pairs
-            print len(gravity.stopping_conditions.pair_detection.particles(0).key)
+        #if gravity.stopping_conditions.pair_detection.is_set():
+        #    pairs +=1
+        #    print "Pair % i" % pairs
+        #    print len(gravity.stopping_conditions.pair_detection.particles(0).key)
 
         s.renderamuse(stars)
         s.handle_events()
