@@ -1,0 +1,234 @@
+reset
+set title ""
+set terminal png font verdana 8
+set output "time-error.png"
+set autoscale fix
+#set grid xtics ytics mxtics
+set grid
+#set logscale x
+set xlabel "t (Myr)"
+set ylabel "&Delta;M (%)"
+#set xtics nomirror 500
+set xtics 1000
+set mxtics 2
+
+set size 1.0, 1.0
+set origin 0.0, 0.0
+set multiplot
+set size 0.5,0.5
+set origin 0.0,0.5
+unset key
+set angles radians
+set samples 250
+
+#  Plot time vs total mass loss
+set title "Mass Loss vs Time"
+#set format x "%.2g"
+plot "diagnostics.dat" using 1:6 title '' with lines
+
+#  Plot time vs Total Gravitational Error
+set size 0.5,0.5
+set origin 0.0,0.0
+set title "Energy Difference (by phiGRAPE) vs Time"
+set ylabel "&Delta;E (%)"
+plot "diagnostics.dat" using 1:11 title '' with lines
+
+#  Plot total energy error vs time
+set size 0.5,0.5
+set origin 0.5,0.5
+set title "Total Energy Difference vs Time"
+set ylabel "|&Delta;E| (%)"
+plot "diagnostics.dat" using 1:8 title '' with lines
+
+#  Plot Total Evolution error vs time
+set origin .5,0.
+set title "Energy Difference (by SSE) vs Time"
+set ylabel "&Delta;E (%)"
+plot "diagnostics.dat" using 1:12 title '' with lines
+
+unset multiplot
+reset
+set title ""
+set terminal png font verdana 8
+set output "nbody-error.png"
+set autoscale fix
+set grid
+set xlabel "t (Myr)"
+set ylabel "&Delta;E (%)"
+plot "diagnostics.dat" using 1:11 title '' with lines
+
+reset
+set title ""
+set terminal png font verdana 8
+set output "binaries.png"
+set autoscale fix
+set grid
+set xlabel "t (Myr)"
+set ylabel "N"
+#plot "binaries.dat" using 1:2 title 'Possible binaries' with lines, "binaries.dat" using 1:2 title 'Binaries' with lines
+plot "binaries.dat" using 1:3 title '' with lines
+
+reset
+set title ""
+set terminal png font verdana 8
+set output "binaries_hard_soft.png"
+set autoscale fix
+set grid
+set xlabel "t (Myr)"
+set ylabel "N"
+plot "binaries.dat" using 1:4 title 'Hard' with lines, "binaries.dat" using 1:5 title 'Soft' with lines
+
+reset
+set title ""
+set terminal png font verdana 8
+set output "unbound.png"
+set autoscale fix
+set grid
+set xlabel "t (Myr)"
+set ylabel "N"
+plot "unbound.dat" using 1:2 title '' with lines
+
+reset
+set title ""
+set terminal png font verdana 7
+set boxwidth 0.9 relative
+set style data histograms
+set style fill solid 1.0 border -1
+set output "mass-distribution.png"
+set autoscale fix
+set grid
+set xlabel "Mass (MSun)"
+set ylabel "Number of Stars"
+set logscale y
+
+set yrange [0.9:]
+set xrange [-0.01:]
+
+set size 1.0, 1.0
+set origin 0.0, 0.0
+set multiplot
+set size 0.5,0.5
+set origin 0.0,0.5
+set grid
+unset key
+set angles radians
+set samples 250
+
+set title "Mass Distribution - All stars"
+#plot "mass.dat" using 3:4 with boxes title ''
+
+set size 0.5,0.5
+set origin 0.0,0.0
+set title "Mass Distribution"
+#plot "mediumMass.dat" using 3:4 with boxes title ''
+
+set size 0.5,0.5
+set origin 0.5,0.5
+set title "Mass Distribution"
+#plot "lowMass.dat" using 3:4 with boxes title ''
+
+set origin .5,0.
+set title "Mass Distribution"
+#plot "highMass.dat" using 3:4 with boxes title ''
+
+unset multiplot
+
+reset
+set title ""
+set terminal png font verdana 8
+set output "lagrangian-radii.png"
+set key outside
+set key invert
+set autoscale fix
+set xlabel "t (Myr)"
+set ylabel "R (pc)"
+set logscale y
+set grid
+plot "lagrange.dat" using 1:2 title '0.5 %' with lines,\
+     "lagrange.dat" using 1:3 title '1 %' with lines,\
+     "lagrange.dat" using 1:4 title '5 %' with lines,\
+     "lagrange.dat" using 1:5 title '10 %' with lines,\
+     "lagrange.dat" using 1:6 title '25 %' with lines,\
+     "lagrange.dat" using 1:7 title '50 %' with lines,\
+     "lagrange.dat" using 1:8 title '75 %' with lines,\
+     "lagrange.dat" using 1:9 title '90 %' with lines
+reset
+set title ""
+set terminal png font verdana 7
+set output "mass-stats.png"
+set autoscale fix
+set grid
+set xlabel "&Delta;M (MSun)"
+
+set ylabel "R (pc)"
+
+set size 1.0, 1.0
+set origin 0.0, 0.0
+set multiplot
+set size 0.5,0.5
+set origin 0.0,0.5
+set grid
+unset key
+
+#  Plot mass loss vs lagrangian radii
+set title "Lagrangian radii vs Mass Loss"
+plot "<awk '{print $5}' diagnostics.dat | paste - lagrange.dat" using 1:3 title '0.5 %' with lines,\
+     "<awk '{print $5}' diagnostics.dat | paste - lagrange.dat" using 1:4 title '1 %' with lines,\
+     "<awk '{print $5}' diagnostics.dat | paste - lagrange.dat" using 1:5 title '2 %' with lines,\
+     "<awk '{print $5}' diagnostics.dat | paste - lagrange.dat" using 1:6 title '5 %' with lines,\
+     "<awk '{print $5}' diagnostics.dat | paste - lagrange.dat" using 1:7 title '10 %' with lines,\
+     "<awk '{print $5}' diagnostics.dat | paste - lagrange.dat" using 1:8 title '15 %' with lines,\
+     "<awk '{print $5}' diagnostics.dat | paste - lagrange.dat" using 1:9 title '20 %' with lines,\
+     "<awk '{print $5}' diagnostics.dat | paste - lagrange.dat" using 1:10 title '30 %' with lines
+   
+set xlabel "&Delta;M (%)"
+unset logscale
+#  Plot mass loss (%) vs evolution error (%)
+set size 0.5,0.5
+set origin 0.0,0.0
+set title "Total Evolution Error vs Mass Loss"
+set ylabel "Total Evolution Error (%)"
+plot "diagnostics.dat" using 6:12 title '' with lines
+
+#  Plot Total Gravitational Error (%) vs mass loss (%)
+set size 0.5,0.5
+set origin 0.5,0.5
+set title "Total Gravitational Error vs Mass Loss"
+set ylabel "&Delta;E (%)"
+plot "diagnostics.dat" using 6:11 title '' with lines
+
+#  Plot total energy error vs mass loss
+set origin .5,0.
+set title "Total Energy Error vs Mass Loss"
+set ylabel "&Delta;E (%)"
+plot "diagnostics.dat" using 6:8 title '' with lines
+
+unset multiplot
+
+reset
+unset title
+set terminal png font verdana 8
+set output "kin_pot_time.png"
+unset key
+set autoscale fix
+set ylabel "T/V"
+set xlabel "t (Myr)"
+#set yrange [-0.6:]
+set grid
+plot "diagnostics.dat" using 1:14 title '' with lines
+
+
+reset
+unset title                            
+set terminal png font verdana 8
+set output "kin_pot_mass.png"
+unset key
+set autoscale fix
+set ylabel "T/V"
+set xlabel "&Delta;M (Msun)"
+set grid
+plot "diagnostics.dat" using 5:14 title '' with lines
+####
+## Info
+
+print "plotted time-error.png mass-distribution.png lagrangian-radii.png mass-stats.png binaries.png"
