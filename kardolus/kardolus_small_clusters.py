@@ -1,9 +1,7 @@
-# NOTE
-# You need a snapshot and plot directory:
-# mkdir snapshot
-# mkdir plot
 # Author: Guillermo Kardolus
 # Email:  kardolus@strw.leidenuniv.nl
+# Usage: python evolve.py <nr of particles> <max time> [input]
+# If input is used as an argument, the file particles.hdf will be read
 
 import sys
 import unittest
@@ -28,15 +26,21 @@ from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.legacy.sse.interface import SSE
 from amuse.legacy.support.core import is_mpd_running
 
+from amuse.support.io import write_set_to_file
+from amuse.support.io import read_set_from_file
 from amuse.support.io import store
-from os import system
 
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 
+from os import system
+
+from time import time as time_code
+
 bold = "\033[1m"
 reset = "\033[0;0m"
 
+# Create/empty datafiles
 system("echo \" \" > diagnostics.dat")
 system("echo \" \" > mass.dat")
 system("echo \" \" > lowMass.dat")
@@ -46,9 +50,31 @@ system("echo \" \" > lagrange.dat")
 system("echo \" \" > simulation.log")
 system("echo \" \" > binaries.dat")
 system("echo \" \" > unbound.dat")
+system("echo \" \" > distribution.dat")
+
+# Make directories
+system("mkdir snapshot 2&>1")
+system("mkdir binary_snapshot 2&>1")
+system("mkdir plot 2&>1")
+system("mkdir binary_plot 2&>1")
+system("mkdir profile_dat 2&>1")
+system("mkdir mass_profile_plot 2&>1")
+system("mkdir density_profile_plot 2&>1")
+
+# Remove old files
 system("rm -f snapshot/* 2&>1")
 system("rm -f plot/* 2&>1")
+system("rm -f binary_plot/* 2&>1")
+system("rm -f binary_snapshot/* 2&>1")
+system("rm -f profile_dat/* 2&>1")
+system("rm -f mass_profile_plot/* 2&>1")
+system("rm -f density_profile_plot/* 2&>1")
+
+# Create/empty gnuplot scripts
 system("echo \" \" > snap.gpl")
+system("echo \" \" > binary_snap.gpl")
+system("echo \" \" > profile.gpl")
+
 file = open('diagnostics.dat', 'a')
 massFile = open('mass.dat', 'a')
 lowMassFile = open('lowMass.dat', 'a')
@@ -56,8 +82,8 @@ mediumMassFile = open('mediumMass.dat', 'a')
 highMassFile = open('highMass.dat', 'a')
 lagrangeFile = open('lagrange.dat', 'a')
 logFile = open('simulation.log', 'a')
-binaryFile = open('binaries.dat', 'a')
 unboundFile = open('unbound.dat', 'a')
+binaryFile = open('binaries.dat', 'a')
 
 massFile.write('lowest_mass(MSun) highest_mass(Msun) middle_mass(MSun) NStars\n')
 lowMassFile.write('lowest_mass(MSun) highest_mass(Msun) middle_mass(MSun) NStars\n')
@@ -192,7 +218,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
     
     convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
-    convert_nbody.set_as_default()
+    #convert_nbody.set_as_default()
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
 
@@ -206,6 +232,19 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     stellar_evolution.initialize_module_with_default_parameters() 
     
     particles.radius = 0.0 | units.RSun
+    
+    #Comment next line out for equal masses
+    #particles.mass = salpeter_masses
+    
+    if len(sys.argv) > 3:
+      particles = read_set_from_file(str(sys.argv[3]), format='amuse')
+      print "\n\n*** READ PARTICLES FROM", str(sys.argv[3]), "***\n\n"
+    
+    # Write particles to HDF5 file (.hdf) and text file
+        
+    if len(sys.argv) < 4:
+      write_set_to_file(particles, "particles.hdf", format='amuse') 
+      print "\n\n*** WROTE PARTICLES TO particles.hdf ***\n\n"
     
     gravity.particles.add_particles(particles)
     gravity.initialize_particles(0.0)
@@ -221,11 +260,16 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     file.write(str(time.value_in(units.Myr)))
     file.write(' ')
 
+    #print particles
+    #write_set_to_file(particles, "particles.txt", format='txt')
+    #sys.exit()
+
     #Count number of binaries
     stack = []
     nBinaries = 0
     nPotentialBinaries = 0
     nHardBinaries = 0
+    nCloseBinaries = 0
     averageKineticEnergy = 0.0
     for stars in particles:
       stackSize = len(stack)
@@ -285,6 +329,10 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             semiMajorAxis = - 6.673e-11 * (stack[x][5] + stack[y][5]) / (2 * orbitalEnergy)
             nPotentialBinaries += 1
 
+            # Look at binaries within approx 10% of gravity.parameters.epsilon_squared 
+            if pow(semiMajorAxis, 2.0) | units.m**2 < gravity.parameters.epsilon_squared * 1.1 * 1.1:
+              nCloseBinaries += 1
+
             # 2. Look only at neighbors with a < 0.1 pc (Kroupa et al - "The formation of very wide binaries")
             if semiMajorAxis < 0.1 * 3.08568025e16:
               # 3. Look at the eccentricity
@@ -303,6 +351,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print "Number of Binaries    =", nBinaries
     print "N Hard Binaries       =", nHardBinaries
     print "N Soft Binaries       =", nSoftBinaries
+    print "N Binaries Close to e =", nCloseBinaries
     binaryFile.write('0.0')
     binaryFile.write(' ')
     binaryFile.write(str(nPotentialBinaries))
@@ -312,6 +361,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     binaryFile.write(str(nHardBinaries))
     binaryFile.write(' ')
     binaryFile.write(str(nSoftBinaries))
+    binaryFile.write(' ')
+    binaryFile.write(str(nCloseBinaries))
     binaryFile.write('\n')
 
     #Compute half-mass radius
@@ -355,6 +406,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         print "M(Tot)/M(1/2)         =", tmpMass/lagrangeMass
         break
  
+    realRHalf = pow(RHalf, 0.5)
     RHalf = pow(5.0, 2.0) * RHalf
     
     # Found half mass radius
@@ -574,36 +626,51 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     file.write(str(isBound))
     file.write('\n')
 
-    # Set all masses to the average mass
+    # Compute average mass
     averageMass = initialMass / nStars
-    particles.mass = averageMass | units.MSun
-
-    lowestMass = stars.mass.value_in(units.MSun)
-    highestMass = lowestMass
-
-    for x in particles:
-
-      if x.mass.value_in(units.MSun) < lowestMass:
-        lowestMass = x.mass.value_in(units.MSun)
-
-      if x.mass.value_in(units.MSun) > highestMass:
-        highestMass = x.mass.value_in(units.MSun)
-
-    print "------- MASS RESET --------"
-    print "Highest Mass          =", highestMass, "MSun"
-    print "Lowest  Mass          =", lowestMass, "MSun"
 
     # Write to log
-    logFile.write('Average Mass = ')
+    logFile.write('gravity             = ')
+    logFile.write(str(gravity))
+    logFile.write('\n')
+    logFile.write('evolution           = ')
+    logFile.write(str(stellar_evolution))
+    logFile.write('\n')
+    logFile.write('Softening parameter = ')
+    logFile.write(str(gravity.parameters.epsilon_squared.value_in(units.parsec**2)))
+    logFile.write(' pc^2\n')
+    logFile.write('Timestep parameter  = ')
+    logFile.write(str(gravity.parameters.timestep_parameter))
+    logFile.write('\n')
+    logFile.write('Particle radius     = ')
+    logFile.write(str(particles.radius[0]))
+    logFile.write('\n')
+    logFile.write('N particles         = ')
+    logFile.write(str(sys.argv[1]))
+    logFile.write('\n')
+    logFile.write('Max time            = ')
+    logFile.write(str(sys.argv[2]))
+    logFile.write(' Myr\n')
+    logFile.write('Average Mass        = ')
     logFile.write(str(averageMass))
     logFile.write(' MSun\n')
-    logFile.write('Total Initial Mass = ')
+    logFile.write('Total Initial Mass  = ')
     logFile.write(str(initialMass))
     logFile.write(' MSun\n')
-    #logFile.write(str(gravity.parameters.epsilon_squared | units.parsec ** 2))
     logFile.close
 
     Nloop = 0.0
+
+    # Time the while loop
+    t_start = time_code()
+
+    print "\n*** Starting the evolution of", sys.argv[1], "particles over", sys.argv[2], "Myr (max) ***\n" 
+
+    # Use these variables to find max and min core density (used to find core collapse)
+    maxRhoC = 0.0
+    minRhoC = 10000.0
+    isMaximum = 0
+    isMinimum = 0
 
     while time < end_time:
         time += 0.25 | units.Myr
@@ -708,99 +775,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         file.write(str(isBound))
         file.write('\n')
 
-        #Count number of binaries
-        stack = []
-        nBinaries = 0
-        nPotentialBinaries = 0
-        nHardBinaries = 0
-        averageKineticEnergy = 0.0
-        for stars in particles:
-          stackSize = len(stack)
-          distanceSquared = pow(stars.x.value_in(units.m), 2.0) + pow(stars.y.value_in(units.m), 2.0) + pow(stars.z.value_in(units.m), 2.0)
-          xPosition = stars.x.value_in(units.m)
-          yPosition = stars.y.value_in(units.m)
-          zPosition = stars.z.value_in(units.m)
-          lastMass = stars.mass.value_in(units.kg)
-          xVelocity = stars.vx.value_in(units.ms)
-          yVelocity = stars.vy.value_in(units.ms)
-          zVelocity = stars.vz.value_in(units.ms)
-
-          stack.append([stackSize])
-          stack[stackSize].append(distanceSquared)  # x1
-          stack[stackSize].append(xPosition)        # x2
-          stack[stackSize].append(yPosition)        # x3
-          stack[stackSize].append(zPosition)        # x4
-          stack[stackSize].append(lastMass)         # x5
-          stack[stackSize].append(xVelocity)        # x6
-          stack[stackSize].append(yVelocity)        # x7
-          stack[stackSize].append(zVelocity)        # x8
-
-          velocitySquared = pow(stars.vx.value_in(units.ms), 2.0) + pow(stars.vy.value_in(units.ms), 2.0) + pow(stars.vz.value_in(units.ms), 2.0)
-          averageKineticEnergy += 0.5 * velocitySquared * stars.mass.value_in(units.kg)
-
-        averageKineticEnergy = averageKineticEnergy / (stackSize + 1)
-
-        #Sort stack by distance from center
-        stack.sort(key=lambda x: x[1])
-
-        #Look at the $nCompare closest "neighbors" (because not sure if they are actually neighbors, but if they are a binary, the odds are in favor of them being neighbors in this definition)
-        nCompare = 2
-
-        for x in range (0, stackSize):
-          if x + nCompare <= stackSize:
-            # While there are stars to compare with, do the computations
-            for nNeighbors in range (1, nCompare + 1):
-              # 1. Look at the Energy of the pairs
-              y = x + nNeighbors
-              xSeparationSquared = pow(stack[x][2] - stack[y][2], 2.0)
-              ySeparationSquared = pow(stack[x][3] - stack[y][3], 2.0)
-              zSeparationSquared = pow(stack[x][4] - stack[y][4], 2.0)
-              xDeltaVelocitySquared = pow(stack[x][6] - stack[y][6], 2.0)
-              yDeltaVelocitySquared = pow(stack[x][7] - stack[y][7], 2.0)
-              zDeltaVelocitySquared = pow(stack[x][8] - stack[y][8], 2.0)
-              separation = pow(xSeparationSquared + ySeparationSquared + zSeparationSquared, 0.5)
-              deltaVelocitySquared = xDeltaVelocitySquared + yDeltaVelocitySquared + zDeltaVelocitySquared
-              reducedMass = stack[x][5] * stack[y][5] / (stack[x][5] + stack[y][5])
-              kineticEnergy = 0.5 * reducedMass * deltaVelocitySquared
-              potentialEnergy = - 6.673e-11 * stack[x][5] * stack[y][5] / separation
-              totalEnergy = kineticEnergy + potentialEnergy
-
-              if totalEnergy < 0.0:
-                # Compute Semi Major Axis (a)
-                # Specific orbital energy = E_tot / mu, a = - G (m1 + m2) / 2 epsilon
-                orbitalEnergy = totalEnergy / reducedMass
-                semiMajorAxis = - 6.673e-11 * (stack[x][5] + stack[y][5]) / (2 * orbitalEnergy)
-                nPotentialBinaries += 1
-
-                # 2. Look only at neighbors with a < 0.1 pc (Kroupa et al - "The formation of very wide binaries")
-                if semiMajorAxis < 0.1 * 3.08568025e16:
-                  # 3. Look at the eccentricity
-                  # Calculate specific angular momentum squared (L / mu)^2 = (r x v)^2
-                  angularMomentum = pow((stack[x][2] - stack[y][2]) * (stack[x][7] - stack[y][7]) - (stack[x][3] - stack[y][3]) * (stack[x][6] - stack[y][6]), 2.0)
-                  angularMomentum += pow((stack[x][3] - stack[y][3]) * (stack[x][8] - stack[y][8]) - (stack[x][4] - stack[y][4]) * (stack[x][7] - stack[y][7]), 2.0)
-                  angularMomentum += pow((stack[x][4] - stack[y][4]) * (stack[x][6] - stack[y][6]) - (stack[x][2] - stack[y][2]) * (stack[x][8] - stack[y][8]), 2.0)
-                  eccentricity = pow(1.0 - angularMomentum / (6.673e-11 * (stack[x][5] + stack[y][5]) * semiMajorAxis), 0.5)
-                  if eccentricity <= 1.0 and eccentricity >= 0.0:
-                    nBinaries += 1
-                    if - potentialEnergy > averageKineticEnergy:
-                      nHardBinaries +=1
-
-        nSoftBinaries = nBinaries - nHardBinaries
-        print "N Possible Binaries   =", nPotentialBinaries
-        print "Number of Binaries    =", nBinaries
-        print "N Hard Binaries       =", nHardBinaries
-        print "N Soft Binaries       =", nSoftBinaries
-        binaryFile.write(str(time.value_in(units.Myr)))
-        binaryFile.write(' ')
-        binaryFile.write(str(nPotentialBinaries))
-        binaryFile.write(' ')
-        binaryFile.write(str(nBinaries))
-        binaryFile.write(' ')
-        binaryFile.write(str(nHardBinaries))
-        binaryFile.write(' ')
-        binaryFile.write(str(nSoftBinaries))
-        binaryFile.write('\n')
-
         #Compute half-mass radius
         #Expensive calculation, do this only once every N loops (20?)
         Ncheck = 20.0
@@ -846,6 +820,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
               print "M(Tot)/M(1/2)         =", tmpMass/lagrangeMass
               break
 
+          realRHalf = pow(RHalf, 0.5)
           RHalf = pow(5.0, 2.0) * RHalf
 
           # Found half mass radius
@@ -886,6 +861,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
           unboundFile.write(str(fractionUnbound))
           unboundFile.write('\n')
 
+        print "Half mass radius      =", realRHalf, "pc"
         print "NStars R > 5 R_0.5    =", nStarsOutside
         print "Nr of unbound stars   =", nStarsUnbound
         print "Fraction unbound      =", fractionUnbound
@@ -933,10 +909,210 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         
         lagrangeFile.write('\n')
         
-        # Write snapshots
-        snapshotLocation = "snapshot/" + str(time.value_in(units.Myr)) + ".dat"
+        #Count number of binaries and compute the central density, density, and mass profile
+        #Plot the positions first
+        snapshotLocation = "binary_snapshot/" + str(time.value_in(units.Myr)) + ".dat"
         regexPattern = re.compile('\.')
         snapshotLocation = regexPattern.sub('-', snapshotLocation, count=1)
+        snapshotCommand = "echo \" \" > " + snapshotLocation
+        plotLocation = "binary_plot/" + str(time.value_in(units.Myr)) + ".png"
+        plotLocation = regexPattern.sub('-', plotLocation, count=1)
+        system(snapshotCommand)
+        snapshotFile = open(snapshotLocation, 'a')
+        
+        profileDataLocation = "profile_dat/" + str(time.value_in(units.Myr)) + ".dat"
+        regexPattern = re.compile('\.')
+        profileDataLocation = regexPattern.sub('-', profileDataLocation, count=1)
+        profileDataCommand = "echo \" \" > " + profileDataLocation
+        profilePlotLocation = "profile_plot/" + str(time.value_in(units.Myr)) + ".png"
+        profilePlotLocation = regexPattern.sub('-', profilePlotLocation, count=1)
+        system(profileDataCommand)
+        profileDataFile = open(profileDataLocation, 'a')
+        
+        stack = []
+        nBinaries = 0
+        nPotentialBinaries = 0
+        nHardBinaries = 0
+        nCloseBinaries = 0
+        averageKineticEnergy = 0.0
+        centralMass = 0.0
+        massDistribution = 0.0
+        for stars in particles:
+          stackSize = len(stack)
+          distanceSquared = pow(stars.x.value_in(units.m), 2.0) + pow(stars.y.value_in(units.m), 2.0) + pow(stars.z.value_in(units.m), 2.0)
+          xPosition = stars.x.value_in(units.m)
+          yPosition = stars.y.value_in(units.m)
+          zPosition = stars.z.value_in(units.m)
+          lastMass = stars.mass.value_in(units.kg)
+          xVelocity = stars.vx.value_in(units.ms)
+          yVelocity = stars.vy.value_in(units.ms)
+          zVelocity = stars.vz.value_in(units.ms)
+
+          stack.append([stackSize])
+          stack[stackSize].append(distanceSquared)  # x1
+          stack[stackSize].append(xPosition)        # x2
+          stack[stackSize].append(yPosition)        # x3
+          stack[stackSize].append(zPosition)        # x4
+          stack[stackSize].append(lastMass)         # x5
+          stack[stackSize].append(xVelocity)        # x6
+          stack[stackSize].append(yVelocity)        # x7
+          stack[stackSize].append(zVelocity)        # x8
+
+          velocitySquared = pow(stars.vx.value_in(units.ms), 2.0) + pow(stars.vy.value_in(units.ms), 2.0) + pow(stars.vz.value_in(units.ms), 2.0)
+          averageKineticEnergy += 0.5 * velocitySquared * stars.mass.value_in(units.kg)
+
+        averageKineticEnergy = averageKineticEnergy / (stackSize + 1)
+
+        #Sort stack by distance from center
+        stack.sort(key=lambda x: x[1])
+
+        #Look at the $nCompare closest "neighbors" (because not sure if they are actually neighbors, but if they are a binary, the odds are in favor of them being neighbors in this definition)
+        nCompare = 2
+
+        for x in range (0, stackSize):
+          if x < 5:
+            centralMass += stack[x][5]
+          if x == 4:
+            centralDensity = centralMass / (4.0/3.0 * 3.14159265 * pow(stack[x][1], 1.5)) * 1.4771869e19
+            if Nloop == 1.0:
+              initialRhoC = centralDensity
+          if Nloop/Ncheck == int(Nloop/Ncheck):
+            # Compute mass and density profile once every 20 loops
+            massDistribution += stack[x][5]
+            specificRadius = pow(stack[x][1], 0.5)
+            specificVolume = 4.0/3.0 * 3.14159265 * pow(specificRadius, 3.0)
+            densityDistribution = massDistribution / specificVolume * 1.4771869e19
+            profileDataFile.write(str(specificRadius/3.08568025e16))
+            profileDataFile.write(' ')
+            profileDataFile.write(str(massDistribution/1.98892e30))
+            profileDataFile.write(' ')
+            profileDataFile.write(str(densityDistribution))
+            profileDataFile.write('\n')
+            
+          if x + nCompare <= stackSize:
+            # While there are stars to compare with, do the computations
+            for nNeighbors in range (1, nCompare + 1):
+              # 1. Look at the Energy of the pairs
+              y = x + nNeighbors
+              xSeparationSquared = pow(stack[x][2] - stack[y][2], 2.0)
+              ySeparationSquared = pow(stack[x][3] - stack[y][3], 2.0)
+              zSeparationSquared = pow(stack[x][4] - stack[y][4], 2.0)
+              xDeltaVelocitySquared = pow(stack[x][6] - stack[y][6], 2.0)
+              yDeltaVelocitySquared = pow(stack[x][7] - stack[y][7], 2.0)
+              zDeltaVelocitySquared = pow(stack[x][8] - stack[y][8], 2.0)
+              separation = pow(xSeparationSquared + ySeparationSquared + zSeparationSquared, 0.5)
+              deltaVelocitySquared = xDeltaVelocitySquared + yDeltaVelocitySquared + zDeltaVelocitySquared
+              reducedMass = stack[x][5] * stack[y][5] / (stack[x][5] + stack[y][5])
+              kineticEnergy = 0.5 * reducedMass * deltaVelocitySquared
+              potentialEnergy = - 6.673e-11 * stack[x][5] * stack[y][5] / separation
+              totalEnergy = kineticEnergy + potentialEnergy
+
+              if totalEnergy < 0.0:
+                # Compute Semi Major Axis (a)
+                # Specific orbital energy = E_tot / mu, a = - G (m1 + m2) / 2 epsilon
+                orbitalEnergy = totalEnergy / reducedMass
+                semiMajorAxis = - 6.673e-11 * (stack[x][5] + stack[y][5]) / (2 * orbitalEnergy)
+                nPotentialBinaries += 1
+
+                # Look at binaries within gravity.parameters.epsilon_squared 
+                if pow(semiMajorAxis, 2.0) | units.m**2 < gravity.parameters.epsilon_squared * 1.1 * 1.1:
+                  nCloseBinaries += 1
+
+                # 2. Look only at neighbors with a < 0.1 pc (Kroupa et al - "The formation of very wide binaries")
+                if semiMajorAxis < 0.1 * 3.08568025e16:
+                  # 3. Look at the eccentricity
+                  # Calculate specific angular momentum squared (L / mu)^2 = (r x v)^2
+                  angularMomentum = pow((stack[x][2] - stack[y][2]) * (stack[x][7] - stack[y][7]) - (stack[x][3] - stack[y][3]) * (stack[x][6] - stack[y][6]), 2.0)
+                  angularMomentum += pow((stack[x][3] - stack[y][3]) * (stack[x][8] - stack[y][8]) - (stack[x][4] - stack[y][4]) * (stack[x][7] - stack[y][7]), 2.0)
+                  angularMomentum += pow((stack[x][4] - stack[y][4]) * (stack[x][6] - stack[y][6]) - (stack[x][2] - stack[y][2]) * (stack[x][8] - stack[y][8]), 2.0)
+                  eccentricity = pow(1.0 - angularMomentum / (6.673e-11 * (stack[x][5] + stack[y][5]) * semiMajorAxis), 0.5)
+                  if eccentricity <= 1.0 and eccentricity >= 0.0:
+                    nBinaries += 1
+                    snapshotFile.write(str(stack[x][2]/3.08568025e16))
+                    snapshotFile.write(' ')
+                    snapshotFile.write(str(stack[x][3]/3.08568025e16))
+                    snapshotFile.write(' ')
+                    snapshotFile.write(str(stack[x][4]/3.08568025e16))
+                    snapshotFile.write('\n')
+                    snapshotFile.write(str(stack[y][2]/3.08568025e16))
+                    snapshotFile.write(' ')
+                    snapshotFile.write(str(stack[y][3]/3.08568025e16))
+                    snapshotFile.write(' ')
+                    snapshotFile.write(str(stack[y][4]/3.08568025e16))
+                    snapshotFile.write('\n')
+
+                    if - potentialEnergy > averageKineticEnergy:
+                      nHardBinaries += 1
+                      
+        snapshotFile.close
+        # Plot snapshots
+        plotTitle =  str(time.value_in(units.Myr))
+        binaryPlotFile = open('binary_snap.gpl', 'w')
+        binaryPlotFile.write('set title \"' + plotTitle  + ' Myr\"\nset terminal png font verdana 10 x000000 xffffff\nset output \"' + plotLocation + '\"\nunset key\nset ylabel \"y (pc)\"\nset xlabel \"x (pc)\"\nset autoscale fix\nset pointsize 1\nplot \"' + snapshotLocation + '\" using 1:2 title \'\' with  points pointtype 7 linetype rgb \"yellow\", \"COM.dat\" using 1:2 title \'\' with points linewidth 6 linetype rgb \"red\"\n')
+        binaryPlotFile.close
+        system("gnuplot binary_snap.gpl 2&>1")
+        profileDataFile.close
+        profilePlotTitle = str(time.value_in(units.Myr))
+        profilePlotFile = open('profile.gpl', 'w')
+        profilePlotFile.write('set title \"' + profilePlotTitle  + ' Myr\"\nset terminal png font verdana 10\nset output \"mass_' + profilePlotLocation + '\"\nunset key\nset ylabel \"mass (MSun)\"\nset xlabel \"radius (pc)\"\nset xrange[0:10]\nplot \"' + profileDataLocation + '\" using 1:2 title \'\' with lines\nreset\nset title \"' + profilePlotTitle  + ' Myr\"\nset terminal png font verdana 10\nset output \"density_' + profilePlotLocation + '\"\nunset key\nset ylabel \"density (MSun pc^-3)\"\nset xlabel \"radius (pc)\"\nset xrange[0:10]\nplot \"' + profileDataLocation + '\" using 1:3 title \'\' with lines\n')
+        profilePlotFile.close
+        system("gnuplot profile.gpl 2&>1")
+        
+        # Find maximum central density
+        if centralDensity > 15.0 * initialRhoC and isMaximum == 0 and nBinaries > 2:
+          if centralDensity > maxRhoC:
+            maxRhoC = centralDensity
+            collapseTime = time.value_in(units.Myr)
+            collapseNbodyTime = str(convert_nbody.to_nbody( time.value_in(units.Myr)| units.Myr))
+            isMinimum = 1
+            
+        if centralDensity < 0.5 * initialRhoC and isMinimum == 1:
+          isMaximum = 1
+          criticalTime = time.value_in(units.Myr)
+              
+        nSoftBinaries = nBinaries - nHardBinaries
+        print "N Possible Binaries   =", nPotentialBinaries
+        print "Number of Binaries    =", nBinaries
+        print "N Hard Binaries       =", nHardBinaries
+        print "N Soft Binaries       =", nSoftBinaries
+        print "N Binaries close to e =", nCloseBinaries
+        print "Central Density       =", centralDensity, "MSun pc^-3"
+        print "Initial rho_c         =", initialRhoC, "MSun pc^-3"
+        print "Central/Init Density  =", centralDensity/initialRhoC
+        
+        if isMinimum == 1:
+          if isMaximum == 0:
+            print bold + "Possible CC at t      =", collapseTime, "Myr (", collapseNbodyTime, ")"
+            print "Possible CC at rho_c  =", maxRhoC, "MSun pc^-3 (", maxRhoC/initialRhoC, "rho_c(0) )" + reset
+            
+        if isMaximum == 1:
+          print bold + "Core Collapse at t    =", collapseTime, "Myr (", collapseNbodyTime, ")"
+          print "Core Collapse at rhoC =", maxRhoC, "MSun pc^-3 (", maxRhoC/initialRhoC, "rho_c(0) )"
+          print "CC determined at t    =", criticalTime, "Myr" + reset
+        
+        binaryFile.write(str(time.value_in(units.Myr)))
+        binaryFile.write(' ')
+        binaryFile.write(str(nPotentialBinaries))
+        binaryFile.write(' ')
+        binaryFile.write(str(nBinaries))
+        binaryFile.write(' ')
+        binaryFile.write(str(nHardBinaries))
+        binaryFile.write(' ')
+        binaryFile.write(str(nSoftBinaries))
+        binaryFile.write(' ')
+        binaryFile.write(str(nCloseBinaries))
+        binaryFile.write(' ')
+        binaryFile.write(str(centralDensity))
+        binaryFile.write('\n')
+        
+        fractionBinaries = nHardBinaries / (stackSize + 1.0)
+        
+        # Write snapshots
+        snapshotLocation = "snapshot/" + str(time.value_in(units.Myr)) + ".dat"
+        binaryLocation = "binary_snapshot/" + str(time.value_in(units.Myr)) + ".dat"
+        regexPattern = re.compile('\.')
+        snapshotLocation = regexPattern.sub('-', snapshotLocation, count=1)
+        binaryLocation = regexPattern.sub('-', binaryLocation, count=1)
         snapshotCommand = "echo \" \" > " + snapshotLocation
         plotLocation = "plot/" + str(time.value_in(units.Myr)) + ".png"
         plotLocation = regexPattern.sub('-', plotLocation, count=1)
@@ -956,9 +1132,18 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         comFile.close
         plotTitle =  str(time.value_in(units.Myr))
         plotFile = open('snap.gpl', 'w')
-        plotFile.write('set title \"' + plotTitle  + ' Myr\"\nset terminal png font verdana 10 x000000 xffffff\nset output \"' + plotLocation + '\"\nunset key\nset ylabel \"y (pc)\"\nset xlabel \"x (pc)\"\nset xrange[-10:10]\nset yrange[-10:10]\nset pointsize 1\nplot \"' + snapshotLocation + '\" using 1:2 title \'\' with  points pointtype 7 linetype rgb \"yellow\", \"COM.dat\" using 1:2 title \'\' with points linewidth 6 linetype rgb \"red\"\n')
+        plotFile.write('set title \"' + plotTitle  + ' Myr\"\nset terminal png font verdana 10 x000000 xffffff\nset output \"' + plotLocation + '\"\nunset key\nset ylabel \"y (pc)\"\nset xlabel \"x (pc)\"\nset xrange[-10:10]\nset yrange[-10:10]\nset pointsize 1\nplot \"' + snapshotLocation + '\" using 1:2 title \'\' with  points pointtype 7 linetype rgb \"yellow\", \"COM.dat\" using 1:2 title \'\' with points linewidth 6 linetype rgb \"red\", \"' + binaryLocation + '\" using 1:2 title \'\' with  points pointtype 7 linetype rgb \"blue\"\n')
         plotFile.close
-        system("gnuplot snap.gpl")
+        system("gnuplot snap.gpl 2&>1")
+
+        # Exit if Core has collapsed
+        if fractionBinaries > 0.01:
+          time = end_time
+          if isMaximum == 1:
+            print "\n*** CORE COLLAPSED AT", collapseTime ,"MYR AND TOO MANY BINARIES *** EXITING ***\n"
+          if isMaximum == 0:
+            print "\n*** TOO MANY BINARIES *** EXITING ***\n"
+          print "Execution time: ", time_code() - t_start, "s (", (time_code() - t_start) / 60, "m )\n"
     
     if os.path.exists('small.hdf5'):
         os.remove('small.hdf5')
@@ -975,7 +1160,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     unboundFile.close()
     system("gnuplot plot.gpl > /dev/null 2&>1")
     
-    #plot_particles(particles, name_of_the_figure)
     
         
 
@@ -990,4 +1174,4 @@ def test_simulate_small_cluster():
     simulate_small_cluster(4, 4 | units.Myr)
     
 if __name__ == '__main__':
-    simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | units.Myr)#, sys.argv[3])
+    simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | units.Myr)
