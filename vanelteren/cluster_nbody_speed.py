@@ -34,11 +34,13 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
     particles.scale_to_standard()
     particles.radius = 0.0 | nbody_system.length
    
-    gravity = Hermite(
-        number_of_workers = number_of_workers, 
+    gravity = PhiGRAPE(
+        mode = "gpu",
+        #number_of_workers = number_of_workers, 
         #debugger = "xterm",
     )
     gravity.initialize_code()
+    gravity.parameters.initialize_gpu_once = 1
     
     gravity.particles.add_particles(particles)
     from_gravity_to_model = gravity.particles.new_channel_to(particles)
@@ -47,7 +49,9 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
     
     print "evolving the model until t = " + str(end_time)
     print "gravity evolve step starting"
-    gravity.evolve_model(end_time)
+    for t in end_time.unit.new_quantity(numpy.linspace(0, end_time.number, 1000)):
+        gravity.evolve_model(t)
+        print t
     print "gravity evolve step done"
         
     from_gravity_to_model.copy()
@@ -59,14 +63,14 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
     
 if __name__ == '__main__':
     result = []
-    for number_of_particles in [32, 64]: #, 512, 1024]: # 256, 512, 1024]:
-        for number_of_workers in [1, 2, 3]:
+    for number_of_particles in [1024, 2048]: # 256, 512, 1024]:
+        for number_of_workers in [1]:#, 2, 3]:
             for ignore in range(1):
                 numpy.random.seed(6)
                 t0 = time.time()
                 simulate_small_cluster(
                     number_of_particles,
-                    0.01 | nbody_system.time,
+                    100.0 | nbody_system.time,
                     number_of_workers
                 )
                 t1 = time.time()
