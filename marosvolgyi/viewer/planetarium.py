@@ -1,9 +1,13 @@
-from OpenGL.GL import *
-from OpenGL.GLU import *
-#from OpenGL.GLUT import *
+try:
+    from OpenGL.GL import *
+    from OpenGL.GLU import *
+    import pygame
+    from pygame.locals import *
+except ImportError:
+    if __name__ == '__main__':
+        raise Exception("OpenGL and pygame bindings are not installed, cannot run")
+    
 
-import pygame
-from pygame.locals import *
 
 from amuse.support.io.horizons import LoadStar
 from amuse.support.data import core
