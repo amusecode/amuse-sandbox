@@ -1,5 +1,5 @@
 from amuse.legacy import *
-from amuse.legacy.support.lit import LiteratureRefs
+from amuse.support.legacy.lit import LiteratureRefs
     
 class PACOInterface(LegacyInterface, LiteratureRefs):
     """
