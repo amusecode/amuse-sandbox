@@ -1,8 +1,8 @@
 import os
 import sys
 
-from amuse.legacy.capreole.interface import Capreole
-from amuse.legacy.capreole.interface import GLCapreole
+from amuse.legacy.capreole.interface import CapreoleInterface
+from amuse.legacy.capreole.interface import GLCapreoleInterface
 
 import numpy
 
@@ -12,7 +12,7 @@ gamma=5./3
 ggrav=980.
 
 def constantdens_constantgrav(N,L):
-  instance=GLCapreole()
+  instance=GLCapreoleInterface()
   instance.setup_module()
   instance.setup_mesh(N/10,N/10,N,L/10.,L/10.,L)
   x,y,z=numpy.indices( (N/10,N/10,N) )
@@ -36,7 +36,7 @@ def constantdens_constantgrav(N,L):
   return instance
 
 def eqdens_constantgrav(N,L):
-  instance=GLCapreole(debugger='xterm')
+  instance=GLCapreoleInterface(debugger='xterm')
   instance.setup_module()
   instance.setup_mesh(N/10,N/10,N,L/10.,L/10.,L)
   ix,iy,iz=numpy.indices( (N/10,N/10,N) )

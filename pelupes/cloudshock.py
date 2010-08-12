@@ -1,8 +1,8 @@
 import os
 import sys
 
-from amuse.legacy.capreole.interface import Capreole
-from amuse.legacy.capreole.interface import GLCapreole
+from amuse.legacy.capreole.interface import CapreoleInterface
+from amuse.legacy.capreole.interface import GLCapreoleInterface
 
 import numpy
 from matplotlib import pyplot
@@ -92,7 +92,7 @@ def cloudshock(N=32,M=4,xi=10.,L=10.,rc=1.,gamma=5./3):
   rhvy=rhvy.reshape( (4*N*N*N,) )
   rhvz=rhvz.reshape( (4*N*N*N,) )
   en=en.reshape( (4*N*N*N,) )
-  instance=GLCapreole()
+  instance=GLCapreoleInterface()
   instance.setup_module()
   instance.set_boundary("reflective","reflective","outflow","outflow",
                           "reflective","reflective")
