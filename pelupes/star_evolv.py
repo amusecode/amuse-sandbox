@@ -6,7 +6,7 @@ from amuse.legacy.mesa.interface import MESA
 
 from amuse.support.data import core
 
-se=MESA()
+se=SSE()
 
 star=core.Particle()
 star.mass= 0.831 | units.MSun
