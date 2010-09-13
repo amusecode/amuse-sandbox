@@ -3,8 +3,8 @@
 # - a common coordinate system is used for all systems
 # - sync of systems should be checked
 # - timestepping: adaptive dt?
-
 from amuse.support.units import units
+from amuse.support.data.values import zero
 from amuse.support.data import core
 import threading
 
@@ -111,7 +111,7 @@ class FAST(object):
     
   @property
   def potential_energy(self):
-    Ep=0. | units.kg* (units.m/units.s)**2
+    Ep=zero
     for x in self.systems:
       Ep+=x.potential_energy
       if hasattr(x,"particles"):
@@ -121,14 +121,14 @@ class FAST(object):
   
   @property
   def kinetic_energy(self):  
-    Ek=0. | units.kg* (units.m/units.s)**2
+    Ek=zero
     for x in self.systems:
       Ek+=x.kinetic_energy
     return Ek
 
   @property
   def thermal_energy(self):  
-    Eth=0. | units.kg* (units.m/units.s)**2
+    Eth=zero
     for x in self.systems:
       if hasattr(x,'thermal_energy'):
         Eth+=x.thermal_energy
@@ -137,8 +137,6 @@ class FAST(object):
   @property
   def model_time(self):  
     return self.time
-
-
         
   @property
   def particles(self):

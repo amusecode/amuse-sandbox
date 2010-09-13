@@ -8,6 +8,7 @@ from amuse.support.data.values import zero
 
 from fast import FAST
 from lmech import lmech
+from lmech import e_supernova
 from copycat import copycat
 from amuse.ext.evrard_test import uniform_unit_sphere
 
@@ -35,7 +36,7 @@ class grav_gas_sse(object):
     
     self.sph=sys_from_parts(gas_code, gasparts=gas_parts,
                          parameters=gas_parameters,
-                         converter=conv,extra=dict(use_gl=True))
+                         converter=conv,extra=dict(use_gl=False))
     self.grav=sys_from_parts(grav_code, parts=star_parts, 
                           parameters=grav_parameters,
                           converter=conv,extra=dict(use_gl=False))
@@ -99,7 +100,7 @@ class grav_gas_sse(object):
     while len(losers) > 0:
       add=core.Particles(len(losers))
       add.mass=self.mgas
-      add.radius=0. | units.parsec
+      add.h_smooth=0. | units.parsec
       dx,dy,dz=uniform_unit_sphere(len(losers)).make_xyz()
       add.x=losers.x+self.feedback_radius*dx      
       add.y=losers.y+self.feedback_radius*dy
@@ -107,8 +108,8 @@ class grav_gas_sse(object):
       add.vx=losers.vx      
       add.vy=losers.vy
       add.vz=losers.vz
-      add.u=self.feedback_efficiency*lmech(losers)* \
-              losers.dtime/losers.dmass
+      add.u=self.feedback_efficiency*(lmech(losers)* \
+              losers.dtime/losers.dmass+e_supernova(losers)/losers.dmass)
       losers.grav_mass-=self.mgas
       new_sph.add_particles(add)  
       losers=star_particles.select_array(lambda x,y: x-y > self.mgas, ["grav_mass","mass"])
@@ -139,7 +140,7 @@ class grav_gas_sse(object):
   
   @property
   def thermal_energy(self):
-    return self.thermal_energy
+    return self.fast.thermal_energy
   
   @property
   def feedback_energy(self):

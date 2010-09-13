@@ -31,8 +31,8 @@ def smaller_nbody_power_of_two(dt, conv):
   idt=numpy.floor(numpy.log2(nbdt))
   return conv.to_si( 2**idt | nbody_system.time)
 
-def clustergas(sfeff=0.1,Nstar=2000,Ngas=100000,  
-                 t_end=0.05 | units.Myr,dt_plot= 0.05 | units.Myr):
+def clustergas(sfeff=0.1,Nstar=1000,Ngas=50000,  
+                 t_end=5. | units.Myr,dt_plot= 0.2 | units.Myr):
 
   total_star_mass, star_masses = SalpeterIMF().next_set(Nstar)
   total_mass=total_star_mass/sfeff
@@ -62,10 +62,10 @@ def clustergas(sfeff=0.1,Nstar=2000,Ngas=100000,
   star_parts.radius=eps
   
   dt =smaller_nbody_power_of_two(dt_plot, conv)
-  dt_star=dt/8
+  dt_star=dt/16
   dt_sph=dt_star
   dt_fast=4*dt_star
-  dt_feedback=dt_fast
+  dt_feedback=2*dt_fast
    
   print 'dt_plot:', conv.to_nbody(dt_plot)
   print 'dt:', conv.to_nbody(dt)
@@ -82,12 +82,26 @@ def clustergas(sfeff=0.1,Nstar=2000,Ngas=100000,
                                ["self_gravity_flag",False],
                                ["verbosity", 0],
                                ["timestep", dt_sph]),
-               feedback_efficiency=0.01)
+               feedback_efficiency=0.001)
 
+  sys.fast.synchronize_model()
   t=sys.model_time
-  while (t<t_end):
+  tout=sys.model_time.value_in(units.Myr)
+  ek=sys.kinetic_energy.value_in(1.e51*units.erg)
+  ep=sys.potential_energy.value_in(1.e51*units.erg)
+  eth=sys.thermal_energy.value_in(1.e51*units.erg)
+  ef=sys.feedback_energy.value_in(1.e51*units.erg)
+  print 't Ek Ep Eth Ef', tout,ek,ep,eth,ef
+
+  while (t<t_end-dt/2):
     sys.evolve_model(t+dt)
     t=sys.model_time
+    tout=sys.model_time.value_in(units.Myr)
+    ek=sys.kinetic_energy.value_in(1.e51*units.erg)
+    ep=sys.potential_energy.value_in(1.e51*units.erg)
+    eth=sys.thermal_energy.value_in(1.e51*units.erg)
+    ef=sys.feedback_energy.value_in(1.e51*units.erg)
+    print 't Ek Ep Eth Ef', tout,ek,ep,eth,ef
   
 if __name__=="__main__":
   cProfile.run("clustergas()","prof")
