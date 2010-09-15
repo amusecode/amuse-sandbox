@@ -70,7 +70,7 @@ def cloud_shock_problem(N=32,NN=4,M=10.,xi=10.,L=10.,rc=1.,gamma=5./3):
   drhvz=numpy.zeros_like(dx)
   den=numpy.zeros_like(dx)
 
-  selection= numpy.logical_and( r>=(rc-dr) , r <= (rc+dr))
+  selection= numpy.logical_and( r>=(rc-dr), r <= (rc+dr))
   selection=numpy.compress(selection,numpy.arange(len(r))) 
 
   for i in selection:

@@ -44,10 +44,10 @@ def scale(stars) :
 
 def to_com(stars) :
     com = stars.center_of_mass()
-    print  "com:" , com
+    print  "com:", com
 
     vcom = stars.center_of_mass_velocity()
-    print  "vcom:" , vcom
+    print  "vcom:", vcom
     
     stars.position = stars.position - com
     stars.velocity = stars.velocity - vcom

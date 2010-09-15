@@ -22,12 +22,12 @@ def print_log(time, gravity, particles, total_energy_at_t0):
     kinetic_energy = gravity.kinetic_energy
     potential_energy = gravity.potential_energy
     total_energy_at_this_time = kinetic_energy + potential_energy
-    print "T     : " , str(time)
-    print "ERROR : " , (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
-    print "KE    : " , kinetic_energy 
-    print "PE    : " , potential_energy
-    print "KE/PE : " , kinetic_energy / potential_energy
-    print "KE+PE : " , kinetic_energy + potential_energy
+    print "T     : ", str(time)
+    print "ERROR : ", (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
+    print "KE    : ", kinetic_energy 
+    print "PE    : ", potential_energy
+    print "KE/PE : ", kinetic_energy / potential_energy
+    print "KE+PE : ", kinetic_energy + potential_energy
     
     #print  "center of mass:" , particles.center_of_mass()
     #print  "center of mass velocity:" , particles.center_of_mass_velocity()
@@ -48,7 +48,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, n
     #gravity.parameters.epsilon_squared = 0.15 | nbody_system.length ** 2
     
     particles.radius = 0.0 | nbody_system.length
-    print  "center of mass:" , particles.center_of_mass()
+    print  "center of mass:", particles.center_of_mass()
     
     gravity.particles.add_particles(particles)
     from_model_to_gravity = particles.new_channel_to(gravity.particles)

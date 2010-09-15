@@ -22,12 +22,12 @@ def print_log(time, gravity, particles, total_energy_at_t0):
     kinetic_energy = gravity.kinetic_energy
     potential_energy = gravity.potential_energy
     total_energy_at_this_time = kinetic_energy + potential_energy
-    print "T     : " , str(time)
-    print "ERROR : " , (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
-    print "KE    : " , kinetic_energy 
-    print "PE    : " , potential_energy
-    print "KE/PE : " , kinetic_energy / potential_energy
-    print "KE+PE : " , kinetic_energy + potential_energy
+    print "T     : ", str(time)
+    print "ERROR : ", (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
+    print "KE    : ", kinetic_energy 
+    print "PE    : ", potential_energy
+    print "KE/PE : ", kinetic_energy / potential_energy
+    print "KE+PE : ", kinetic_energy + potential_energy
     
 def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, number_of_workers = 1):
     particles = MakePlummerModel(number_of_stars).result

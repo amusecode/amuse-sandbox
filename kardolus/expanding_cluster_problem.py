@@ -50,7 +50,7 @@ class SalpeterIMF(object):
         
     def mass(self, random_number):
         alpha1 = self.alpha + 1
-        factor = (pow(self.mass_max.value_in(units.MSun) / self.mass_min.value_in(units.MSun) , alpha1) - 1.0)
+        factor = (pow(self.mass_max.value_in(units.MSun) / self.mass_min.value_in(units.MSun), alpha1) - 1.0)
         return self.mass_min.value_in(units.MSun) * (pow(1 + (factor * random_number), 1.0 / alpha1)) | units.MSun
         
     def next_mass(self):

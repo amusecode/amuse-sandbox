@@ -111,7 +111,7 @@ class SalpeterIMF(object):
         
     def mass(self, random_number):
         alpha1 = self.alpha + 1
-        factor = (pow(self.mass_max.value_in(units.MSun) / self.mass_min.value_in(units.MSun) , alpha1) - 1.0)
+        factor = (pow(self.mass_max.value_in(units.MSun) / self.mass_min.value_in(units.MSun), alpha1) - 1.0)
         return self.mass_min.value_in(units.MSun) * (pow(1 + (factor * random_number), 1.0 / alpha1)) | units.MSun
         
     def next_mass(self):
@@ -204,10 +204,10 @@ def plot_particles(particles, name_of_the_figure):
 def print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time):
     print "Evolved model to t    = " + str(time)
     print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
-    print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
-    print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
+    print "KE:", particles.kinetic_energy().as_quantity_in(units.J)
+    print "PE:", particles.potential_energy(gravity.parameters.epsilon_squared)
+    print  "center of mass:", particles.center_of_mass()
+    print  "center of mass velocity:", particles.center_of_mass_velocity()
 
     
 def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
@@ -1139,7 +1139,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         if fractionBinaries > 0.01:
           time = end_time
           if isMaximum == 1:
-            print "\n*** CORE COLLAPSED AT", collapseTime ,"MYR AND TOO MANY BINARIES *** EXITING ***\n"
+            print "\n*** CORE COLLAPSED AT", collapseTime,"MYR AND TOO MANY BINARIES *** EXITING ***\n"
           if isMaximum == 0:
             print "\n*** TOO MANY BINARIES *** EXITING ***\n"
           print "Execution time: ", time_code() - t_start, "s (", (time_code() - t_start) / 60, "m )\n"

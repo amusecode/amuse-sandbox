@@ -259,7 +259,7 @@ if __name__ == "__main__":
     #stars2.vy = 35 | nbody_system.speed
     #stars2.mass = 1.0 |nbody_system.mass
     #stars.add_particles(stars2)
-    s = Viewer(stars ,(1024, 780))
+    s = Viewer(stars,(1024, 780))
 
     #stars.scale_to_standard()
     if method == 'octgrav':
