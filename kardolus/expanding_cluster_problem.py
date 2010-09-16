@@ -60,9 +60,9 @@ class SalpeterIMF(object):
         set_of_masses = numpy.zeros(number_of_stars)
         total_mass = 0.0 | units.MSun
         for i in range(number_of_stars):
-           mass = self.next_mass()
-           set_of_masses[i] = mass.value_in(units.MSun)
-           total_mass += mass
+            mass = self.next_mass()
+            set_of_masses[i] = mass.value_in(units.MSun)
+            total_mass += mass
         return (total_mass, units.MSun.new_quantity(set_of_masses))
         
 class SalpeterIMFTests(unittest.TestCase):

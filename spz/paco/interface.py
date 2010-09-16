@@ -52,15 +52,15 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
         size = len(pattern)
         data = np.zeros(size)
         for ip in range(size) :
-          for id in range(size) :
-            if pattern[id] == pattern[(ip+id)%size] :
-              data[ip] += 1
-          data[ip] = data[ip]/size
+            for id in range(size) :
+                if pattern[id] == pattern[(ip+id)%size] :
+                    data[ip] += 1
+            data[ip] = data[ip]/size
         for id in range(len(data)):
-          if data[id] >= treshold:
-            data[id] = 1
-          else :
-            data[id] = 0
+            if data[id] >= treshold:
+                data[id] = 1
+            else :
+                data[id] = 0
         return data
 
     @legacy_function

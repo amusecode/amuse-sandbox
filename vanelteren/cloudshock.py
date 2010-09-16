@@ -37,30 +37,30 @@ def new_cloudshock_code(N = 32):
     return instance
 
 if __name__=="__main__":
-  N=32
-  instance=new_cloudshock_code(N)
-  
-  rc=1.
-  gamma=5./3
-  xi=10.
-  cs=numpy.sqrt((gamma-1))
-  cs_out=numpy.sqrt((gamma-1)*xi)
-  vs=cs_out*2.7
-  tau=1.6*2*rc*xi**0.5/vs
-  
-  print tau
-  
-  pyplot.figure(figsize=(12,12))
-  
-  instance.evolve(0.00*tau | generic_unit_system.time ) 
-  print instance.get_time()
-  instance.evolve(0.5*tau | generic_unit_system.time ) 
-  print instance.get_time()
-  
-  rho =instance.grid.rho[...,...,N/2]
-  pyplot.subplot(1,1,1)
-  print "bla"
-  print rho[0]
-  pyplot.imshow( rho.value_in(generic_unit_system.mass/generic_unit_system.length**3))
-  
-  pyplot.savefig("cloud.png")
+    N=32
+    instance=new_cloudshock_code(N)
+    
+    rc=1.
+    gamma=5./3
+    xi=10.
+    cs=numpy.sqrt((gamma-1))
+    cs_out=numpy.sqrt((gamma-1)*xi)
+    vs=cs_out*2.7
+    tau=1.6*2*rc*xi**0.5/vs
+    
+    print tau
+    
+    pyplot.figure(figsize=(12,12))
+    
+    instance.evolve(0.00*tau | generic_unit_system.time ) 
+    print instance.get_time()
+    instance.evolve(0.5*tau | generic_unit_system.time ) 
+    print instance.get_time()
+    
+    rho =instance.grid.rho[...,...,N/2]
+    pyplot.subplot(1,1,1)
+    print "bla"
+    print rho[0]
+    pyplot.imshow( rho.value_in(generic_unit_system.mass/generic_unit_system.length**3))
+    
+    pyplot.savefig("cloud.png")

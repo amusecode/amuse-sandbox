@@ -187,7 +187,7 @@ class SolarSystemView(object):
                 if event.key == K_KP_PLUS:
                     self.zoom += 0.3
                 if event.key == K_KP_MINUS:
-                   self.zoom -= 0.3
+                    self.zoom -= 0.3
                 if event.key == K_a:
                     self.days -= 10
                     if self.days <0:
