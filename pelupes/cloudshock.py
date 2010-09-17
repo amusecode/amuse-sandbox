@@ -93,7 +93,7 @@ def cloudshock(N=32,M=4,xi=10.,L=10.,rc=1.,gamma=5./3):
   rhvz=rhvz.reshape( (4*N*N*N,) )
   en=en.reshape( (4*N*N*N,) )
   instance=GLCapreoleInterface()
-  instance.setup_module()
+  instance.initialize_code()
   instance.set_boundary("reflective","reflective","outflow","outflow",
                           "reflective","reflective")
   instance.setup_mesh(N,4*N,N,L,4*L,L)

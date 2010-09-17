@@ -126,7 +126,7 @@ def cloudshock(N=32,NN=4,xi=10.,M=2.7,L=10.,rc=1.,gamma=5./3):
   en=en.reshape( (4*N*N*N,) )
   instance=Capreole(name_of_the_worker="worker_mpi",number_of_workers=3)
 #  instance=Capreole(name_of_the_worker="worker")
-  instance.setup_module()
+  instance.initialize_code()
   instance.set_boundary("periodic","periodic","interface","outflow",
                           "periodic","periodic")
   instance.set_boundary_innerystate(rho[0],rhvx[0],rhvy[0],rhvz[0],en[0])                        
