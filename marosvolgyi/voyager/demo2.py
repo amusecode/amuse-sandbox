@@ -82,9 +82,9 @@ class SolarSystemModel(object):
 
     def load_integrator_and_units(self):
         self.convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        #self.instance = PhiGRAPE(self.convert_nbody)
-        self.instance = BHTree(self.convert_nbody)
-        self.instance = Hermite(self.convert_nbody)
+        self.instance = PhiGRAPE(self.convert_nbody)
+        #self.instance = BHTree(self.convert_nbody)
+        #self.instance = Hermite(self.convert_nbody)
         self.instance.parameters.epsilon_squared = 0.000000001 | units.AU**2
         #self.instance.set_eta(0.0001,0.0002)
         self.instance.dt_dia = 10
