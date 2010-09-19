@@ -12,6 +12,9 @@ from lmech import e_supernova
 from copycat import copycat
 from amuse.ext.evrard_test import uniform_unit_sphere
 
+#import logging
+#logging.basicConfig(level=logging.DEBUG)
+
 numpy.random.seed(123456)
 
 def sys_from_parts(base_class, parts=None, gasparts=None, parameters=None,converter=None, extra=dict()):
@@ -36,11 +39,11 @@ class grav_gas_sse(object):
     
     self.sph=sys_from_parts(gas_code, gasparts=gas_parts,
                          parameters=gas_parameters,
-                         converter=conv,extra=dict(use_gl=False))
+                         converter=conv,extra=dict(use_gl=True))                         
     self.grav=sys_from_parts(grav_code, parts=star_parts, 
                           parameters=grav_parameters,
-                          converter=conv,extra=dict(use_gl=False))
- 
+                          converter=conv,extra=dict(use_gl=True))
+  
     self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,eps2=eps**2)
     self.star_grav=copycat(grav_couple_code, (self.sph,), conv,eps2=eps**2)
   
@@ -68,15 +71,13 @@ class grav_gas_sse(object):
     dt=self.dt_feedback
     time=self.time
     
-    while (time<tend-dt/2):
+    while time<tend-dt/2:
       time+=dt
       self.fast.evolve_model(time)
-      print self.fast.model_time,',',self.sph.model_time,self.grav.model_time
+#      print self.fast.model_time,',',self.sph.model_time,self.grav.model_time
       self.evo.evolve_model(self.fast.model_time)
 #      self.mechanical_feedback(self.fast.model_time)
     self.time=self.fast.model_time        
-#    print self.time
-#    raise Exception
             
   def mechanical_feedback(self,time):
     
@@ -129,6 +130,9 @@ class grav_gas_sse(object):
     channel=star_particles.new_channel_to(self.star_particles_addition)
     channel.copy_attribute("time_last_feedback")
     del channel
+
+  def synchronize_model(self):
+    return self.fast.synchronize_model()
 
   @property
   def kinetic_energy(self):

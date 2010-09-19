@@ -8,10 +8,22 @@ from amuse.support.data.values import zero
 from amuse.support.data import core
 import threading
 
+def radius_or_hsmooth(parts):
+  d=set(dir(parts))
+  if "radius" in d:
+    return parts.radius
+  else:
+    if "h_smooth" in d:
+      return parts.h_smooth
+    else:
+      print d
+      raise Exception    
+
+
 def potential_energy(system, get_potential):
   parts=system.particles.copy()
   pot=get_potential(parts.radius,parts.x,parts.y,parts.z)
-  return (pot*parts.mass).sum()/2 
+  return (pot*parts.mass).sum()/2
 
 def kick_system(system, get_gravity, dt):
   parts=system.particles.copy()
@@ -65,10 +77,10 @@ class FAST(object):
     first=True
     while self.time < (tend-timestep/2):    
       if first:      
-        self.kick_systems(timestep/2)   
+        self.kick_systems(timestep/2)
         first=False
       else:
-        self.kick_systems(timestep)       
+        self.kick_systems(timestep)
       self.drift_systems(self.time+timestep)
       self.time=self.time+timestep
     if not first:
