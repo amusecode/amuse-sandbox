@@ -15,6 +15,7 @@ def constantdens_constantgrav(N,L):
   instance=GLCapreoleInterface()
   instance.initialize_code()
   instance.setup_mesh(N/10,N/10,N,L/10.,L/10.,L)
+  instance.commit_parameters()
   x,y,z=numpy.indices( (N/10,N/10,N) )
   x=x.flatten()+1
   y=y.flatten()+1
@@ -39,6 +40,7 @@ def eqdens_constantgrav(N,L):
   instance=GLCapreoleInterface(debugger='xterm')
   instance.initialize_code()
   instance.setup_mesh(N/10,N/10,N,L/10.,L/10.,L)
+  instance.commit_parameters()
   ix,iy,iz=numpy.indices( (N/10,N/10,N) )
   ix=ix.flatten()+1
   iy=iy.flatten()+1

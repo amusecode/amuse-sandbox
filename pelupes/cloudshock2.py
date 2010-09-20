@@ -131,6 +131,7 @@ def cloudshock(N=32,NN=4,xi=10.,M=2.7,L=10.,rc=1.,gamma=5./3):
                           "periodic","periodic")
   instance.set_boundary_innerystate(rho[0],rhvx[0],rhvy[0],rhvz[0],en[0])                        
   instance.setup_mesh(N,4*N,N,L,4*L,L)
+  instance.commit_parameters()
   instance.fill_grid_state(ix,iy,iz,rho,rhvx,rhvy,rhvz,en)
   instance.initialize_grid(0.0)
   if hasattr(instance,'viewer'):
