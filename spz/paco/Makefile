@@ -1,3 +1,5 @@
+MPICXX ?= mpicxx
+
 AMUSE_DIR ?= ../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -24,7 +26,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py PACOInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(OBJS)
-	mpicxx $(CXXFLAGS) $@.cc $(LIBS) $(CODELIB) $(OBJS) -o $@
+	$(MPICXX) $(CXXFLAGS) $@.cc $(LIBS) $(CODELIB) $(OBJS) -o $@
 
 cleanall: clean
 	$(RM) muse_worker *~

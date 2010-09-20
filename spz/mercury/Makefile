@@ -1,4 +1,6 @@
-FC = mpif90
+
+MPIF90 ?= mpif90
+FC = $(MPIF90)
 
 SRC=src
 
@@ -50,7 +52,7 @@ all: worker
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
         
 worker: worker.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(NOMPILIBS)
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(NOMPILIBS)
 
 worker_mpi: FFLAGS2+=$(MPI_FLAGS)
 worker_mpi: worker_mpi.f90 interface.o
@@ -58,7 +60,7 @@ worker_mpi: worker_mpi.f90 interface.o
 
 glworker: glworker.f90 interface.o
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(FC) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
+	$(MPIF90) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS)
 
 worker.f90: interface.py __init__.py
