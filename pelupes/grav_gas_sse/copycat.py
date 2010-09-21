@@ -3,24 +3,30 @@ from amuse.support.units import units
 
 
 class copycat(object):
-  def __init__(self,baseclass, systems, converter,eps2=0. | nbody_system.length**2):
+  def __init__(self,baseclass, systems, converter, parameters=None):
     self.baseclass=baseclass
     self.systems=systems
     self.converter=converter
-    self.epsilon_squared=eps2
+    self.parameters=parameters
         
   def get_gravity_at_point(self,radius,x,y,z):
+    import time
+    t1=time.time()
     instance=self.baseclass(self.converter)
-    instance.parameters.epsilon_squared = self.epsilon_squared
+    for param,value in self.parameters:
+      err=instance.parameters.__setattr__(param,value)
     for system in self.systems:
       instance.particles.add_particles(system.particles)
     ax,ay,az=instance.get_gravity_at_point(radius,x,y,z)
+    t2=time.time()
+    print "**",t2-t1
     instance.stop()
     return ax,ay,az
 
   def get_potential_at_point(self,radius,x,y,z):
     instance=self.baseclass(self.converter)
-    instance.parameters.epsilon_squared = self.epsilon_squared
+    for param,value in self.parameters:
+      err=instance.parameters.__setattr__(param,value)
     for system in self.systems:
       instance.particles.add_particles(system.particles)
     phi=instance.get_potential_at_point(radius,x,y,z)

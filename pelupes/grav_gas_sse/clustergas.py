@@ -28,19 +28,27 @@ from amuse.ext.evrard_test import body_centered_grid_unit_cube
 
 import cProfile
 
+numpy.random.seed(123456)
+
 def smaller_nbody_power_of_two(dt, conv):
   nbdt=conv.to_nbody(dt).value_in(nbody_system.time)
   idt=numpy.floor(numpy.log2(nbdt))
   return conv.to_si( 2**idt | nbody_system.time)
 
-def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=1. | units.Myr,
+def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=0.1 | units.Myr,
                  dt_plot= 0.01 | units.Myr, Rscale= 0.3 | units.parsec):
+
+  print "Nstar, Ngas:", Nstar,Ngas
+  eps=0.001 * Rscale
 
   total_star_mass, star_masses = SalpeterIMF().next_set(Nstar)
   total_mass=total_star_mass/sfeff
-
   print "maxmass:", max(star_masses)
   conv = nbody_system.nbody_to_si(total_mass,Rscale)
+
+  star_parts=MakePlummerModel(Nstar,convert_nbody=conv).result
+  star_parts.mass=star_masses
+  star_parts.radius=eps
 
   print "total cluster mass:", total_mass.in_(units.MSun)
   print "star mass:", total_star_mass.in_(units.MSun)
@@ -59,22 +67,14 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=1. | units.Myr,
 #  print 'min Temp:', (gamma1*min(gas_parts.u)*(1.4*units.amu)/constants.kB).in_(units.K)
   print 'min Temp:', (gamma1*min(gas_parts.u)*mu/constants.kB).in_(units.K)
 
-
   mgas=(total_mass-total_star_mass)/len(gas_parts)
   print max(gas_parts.u)**0.5
-  star_parts=MakePlummerModel(Nstar,convert_nbody=conv).result
-  star_parts.radius=0. | units.parsec
-  star_parts.mass=star_masses
-
-  eps=0.02| units.parsec
-
-  star_parts.radius=eps
   
   dt =smaller_nbody_power_of_two(dt_plot, conv)
   dt_star=dt/4
   dt_sph=dt_star
   dt_fast=dt_star
-  dt_feedback=dt/2
+  dt_feedback=dt
    
   if not dt_star<=dt_fast<=dt_feedback:
     raise Exception 
@@ -110,7 +110,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=1. | units.Myr,
   ep=sys.potential_energy.value_in(1.e51*units.erg)
   eth=sys.thermal_energy.value_in(1.e51*units.erg)
   ef=sys.feedback_energy.value_in(1.e51*units.erg)
-  print 't Ek Ep Eth Ef', tout,ek,ep,eth,ef
+  print 't Ek Ep Eth Ef:', tout,ek,ep,eth,ef,ek+ep+eth-ef
 
   while (t<t_end-dt/2):
     sys.evolve_model(t+dt)
@@ -121,8 +121,12 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=1. | units.Myr,
     ep=sys.potential_energy.value_in(1.e51*units.erg)
     eth=sys.thermal_energy.value_in(1.e51*units.erg)
     ef=sys.feedback_energy.value_in(1.e51*units.erg)
-    print 't Ek Ep Eth Ef', tout,ek,ep,eth,ef
+    print 't Ek Ep Eth Ef:', tout,ek,ep,eth,ef,ek+ep+eth-ef
   
 if __name__=="__main__":
+  import time
 #  cProfile.run("clustergas()","prof")
-  clustergas()
+  t1=time.time()
+  clustergas(Ngas=1000)
+  t2=time.time()
+  print 'time:',  t2-t1

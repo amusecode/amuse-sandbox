@@ -44,8 +44,12 @@ class grav_gas_sse(object):
                           parameters=grav_parameters,
                           converter=conv,extra=dict(use_gl=True))
   
-    self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,eps2=eps**2)
-    self.star_grav=copycat(grav_couple_code, (self.sph,), conv,eps2=eps**2)
+    self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,
+                            parameters=(["epsilon_squared", eps**2],
+                            ["opening_angle",0.7]))
+    self.star_grav=copycat(grav_couple_code, (self.sph,), conv,
+                            parameters=(["epsilon_squared", eps**2],
+                            ["opening_angle",0.7]))
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
     self.fast.add_system(self.sph, (self.sph_grav,),False)
