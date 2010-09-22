@@ -15,6 +15,7 @@ from amuse.support.units import units
 from amuse.support.units import constants
 
 from amuse.legacy.fi.interface import Fi
+from amuse.legacy.octgrav.interface import Octgrav
 from amuse.legacy.gadget2.interface import Gadget2
 from amuse.legacy.bhtree.interface import BHTree
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
@@ -35,11 +36,12 @@ def smaller_nbody_power_of_two(dt, conv):
   idt=numpy.floor(numpy.log2(nbdt))
   return conv.to_si( 2**idt | nbody_system.time)
 
-def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=0.1 | units.Myr,
+def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=1.0 | units.Myr,
                  dt_plot= 0.01 | units.Myr, Rscale= 0.3 | units.parsec):
 
   print "Nstar, Ngas:", Nstar,Ngas
-  eps=0.001 * Rscale
+  eps=0.05 * Rscale
+  eps_star=0.001 * Rscale
 
   total_star_mass, star_masses = SalpeterIMF().next_set(Nstar)
   total_mass=total_star_mass/sfeff
@@ -48,7 +50,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=0.1 | units.Myr,
 
   star_parts=MakePlummerModel(Nstar,convert_nbody=conv).result
   star_parts.mass=star_masses
-  star_parts.radius=eps
+  star_parts.radius=eps_star
 
   print "total cluster mass:", total_mass.in_(units.MSun)
   print "star mass:", total_star_mass.in_(units.MSun)
@@ -85,14 +87,14 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=0.1 | units.Myr,
   print 'dt_fast:', conv.to_nbody(dt_fast)
   print 'dt_star:', conv.to_nbody(dt_star)
   print 'dt_sph:', conv.to_nbody(dt_sph)
-     
-  sys=grav_gas_sse(Fi,Fi,SSE,Fi, 
+  
+  sys=grav_gas_sse(PhiGRAPE,Fi,SSE,Octgrav, 
                conv,mgas,star_parts,gas_parts,eps,dt_feedback,dt_fast,
-               grav_parameters=(["timestep", dt_star],),
+               grav_parameters=(["epsilon_squared", eps_star**2],),
                gas_parameters=(["use_hydro_flag",True],
                                ["radiation_flag",False],
                                ["self_gravity_flag",False],
-                               ["verbosity", 0],
+                               ["verbosity", 99],
                                ["timestep", dt_sph],
                                ["pboxsize", 100 | units.parsec],
 #                               ["square_root_timestep_flag",True],
@@ -112,6 +114,10 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=0.1 | units.Myr,
   ef=sys.feedback_energy.value_in(1.e51*units.erg)
   print 't Ek Ep Eth Ef:', tout,ek,ep,eth,ef,ek+ep+eth-ef
 
+  print max(sys.sph.gas_particles.radius).in_(units.parsec)
+  print sys.sph.gas_particles.radius.mean().in_(units.parsec)
+  print min(sys.sph.gas_particles.radius).in_(units.parsec)
+
   while (t<t_end-dt/2):
     sys.evolve_model(t+dt)
     sys.synchronize_model()
@@ -127,6 +133,6 @@ if __name__=="__main__":
   import time
 #  cProfile.run("clustergas()","prof")
   t1=time.time()
-  clustergas(Ngas=1000)
+  clustergas(Ngas=1000000)
   t2=time.time()
   print 'time:',  t2-t1

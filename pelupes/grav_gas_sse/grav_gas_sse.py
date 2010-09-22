@@ -12,9 +12,6 @@ from lmech import e_supernova
 from copycat import copycat
 from amuse.ext.evrard_test import uniform_unit_sphere
 
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
-
 numpy.random.seed(123456)
 
 def sys_from_parts(base_class, parts=None, gasparts=None, parameters=None,converter=None, extra=dict()):
@@ -39,17 +36,17 @@ class grav_gas_sse(object):
     
     self.sph=sys_from_parts(gas_code, gasparts=gas_parts,
                          parameters=gas_parameters,
-                         converter=conv,extra=dict(use_gl=True))                         
+                         converter=conv,extra=dict(use_gl=False))                         
     self.grav=sys_from_parts(grav_code, parts=star_parts, 
                           parameters=grav_parameters,
-                          converter=conv,extra=dict(use_gl=True))
+                          converter=conv,extra=dict(mode='gpu'))
   
     self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,
-                            parameters=(["epsilon_squared", eps**2],
-                            ["opening_angle",0.7]))
+                            parameters=(["epsilon_squared", eps**2],))
+#                            ["opening_angle",0.5]))
     self.star_grav=copycat(grav_couple_code, (self.sph,), conv,
-                            parameters=(["epsilon_squared", eps**2],
-                            ["opening_angle",0.7]))
+                            parameters=(["epsilon_squared", eps**2],))
+#                            ["opening_angle",0.5]))
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
     self.fast.add_system(self.sph, (self.sph_grav,),False)
