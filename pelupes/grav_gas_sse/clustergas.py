@@ -133,6 +133,6 @@ if __name__=="__main__":
   import time
 #  cProfile.run("clustergas()","prof")
   t1=time.time()
-  clustergas(Ngas=1000000)
+  clustergas(Ngas=1000)
   t2=time.time()
   print 'time:',  t2-t1
