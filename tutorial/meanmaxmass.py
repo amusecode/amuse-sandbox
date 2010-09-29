@@ -8,41 +8,36 @@ numpy.random.seed(123456)
 
 #import AMUSE units and Salpeter IMF
 from amuse.support.units import units
-from amuse.ext.salpeter import SalpeterIMF
+from amuse.ext.salpeter import new_salpeter_mass_distribution
 
 # calculate the maximum stellar mass for Nset realizations of 
 # an N star cluster
-N=1000
-Nset=100
+N = 1000
+Nset = 100
 
-maxmasses=[]|units.MSun
+maxmasses = []|units.MSun
 for i in range(Nset):
-  tm,m=SalpeterIMF(mass_max = 100. | units.MSun).next_set(N)
-  maxmasses.append(max(m))
-  
-print "median:",maxmasses.median()
-print "mean:", maxmasses.mean()
-# result:
-#  median: 19.6164811985 MSun
-#  mean: 26.1161949491 MSun
+    maxmasses.append(max(new_salpeter_mass_distribution(N, mass_max = 100. | units.MSun)))
 
+print "    using AMUSE VectorQuantity functions"
+print "mean:  ", maxmasses.mean()
+print "stddev:", maxmasses.std()
+print "median:", maxmasses.median()
+print
+print "    using numpy functions"
+print "mean:  ", numpy.mean( maxmasses)
 print "stddev:", numpy.std(maxmasses)
-#result:
-# stddev: 19.2701229918 1.98892e+30 * kg
+print "median:", numpy.median(maxmasses)
 
-# this can be fixed
-print "stddev:", numpy.std(maxmasses).in_(units.MSun)
-# result:
-# stddev: 19.2701229918 MSun
+# should result in something like:
 
-# also:
-print "median:",numpy.median( maxmasses).in_(units.MSun)
-# result:
-# median: 19.6164811985 MSun
+# mean:   27.4915750164 MSun
+# stddev: 19.7149800906 MSun
+# median: 21.0983403429 MSun
+# mean:   27.4915750164 MSun
+# stddev: 19.7149800906 MSun
+# median: 21.0983403429 1.98892e+30 * kg
 
-# however:
-print "mean:", numpy.mean( maxmasses)
-# gives an error!
-
-
-
+# the conversion of the unit of the final output can be fixed:
+print "median:", numpy.median(maxmasses).in_(units.MSun)
+# median: 21.0983403429 MSun
