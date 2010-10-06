@@ -32,7 +32,7 @@ def constantdens_constantgrav(N,L):
   gz=-980.*numpy.ones_like(x)
   err=instance.set_gravity_field(x,y,z,gx,gy,gz)
 
-  instance.initialize_grid(0.0)
+  instance.initialize_grid()
   instance.viewer()
   return instance
 
@@ -70,7 +70,7 @@ def eqdens_constantgrav(N,L):
   rf="reflective"
   err=instance.set_boundary(rf,rf,rf,rf,rf,rf)
   print err
-  instance.initialize_grid(0.0)
+  instance.initialize_grid()
   if hasattr(instance,'viewer'):
     instance.viewer()
   return instance

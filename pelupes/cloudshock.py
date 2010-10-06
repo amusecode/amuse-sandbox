@@ -99,7 +99,7 @@ def cloudshock(N=32,M=4,xi=10.,L=10.,rc=1.,gamma=5./3):
   instance.setup_mesh(N,4*N,N,L,4*L,L)
   instance.commit_parameters()
   instance.fill_grid_state(ix,iy,iz,rho,rhvx,rhvy,rhvz,en)
-  instance.initialize_grid(0.0)
+  instance.initialize_grid()
   if hasattr(instance,'viewer'):
     instance.viewer()
   return ix,iy,iz,instance
