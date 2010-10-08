@@ -10,12 +10,12 @@ Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd Edition
 #include <gmp.h>
 #include <mpfr.h>
 
-#define PR 10
+#define PR 10 //precision
 
-double x, y, z;
-double vx, vy, vz;
-double time = 0.0;
-double mu;
+mpfr_t x, y, z;
+mpfr_t vx, vy, vz;
+mpfr_t time = 0.0;
+mpfr_t mu;
 
 int factorial (int k) {
   int r = 1;
@@ -128,7 +128,7 @@ int evolve (double time_new) {
   mpfr_t F, G, Fdot, Gdot;
   mpfr_t dt;
   
-  mpfr_inits2(10, 
+  mpfr_inits2(PR, 
 	      x_new, y_new, z_new,
 	      vx_new, vy_new, vz_new,
 	      F, G, Fdot, Gdot,
