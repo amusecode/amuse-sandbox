@@ -124,7 +124,7 @@ def cloudshock(N=32,NN=4,xi=10.,M=2.7,L=10.,rc=1.,gamma=5./3):
   rhvy=rhvy.reshape( (4*N*N*N,) )
   rhvz=rhvz.reshape( (4*N*N*N,) )
   en=en.reshape( (4*N*N*N,) )
-  instance=Capreole(name_of_the_worker="worker_mpi",number_of_workers=3)
+  instance=Capreole(number_of_workers=3)
 #  instance=Capreole(name_of_the_worker="worker")
   instance.initialize_code()
   instance.set_boundary("periodic","periodic","interface","outflow",
