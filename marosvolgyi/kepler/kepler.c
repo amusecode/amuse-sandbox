@@ -17,40 +17,53 @@ mpfr_t vx, vy, vz;
 mpfr_t time = 0.0;
 mpfr_t mu;
 
-int factorial (int k) {
-  int r = 1;
-  int i;
-
-  for (i=1; i<=k; i++) {
-    r *=i;
-  }
-  return r;
-}
-
-double sign(mpfr_t x) {
+int sign(mpfr_t x) {
   mpfr_t xabs;
+  int result;
+
   mpfr_init2(xabs, PR);
   mpfr_abs(xabs,x,GMP_RNDN);
-  if (mpfr_cmp_si(xabs,0)<0) return -1.0;
-  else return 1.0;
+  if (mpfr_cmp_si(xabs,0)<0) result =  -1;
+  else result = 1;
+  mpfr_clear(xabs);
+  return result;
 }
 
-void stumpff(double s, double *c0, double *c1, double *c2, double *c3) {
-  double sqrt_s;
+void stumpff(mpfr_t s, mpfr_t  c0, mpfr_t c1, mpfr_t c2, mpfr_t c3) {
+  mpfr_t sqrt_s;
+  mpfr_t my_cos, my_sin, my_divsin;
+  mpfr_t min_s, inv_s;
+  int condition;
 
-  if (s>0.0) {
-    sqrt_s = pow(s, 0.5);
-    *c0 = cos(sqrt_s);
-    *c1 = sin(sqrt_s)/sqrt_s;
+  mpfr_inits2(PR, sqrt_s, my_cos, my_sin, my_divsin, min_s, inv_s, (mpfr_ptr)0);
+  condition = mpfr_comp_si(s, 0);
+
+  if (condition>0) {
+    mpfr_sqrt(sqrt_s, s, GMP_RNDN);
+    mpfr_cos(my_cos, sqrt_s, GMP_RNDN);
+    mpfr_sin(my_sin, sqrt_s, GMP_RNDN);
+    mpfr_div(my_divsin, my_sin, sqrt_s, GMP_RNDN);
+    c0 = my_cos;
+    c1 = my_divsin;
   }
-  else if (s<0.0){
-    sqrt_s = pow(-s, 0.5);
-    *c0 = cosh(sqrt_s);
-    *c1 = sinh(sqrt_s)/sqrt_s;
+  else if (condition<0){
+    mpfr_neg(min_s, s, GMP_RNDN);
+    mpfr_sqrt(sqrt_s, min_s, GMP_RNDN);
+    mpfr_cosh(my_cos, sqrt_s, GMP_RNDN);
+    mpfr_sinh(my_sin, sqrt_s, GMP_RNDN);
+    mpfr_div(my_divsin, my_sin, sqrt_s, GMP_RNDN);
+    c0 = my_cos;
+    c1 = my_divsin;
   }
   else printf("Error in stumpff s = 0\n");
-  *c2 = 1.0/s * (1.0 - *c0);
-  *c3 = 1.0/s * (1.0 - *c1);
+
+  mpfr_d_div(inv_s, 1.0, s, GMP_RNDN);
+  //cont here...
+
+  *c2 = inv_s * (1.0 - *c0);
+  *c3 = inv_s * (1.0 - *c1);
+
+  mpfr_clears(sqrt_s, my_cos, my_sin, my_divsin, min_s, inv_s, (mpfr_ptr)0);
 }
 
 double initial_guess_for_s (mpfr_t dt, 
