@@ -25,7 +25,7 @@ def constantdens_constantgrav(N,L):
   rhvy=0.*numpy.ones_like(x)
   rhvz=0.*numpy.ones_like(x)
   en=1.e6*numpy.ones_like(x)
-  instance.fill_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
+  instance.set_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
   
   gx=0.*numpy.ones_like(x)
   gy=0.*numpy.ones_like(x)
@@ -56,7 +56,7 @@ def eqdens_constantgrav(N,L):
   rhvz=0.*numpy.ones_like(rho)
   en=pres0*numpy.exp(-z/zscl)/(gamma-1.)
   
-  instance.fill_grid_state(ix,iy,iz,rho,rhvx,rhvy,rhvz,en)
+  instance.set_grid_state(ix,iy,iz,rho,rhvx,rhvy,rhvz,en)
 
   ix,iy,iz=numpy.indices( (N/10,N/10,N) )
   ix=ix.flatten()+1
