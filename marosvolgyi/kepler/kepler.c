@@ -1,7 +1,9 @@
 /* 
-Kepler integrator, two-body problem
+Multiprecision two-body problem solver
 
-code based on:
+code rewrite by Marcell Marosvolgyi marosvolgyi@strw.leidenuniv.nl
+
+code based on example code in:
 Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd Edition
 */
 
@@ -10,41 +12,33 @@ Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd Edition
 #include <gmp.h>
 #include <mpfr.h>
 
-#define PR 10 //precision
+int PR;
 
 mpfr_t x, y, z;
 mpfr_t vx, vy, vz;
-mpfr_t time = 0.0;
+mpfr_t time ;
 mpfr_t mu;
 
-int sign(mpfr_t x) {
-  mpfr_t xabs;
-  int result;
-
-  mpfr_init2(xabs, PR);
-  mpfr_abs(xabs,x,GMP_RNDN);
-  if (mpfr_cmp_si(xabs,0)<0) result =  -1;
-  else result = 1;
-  mpfr_clear(xabs);
-  return result;
-}
-
 void stumpff(mpfr_t s, mpfr_t  c0, mpfr_t c1, mpfr_t c2, mpfr_t c3) {
+  //min = -x, inv = 1/x, neg = 1-x
+
   mpfr_t sqrt_s;
   mpfr_t my_cos, my_sin, my_divsin;
-  mpfr_t min_s, inv_s;
+  mpfr_t min_s, inv_s, neg_s;
   int condition;
 
-  mpfr_inits2(PR, sqrt_s, my_cos, my_sin, my_divsin, min_s, inv_s, (mpfr_ptr)0);
-  condition = mpfr_comp_si(s, 0);
+  mpfr_inits2(PR, sqrt_s, my_cos, my_sin, my_divsin, 
+	      min_s, inv_s, neg_s,
+	      (mpfr_ptr)0);
+  condition = mpfr_cmp_si(s, 0);
 
   if (condition>0) {
     mpfr_sqrt(sqrt_s, s, GMP_RNDN);
     mpfr_cos(my_cos, sqrt_s, GMP_RNDN);
     mpfr_sin(my_sin, sqrt_s, GMP_RNDN);
     mpfr_div(my_divsin, my_sin, sqrt_s, GMP_RNDN);
-    c0 = my_cos;
-    c1 = my_divsin;
+    mpfr_set(c0, my_cos, GMP_RNDN);
+    mpfr_set(c1, my_divsin, GMP_RNDN);
   }
   else if (condition<0){
     mpfr_neg(min_s, s, GMP_RNDN);
@@ -52,113 +46,321 @@ void stumpff(mpfr_t s, mpfr_t  c0, mpfr_t c1, mpfr_t c2, mpfr_t c3) {
     mpfr_cosh(my_cos, sqrt_s, GMP_RNDN);
     mpfr_sinh(my_sin, sqrt_s, GMP_RNDN);
     mpfr_div(my_divsin, my_sin, sqrt_s, GMP_RNDN);
-    c0 = my_cos;
-    c1 = my_divsin;
+    mpfr_set(c0, my_cos, GMP_RNDN);
+    mpfr_set(c1, my_divsin, GMP_RNDN);
   }
   else printf("Error in stumpff s = 0\n");
 
   mpfr_d_div(inv_s, 1.0, s, GMP_RNDN);
-  //cont here...
+  mpfr_si_sub(neg_s, 1, c0, GMP_RNDN);
+  mpfr_mul(c2, inv_s, neg_s, GMP_RNDN);
+  mpfr_si_sub(neg_s, 1, c1, GMP_RNDN);
+  mpfr_mul(c3, inv_s, neg_s, GMP_RNDN);
 
-  *c2 = inv_s * (1.0 - *c0);
-  *c3 = inv_s * (1.0 - *c1);
-
-  mpfr_clears(sqrt_s, my_cos, my_sin, my_divsin, min_s, inv_s, (mpfr_ptr)0);
+  mpfr_clears(sqrt_s, my_cos, my_sin, my_divsin, min_s, inv_s, neg_s, (mpfr_ptr)0);//checked!
 }
 
-double initial_guess_for_s (mpfr_t dt, 
-			    mpfr_t r0, mpfr_t u, mpfr_t alpha) {
-  double A, En, Ec, Es, E, X, Y, Dm, sigma;
-  double s;
+int initial_guess_for_s (mpfr_t dt, 
+			 mpfr_t r0, mpfr_t u, mpfr_t alpha,
+			 mpfr_t s) {
+  mpfr_t A, En, Ec, Es, E, X, Y, Dm;
+  mpfr_t dtr0_abs, dt_over_r0;
+  mpfr_t foo, bar, dttemp;
+  mpfr_t pi, dpi;//dpi is double pi = 2*pi
+  int crit;
+  short sigma;
 
-  if (mpfr_abs(dt/r0, dt/r0, GMP_RNDN) <=.2) {
-    s = dt/r0 - (dt*dt*u)/(2.0*r0*r0*r0);
+  mpfr_inits2(PR, A, En, Ec, Es, E, X, Y, Dm, 
+	      dtr0_abs,
+	      dt_over_r0,
+	      foo,
+	      bar,
+	      dttemp,
+	      pi,
+	      dpi,
+	      (mpfr_ptr)0);
+
+  mpfr_div(dt_over_r0, dt, r0, GMP_RNDN);
+  mpfr_abs(dtr0_abs, dt_over_r0, GMP_RNDN);
+  crit = mpfr_cmp_d(dtr0_abs, 0.2);
+  if (crit < 0) {
+    mpfr_mul(foo, dt, dt, GMP_RNDN);
+    mpfr_mul(foo, foo, u, GMP_RNDN);
+    mpfr_div_d(foo, foo, 2.0, GMP_RNDN);
+    mpfr_div(foo, foo, r0, GMP_RNDN);
+    mpfr_div(foo, foo, r0, GMP_RNDN);
+    mpfr_div(foo, foo, r0, GMP_RNDN);
+    mpfr_sub(s, dt_over_r0, foo, GMP_RNDN); 
   }
   else if (alpha>0) {
     //elliptic motion initial guess
-    A = mu/alpha;
-    En = pow(mu/A/A/A, 0.5);
-    Ec = 1.0 - r0/A;
-    Es = u/En/A/A;
-    E = pow(Ec*Ec + Es*Es, 0.5);
-    dt = dt - floor(En*dt/2.0/3.14159265358979) * (2.0*3.14159265358979)/En;
-    Y = En*dt-Es;
-    sigma = sign(Es*cos(Y) + Ec*sin(Y));
-    X = Y + sigma * 0.85*E;
-    s = X/pow(alpha, 0.5);
+    mpfr_div(A, mu, alpha, GMP_RNDN);
+
+    mpfr_div(foo, mu, A, GMP_RNDN);
+    mpfr_div(foo, foo, A, GMP_RNDN);
+    mpfr_div(foo, foo, A, GMP_RNDN);
+    mpfr_sqrt(En, foo, GMP_RNDN);
+
+    mpfr_div(foo, r0, A, GMP_RNDN);
+    mpfr_d_sub(Ec, 1.0, foo, GMP_RNDN);
+
+    mpfr_div(foo, u, En, GMP_RNDN);
+    mpfr_div(foo, foo, A, GMP_RNDN);
+    mpfr_div(Es, foo, A, GMP_RNDN);
+
+    mpfr_pow_si(foo, Ec, 2, GMP_RNDN);
+    mpfr_pow_si(bar, Es, 2, GMP_RNDN);
+    mpfr_add(foo, foo, bar, GMP_RNDN);
+    mpfr_sqrt(E, foo, GMP_RNDN);
+    
+    mpfr_const_pi(pi, GMP_RNDN);
+    mpfr_mul_d(dpi, pi, 2.0, GMP_RNDN);
+    mpfr_div(foo, dpi, En, GMP_RNDN);
+ 
+    mpfr_mul(bar, En, dt, GMP_RNDN);
+    mpfr_div(bar, bar, dpi, GMP_RNDN);
+    long flooor = mpfr_get_si(bar, GMP_RNDN);
+    mpfr_mul_si(foo, foo, flooor, GMP_RNDN);
+    mpfr_sub(dttemp, dt, foo, GMP_RNDN);
+
+    mpfr_mul(foo, En, dttemp, GMP_RNDN);
+    mpfr_sub(Y, foo, Es, GMP_RNDN);
+
+    mpfr_sin(foo, Y, GMP_RNDN);
+    mpfr_mul(foo, Ec, foo, GMP_RNDN);
+    mpfr_cos(bar, Y, GMP_RNDN);
+    mpfr_mul(bar, Es, bar, GMP_RNDN);
+    mpfr_add(foo, foo, bar, GMP_RNDN);
+    sigma = mpfr_sgn(foo);
+    mpfr_mul_d(foo, E, 1.0*sigma*0.85, GMP_RNDN);
+    mpfr_add(X, foo, Y, GMP_RNDN);
+
+    mpfr_sqrt(foo, alpha, GMP_RNDN);
+    mpfr_div(s, X, foo, GMP_RNDN);
   }
   else {
     //hyperbolic motion
-    A = mu/alpha;
-    En = pow(-mu/A/A/A, 0.5);
-    Ec = 1.0 - r0/A;
-    Es = u/pow(-A*mu, 0.5);
-    E = pow(Ec*Ec - Es*Es, 0.5);
-    Dm = En*dt;
-    if (Dm<0) s = -log((-2.0 * Dm + 1.8 * E)/(Ec - Es))/pow(-alpha, 0.5);
-    else s = log((2.0 * Dm + 1.8 * E)/(Ec + Es))/pow(-alpha, 0.5);
+    mpfr_div(A, mu, alpha, GMP_RNDN);
+    mpfr_div(foo, mu, A, GMP_RNDN);
+    mpfr_div(foo, foo, A, GMP_RNDN);
+    mpfr_div(foo, foo, A, GMP_RNDN);
+    mpfr_neg(foo, foo, GMP_RNDN);
+    mpfr_sqrt(En, foo, GMP_RNDN);
+    
+    mpfr_div(foo, r0, A, GMP_RNDN);
+    mpfr_si_sub(Ec, 1, foo, GMP_RNDN);
+
+    mpfr_mul(foo, A, mu, GMP_RNDN);
+    mpfr_neg(foo, foo, GMP_RNDN);
+    mpfr_sqrt(foo, foo, GMP_RNDN);
+    mpfr_div(Es, u, foo, GMP_RNDN); 
+
+    mpfr_mul(foo, Ec, Ec, GMP_RNDN);
+    mpfr_mul(bar, Es, Es, GMP_RNDN);
+    mpfr_sub(foo, foo, bar, GMP_RNDN);
+    mpfr_sqrt(E, foo, GMP_RNDN);
+
+    mpfr_mul(Dm, En, dt, GMP_RNDN);
+
+    if (mpfr_cmp_si(Dm, 0)<0) {
+      mpfr_mul_d(foo, Dm, -2.0, GMP_RNDN);
+      mpfr_mul_d(bar, E, 1.8, GMP_RNDN);
+      mpfr_add(foo, foo, bar, GMP_RNDN);
+      mpfr_sub(bar, Ec, Es, GMP_RNDN);
+      mpfr_div(foo, foo, bar, GMP_RNDN);
+      mpfr_log(foo, foo, GMP_RNDN);
+      mpfr_neg(foo, foo, GMP_RNDN);
+      mpfr_neg(bar, alpha, GMP_RNDN);
+      mpfr_sqrt(bar, bar, GMP_RNDN);
+      mpfr_div(s, foo, bar, GMP_RNDN);
+    }
+    else {
+      mpfr_mul_d(foo, Dm, 2.0, GMP_RNDN);
+      mpfr_mul_d(bar, E, 1.8, GMP_RNDN);
+      mpfr_add(foo, foo, bar, GMP_RNDN);
+      mpfr_add(bar, Ec, Es, GMP_RNDN);
+      mpfr_div(foo, foo, bar, GMP_RNDN);
+      mpfr_log(foo, foo, GMP_RNDN);
+      mpfr_neg(bar, alpha, GMP_RNDN);
+      mpfr_sqrt(bar, bar, GMP_RNDN);
+      mpfr_div(s, foo, bar, GMP_RNDN);
+    }
   }
-  return s;
+
+  mpfr_clears(A, En, Ec, Es, E, X, Y, Dm, 
+	      dtr0_abs, dt_over_r0, foo, bar, dttemp, pi, dpi,
+	      (mpfr_ptr)0);//checked!
+
+  return 0;
 }
 
 int kepler_solve (mpfr_t dt, 
-		  mpfr_t *F, mpfr_t *G, mpfr_t *Fdot, mpfr_t *Gdot) {
-  double f, fp;
-  double ds, s;
-  double r0, v0s, u, alpha;
-  double c0, c1, c2, c3;
+		  mpfr_t F, mpfr_t G, mpfr_t Fdot, mpfr_t Gdot) {
+  mpfr_t f, fp;
+  mpfr_t ds, s;
+  mpfr_t r0, v0s, u, alpha;
+  mpfr_t c0, c1, c2, c3;
+  mpfr_t ssalpha, foo, bar, dummy;
   int i=0;
 
-  r0 = pow(x*x +  y*y + z*z, 0.5);
-  v0s = vx * vx + vy*vy + vz * vz;
-  u = x*vx + y*vy + z*vz;
-  alpha = 2.0*mu/r0 - v0s;
+  mpfr_inits2(PR, f, fp, ds, s,
+	      r0, v0s, u, alpha,
+	      c0, c1, c2, c3,
+	      ssalpha, foo, bar, dummy,
+	      (mpfr_ptr)0);
 
-  s = initial_guess_for_s (dt, r0, u, alpha);
-  ds = 1.0;
-  while (norm(ds) > 1.0e-12) {
-    stumpff(s*s*alpha, &c0, &c1, &c2, &c3);
-    c1 *= s; c2 *= s*s; c3 *= s*s*s;
-    f   = r0 * c1 + u * c2 + mu * c3 - dt;
-    fp  = r0 * c0 + u * c1 + mu * c2;
-    ds = f/fp;
-    s -= ds;
+  mpfr_mul(foo, x,x, GMP_RNDN);
+  mpfr_mul(bar, y,y, GMP_RNDN);
+  mpfr_add(foo, foo, bar, GMP_RNDN);
+  mpfr_mul(bar, z, z, GMP_RNDN);
+  mpfr_add(foo, foo, bar, GMP_RNDN);
+  mpfr_sqrt(r0, foo, GMP_RNDN);
+
+  mpfr_mul(foo, vx, vx, GMP_RNDN);
+  mpfr_mul(bar, vy, vy, GMP_RNDN);
+  mpfr_add(foo, foo, bar, GMP_RNDN);
+  mpfr_mul(bar, vz, vz, GMP_RNDN);
+  mpfr_add(v0s, foo, bar, GMP_RNDN);
+
+  mpfr_mul(foo, x, vx, GMP_RNDN);
+  mpfr_mul(bar, y, vy, GMP_RNDN);
+  mpfr_add(foo, foo, bar, GMP_RNDN);
+  mpfr_mul(bar, z, vz, GMP_RNDN);
+  mpfr_add(u, foo, bar, GMP_RNDN);
+
+  mpfr_mul_d(foo, mu, 2.0, GMP_RNDN);
+  mpfr_div(foo, foo, r0, GMP_RNDN);
+  mpfr_sub(alpha, foo, v0s, GMP_RNDN);
+
+  initial_guess_for_s (dt, r0, u, alpha, s);
+  mpfr_set_d(ds, 1.0, GMP_RNDN);
+  mpfr_abs(foo, ds, GMP_RNDN);
+  
+  while (mpfr_cmp_d(foo,1.0e-24 ) > 0) {
+    mpfr_mul(foo, s, s, GMP_RNDN);
+    mpfr_mul(ssalpha, foo, alpha, GMP_RNDN);
+    stumpff(ssalpha, c0, c1, c2, c3);
+    mpfr_mul(c1, s, c1, GMP_RNDN);
+    mpfr_mul(c2, s, c2, GMP_RNDN);
+    mpfr_mul(c2, s, c2, GMP_RNDN);
+    mpfr_mul(c3, s, c3, GMP_RNDN);
+    mpfr_mul(c3, s, c3, GMP_RNDN);
+    mpfr_mul(c3, s, c3, GMP_RNDN);
+
+    mpfr_mul(foo, r0, c1, GMP_RNDN);
+    mpfr_mul(bar, u, c2, GMP_RNDN);
+    mpfr_add(foo, foo, bar, GMP_RNDN);
+    mpfr_mul(bar, mu, c3, GMP_RNDN);
+    mpfr_add(foo, foo, bar, GMP_RNDN);
+    mpfr_sub(f, foo, dt, GMP_RNDN);
+
+    mpfr_mul(foo, r0, c0, GMP_RNDN);
+    mpfr_mul(bar, u, c1, GMP_RNDN);
+    mpfr_add(foo, foo, bar, GMP_RNDN);
+    mpfr_mul(bar, mu, c2, GMP_RNDN);
+    mpfr_add(fp, foo, bar, GMP_RNDN);
+
+    mpfr_div(ds, f, fp, GMP_RNDN);
+    mpfr_sub(s, s, ds, GMP_RNDN);
+
     if (i++>50) {
       printf("Convergence error in Newton method\n");
       return -1; 
     }
+    mpfr_abs(foo, ds, GMP_RNDN);
+  
   }
-  *F = 1.0 - (mu/r0) * c2;
-  *G = dt - mu * c3;
-  *Fdot = - (mu/fp/r0) * c1;
-  *Gdot = 1.0 - (mu/fp) * c2;
+
+  mpfr_div(foo, mu, r0, GMP_RNDN);
+  mpfr_mul(foo, foo, c2, GMP_RNDN);
+  mpfr_d_sub(F, 1.0, foo, GMP_RNDN);
+
+  mpfr_mul(foo, mu, c3, GMP_RNDN);
+  mpfr_sub(G, dt, foo, GMP_RNDN);
+  
+  mpfr_div(foo, mu, fp, GMP_RNDN);
+  mpfr_div(foo, foo, r0, GMP_RNDN);
+  mpfr_mul(foo, foo, c1, GMP_RNDN);
+
+  mpfr_neg(Fdot, foo, GMP_RNDN);
+
+  mpfr_div(foo, mu, fp, GMP_RNDN);
+  mpfr_mul(foo, foo, c2, GMP_RNDN);
+  mpfr_si_sub(Gdot, 1.0, foo, GMP_RNDN);
+
+  mpfr_clears(f, fp, ds, s,
+	      r0, v0s, u, alpha,
+	      c0, c1, c2, c3,
+	      ssalpha, foo, bar, dummy,
+	      (mpfr_ptr)0);
+
   return 0;
 }
 
-int evolve (double time_new) {
+int evolve_d(double time_new_) {
+  mpfr_t time_new;
+  int result;
+
+  mpfr_init2(time_new, PR);
+  mpfr_set_d(time_new, time_new_, GMP_RNDN);
+
+  result = evolve(time_new);
+
+  mpfr_clear(time_new);
+  return result;
+}
+  
+int evolve (mpfr_t time_new) {
   mpfr_t x_new, y_new, z_new;
   mpfr_t vx_new, vy_new, vz_new;
   mpfr_t F, G, Fdot, Gdot;
   mpfr_t dt;
+  mpfr_t foo, bar;
   
   mpfr_inits2(PR, 
 	      x_new, y_new, z_new,
 	      vx_new, vy_new, vz_new,
 	      F, G, Fdot, Gdot,
 	      dt,
+	      foo,
+	      bar,
 	      (mpfr_ptr)0);
 
-  dt = time_new - time;
+  mpfr_sub(dt, time_new, time, GMP_RNDN);
 
-  if (kepler_solve(dt, &F, &G, &Fdot, &Gdot) == 0) {  
-    x_new = x * F + vx * G;
-    y_new = y * F + vy * G;
-    z_new = z * F + vz * G;
-    vx_new = x * Fdot + vx * Gdot;
-    vy_new = y * Fdot + vy * Gdot;
-    vz_new = z * Fdot + vz * Gdot;
-    x = x_new; y = y_new; z = z_new; vx = vx_new; vy = vy_new; vz = vz_new;
-    time = time_new;
+  if (kepler_solve(dt, F, G, Fdot, Gdot) == 0) { 
+    mpfr_mul(foo, x, F, GMP_RNDN);
+    mpfr_mul(bar, vx, G, GMP_RNDN);
+    mpfr_add(x_new, foo, bar, GMP_RNDN);
+
+    mpfr_mul(foo, y, F, GMP_RNDN);
+    mpfr_mul(bar, vy, G, GMP_RNDN);
+    mpfr_add(y_new, foo, bar, GMP_RNDN);
+
+    mpfr_mul(foo, z, F, GMP_RNDN);
+    mpfr_mul(bar, vz, G, GMP_RNDN);
+    mpfr_add(z_new, foo, bar, GMP_RNDN);
+
+    mpfr_mul(foo, x, Fdot, GMP_RNDN);
+    mpfr_mul(bar, vx, Gdot, GMP_RNDN);
+    mpfr_add(vx_new, foo, bar, GMP_RNDN);
+
+    mpfr_mul(foo, y, Fdot, GMP_RNDN);
+    mpfr_mul(bar, vy, Gdot, GMP_RNDN);
+    mpfr_add(vy_new, foo, bar, GMP_RNDN);
+
+    mpfr_mul(foo, z, Fdot, GMP_RNDN);
+    mpfr_mul(bar, vz, Gdot, GMP_RNDN);
+    mpfr_add(vz_new, foo, bar, GMP_RNDN);
+
+    mpfr_set(x, x_new, GMP_RNDN);
+    mpfr_set(y, y_new, GMP_RNDN);
+    mpfr_set(z, z_new, GMP_RNDN);
+    mpfr_set(vx, vx_new, GMP_RNDN);
+    mpfr_set(vy, vy_new, GMP_RNDN);
+    mpfr_set(vz, vz_new, GMP_RNDN);
+
+    mpfr_set(time, time_new, GMP_RNDN);
     return 0;
   }
   else return -1;
@@ -167,25 +369,84 @@ int evolve (double time_new) {
 	      vx_new, vy_new, vz_new,
 	      F, G, Fdot, Gdot,
 	      dt,
+	      foo, bar,
 	      (mpfr_ptr)0);
+  mpfr_free_cache ();
+}
+
+int initialize(int precision) {
+  if (~(precision>MPFR_PREC_MIN) & (precision<MPFR_PREC_MAX)) {
+    if (precision<MPFR_PREC_MIN) {
+      precision = MPFR_PREC_MIN;
+      fprintf(stderr, "Warning: set precision to minimal precision\n");
+    }
+    if (precision>MPFR_PREC_MAX) {
+      precision = MPFR_PREC_MAX;
+      fprintf(stderr, "Warning: set precision to maximal precision\n");
+    }
+  }
+
+  mpfr_set_default_prec (precision);
+  PR = precision;
+
+  mpfr_inits2(PR, time,
+	      x, y, z, vx, vy, vz,
+	      mu, (mpfr_ptr)0);
+
+
+  mpfr_set_d(time, 0.0, GMP_RNDN);
+  mpfr_set_d(x, 0.0, GMP_RNDN);
+  mpfr_set_d(y, 0.0, GMP_RNDN);
+  mpfr_set_d(z, 0.0, GMP_RNDN);
+  mpfr_set_d(vx, 0.0, GMP_RNDN);
+  mpfr_set_d(vy, 0.0, GMP_RNDN);
+  mpfr_set_d(vz, 0.0, GMP_RNDN);
+  mpfr_set_d(mu, 0.0, GMP_RNDN);
+  if (strcmp (mpfr_get_version (), MPFR_VERSION_STRING))
+    fprintf (stderr, "Warning: header and library do not match\n");
+  return 0;
 }
 
 int set_mu(double mu_) {
-  mu = mu_;
+  mpfr_set_d(mu, mu_, GMP_RNDN);
   return 0;
 }
 
 int set_position(double r[3]) {
-  x = r[0]; y = r[1]; z = r[2];
+  mpfr_set_d(x, r[0], GMP_RNDN);
+  mpfr_set_d(y, r[1], GMP_RNDN);
+  mpfr_set_d(z, r[2], GMP_RNDN);
   return 0;
 }
 
 int get_position(double r[3]) {
-  r[0] = x; r[1] = y; r[2] = z;
+  r[0] = mpfr_get_d(x, GMP_RNDN);
+  r[1] = mpfr_get_d(y, GMP_RNDN);
+  r[2] = mpfr_get_d(z, GMP_RNDN);
+  return 0;
+}
+
+int get_position_s(char *X, char *Y, char *Z, int pr) {
+  char format[10];
+  sprintf(format, "%%.%dRf", pr);
+  mpfr_sprintf (X, format, x);
+  mpfr_sprintf (Y, format, y);
+  mpfr_sprintf (Z, format, z);
   return 0;
 }
 
 int set_velocity(double v[3]) {
-  vx = v[0]; vy = v[1]; vz = v[2];
+  mpfr_set_d(vx, v[0], GMP_RNDN);
+  mpfr_set_d(vy, v[1], GMP_RNDN);
+  mpfr_set_d(vz, v[2], GMP_RNDN);
   return 0;
+}
+
+void test_precision() {
+  mpfr_t pi;
+  mpfr_init2(pi, 512);
+  mpfr_const_pi(pi, GMP_RNDN);
+  mpfr_printf("pi = %.512RNf\n", pi);
+  fflush(stdout);
+  mpfr_clear(pi);
 }

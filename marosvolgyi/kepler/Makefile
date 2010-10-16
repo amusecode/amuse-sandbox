@@ -1,4 +1,4 @@
-all: kepler test
+all: kepler test demo
 
 kepler: kepler.c
 	gcc -c kepler.c -o kepler.o -lm -lmpfr -lgmp
@@ -7,8 +7,13 @@ kepler: kepler.c
 	mv libkepler.a ../lib
 
 test: test.c
-	gcc test.c -o test -lm -L../lib -lkepler
+	gcc test.c -o test -lm -lmpfr -lgmp -L../lib -lkepler 
+
+demo: demo.c
+	gcc demo.c -o demo -lm -lmpfr -lgmp -L../lib -lkepler -lSDL -L../lib -ldraw
 
 clean:
-	rm kepler
+	rm kepler.o
+	rm ../lib/libkepler.a
 	rm test
+	rm demo
