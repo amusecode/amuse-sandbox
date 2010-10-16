@@ -1,7 +1,8 @@
 /* 
 Multiprecision two-body problem solver
 
-code rewrite by Marcell Marosvolgyi marosvolgyi@strw.leidenuniv.nl
+code rewrite 2 c and mp by Marcell Marosvolgyi 
+marosvolgyi@strw.leidenuniv.nl
 
 code based on example code in:
 Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd Edition
@@ -375,15 +376,13 @@ int evolve (mpfr_t time_new) {
 }
 
 int initialize(int precision) {
-  if (~(precision>MPFR_PREC_MIN) & (precision<MPFR_PREC_MAX)) {
-    if (precision<MPFR_PREC_MIN) {
-      precision = MPFR_PREC_MIN;
-      fprintf(stderr, "Warning: set precision to minimal precision\n");
-    }
-    if (precision>MPFR_PREC_MAX) {
-      precision = MPFR_PREC_MAX;
-      fprintf(stderr, "Warning: set precision to maximal precision\n");
-    }
+  if (precision<MPFR_PREC_MIN) {
+    precision = MPFR_PREC_MIN;
+    fprintf(stderr, "Warning: set precision to minimal precision\n");
+  }
+  if (precision>MPFR_PREC_MAX) {
+    precision = MPFR_PREC_MAX;
+    fprintf(stderr, "Warning: set precision to maximal precision\n");
   }
 
   mpfr_set_default_prec (precision);
@@ -392,7 +391,6 @@ int initialize(int precision) {
   mpfr_inits2(PR, time,
 	      x, y, z, vx, vy, vz,
 	      mu, (mpfr_ptr)0);
-
 
   mpfr_set_d(time, 0.0, GMP_RNDN);
   mpfr_set_d(x, 0.0, GMP_RNDN);
