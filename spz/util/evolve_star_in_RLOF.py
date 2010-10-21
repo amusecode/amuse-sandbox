@@ -51,14 +51,19 @@ def determine_RLOF_mass_excess(star, rmax) :
 # Apply Roche-lobe overflow
 def RLOF(star, RRoche) :
     dm = determine_RLOF_mass_excess(star, RRoche)
+    mass_scaling = (star.mass - dm) / star.mass
     star.mass -= dm
 
     # rescale stellar radius
     rprof = star.get_radius_profile()
-    rprof *= RRoche/rprof[-1]
+    radial_scaling = RRoche/rprof[-1]
+    rprof *= radial_scaling
     star.set_radius_profile(rprof)
-    #star.radius = RRoche
-    #print "Radius=", star.radius, rprof[-1]
+    
+    # rescale densities
+    rho_prof = star.get_density_profile()
+    rho_prof *= mass_scaling / radial_scaling**3
+    star.set_density_profile(rho_prof)
 
     return dm
     
