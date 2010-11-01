@@ -30,18 +30,19 @@ def determine_RLOF_mass_excess(star, rmax) :
     mfprof = star.get_mass_profile() # really the mass fraction
     #identify the shell where the radius exceeds rmax
     ri = numpy.searchsorted(rprof, rmax)
-    # for the innermost mass-losing shell calculate the fraction of mass lost
-    # determine the volume of the star that sticks out rmax
-    dr_shell = rprof[ri]**2-rprof[ri-1]**2
-    dr_RL = rprof[ri]**2-rmax**2
-    drf = dr_RL/dr_shell
-    dmf_shell = mfprof[ri] * drf 
+    # for the innermost mass-losing shell calculate the fraction of mass lost.
+    # First determine the volume of the shell that sticks out rmax, and relate 
+    # it to the total volume of the shell
+    V_shell = rprof[ri]**3 - rprof[ri-1]**3
+    V_shell_out = rprof[ri]**3 - rmax**3
+    fraction_V = V_shell_out / V_shell
+    dmf_shell = mfprof[ri] * fraction_V 
     dm_shell = dmf_shell * star.mass
     # calculate the mass fraction of the star with rstar>rmax
-    dm = dm_shell + (mfprof[ri:] * star.mass).sum() #summ the mass outside rmax
+    dm = dm_shell + (mfprof[ri+1:] * star.mass).sum() #summ the mass outside rmax
     # check the mass in the shells that are completely lost
     mtot = 0
-    for i in numpy.arange(ri, star.get_number_of_zones().number) :
+    for i in numpy.arange(ri+1, star.get_number_of_zones().number) :
         mtot += mfprof[i]
     fm = mtot*star.mass/(dm-dm_shell)
     if abs(fm-1)>1.e-10 :
