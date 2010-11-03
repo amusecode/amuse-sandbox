@@ -57,7 +57,7 @@ if __name__=="__main__":
   hop.set_density_method(2)
   hop.set_nDens(7)
   hop.calculate_densities()
-  x,y,z,err=hop.get_position(ids)
+  #x,y,z,err=hop.get_position(ids)
   mass,err=hop.get_mass(ids)
   dens,err=hop.get_density(ids)
   r=numpy.sqrt(x**2+y**2+z**2)
