@@ -11,21 +11,13 @@ from matplotlib import pyplot
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-numpy.random.seed(123456)
+numpy.random.seed(1234)
 
 def hopfromnb(nb,ids):
   m,r,x,y,z,vx,vy,vz,err=nb.get_state(ids)
   hop=Hop()
   ids2,err=hop.new_particle(x,y,z)    
   return hop,ids2
-
-def centre(nb,ids):
-  hop,ids2=hopfromnb(nb,ids)
-  hop.calculate_densities()
-  dens,err=hop.get_density(ids2)
-  mi=dens.argmax()
-  x,y,z,err=hop.get_position(ids2[mi])
-  return x,y,z
 
 def plummer(x):
   plummer=MakePlummerModel(x)
@@ -48,31 +40,32 @@ def plummer(x):
 
   return mass,radius,x,y,z,vx,vy,vz
 
-if __name__=="__main__":
-  mass,radius,x,y,z,vx,vy,vz=plummer(10000)
-  dens=0.*mass
+def coreradius(mass,x,y,z):
   hop=Hop()
   ids,err=hop.new_particle(mass,x,y,z)
-  hop.set_density(ids,dens)    
   hop.set_density_method(2)
   hop.set_nDens(7)
   hop.calculate_densities()
-  #x,y,z,err=hop.get_position(ids)
-  mass,err=hop.get_mass(ids)
   dens,err=hop.get_density(ids)
-  r=numpy.sqrt(x**2+y**2+z**2)
-  
+
+
   tdens=numpy.sum(dens)
   x_core=numpy.sum(dens*x)/tdens
   y_core=numpy.sum(dens*y)/tdens
   z_core=numpy.sum(dens*z)/tdens
+
+#  r=((x-x_core)**2+(y-y_core)**2+(z-z_core)**2)**0.5
+#  pyplot.figure(figsize=(8,6))
+#  pyplot.loglog(r,dens,'r .')
+#  pyplot.xlabel('r')
+#  pyplot.ylabel('dens')
+#  pyplot.show()
   
   rc=numpy.sqrt(
       numpy.sum(dens**2*((x-x_core)**2+(y-y_core)**2+(z-z_core)**2))/numpy.sum(dens**2))
-  print rc
-  
-  pyplot.figure(figsize=(8,6))
-  pyplot.loglog(r,dens,'r .')
-  pyplot.xlabel('r')
-  pyplot.ylabel('dens')
-  pyplot.show()
+  return x_core,y_core,z_core,rc
+ 
+
+if __name__=="__main__":
+  mass,radius,x,y,z,vx,vy,vz=plummer(100000)
+  print coreradius(mass,x,y,z)
