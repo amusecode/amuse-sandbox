@@ -35,12 +35,12 @@ def run():
     instance.particles.add_particles(particles)
 
     dt = 20.0 | units.Myr
-    end_time = 200 | units.Myr
+    end_time = 400 | units.Myr
     t = 0.0 | units.Myr
     while t < end_time:
         t += dt
         instance.evolve_model(t)
-        print instance.particles[0].mass
+        print t, instance.particles[0].mass, instance.particles[0].radius
 
     instance.stop()
 
