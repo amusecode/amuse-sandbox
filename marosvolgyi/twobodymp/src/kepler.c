@@ -8,7 +8,18 @@ code based on example code in:
 Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd Edition
 */
 
-#include "kepler.h"
+#include <stdio.h>
+#include <math.h>
+#include <gmp.h>
+#include <mpfr.h>
+
+int PR;
+
+mpfr_t x, y, z;
+mpfr_t vx, vy, vz;
+mpfr_t time ;
+mpfr_t mu;
+int id;
 
 void stumpff(mpfr_t s, mpfr_t  c0, mpfr_t c1, mpfr_t c2, mpfr_t c3) {
   //min = -x, inv = 1/x, neg = 1-x
@@ -392,6 +403,9 @@ int initialize(int precision) {
   mpfr_set_d(mu, 0.0, GMP_RNDN);
   if (strcmp (mpfr_get_version (), MPFR_VERSION_STRING))
     fprintf (stderr, "Warning: header and library do not match\n");
+  
+  id = 0;
+
   return 0;
 }
 
@@ -400,17 +414,17 @@ int set_mu(double mu_) {
   return 0;
 }
 
-int set_position(double r[3]) {
-  mpfr_set_d(x, r[0], GMP_RNDN);
-  mpfr_set_d(y, r[1], GMP_RNDN);
-  mpfr_set_d(z, r[2], GMP_RNDN);
+int set_pos(double x_, double y_, double z_) {
+  mpfr_set_d(x, x_, GMP_RNDN);
+  mpfr_set_d(y, y_, GMP_RNDN);
+  mpfr_set_d(z, z_, GMP_RNDN);
   return 0;
 }
 
-int get_position(double r[3]) {
-  r[0] = mpfr_get_d(x, GMP_RNDN);
-  r[1] = mpfr_get_d(y, GMP_RNDN);
-  r[2] = mpfr_get_d(z, GMP_RNDN);
+int get_pos(double *x_, double *y_, double *z_) {
+  *x_ = mpfr_get_d(x, GMP_RNDN);
+  *y_ = mpfr_get_d(y, GMP_RNDN);
+  *z_ = mpfr_get_d(z, GMP_RNDN);
   return 0;
 }
 
@@ -423,10 +437,17 @@ int get_position_s(char *X, char *Y, char *Z, int pr) {
   return 0;
 }
 
-int set_velocity(double v[3]) {
-  mpfr_set_d(vx, v[0], GMP_RNDN);
-  mpfr_set_d(vy, v[1], GMP_RNDN);
-  mpfr_set_d(vz, v[2], GMP_RNDN);
+int set_vel(double vx_, double vy_, double vz_) {
+  mpfr_set_d(vx, vx_, GMP_RNDN);
+  mpfr_set_d(vy, vy_, GMP_RNDN);
+  mpfr_set_d(vz, vz_, GMP_RNDN);
+  return 0;
+}
+
+int get_vel(double *vx_, double *vy_, double *vz_) {
+  *vx_ = mpfr_get_d(vx, GMP_RNDN);
+  *vy_ = mpfr_get_d(vy, GMP_RNDN);
+  *vz_ = mpfr_get_d(vz, GMP_RNDN);
   return 0;
 }
 

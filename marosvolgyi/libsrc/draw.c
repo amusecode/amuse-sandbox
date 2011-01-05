@@ -151,6 +151,37 @@ void DrawBox(SDL_Surface *screen,
   DrawLine(screen, x3, y3, x0, y0, R, G, B);
 
 }
+
+void DrawFillEllipse(SDL_Surface *screen,
+		     int Xc, int Yc,
+		     int a, int b,
+		     double p,
+		     int n,
+		     Uint8 R, Uint8 G, Uint8 B) {
+  int i;
+  double x1, y1;
+  double x2, y2;
+  double cosp, sinp;
+  double t1, t2;
+
+  cosp = cos(p);
+  sinp = sin(p);
+  
+  for (i = 0; i <= n; i++) {
+    t1 = 1.0 * i/n * 1 * 3.1415926535;
+    t2 = -t1;
+    x1 =  a * cos(t1)*cosp - b * sin(t1)*sinp + Xc;
+    y1 =  a * cos(t1)*sinp + b * sin(t1)*cosp + Yc;
+    x2 =  a * cos(t2)*cosp - b * sin(t2)*sinp + Xc;
+    y2 =  a * cos(t2)*sinp + b * sin(t2)*cosp + Yc;
+    
+    DrawLine (screen,
+	      (int)x1, (int)y1,
+	      (int)x2, (int)y2,
+	      R, G, B);
+  }
+}
+
 void DrawEllipse(SDL_Surface *screen,
 		 int Xc, int Yc,
 		 int a, int b,
@@ -164,7 +195,7 @@ void DrawEllipse(SDL_Surface *screen,
 
   cosp = cos(p);
   sinp = sin(p);
-
+  
   x_old = a * cosp + Xc;
   y_old = a * sinp + Yc;
 
@@ -185,6 +216,12 @@ void DrawCircle(SDL_Surface *screen,
 		int x0, int y0, int radius, int n,
 		int R, int G, int B) {
   DrawEllipse(screen, x0, y0, radius, radius, 0.0, n, R, G, B);
+}
+
+void DrawFillCircle(SDL_Surface *screen,
+		    int x0, int y0, int radius, int n,
+		    int R, int G, int B) {
+  DrawFillEllipse(screen, x0, y0, radius, radius, 0.0, n, R, G, B);
 }
 
 void Bezier(SDL_Surface *screen,

@@ -7,6 +7,15 @@ void DrawLine(SDL_Surface *screen,
 void DrawCircle(SDL_Surface *screen, 
 		int x0, int y0, int radius, int n, 
 		int R, int G, int B);
+void DrawFillCircle(SDL_Surface *screen,
+		    int x0, int y0, int radius, int n,
+		    int R, int G, int B);
+void DrawFillEllipse(SDL_Surface *screen,
+		     int Xc, int Yc,
+		     int a, int b,
+		     double p,
+		     int n,
+		     Uint8 R, Uint8 G, Uint8 B);
 void DrawEllipse(SDL_Surface *screen,
 		 int Xc, int Yx, 
 		 int a, int b,
