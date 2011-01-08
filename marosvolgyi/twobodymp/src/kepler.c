@@ -437,6 +437,15 @@ int get_position_s(char *X, char *Y, char *Z, int pr) {
   return 0;
 }
 
+int get_velocity_s(char *VX, char *VY, char *VZ, int pr) {
+  char format[10];
+  sprintf(format, "%%.%dRf", pr);
+  mpfr_sprintf (VX, format, vx);
+  mpfr_sprintf (VY, format, vy);
+  mpfr_sprintf (VZ, format, vz);
+  return 0;
+}
+
 int set_vel(double vx_, double vy_, double vz_) {
   mpfr_set_d(vx, vx_, GMP_RNDN);
   mpfr_set_d(vy, vy_, GMP_RNDN);

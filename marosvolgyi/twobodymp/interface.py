@@ -115,6 +115,39 @@ class twobodympInterface(LegacyInterface):
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def get_position_mp():
+        function = LegacyFunctionSpecification()
+        function.addParameter('paritcle_id', dtype ='int32', direction=function.IN)
+        function.addParameter('xmp', dtype='string', direction=function.INOUT)
+        function.addParameter('ymp', dtype='string', direction=function.INOUT)
+        function.addParameter('zmp', dtype='string', direction=function.INOUT)
+        function.addParameter('precision', dtype ='int32', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
+
+    @legacy_function
+    def get_velocity_mp():
+        function = LegacyFunctionSpecification()
+        function.addParameter('paritcle_id', dtype ='int32', direction=function.IN)
+        function.addParameter('vxmp', dtype='string', direction=function.INOUT)
+        function.addParameter('vymp', dtype='string', direction=function.INOUT)
+        function.addParameter('vzmp', dtype='string', direction=function.INOUT)
+        function.addParameter('precision', dtype ='int32', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
+
+    @legacy_function
+    def set_velocity_mp():
+        function = LegacyFunctionSpecification()
+        function.addParameter('paritcle_id', dtype ='int32', direction=function.IN)
+        function.addParameter('vxmp', dtype='string', direction=function.IN)
+        function.addParameter('vymp', dtype='string', direction=function.IN)
+        function.addParameter('vzmp', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
 
     @legacy_function
     def evolve_system():

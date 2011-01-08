@@ -48,6 +48,8 @@ int get_pos(double *x_, double *y_, double *z_);
 
 int get_position_s(char *X, char *Y, char *Z, int pr);
 
+int get_velocity_s(char *VX, char *VY, char *VZ, int pr);
+
 int set_vel(double vx_, double vy_, double vz_);
 
 int get_vel(double *vx_, double *vy_, double *vz_);

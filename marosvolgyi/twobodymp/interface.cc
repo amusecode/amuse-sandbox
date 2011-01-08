@@ -33,8 +33,6 @@ int plot(int R, int G, int B) {
   double x_= 0.0;
   double y_= 0.0;
   double z_= 0.0;
-  int rR, rG, rB;
-  int mR, mG, mB;
 
   get_position(0, &x_, &y_, &z_);
   DrawCircle(my_globals.screen, 200.0*x_+midX, 200.0*y_+midY, my_globals.radius1, 10, R, G, B);
@@ -66,6 +64,26 @@ int initialization(int precision) {
   my_globals.view = 0;
   my_globals.mass1 = 0.0;
   my_globals.mass2 = 0.0;
+  mpfr_inits2(precision, 
+	      my_globals.vx0mp,
+	      my_globals.vy0mp,
+	      my_globals.vz0mp,
+	      my_globals.vx1mp,
+	      my_globals.vy1mp,
+	      my_globals.vz1mp,
+	      (mpfr_ptr)0);
+  return 0;
+}
+
+int cleanup() {
+  mpfr_clears(
+	      my_globals.vx0mp,
+	      my_globals.vy0mp,
+	      my_globals.vz0mp,
+	      my_globals.vx1mp,
+	      my_globals.vy1mp,
+	      my_globals.vz1mp,
+	      (mpfr_ptr)0);
 
   return 0;
 }
@@ -141,6 +159,36 @@ int set_velocity(int id_, double vx_, double vy_, double vz_) {
   return -1;
 }
 
+int set_velocity_mp(int id_, char *vxmp, char *vymp, char *vzmp) {
+  if (id_ == 0 ) {
+    mpfr_set_str(my_globals.vx0mp, vxmp, 0, GMP_RNDN);
+    mpfr_set_str(my_globals.vy0mp, vymp, 0, GMP_RNDN);
+    mpfr_set_str(my_globals.vz0mp, vzmp, 0, GMP_RNDN);
+  }
+  if (id_ == 1) {
+    mpfr_set_str(my_globals.vx1mp, vxmp, 0, GMP_RNDN);
+    mpfr_set_str(my_globals.vy1mp, vymp, 0, GMP_RNDN);
+    mpfr_set_str(my_globals.vz1mp, vzmp, 0, GMP_RNDN);
+  }
+  
+  if (id == 0) {
+    mpfr_set_str(vx, vxmp,0, GMP_RNDN);
+    mpfr_set_str(vy, vymp,0, GMP_RNDN);
+    mpfr_set_str(vz, vzmp,0, GMP_RNDN);
+    return 0;
+  }
+  else if (id ==1 ) {
+    //hier zijn we gebleven............
+    mpfr_sub(vx, my_globals.vx0mp, my_globals.vx1mp, GMP_RNDN);
+    mpfr_sub(vy, my_globals.vy0mp, my_globals.vy1mp, GMP_RNDN);
+    mpfr_sub(vz, my_globals.vz0mp, my_globals.vz1mp, GMP_RNDN);
+
+    return 0;
+  }
+  return -1;
+}
+
+
 int get_velocity(int id_, double *vx_, double *vy_, double *vz_) {
   if (id == 0) get_vel(vx_, vy_, vz_);
   if (id == 1) {
@@ -163,16 +211,84 @@ int get_velocity(int id_, double *vx_, double *vy_, double *vz_) {
   return 0;
 }
 
+int get_position_mp(int id_, char **xmp, char **ymp, char **zmp, int precision_) {
+  double factor;
+  mpfr_t tmpx,tmpy,tmpz;
+  mpfr_inits2(PR, tmpx,tmpy,tmpz, (mpfr_ptr)0);
+
+  if (id == 0) get_position_s(*xmp, *ymp, *zmp, precision_);
+  if (id == 1) {
+    if (id_ == 0) factor = (my_globals.mass1/my_globals.mass2 + 1);
+    else if (id_ == 1) factor = -(my_globals.mass2/my_globals.mass1 + 1);
+    
+    mpfr_div_d(tmpx, x, factor, GMP_RNDN);
+    mpfr_div_d(tmpy, y, factor, GMP_RNDN);
+    mpfr_div_d(tmpz, z, factor, GMP_RNDN);
+
+    double cmx =0.0;
+    double cmy =0.0;
+    double cmz =0.0;
+
+    get_center_of_mass(&cmx, &cmy, &cmz);
+    mpfr_add_d(tmpx, tmpx, cmx, GMP_RNDN);
+    mpfr_add_d(tmpy, tmpy, cmy, GMP_RNDN);
+    mpfr_add_d(tmpz, tmpz, cmz, GMP_RNDN);
+    char format[10];
+    sprintf(format, "%%.%dRf", precision_);
+    
+    mpfr_sprintf(*xmp, format, tmpx);
+    mpfr_sprintf(*ymp, format, tmpy);
+    mpfr_sprintf(*zmp, format, tmpz);
+  }
+
+  mpfr_clears(tmpx,tmpy,tmpz, (mpfr_ptr)0);
+  return 0;
+}
+
+int get_velocity_mp(int id_, char **vxmp, char **vymp, char **vzmp, int precision_) {
+  double factor;
+  mpfr_t tmpx,tmpy,tmpz;
+  mpfr_inits2(PR, tmpx,tmpy,tmpz, (mpfr_ptr)0);
+
+  if (id == 0) get_velocity_s(*vxmp, *vymp, *vzmp, precision_);
+  if (id ==1 ) {
+    if (id_ == 0) factor = (my_globals.mass1/my_globals.mass2 + 1);
+    else if (id_ == 1) factor = -(my_globals.mass2/my_globals.mass1 + 1);
+    
+    mpfr_div_d(tmpx, vx, factor, GMP_RNDN);
+    mpfr_div_d(tmpy, vy, factor, GMP_RNDN);
+    mpfr_div_d(tmpz, vz, factor, GMP_RNDN);
+
+    double cmvx =0.0;
+    double cmvy =0.0;
+    double cmvz =0.0;
+
+    get_center_of_mass_velocity(&cmvx, &cmvy, &cmvz);
+    mpfr_add_d(tmpx, tmpx, cmvx, GMP_RNDN);
+    mpfr_add_d(tmpy, tmpy, cmvy, GMP_RNDN);
+    mpfr_add_d(tmpz, tmpz, cmvz, GMP_RNDN);
+    char format[10];
+    sprintf(format, "%%.%dRf", precision_);
+    
+    mpfr_sprintf(*vxmp, format, tmpx);
+    mpfr_sprintf(*vymp, format, tmpy);
+    mpfr_sprintf(*vzmp, format, tmpz);
+  }
+
+  mpfr_clears(tmpx,tmpy,tmpz, (mpfr_ptr)0);
+  return 0;
+}
+
 int set_reduced_mass(double mu_) {
   set_mu(mu_);
   return 0;
 }
+
 int set_mass(int id_, double mass) {
   if (id_ ==  0) my_globals.mass1 = mass;
   if (id_ ==  1) my_globals.mass2 = mass;
   return 0;
 }
-
 
 int set_radius(int id_, double radius) {
   if (id_ == 0) my_globals.radius1 = radius;
