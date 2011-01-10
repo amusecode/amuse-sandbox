@@ -79,6 +79,13 @@ class twobodympInterface(LegacyInterface):
         return function
 
     @legacy_function
+    def get_time():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def get_center_of_mass():
         function = LegacyFunctionSpecification()
         function.addParameter('cmx', dtype='float64', direction=function.OUT)

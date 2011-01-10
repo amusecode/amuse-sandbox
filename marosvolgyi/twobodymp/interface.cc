@@ -295,6 +295,11 @@ int set_radius(int id_, double radius) {
   if (id_ == 1) my_globals.radius2 = radius;
   return 0;
 }
+
+int get_time(double *time_) {
+  *time_ = mpfr_get_d(time, GMP_RNDN);
+  return 0;
+}
    
 int get_center_of_mass(double *cmx, double *cmy, double *cmz) {
   if (id == 1 ) {

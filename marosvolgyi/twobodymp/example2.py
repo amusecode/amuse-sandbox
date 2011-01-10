@@ -6,7 +6,7 @@ import numpy
 import time
 from mpmath import *
 
-PRECISION = 50
+PRECISION = 70
 
 def tidalfield(x,y,z, phi, teta, psi):
     F = matrix([[-2*x], [y], [z]])
@@ -64,14 +64,13 @@ if __name__ == '__main__':
         y1 = mpf(y1mp[0])
         z1 = mpf(z1mp[0])
 
-        #force = 0.005
-        force = 0.000
+        scale = 0.001
 
-        F1 = force * tidalfield(x0,y0,z0, 0.1, 0, pi/4)
+        F1 = scale * tidalfield(x0,y0,z0, 0, 0, 0)
         vx0 += F1[0]
         vy0 += F1[1]
         vz0 += F1[2]
-        F1 = force * tidalfield(x1,y1,z1, 0.1, 0, pi/4)
+        F1 = scale * tidalfield(x1,y1,z1, 0, 0, 0)
         vx1 += F1[0]
         vy1 += F1[1]
         vz1 += F1[2]
