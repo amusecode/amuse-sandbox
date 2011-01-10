@@ -9,7 +9,7 @@ def kick_system(sys1, get_gravity, dt,ids=None):
     ids=all_ids  
   
   for pid in ids:
-    (mass,radius,x,y,z,vx,vy,vz),error=sys1.get_state(pid)
+    mass,radius,x,y,z,vx,vy,vz,error=sys1.get_state(pid)
     ax,ay,az,error=get_gravity(radius,x,y,z)
     vx=vx+dt*ax
     vy=vy+dt*ay
