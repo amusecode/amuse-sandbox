@@ -12,7 +12,7 @@ from amuse.legacy.bhtree.interface import BHTree
 from amuse.legacy.fi.interface import Fi
 import bridge
 
-from amuse.support.legacy import channel
+from amuse.support.codes import channel
 
 channel.MessageChannel.DEBUGGER=channel.MessageChannel.XTERM
 
