@@ -216,7 +216,7 @@ class Viewer(object):
         self.draw_plane()
         pygame.display.flip()
 
-    def renderamuse(self, stars):
+    def renderamuse(self, stars, filename):
         R = [[0.0005,0,0,0]]
 
         for i, s in enumerate(stars):
@@ -229,6 +229,7 @@ class Viewer(object):
         self.draw_scene(R)
         self.draw_plane()
         pygame.display.flip()
+        pygame.image.save(self.screen, filename)
 
     def animate(self):
 
@@ -286,10 +287,11 @@ if __name__ == "__main__":
     gravity.commit_particles()
     model_time = 0.0
     pairs = 0
+    image_count = 0
     while s.go:
         flag = time.time()
         #s.animate()
-        model_time +=0.01
+        model_time +=0.001
 
         gravity.evolve_model(model_time|nbody_system.time)
         from_gravity_to_model.copy()
@@ -304,7 +306,8 @@ if __name__ == "__main__":
         #    print "Pair % i" % pairs
         #    print len(gravity.stopping_conditions.pair_detection.particles(0).key)
 
-        s.renderamuse(stars)
+        image_count +=1
+        s.renderamuse(stars, "pic%03d.bmp" % image_count)
         s.handle_events()
         
     gravity.stop()
