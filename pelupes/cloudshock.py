@@ -1,8 +1,8 @@
 import os
 import sys
 
-from amuse.legacy.capreole.interface import CapreoleInterface
-from amuse.legacy.capreole.interface import GLCapreoleInterface
+from amuse.community.capreole.interface import CapreoleInterface
+from amuse.community.capreole.interface import GLCapreoleInterface
 
 import numpy
 from matplotlib import pyplot

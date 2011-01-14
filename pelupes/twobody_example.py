@@ -1,6 +1,6 @@
 import numpy
 
-from amuse.legacy.twobody import twobody
+from amuse.community.twobody import twobody
 
 from amuse.support.units import units
 from amuse.support.data import core

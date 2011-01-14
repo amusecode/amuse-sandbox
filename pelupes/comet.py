@@ -6,7 +6,7 @@ import tidal_field
 
 from amuse.support.units.units import *
 from amuse.support.units import nbody_system as NU
-from amuse.legacy.twobody import twobody as interface
+from amuse.community.twobody import twobody as interface
 
 from matplotlib import pyplot
 

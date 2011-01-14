@@ -1,4 +1,4 @@
-from amuse.legacy import *
+from amuse.community import *
 
 from interface import twobodympInterface
 from interface import twobodymp

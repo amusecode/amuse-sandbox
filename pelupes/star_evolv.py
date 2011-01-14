@@ -1,8 +1,8 @@
 from amuse.support.units import units
 
-from amuse.legacy.sse.interface import SSE
-from amuse.legacy.evtwin.interface import EVtwin
-from amuse.legacy.mesa.interface import MESA
+from amuse.community.sse.interface import SSE
+from amuse.community.evtwin.interface import EVtwin
+from amuse.community.mesa.interface import MESA
 
 from amuse.support.data import core
 

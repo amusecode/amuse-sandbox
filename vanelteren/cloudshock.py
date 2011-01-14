@@ -8,7 +8,7 @@ import matplotlib.cm as cm
 from amuse.support.data import core
 from amuse.ext import cloud
 from amuse.support.units import generic_unit_system
-from amuse.legacy.athena.interface import Athena
+from amuse.community.athena.interface import Athena
 
 def new_cloudshock_code(N = 32):
     L = 10.0

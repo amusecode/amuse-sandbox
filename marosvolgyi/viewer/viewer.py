@@ -16,10 +16,10 @@ from amuse.support.units import units
 from amuse.support.units import nbody_system 
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.kingmodel import MakeKingModel
-from amuse.legacy.hermite0.interface import Hermite
-from amuse.legacy.bhtree.interface import BHTree
-from amuse.legacy.phiGRAPE.interface import PhiGRAPE
-from amuse.legacy.octgrav.interface import Octgrav
+from amuse.community.hermite0.interface import Hermite
+from amuse.community.bhtree.interface import BHTree
+from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.octgrav.interface import Octgrav
 
 from datetime import date, timedelta
 import time

@@ -1,4 +1,4 @@
-from amuse.legacy import *
+from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
 from .interface import twobodympInterface

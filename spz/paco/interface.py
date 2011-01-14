@@ -1,4 +1,4 @@
-from amuse.legacy import *
+from amuse.community import *
 from amuse.support.codes.lit import LiteratureRefs
     
 class PACOInterface(LegacyInterface, LiteratureRefs):
