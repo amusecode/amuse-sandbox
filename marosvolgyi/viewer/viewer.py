@@ -229,7 +229,7 @@ class Viewer(object):
         self.draw_scene(R)
         self.draw_plane()
         pygame.display.flip()
-        pygame.image.save(self.screen, filename)
+        #pygame.image.save(self.screen, filename)
 
     def animate(self):
 
@@ -291,7 +291,7 @@ if __name__ == "__main__":
     while s.go:
         flag = time.time()
         #s.animate()
-        model_time +=0.001
+        model_time +=0.01
 
         gravity.evolve_model(model_time|nbody_system.time)
         from_gravity_to_model.copy()
