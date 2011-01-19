@@ -56,7 +56,7 @@ class Viewer(object):
 
         self.gl_init(display_size)
 
-        pygame.key.set_repeat(10, 5)#keyboard repeat delay, repeat in ms
+        pygame.key.set_repeat(1000, 5)#keyboard repeat delay, repeat in ms
 
         self.drag = False
         self.trail = False
@@ -190,22 +190,22 @@ class Viewer(object):
 
                 if event.key == K_f:
                     self.speed += 1.0
-                    print self.speed
+                    #print self.speed
                 if event.key == K_b:
                     self.speed -= 1.0
-                    print self.speed
+                    #print self.speed
                 if event.key == K_w:
                     self.dy += 5
-                    print self.dx,self.dy
+                    #print self.dx,self.dy
                 if event.key == K_a:
                     self.dx -= 5
-                    print self.dx,self.dy
+                    #print self.dx,self.dy
                 if event.key == K_d:
                     self.dx += 5
-                    print self.dx,self.dy
+                    #print self.dx,self.dy
                 if event.key == K_x:
                     self.dy -= 5
-                    print self.dx,self.dy
+                    #print self.dx,self.dy
 
                 if event.key == K_e:
                     self.center_on_earth()
@@ -273,7 +273,7 @@ class Viewer(object):
         self.draw_scene(R)
         self.draw_plane()
         pygame.display.flip()
-        #pygame.image.save(self.screen, filename)
+        pygame.image.save(self.screen, filename)
 
     def animate(self):
 
@@ -363,8 +363,14 @@ if __name__ == "__main__":
                                          gravity.particles[1].vy.value_in(units.ms) + s.dy,
                                          0.0] |units.ms 
         
+        print "{0} {1} {2} {3} {4} {5}".format(gravity.particles[0].x.value_in(units.km),
+                                               gravity.particles[0].y.value_in(units.km),
+                                               gravity.particles[0].z.value_in(units.km),
+                                               gravity.particles[1].x.value_in(units.km),
+                                               gravity.particles[1].y.value_in(units.km),
+                                               gravity.particles[1].z.value_in(units.km))
         rterr = 0
-        while (time.time() - flag)<0.01:
+        while (time.time() - flag)<0.001:
             rterr +=1
         if rterr == 1: 
             print "realtime error"
