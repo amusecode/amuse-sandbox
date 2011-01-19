@@ -1,15 +1,3 @@
-try:
-    from OpenGL.GL import *
-    from OpenGL.GLU import *
-    import pygame
-    from pygame.locals import *
-except ImportError:
-    if __name__ == '__main__':
-        raise Exception("OpenGL and pygame bindings are not installed, cannot run")
-    
-        
-#from OpenGL.GLUT import *
-
 import struct
 
 from amuse.support.data import core
