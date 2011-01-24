@@ -17,6 +17,7 @@ from amuse.support.units import nbody_system
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.kingmodel import MakeKingModel
 from amuse.community.hermite0.interface import Hermite
+from amuse.community.ph4.interface import ph4
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.octgrav.interface import Octgrav
@@ -234,7 +235,7 @@ class Viewer(object):
         self.draw_scene(R)
         self.draw_plane()
         pygame.display.flip()
-        pygame.image.save(self.screen, filename)
+        #pygame.image.save(self.screen, filename)
 
     def animate(self):
 
@@ -258,7 +259,7 @@ def diffangle(v,w):
 
 def rotate(vector, phi, teta, psi):
     
-    normed_vect = [(i/i.norm()).value_in(units.none) for i in vector]
+    normed_vect = [(i).value_in(units.AU) for i in vector]
     vt = np.matrix(normed_vect).transpose()
     
     Rotx = np.matrix([[1, 0, 0],[0,np.cos(phi), -np.sin(phi)],[0,np.sin(phi),np.cos(phi)]])
@@ -283,7 +284,7 @@ def generate_dust(dust):
     
     #dust.velocity = np.zeros([n_particles, 3])|units.AUd
     dust.mass = 1000*np.ones(n_particles)|units.kg
-    dust.radius = 0.02*np.ones(n_particles)|units.km
+    dust.radius = 0.01*np.ones(n_particles)|units.km
     remove_outershell(dust)
     
 def remove_core_dust(dust):
@@ -329,6 +330,8 @@ if __name__ == "__main__":
     #stars.scale_to_standard()
     if method == 'octgrav':
         gravity = Octgrav()
+    elif method == 'ph4':
+        gravity = ph4()
     elif method == 'phigrape':					
         gravity = PhiGRAPE(convert_nbody)
     elif method == 'bhtree':
@@ -356,7 +359,7 @@ if __name__ == "__main__":
     while s.go:
         flag = time.time()
         #s.animate()
-        model_time +=10
+        model_time +=1
 
         gravity.evolve_model(model_time|units.day)
         from_gravity_to_model.copy()
