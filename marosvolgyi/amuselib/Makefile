@@ -21,11 +21,12 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py supportInterface -o $@
 
-support_worker: worker_code.cc worker_code.h $(CODELIB)
+support_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(CXX) $(CXXFLAGS) $< $(OBJS) -o $@ -lm -L./src -lsupport
 
 clean:
 	rm *.o support_worker worker_code.cc worker_code.h
+	make -C src clean	
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

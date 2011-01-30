@@ -17,6 +17,29 @@ class supportInterface(LegacyInterface):
         function.can_handle_array = True
         return function
 
+    @legacy_function
+    def many_points_on_sphere():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='float64', direction=function.INOUT)
+        function.addParameter('y', dtype='float64', direction=function.INOUT)
+        function.addParameter('z', dtype='float64', direction=function.INOUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+
+    @legacy_function
+    def rnd_points_on_sphere():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='float64', direction=function.INOUT)
+        function.addParameter('y', dtype='float64', direction=function.INOUT)
+        function.addParameter('z', dtype='float64', direction=function.INOUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+
+
 class support(CodeInterface):
 
     def __init__(self):
