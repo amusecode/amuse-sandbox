@@ -273,7 +273,7 @@ class Viewer(object):
         self.draw_scene(R)
         self.draw_plane()
         pygame.display.flip()
-        pygame.image.save(self.screen, filename)
+        #pygame.image.save(self.screen, filename)
 
     def animate(self):
 
@@ -319,7 +319,7 @@ if __name__ == "__main__":
     convert_nbody = nbody_system.nbody_to_si(5.9736e24 | units.kg, 
                                              6371 | units.km)
 
-    s = Viewer(stars,(1024, 780), convert_nbody)
+    s = Viewer(stars,(100, 100), convert_nbody)
 
 
     #stars.scale_to_standard()

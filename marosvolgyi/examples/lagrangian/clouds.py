@@ -9,7 +9,7 @@ except ImportError:
     
         
 #from OpenGL.GLUT import *
-
+import struct
 
 from amuse.support.data import core
 from amuse.support.units import units
@@ -19,7 +19,8 @@ from amuse.ext.kingmodel import MakeKingModel
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.ph4.interface import ph4
 from amuse.community.bhtree.interface import BHTree
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.fi.interface import Fi
+from amuse.community.phiGRAPE.interface import PhiGRAPE,PhiGRAPEInterface
 from amuse.community.octgrav.interface import Octgrav
 
 from datetime import date, timedelta
@@ -28,6 +29,13 @@ import time
 import sys
 import numpy as np
 import random
+
+XRES = 180.
+YRES = 180.
+ZRES = 3.
+XC = XRES/2
+YC = YRES/2
+ZC = ZRES/2
 
 class Viewer(object):
     def __init__(self, *kargs):
@@ -48,6 +56,7 @@ class Viewer(object):
         self.satposx = 0
         self.satposy = 0
         self.cos = False
+        self.plotpotential = False
 
         pygame.init()
 
@@ -175,6 +184,10 @@ class Viewer(object):
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.drag = False
             elif event.type == KEYDOWN:
+
+                if event.key == K_s:
+                    self.plotpotential = True
+
                 if event.key == K_q:
                     self.go = False
                 if event.key == K_UP:
@@ -222,7 +235,7 @@ class Viewer(object):
         pygame.display.flip()
 
     def renderamuse(self, stars, filename):
-        R = [[.1, 0, 0, 0]]
+        R = []
 
         for i, s in enumerate(stars):
             r = s.position
@@ -230,12 +243,12 @@ class Viewer(object):
             x = r[0].value_in(units.AU)
             y = r[1].value_in(units.AU)
             z = r[2].value_in(units.AU)
-            R.append([s.radius.value_in(units.km), x, y, z])
+            R.append([3*s.radius.value_in(units.RSun), x, y, z])
 
         self.draw_scene(R)
         self.draw_plane()
         pygame.display.flip()
-        #pygame.image.save(self.screen, filename)
+        pygame.image.save(self.screen, filename)
 
     def animate(self):
 
@@ -259,41 +272,98 @@ def diffangle(v,w):
 
 def rotate(vector, phi, teta, psi):
     
-    normed_vect = [(i).value_in(units.AU) for i in vector]
-    vt = np.matrix(normed_vect).transpose()
+    r_particle_div_r_jup = [(i).value_in(units.AU)/5.2 for i in vector]
+    vt = np.matrix(r_particle_div_r_jup).transpose()
     
     Rotx = np.matrix([[1, 0, 0],[0,np.cos(phi), -np.sin(phi)],[0,np.sin(phi),np.cos(phi)]])
     Roty = np.matrix([[np.cos(teta), 0, np.sin(teta)],[0,1, 0],[-np.sin(teta),0,np.cos(teta)]])
     Rotz = np.matrix([[np.cos(psi), -np.sin(psi), 0],[np.sin(psi),np.cos(psi), 0],[0,0,1]])
     Rot = Rotx*Roty*Rotz
 
-    vtt = 1.447515189957170E-02 * np.array((Rot * vt).transpose())
+    vjup = 13070 | units.ms
+    
+    vtt = vjup.value_in(units.AUd) * np.array((Rot * vt).transpose())
     return units.AUd(vtt)
 
-def remove_outershell(dust):
-    outer = dust.select(lambda r: r.norm()>2.0 | units.AU,["position"])
-    dust.remove_particles(outer)
+def remove_outershell(dust, sun=None):
+    outer = dust.select(lambda r: r.norm()>5.5 | units.AU,["position"])
+    if sun is None:
+        dust.remove_particles(outer)
+    else:
+        dust.remove_particles(outer.difference(sun))
 
 def generate_dust(dust):
     #assuming two AU sphere
     n_particles = len(dust)
-    initial_pos = 5.0*(np.random.random([n_particles, 3])-0.5) | units.AU
-    initial_pos[::,2] *=0.01
+    initial_pos = units.AU(20.0*(np.random.random([n_particles, 3])-0.5))
+    initial_pos[::,2] *=0.001
     dust.position = initial_pos
     dust.velocity = rotate(dust.position, 0, 0, 0.5*3.1415)
-    
     #dust.velocity = np.zeros([n_particles, 3])|units.AUd
-    dust.mass = 1000*np.ones(n_particles)|units.kg
-    dust.radius = 0.01*np.ones(n_particles)|units.km
+    dust.mass = 100.0*units.kg(np.ones(n_particles))
+    dust.radius = 3000*units.km(np.ones(n_particles))
     remove_outershell(dust)
-    
-def remove_core_dust(dust):
-    inner = dust.select(lambda r: r.norm()<0.5 | units.AU,["position"])
-    dust.remove_particles(inner)
+    remove_core_dust(dust)
+
+def remove_core_dust(dust,sun=None):
+    inner = dust.select(lambda r: r.norm()<4.5 | units.AU,["position"])
+    if sun is None:
+        dust.remove_particles(inner)
+    else:
+        dust.remove_particles(inner.difference(sun))
 
 def remove_fast_dust(dust):
-    too_fast = dust.select(lambda v: v.norm() >.05 | units.AUd,["velocity"])
+    too_fast = dust.select(lambda v: v.norm() >0.01 | units.AUd,["velocity"])
     dust.remove_particles(too_fast)
+
+def init_integrator(method):
+    if method == 'octgrav':
+        gravity = Octgrav()
+    elif method == 'ph4':
+        gravity = ph4()
+    elif method == 'fi':
+        gravity = Fi(convert_nbody)
+        gravity.initialize_code()
+        gravity.parameters.epsilon_squared = 0.00000001 | units.AU**2
+        gravity.parameters.timestep = .10 | units.day
+    elif method == 'phigrape':					
+        gravity = PhiGRAPE(convert_nbody,  mode = PhiGRAPEInterface.MODE_GPU)
+    elif method == 'bhtree':
+        gravity = BHTree(convert_nbody,number_of_workes = workers) 
+    elif method == 'hermite':
+        gravity = Hermite(convert_nbody,
+                          number_of_workers = workers
+                          #debugger = "xterm",
+                          #redirection = "none"
+                          )
+    
+    gravity.parameters.epsilon_squared = 0.00001 | units.AU ** 2
+
+    return gravity
+
+def setup_particle_system(n_dust):    
+    stars = core.Stars(n_dust)
+    generate_dust(stars)
+    
+    sun = stars[0]
+    sun.mass = 1.0 | units.MSun
+    sun.position = units.m(np.array((0.0,0.0,0.0)))
+    sun.velocity = units.ms(np.array((0.0,0.0,0.0)))
+    sun.radius = 0.1000 | units.RSun
+
+    #earth = stars[1]
+    #earth.mass = units.kg(5.9736e24)
+    #earth.position = units.AU(np.array((8.418982185410142E-01,  5.355823303978186E-01,  2.327960005926782E-05)))
+    #earth.velocity = units.AUd(np.array((-9.488931818313919E-03,  1.447515189957170E-02,  3.617712172296458E-07)))
+    #earth.radius = 6000 | units.km
+
+    jupiter = stars[1]
+    jupiter.mass = 1.8986e27 | units.kg#
+    jupiter.position = units.AU(np.array((-1.443168153922270E+00, -5.114454902835615E+00,  5.340409708180518E-02)))
+    jupiter.velocity = units.AUd(np.array((7.173114487727194E-03, -1.699488558889569E-03, -1.537231526125508E-04)))
+    jupiter.radius = 20000 | units.km
+
+    return stars, sun, jupiter
 
 if __name__ == "__main__":
 
@@ -305,48 +375,19 @@ if __name__ == "__main__":
 
     n_dust = nstars
 
-    convert_nbody = nbody_system.nbody_to_si(5.9736e24 | units.kg, 
-                                             6371 | units.km)
+    convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 
+                                             1.0 | units.AU)
 
-    stars = core.Stars(n_dust)
-    generate_dust(stars)
-    remove_core_dust(stars)
+
+    stars, sun, jupiter = setup_particle_system(n_dust)
     
-    sun = stars[0]
-    sun.mass = 1 | units.MSun
-    sun.position = units.m(np.array((0.0,0.0,0.0)))
-    sun.velocity = units.ms(np.array((0.0,0.0,0.0)))
-    sun.radius = 0.05 | units.km
+    vector0=np.matrix(jupiter.position.value_in(units.AU))
 
-    earth = stars[1]
-    earth.mass = units.kg(5.9736e24)
-    earth.position = units.AU(np.array((8.418982185410142E-01,  5.355823303978186E-01,  2.327960005926782E-05)))
-    vector0=np.matrix([8.418982185410142E-01,  5.355823303978186E-01,  2.327960005926782E-05])
-    earth.velocity = units.AUd(np.array((-9.488931818313919E-03,  1.447515189957170E-02,  3.617712172296458E-07)))
-    earth.radius = 0.05|units.km
-
-    s = Viewer(stars,(1024, 780), convert_nbody)
+    s = Viewer(stars,(800, 600), convert_nbody)
 
     #stars.scale_to_standard()
-    if method == 'octgrav':
-        gravity = Octgrav()
-    elif method == 'ph4':
-        gravity = ph4()
-    elif method == 'phigrape':					
-        gravity = PhiGRAPE(convert_nbody)
-    elif method == 'bhtree':
-        gravity = BHTree(convert_nbody,number_of_workes = workers) 
-    elif method == 'hermite':
-        gravity = Hermite(convert_nbody,
-                          number_of_workers = workers
-                          #debugger = "xterm",
-                          #redirection = "none"
-                          )
-    gravity.initialize_code()
-    #gravity.parameters.epsilon_squared = 0.1 | nbody_system.length ** 2
-    gravity.parameters.epsilon_squared = 0.01 | units.AU ** 2
+    gravity = init_integrator(method)
     
-    #stars.radius = 0.000001 | nbody_system.length
     gravity.particles.add_particles(stars)
     #gravity.stopping_conditions.pair_detection.enable()
     from_model_to_gravity = stars.new_channel_to(gravity.particles)
@@ -356,12 +397,14 @@ if __name__ == "__main__":
     model_time = 0.0
     pairs = 0
     image_count = 0
+
     while s.go:
         flag = time.time()
         #s.animate()
-        model_time +=1
+        model_time +=15.0
 
         gravity.evolve_model(model_time|units.day)
+        gravity.particles.synchronize_to(stars)
         from_gravity_to_model.copy()
         
         rterr = 0
@@ -375,18 +418,69 @@ if __name__ == "__main__":
         #    print gravity.stopping_conditions.pair_detection.particles(1).key
         #    stars.remove_particles(gravity.stopping_conditions.pair_detection.particles(1))
 
-        remove_core_dust(stars)
-        remove_fast_dust(stars)
-        from_model_to_gravity.copy()
+        remove_core_dust(stars, sun)
+        #remove_fast_dust(stars)
+
+        stars.synchronize_to(gravity.particles)
+        print len(stars)
+        print len(gravity.particles)
+        #from_model_to_gravity.copy()
+        print len(stars)
+        print len(gravity.particles)
 
         image_count +=1
-        vector1 = np.matrix([earth.position[0].value_in(units.AU), 
-                             earth.position[1].value_in(units.AU), 
-                             earth.position[2].value_in(units.AU)])
+        vector1 = np.matrix([jupiter.position[0].value_in(units.AU), 
+                             jupiter.position[1].value_in(units.AU), 
+                             jupiter.position[2].value_in(units.AU)])
         
         s.gamma = diffangle(vector0, vector1)/3.1415*180
         print s.gamma
-        s.renderamuse(stars, "pic%03d.jpg" % image_count)
+        s.renderamuse(stars, "pic%03d.bmp" % image_count)
         s.handle_events()
         
     gravity.stop()
+
+
+"""
+        if s.plotpotential:
+            files = open('field.bin', 'wb')
+
+	
+            scalarfield = np.array(np.zeros([XRES,YRES,ZRES]))
+                
+            max_value = 0.0000000
+            for kk in range(ZRES):
+                filen = open('scalar{0}.dat'.format(kk), 'w')
+                for ii in range(XRES):
+                    print "{0} % done".format(100.0*ii/XRES)
+                    for jj in range(YRES):
+                        xx = 20.0*(ii - XC) /XC
+                        yy = 20.0*(jj - YC) /YC
+                        zz = 20.0*(kk - ZC) /ZC
+                        phi = gravity.get_potential_at_point(0.0001|units.AU,
+                                                             xx|units.AU, 
+                                                             yy|units.AU, 
+                                                             zz|units.AU)
+                        value = (-phi.value_in(units.m**2/(units.s**2)))
+                        if (value > max_value):
+                            max_value = value
+                            
+                        scalarfield[ii,jj,kk] = value
+
+                        filen.writelines("{0} {1} {2}\n".format(xx,yy, -value))
+
+                    filen.writelines("\n")
+                            
+                filen.close()
+
+            for kk in range(ZRES):
+                for ii in range(XRES):
+                    for jj in range(YRES):
+                        print int(255.0/20*scalarfield[ii,jj,kk])
+                        files.write(struct.pack('B', int(255.0/max_value*scalarfield[ii,jj,kk])))
+                        
+            files.flush()
+            files.close()
+
+            s.plotpotential=False
+"""
