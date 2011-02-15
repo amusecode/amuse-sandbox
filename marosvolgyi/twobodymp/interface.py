@@ -202,8 +202,8 @@ class twobodympInterface(LegacyInterface):
         function.result_type = 'int32'
         return function
 
-class twobodymp(CodeInterface):
+class twobodymp(InCodeComponentImplementation):
 
     def __init__(self):
-        CodeInterface.__init__(self,  twobodympInterface())
+        InCodeComponentImplementation.__init__(self,  twobodympInterface())
     

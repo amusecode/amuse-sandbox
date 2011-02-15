@@ -40,8 +40,8 @@ class supportInterface(LegacyInterface):
         return function
 
 
-class support(CodeInterface):
+class support(InCodeComponentImplementation):
 
     def __init__(self):
-        CodeInterface.__init__(self,  supportInterface())
+        InCodeComponentImplementation.__init__(self,  supportInterface())
     

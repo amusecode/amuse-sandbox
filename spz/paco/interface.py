@@ -148,7 +148,7 @@ class PACOInterface(LegacyInterface, LiteratureRefs):
         function.result_type = 'int32'
         return function 
         
-class PACO(CodeInterface):
+class PACO(InCodeComponentImplementation):
 
     def __init__(self, **options):
-        CodeInterface.__init__(self,  PACOInterface(**options),  **options)
+        InCodeComponentImplementation.__init__(self,  PACOInterface(**options),  **options)
