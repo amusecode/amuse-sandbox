@@ -35,12 +35,12 @@ int set_state(double x, double y, double z,
 
 int get_state(double *x, double *y, double *z, 
 	      double *vx, double *vy, double *vz) {
-  *x =p.x;
-  *y =p.y;
-  *z =p.z;
-  *vx =p.vx;
-  *vy =p.vy;
-  *vz =p.vz;
+  *x = p.x;
+  *y = p.y;
+  *z = p.z;
+  *vx = p.vx;
+  *vy = p.vy;
+  *vz = p.vz;
   return 0;
 }
 

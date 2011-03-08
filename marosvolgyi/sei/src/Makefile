@@ -9,5 +9,5 @@ clean:
 	rm libsei.a
 	rm sei.o
 
-sei.o: 
+sei.o: sei.c sei.h
 	gcc -Wall -g sei.c -c -o sei.o -lm

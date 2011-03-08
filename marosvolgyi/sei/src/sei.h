@@ -4,3 +4,9 @@ struct particle{
 }particle;
 
 void operator_sei(double dt, struct particle *p);
+void operator_H0(double dt, struct particle* p);
+void operator_phi(double dt, struct particle* p);
+void operator_HKin(double dt, struct particle* p);
+void operator_kick(double dt, struct particle* p);
+void operator_lf(double dt, struct particle* p);
+void operator_quinn(double dt, struct particle* p);

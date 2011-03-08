@@ -14,18 +14,12 @@
  ********************************************/ 
 #include <math.h>
 #include <stdio.h>
-
+#include "sei.h"
 #define OMEGA 1.
 
 // Cache sin() tan() values.
 double lastdt=0;
 double sindt, tandt;
-
-// Define a particle structure
-struct particle{
-	double x,y,z;
-	double vx,vy,vz;
-} particle;
 
 // This function evolves a particle under 
 // Hamiltonian H0 exactly up to machine precission.
@@ -185,4 +179,5 @@ int main(){
 	}
 	return 1;
 }
+
 */
