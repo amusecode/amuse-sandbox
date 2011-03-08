@@ -31,7 +31,7 @@ worker_code.h: interface.py
 
 sei_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	@echo "compiling SEI worker"
-	$(CXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@ -lm -lmpfr -lgmp -lSDL -L../lib -ldraw
+	$(CXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@ -lm
 	@echo "success in compiling sei worker"
 
 .cc.o: $<

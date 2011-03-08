@@ -160,6 +160,7 @@ void setup(struct particle* p){
 }
 
 // Run a test case and output the positions
+/*
 int main(){
 	double time = 0;
 	const double dt = 1e-1*2.*M_PI;
@@ -184,3 +185,4 @@ int main(){
 	}
 	return 1;
 }
+*/
