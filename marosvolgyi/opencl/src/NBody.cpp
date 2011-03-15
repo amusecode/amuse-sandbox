@@ -1664,7 +1664,7 @@ NBody::~NBody()
 }
 
 
-int mainentry(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   NBody clNBody("OpenCL NBody");
   me = &clNBody;

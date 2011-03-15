@@ -1,7 +1,10 @@
-INCLUDE = -I"/home/marcell/downloads/ati-stream-sdk-v2.3-lnx32/ati-stream-sdk-v2.3-lnx32/include"
-INCLUDEE = -I"/home/marcell/downloads/ati-stream-sdk-v2.3-lnx32/ati-stream-sdk-v2.3-lnx32/samples/opencl/SDKUtil/include/"
-OPENCLLIB = -L"/home/marcell/downloads/ati-stream-sdk-v2.3-lnx32/ati-stream-sdk-v2.3-lnx32/lib/x86" -lOpenCL
-OPENSDKLIB = -L"/home/marcell/downloads/ati-stream-sdk-v2.3-lnx32/ati-stream-sdk-v2.3-lnx32/samples/opencl/SDKUtil/build/debug/x86" -lSDKUtil
+#ATISTREAMSDK = "/home/marcell/downloads/ati-stream-sdk-v2.3-lnx32/ati-stream-sdk-v2.3-lnx32/"
+ATISTREAMSDK = "/disks/koppoel1/marosvolgyi/troep/ati-stream-sdk-v2.3-lnx64"
+
+INCLUDE = -I$(ATISTREAMSDK)/include
+INCLUDEE = -I$(ATISTREAMSDK)/samples/opencl/SDKUtil/include/
+OPENCLLIB = -L$(ATISTREAMSDK)/lib/x86 -lOpenCL
+OPENSDKLIB = -L$(ATISTREAMSDK)/samples/opencl/SDKUtil/build/debug/x86 -lSDKUtil
 GLIBS = -lGL -lGLU -lglut
 
 all: libopencl.a
@@ -13,6 +16,9 @@ libopencl.a: nbody.o
 
 nbody.o: NBody.cpp 
 	g++ NBody.cpp $(INCLUDE) $(INCLUDEE) $(OPENCLLIB) $(OPENSDKLIB) $(GLIBS) -c -o nbody.o
+
+nbody: NBody.cpp
+	g++ NBody.cpp $(INCLUDE) $(INCLUDEE) $(OPENCLLIB) $(OPENSDKLIB) $(GLIBS) -o nbody
 
 clean:
 	rm nbody.o
