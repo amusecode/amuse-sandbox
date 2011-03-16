@@ -4,7 +4,6 @@
    
  */
 
-#define __PLOT
 #include "worker_code.h"
 
 #ifdef __PLOT
@@ -16,8 +15,12 @@ extern "C" {
 #endif
 #endif
 
+int mainentry(int argc, char *argv[]);
+
 int initialization() 
 {
+  char *params[] = {"nbody", "-x", " 4000"};
+  mainentry(3, params);
   return 0;
 }
 

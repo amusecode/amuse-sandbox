@@ -1,3 +1,12 @@
+ATISTREAMSDK = "/home/marcell/downloads/ati-stream-sdk-v2.3-lnx32/ati-stream-sdk-v2.3-lnx32"
+#ATISTREAMSDK = "/disks/koppoel1/marosvolgyi/troep/ati-stream-sdk-v2.3-lnx64"
+
+INCLUDE = -I$(ATISTREAMSDK)/include
+INCLUDEE = -I$(ATISTREAMSDK)/samples/opencl/SDKUtil/include
+OPENCLLIB = -L$(ATISTREAMSDK)/lib/x86 -lOpenCL
+OPENSDKLIB = -L$(ATISTREAMSDK)/samples/opencl/SDKUtil/build/debug/x86 -lSDKUtil
+GLIBS = -lGL -lGLU -lglut
+
 MPICXX   ?= mpicxx
 CXX = $(MPICXX)
 
@@ -31,7 +40,7 @@ worker_code.h: interface.py
 
 opencl_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	@echo "compiling OPENCL worker"
-	$(CXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@ -lm
+	$(CXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@ -lm $(GLIBS) $(OPENCLLIB) $(OPENSDKLIB)
 	@echo "success in compiling opencl worker"
 
 .cc.o: $<

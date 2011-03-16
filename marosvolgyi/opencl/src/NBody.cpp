@@ -477,7 +477,6 @@ int NBody::genBinaryImage()
     return SDK_SUCCESS;
 }
 
-
 int NBody::setupCL()
 {
     cl_int status = CL_SUCCESS;
@@ -1381,11 +1380,10 @@ void displayfunc()
     glEnable(GL_BLEND);
     glDepthMask(GL_FALSE);
 
-    glColor3f(1.0f,0.0f,0.0f);
+    glColor4f(1.0f,1.0f,1.0f,0.2f);
 
     //Calling kernel for calculatig subsequent positions
     ((NBody*)me)->runCLKernels();
-
 
     glRotatef(theta, 1.0, 0.0, 0.0);
     glRotatef(phi, 0.0, 1.0, 0.0);
@@ -1662,7 +1660,6 @@ NBody::~NBody()
         maxWorkItemSizes = NULL;
     }
 }
-
 
 int main(int argc, char *argv[])
 {
