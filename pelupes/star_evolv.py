@@ -14,7 +14,7 @@ star.mass= 0.831 | units.MSun
 se.initialize_module_with_current_parameters()
 
 star=se.particles.add_particle(star)
-se.initialize_stars()
+se.commit_particles()
 
 stopped_evolving = False
 while star.stellar_type.value_in(units.stellar_type) < 10 and not stopped_evolving:
