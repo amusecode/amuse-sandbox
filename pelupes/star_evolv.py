@@ -7,11 +7,12 @@ from amuse.community.mesa.interface import MESA
 from amuse.support.data import core
 
 se=SSE()
+se.initialize_code()
 
 star=core.Particle()
 star.mass= 0.831 | units.MSun
 
-se.initialize_module_with_current_parameters()
+se.commit_parameters()
 
 star=se.particles.add_particle(star)
 se.commit_particles()
