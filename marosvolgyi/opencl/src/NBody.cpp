@@ -275,7 +275,7 @@ int NBody::genBinaryImage()
     /* create a CL program using the kernel source */
     streamsdk::SDKFile kernelFile;
     std::string kernelPath = sampleCommon->getPath();
-    kernelPath.append("NBody_Kernels.cl");
+    kernelPath.append("src/NBody_Kernels.cl");
     if(!kernelFile.open(kernelPath.c_str()))
     {
         std::cout << "Failed to load kernel file : " << kernelPath << std::endl;
@@ -832,7 +832,7 @@ int NBody::setupCL()
     }
     else
     {
-        kernelPath.append("NBody_Kernels.cl");
+        kernelPath.append("src/NBody_Kernels.cl");
         if(!kernelFile.open(kernelPath.c_str()))
         {
             std::cout << "Failed to load kernel file : " << kernelPath << std::endl;
