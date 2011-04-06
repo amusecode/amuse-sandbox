@@ -1,7 +1,7 @@
 from amuse.community import *
-from amuse.support.codes.lit import LiteratureRefs
+from amuse.support.codes.lit import LiteratureReferencesMixIn
     
-class PACOInterface(CodeInterface, LiteratureRefs):
+class PACOInterface(CodeInterface, LiteratureReferencesMixIn):
     """
     PACO - Pattern AutoCOrrelation orbit classification scheme
            construct repeated patterns in cartesian crossings in
@@ -15,7 +15,7 @@ class PACOInterface(CodeInterface, LiteratureRefs):
     
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="worker_code", **options)
-        LiteratureRefs.__init__(self)
+        LiteratureReferencesMixIn.__init__(self)
 
     @legacy_function
     def PartialPatternConstruct():

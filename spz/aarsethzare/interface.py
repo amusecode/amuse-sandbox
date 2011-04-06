@@ -1,7 +1,7 @@
 from amuse.community import *
 from amuse.support.units import units
 
-class AarsethZareInterface(CodeInterface, LiteratureRefs):
+class AarsethZareInterface(CodeInterface, LiteratureReferencesMixIn):
     """
     Interface to the regularized Burlish-Stoer integrator of
     Aarseth & Zare
@@ -14,7 +14,7 @@ class AarsethZareInterface(CodeInterface, LiteratureRefs):
 
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, **keyword_arguments)
-        LiteratureRefs.__init__(self)
+        LiteratureReferencesMixIn.__init__(self)
 
     @legacy_function
     def call_aarseth_zare():
