@@ -6,7 +6,7 @@ from .interface import twobodymp
 
 class twobodympInterfaceTests(TestWithMPI):
     
-    def test1(self):
+    def xtest1(self):
         instance = twobodympInterface()
         instance.initialization(100)
         instance.set_pos(1.0, 0.1, -0.1)

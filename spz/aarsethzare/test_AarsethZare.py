@@ -1,13 +1,16 @@
-from interface import AarsethZare 
-instance = AarsethZare()
+from amuse.community.aarsethzare.interface import AarsethZare 
+
+if __name__ == '__main__':
+    instance = AarsethZare()
+
 #from numpy import *
 #Enable unit handling by import amuse.legacy
-from amuse.legacy import *
+from amuse.community import *
 from math import *
 
 import sys 
 sys.path.append("/home/spz/Instantaneous/AMUSE/amuse/sandbox/spz/binev/")
-import binary
+#import binary
 
 def construct_binary(m, e1, e2) :
     m1 = m[0].value_in(m[2].unit) #| units.MSun
