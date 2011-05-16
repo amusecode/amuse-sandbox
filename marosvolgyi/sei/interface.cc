@@ -18,12 +18,33 @@ extern "C" {
 
 int initialization() {
   time = 0.0;
-  dt = 1e-1 * 2.0 * M_PI;
+  dt = 1e-3 * 2.0 * M_PI;
   return 0;
 }
 
-int set_state(double x, double y, double z, 
-	      double vx, double vy, double vz) {
+int new_particle(int *id, double x, double y, double z,
+                 double vx, double vy, double vz) 
+{
+  *id = 0;
+
+  p.x = x;
+  p.y = y;
+  p.z = z;
+  p.vx = vx;
+  p.vy = vy;
+  p.vz = vz;
+
+  return 0;
+}
+int delete_particle(int id) {
+  id = 0;
+
+  return 0;
+}
+
+int set_state(int id, double x, double y, double z, 
+	      double vx, double vy, double vz) 
+{
   p.x = x;
   p.y = y;
   p.z = z;
@@ -33,8 +54,9 @@ int set_state(double x, double y, double z,
   return 0;
 }
 
-int get_state(double *x, double *y, double *z, 
-	      double *vx, double *vy, double *vz) {
+int get_state(int id, double *x, double *y, double *z, 
+	      double *vx, double *vy, double *vz) 
+{
   *x = p.x;
   *y = p.y;
   *z = p.z;
@@ -55,8 +77,3 @@ int evolve(double time_end)
   return 0;
 }
 
-int get_velocity(int id, double *vx_, double *vy_, double *vz_) {
-  
-  
-  return 0;
-}
