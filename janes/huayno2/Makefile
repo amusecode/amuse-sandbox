@@ -1,14 +1,11 @@
-HOST := $(shell hostname)
 
-# MacPorts+OpenMPI-specific MPI compiler executable names
-ifeq ($(HOST), jimi.local)
-#ifeq ($(findstring omhp,$(HOST)), omhp) # uva wifi changes hostname
-	AMUSE_DIR =../../../
+AMUSE_DIR =../../../
+
+# fix for MacPorts+OpenMPI compilers
+ifneq (,$(shell type -P openmpicxx))
 	MPICXX = openmpicxx
 	MPICC = openmpicc
 endif
-
-AMUSE_DIR =../../../
 
 MPICXX ?= mpicxx
 MPICC ?= mpicc
@@ -27,13 +24,11 @@ OBJS = interface.o evolve.o
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-.PHONY: make_debug
-make_debug:
-	@echo $(HOST)
+.PHONY: makefile_debug
+makefile_debug:
 	@echo $(AMUSE_DIR)
 	@echo $(MPICXX)
 	@echo $(MPICC)
-	@echo $(findstring wcw-uva,$(HOST))
 
 all:	huayno_worker
 

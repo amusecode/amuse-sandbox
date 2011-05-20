@@ -5,18 +5,18 @@ from amuse.support.units import units
 
 # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python
 class inttypes:
-    EVOLVE_SHARED=1
-    EVOLVE_PASS_KDK=2
-    EVOLVE_HOLD_KDK=3
-    EVOLVE_BRIDGE_KDK=4
-    EVOLVE_EXTRAPOLATE=5
-    EVOLVE_PASS_DKD=7
-    EVOLVE_HOLD_DKD=8
-    EVOLVE_HOLD_DKD_CC=9
-    EVOLVE_SHARED4=10
-    EVOLVE_HOLD_DKD_CC4=11
-    EVOLVE_OK2=12
-    EVOLVE_OK4=13
+    SHARED2 = 1
+    PASS_KDK = 2
+    HOLD_KDK = 3
+    BRIDGE_KDK = 4
+    EXTRAPOLATE = 5
+    PASS_DKD = 7
+    HOLD_DKD = 8
+    HOLD_DKD_CC2 = 9
+    SHARED4 = 10
+    HOLD_DKD_CC4 = 11
+    OK2 = 12
+    OK4 = 13
 
 
 class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
