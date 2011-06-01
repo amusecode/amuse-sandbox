@@ -167,26 +167,26 @@ if __name__=="__main__":
   scl=numpy.log
   pyplot.figure(figsize=(12,12))
   
-  instance.evolve(0.25*tau) 
+  instance.evolve_model(0.25*tau) 
   
   
   rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(ix_slice,iy_slice,iz_slice)
   pyplot.subplot(4,1,1)
   pyplot.imshow( scl(rho.reshape((N,4*N))),vmin=scl(1./xi))
   
-  instance.evolve(0.75*tau) 
+  instance.evolve_model(0.75*tau) 
 
   rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(ix_slice,iy_slice,iz_slice)
   pyplot.subplot(4,1,2)
   pyplot.imshow( scl(rho.reshape((N,4*N))),vmin=scl(1./xi))
 
-  instance.evolve(1.5*tau)
+  instance.evolve_model(1.5*tau)
 
   rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(ix_slice,iy_slice,iz_slice)
   pyplot.subplot(4,1,3)
   pyplot.imshow( scl(rho.reshape((N,4*N))),vmin=scl(1./xi))
 
-  instance.evolve(2.25*tau)
+  instance.evolve_model(2.25*tau)
   
   rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(ix_slice,iy_slice,iz_slice)
   pyplot.subplot(4,1,4)

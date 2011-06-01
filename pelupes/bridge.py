@@ -40,7 +40,7 @@ class bridge(object):
     self.partners[interface]=partners  
     return 0
     
-  def evolve(self,tend,timestep=None):
+  def evolve_model(self,tend,timestep=None):
     if timestep is None:
       timestep=tend-self.time
     while self.time < tend:    
@@ -54,7 +54,7 @@ class bridge(object):
 
   def drift_systems(self,tend):
     for x in self.systems:
-      if hasattr(x,"evolve"):
+      if hasattr(x,"evolve_model"):
         offset=self.time_offsets[x]
         print "evolving", x.__class__.__name__,
         x.evolve_model( tend-offset)

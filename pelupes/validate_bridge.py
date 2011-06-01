@@ -99,7 +99,7 @@ def validate_bridge():
   t=0. | nbody_system.time
   while( t < total_sim_time):
     t=t+dt_diag
-    bridgesys.evolve( convert_gal.to_si(t),
+    bridgesys.evolve_model( convert_gal.to_si(t),
                     timestep=convert_gal.to_si( sim_step )) 
   
 if __name__ == '__main__':

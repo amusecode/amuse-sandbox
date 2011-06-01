@@ -90,7 +90,7 @@ def plot(x,rho,pres,vel,U):
 if __name__=="__main__":
   N=100
   instance=eqdens_constantgrav(N,1.e7)
-  instance.evolve(1000.)
+  instance.evolve_model(1000.)
   ix,iy,iz=numpy.indices( (1,1,100) )
   ix=ix.flatten()+N/20  
   iy=iy.flatten()+N/20  

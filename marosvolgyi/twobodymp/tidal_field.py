@@ -36,7 +36,7 @@ class time_dependent_tidal_field(tidal_field):
     self.f=scipy.interpolate.interp1d(time-time[0],tides,axis=0)
     self.tidal_tensor=self.f(time[0])
     
-  def evolve(self,t):
+  def evolve_model(self,t):
     self.tidal_tensor=self.f(t)  
       
 

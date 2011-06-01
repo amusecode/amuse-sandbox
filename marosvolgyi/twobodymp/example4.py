@@ -124,10 +124,10 @@ if __name__ == '__main__':
         dt_kick = i-tnow
         print dtmodel, dt_kick
 
-        perturber.evolve(tnow)
+        perturber.evolve_model(tnow)
         kick(instance, dtmodel)
         instance.evolve_system(i)
-        perturber.evolve(i)
+        perturber.evolve_model(i)
         kick(instance, dtmodel)
         instance.plot(255,255,255)
 

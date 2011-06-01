@@ -128,28 +128,28 @@ if __name__=="__main__":
   
   pyplot.figure(figsize=(12,12))
   
-  instance.evolve(0.25*tau) 
+  instance.evolve_model(0.25*tau) 
   print instance.get_time()
   
   rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(ix_slice,iy_slice,iz_slice)
   pyplot.subplot(4,1,1)
   pyplot.imshow( rho.reshape((N,4*N))**0.5 )
   
-  instance.evolve(1.*tau) 
+  instance.evolve_model(1.*tau) 
   print instance.get_time()
 
   rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(ix_slice,iy_slice,iz_slice)
   pyplot.subplot(4,1,2)
   pyplot.imshow( rho.reshape((N,4*N))**0.5 )
 
-  instance.evolve(1.75*tau)
+  instance.evolve_model(1.75*tau)
   print instance.get_time()
 
   rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(ix_slice,iy_slice,iz_slice)
   pyplot.subplot(4,1,3)
   pyplot.imshow( rho.reshape((N,4*N))**0.5 )
 
-  instance.evolve(2.5*tau)
+  instance.evolve_model(2.5*tau)
   print instance.get_time()
   
   rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(ix_slice,iy_slice,iz_slice)
