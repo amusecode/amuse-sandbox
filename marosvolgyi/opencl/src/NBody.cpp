@@ -485,6 +485,7 @@ int NBody::setupCL()
 
     if(deviceType.compare("cpu") == 0)
     {
+      printf("choses CPU\n");
         dType = CL_DEVICE_TYPE_CPU;
     }
     else //deviceType = "gpu" 

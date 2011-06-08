@@ -1,6 +1,6 @@
 #ATISTREAMSDK = "/home/marcell/downloads/ati-stream-sdk-v2.3-lnx32/ati-stream-sdk-v2.3-lnx32"
-ATISTREAMSDK = "/disks/koppoel1/marosvolgyi/troep/ati-stream-sdk-v2.3-lnx64"
-
+#ATISTREAMSDK = "/disks/koppoel1/marosvolgyi/troep/ati-stream-sdk-v2.3-lnx64"
+ATISTREAMSDK = "/home/marcell/AMD-APP-SDK-v2.4-lnx64"
 INCLUDE = -I$(ATISTREAMSDK)/include
 INCLUDEE = -I$(ATISTREAMSDK)/samples/opencl/SDKUtil/include
 OPENCLLIB = -L$(ATISTREAMSDK)/lib/x86_64 -lOpenCL
