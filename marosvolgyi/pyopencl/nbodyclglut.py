@@ -6,6 +6,7 @@ import numpy as np
 from amuse.ext.plummer import MakePlummerModel
 import sys
 import ctypes
+import time
 
 drag = False
 trail = False
@@ -17,28 +18,32 @@ omega = 0.0
 zoom = -12
 xold = 0
 yold = 0
-nbodies = 400
+nbodies = 8192
+frame=0
+t0=time.time()
+t1=t0
 
 parts = MakePlummerModel(nbodies).result
 
 #x_r = np.random.rand(nbodies,4).astype('float32')
 #v_r = 0.0 * np.ones((nbodies,4)).astype('float32')
 
-x_r = np.vstack([parts.x.number,parts.y.number,parts.z.number,1.0/nbodies * np.ones(nbodies)])
+x_r = np.vstack([parts.x.number,parts.y.number,parts.z.number, parts.mass.number]).transpose()
 x_r = np.array(x_r,dtype='float32')
-print x_r.shape
-v_r = np.vstack([parts.vx.number,parts.vy.number,parts.vz.number, np.zeros(nbodies)])
+x_r = x_r.flatten()
+v_r = np.vstack([parts.vx.number,parts.vy.number,parts.vz.number, np.zeros(nbodies)]).transpose()
 v_r = np.array(v_r,dtype='float32')
+v_r = v_r.flatten()
 
 ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
 
 mf = cl.mem_flags
 
-x_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=x_r)
-v_buf = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=v_r)
-x_re = cl.Buffer(ctx, mf.WRITE_ONLY , x_r.nbytes)
-v_re = cl.Buffer(ctx, mf.WRITE_ONLY , v_r.nbytes)
+x_buf = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=x_r)
+v_buf = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=v_r)
+x_re = cl.Buffer(ctx, mf.READ_WRITE , x_r.nbytes)
+v_re = cl.Buffer(ctx, mf.READ_WRITE , v_r.nbytes)
 
 prg = cl.Program(ctx,
 """
@@ -53,23 +58,21 @@ __kernel void demo(__global float4 *r,
     int i;
     int gid = get_global_id(0);
     float4 dist;
-    float4 F;
-    F.x = 0.0;F.y=0.0;F.z=0.0;F.w=0.0;
-    float invdist2;
+    float4 a= (float4) (0.0f,0.0f,0.0f,0.0f);
+    float invdist;
     float invdist3;
+    const float4 dt1 = (float4)(dt,dt,dt,0.0f);
 
-    for (i = 0; i< nbodies; ++i) {
-      dist = r[gid] -r[i];
-      invdist2 = rsqrt(dist.x*dist.x + dist.y*dist.y + dist.z*dist.z + eps2);
-      invdist3 = invdist2*invdist2*invdist2;
-      F -= .005 * dist * invdist3;
+
+    for (i = 0; i< nbodies; i++) {
+      dist = r[i] - r[gid];
+      invdist = rsqrt(dist.x*dist.x + dist.y*dist.y + dist.z*dist.z + eps2);
+      invdist3 = r[i].w*invdist*invdist*invdist;
+      float4 F= (float4) (invdist3,invdist3,invdist3,0.0f);
+      a += invdist3*dist;
    }
-
-   v[gid] += F * dt;
-   r[gid] += v[gid] * dt;
-
-   rr[gid] = r[gid];
-   vr[gid] = v[gid];
+   vr[gid] = v[gid] + dt1 * a ;
+   rr[gid] = r[gid] + dt1 * vr[gid];
 
 }""")
 
@@ -80,6 +83,9 @@ except:
     print(prg.get_build_info(ctx.devices[0], cl.program_build_info.LOG))
     raise
 
+t0=time.time()
+t1=t0
+
 def display():
 
     global x_buf
@@ -87,16 +93,23 @@ def display():
     global x_re
     global v_re
     global zoom
-
-    prg.demo(queue, (nbodies,4), None, x_buf, v_buf, x_re, v_re, 
+    global x_r
+    global v_r
+    global  frame
+    global t0
+    global t1
+    
+    prg.demo(queue, (nbodies,), None, x_buf, v_buf, x_re, v_re, 
              np.array([0.001],dtype='float32'), 
-             np.array([0.01],dtype='float32'), 
+             np.array([0.001],dtype='float32'), 
              np.array([nbodies],dtype='int32'))
-    cl.enqueue_read_buffer(queue, x_re,  x_r).wait()
-    cl.enqueue_read_buffer(queue, v_re,  v_r).wait()
-
-    x_buf = x_re
-    v_buf = v_re
+    prg.demo(queue, (nbodies,), None, x_re, v_re, x_buf, v_buf, 
+             np.array([0.001],dtype='float32'), 
+             np.array([0.001],dtype='float32'), 
+             np.array([nbodies],dtype='int32'))
+    
+    cl.enqueue_read_buffer(queue, x_buf, x_r).wait()
+#    cl.enqueue_read_buffer(queue, v_buf,  v_r).wait()
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     
@@ -127,8 +140,18 @@ def display():
     
     glEnableClientState(GL_VERTEX_ARRAY)
 #    glBegin(GL_POINTS)
-    x=np.array(x_r[0:nbodies,0:3],dtype='float32')
+#    print x_r.shape
+    p=x_r.reshape((nbodies,4))
+#    print p 
+    x=np.array(p[0:nbodies,0:3],dtype='float32')
+
+#    print x
+
     glVertexPointerf(x)
+#    for xx in x:
+#      glVertex3f(xx[0],xx[1],xx[2])
+    
+
 #    glEnd()
     glDrawArrays(GL_POINTS,0,nbodies)
 
@@ -140,6 +163,13 @@ def display():
 
     glPopMatrix()
     glutSwapBuffers()
+    frame+=1
+    
+    if frame%100==0:
+      t=time.time()
+      print 'fps:',frame/(t-t0),'  gflops:', 100*2.*nbodies**2*20/(t-t0)/1.e9
+      t0=t
+      frame=0
 
 def init():
     glClearColor(0.0, 0.0, 0.0, 0.0);
