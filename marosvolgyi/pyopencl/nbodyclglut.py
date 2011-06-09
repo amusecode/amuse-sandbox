@@ -5,6 +5,7 @@ import pyopencl as cl
 import numpy as np
 from amuse.ext.plummer import MakePlummerModel
 import sys
+import ctypes
 
 drag = False
 trail = False
@@ -23,14 +24,12 @@ parts = MakePlummerModel(nbodies).result
 #x_r = np.random.rand(nbodies,4).astype('float32')
 #v_r = 0.0 * np.ones((nbodies,4)).astype('float32')
 
-x_r = np.array([parts.x.number,parts.y.number,parts.z.number],
-                dtype='float32').transpose()
-print x_r
-v_r = np.array([parts.vx.number,parts.vy.number,parts.vz.number],
-                dtype='float32').transpose()
-x_r=np.append(x_r, 1.0/nbodies * np.ones((nbodies,1)).astype('float32'),1)
-v_r=np.append(v_r, np.zeros((nbodies,1)).astype('float32'),1)
-print x_r;#exit()
+x_r = np.vstack([parts.x.number,parts.y.number,parts.z.number,1.0/nbodies * np.ones(nbodies)])
+x_r = np.array(x_r,dtype='float32')
+print x_r.shape
+v_r = np.vstack([parts.vx.number,parts.vy.number,parts.vz.number, np.zeros(nbodies)])
+v_r = np.array(v_r,dtype='float32')
+
 ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
 
@@ -125,10 +124,13 @@ def display():
 	
 	
     glColor4f(1.0, 1.0, 0.0, 0.5)
-    glBegin(GL_POINTS)
-    for i, r in enumerate(x_r):
-        glVertex3f(r[0],r[1],r[2])
-    glEnd()
+    
+    glEnableClientState(GL_VERTEX_ARRAY)
+#    glBegin(GL_POINTS)
+    x=np.array(x_r[0:nbodies,0:3],dtype='float32')
+    glVertexPointerf(x)
+#    glEnd()
+    glDrawArrays(GL_POINTS,0,nbodies)
 
     glColor4f(0.0, 0.0, 1.0, 1.0)
     glutWireCube(1.0)
@@ -138,7 +140,6 @@ def display():
 
     glPopMatrix()
     glutSwapBuffers()
-
 
 def init():
     glClearColor(0.0, 0.0, 0.0, 0.0);
