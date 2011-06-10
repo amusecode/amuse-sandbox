@@ -10,16 +10,12 @@ class copycat(object):
     self.parameters=parameters
         
   def get_gravity_at_point(self,radius,x,y,z):
-    import time
-    t1=time.time()
     instance=self.baseclass(self.converter)
     for param,value in self.parameters:
       err=instance.parameters.__setattr__(param,value)
     for system in self.systems:
       instance.particles.add_particles(system.particles)
     ax,ay,az=instance.get_gravity_at_point(radius,x,y,z)
-    t2=time.time()
-    print "**",t2-t1
     instance.stop()
     return ax,ay,az
 
