@@ -22,6 +22,7 @@ atanh=math.atanh
 atan2=math.atan2
 cot=math.cot
 coth=math.coth
+j=math.j
 
 log=math.log
 log10=math.log10

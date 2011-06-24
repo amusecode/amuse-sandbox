@@ -22,7 +22,9 @@ numpad_buttons=( (0,1,3,4,'0'),
                  (4,5,1,2,'('),
                  (5,6,1,2,')') )
 
-shiftable_buttons=((1,2,0,1,'sin','sin(','asin','asin('),
+shiftable_buttons=((0,1,1,2,'pi','pi',',',','),
+                   (4,5,0,1,'e','e','j','j'),
+                   (1,2,0,1,'sin','sin(','asin','asin('),
                    (2,3,0,1,'cos','cos(','acos','acos('),
                    (3,4,0,1,'tan','tan(','atan','atan('),
                    (1,2,1,2,'sinh','sinh(','asinh','asinh('),
@@ -35,11 +37,11 @@ scipad_buttons=((2,3,2,3,'x^2','**2'),
                 (6,7,0,1,'|','|'),
                 (6,7,1,2,'abs','abs('),
                 (6,7,2,3,'rnd','rnd()'),
-                (0,1,1,2,'pi','pi'),
-                (4,5,0,1,'log','log('),
-                (4,5,1,2,'log10','log10('),                
-                (5,6,0,1,'e','e'),
-                (5,6,1,2,'10^x','10**('),
+#                (0,1,1,2,'pi','pi'),
+#                (4,5,0,1,'e','e'),
+                (4,5,1,2,'10^x','10**('),                
+                (5,6,0,1,'log','log('),
+                (5,6,1,2,'log10','log10('),
                 (5,6,2,3,'^','**'))
 
 unitpad_buttons=((0,1,1,2,'convert',').convert_to('),
@@ -160,15 +162,15 @@ class unitcalc(object):
       l=6
     else:
       l=4
-    for i,x in enumerate(self.trigobuttons):
+    for i,x in enumerate(self.shiftbuttons):
       x.set_label(shiftable_buttons[i][l])
 
-  def trigo_callback(self,widget,data):
+  def shiftable_callback(self,widget,data):
     if(self.shift):
-      self.insert_in_buff('a'+data)
+      self.insert_in_buff(data[1])
       self.shift_button.set_active(False)
     else:
-      self.insert_in_buff(data)
+      self.insert_in_buff(data[0])
 
   def combobox_callback(self,widget,data):
     model=widget.get_model()
@@ -181,7 +183,7 @@ class unitcalc(object):
   def __init__(self):
     self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 
-    self.window.set_title("AMUSE Calculator")
+    self.window.set_title("Calculator")
     self.window.set_size_request(480,640)
   
     self.window.connect("delete_event", gtk.main_quit)
@@ -195,7 +197,7 @@ class unitcalc(object):
     self.view.set_cursor_visible(True)
     self.view.set_wrap_mode(gtk.WRAP_CHAR)
     self.view.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("dark gray"))
-    self.view.modify_font(pango.FontDescription("Monospace 14"))
+    self.view.modify_font(pango.FontDescription("Monospace 12"))
     self.view.set_border_width(3)
     self.view.set_left_margin(3)
     self.view.set_right_margin(3)
@@ -260,12 +262,12 @@ class unitcalc(object):
     self.shift_button.connect("clicked",self.shift_callback)
     self.scipad.attach(self.shift_button,0,1,0,1)
 
-    self.trigobuttons=[]
+    self.shiftbuttons=[]
     for x in shiftable_buttons:
       button=gtk.Button(x[4])
-      button.connect("clicked",self.trigo_callback,x[5])
+      button.connect("clicked",self.shiftable_callback,(x[5],x[7]))
       self.scipad.attach(button,x[0],x[1],x[2],x[3])
-      self.trigobuttons.append(button)
+      self.shiftbuttons.append(button)
     
     for x in unitpad_buttons:
       button=gtk.Button(x[4])
