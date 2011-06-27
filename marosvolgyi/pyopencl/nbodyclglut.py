@@ -18,7 +18,7 @@ omega = 0.0
 zoom = -12
 xold = 0
 yold = 0
-nbodies = 8192
+nbodies = 4096
 frame=0
 t0=time.time()
 t1=t0
@@ -165,7 +165,7 @@ def display():
     glutSwapBuffers()
     frame+=1
     
-    if frame%100==0:
+    if frame%10==0:
       t=time.time()
       print 'fps:',frame/(t-t0),'  gflops:', 100*2.*nbodies**2*20/(t-t0)/1.e9
       t0=t
