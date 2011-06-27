@@ -3,6 +3,7 @@ import pdb
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.ext.solarsystem import Solarsystem
 from amuse.support.units import units
+from amuse.support.data.values import VectorQuantity as Vq
 from amuse.plot import *
 
 try:
@@ -18,10 +19,10 @@ def plotdata(planets):
         plot(x, y, '.')
     native_plot.show()
 
-def planetplot():
+def integrate_and_store():
     sun, planets = Solarsystem.new_solarsystem()
-    timerange = units.day(numpy.arange(0, 120 * 365.25, 12))
-
+    #timerange = units.day(numpy.arange(20, 120 * 365.25, 12))
+    timerange = Vq.arange(20 | units.day, 120 |units.yr, 10 |units.day)
     pdb.set_trace()
 
     instance = MercuryWayWard()
@@ -48,4 +49,4 @@ def planetplot():
     pdb.set_trace()
 
 if __name__ == "__main__":
-    planetplot()
+    integrate_and_store()
