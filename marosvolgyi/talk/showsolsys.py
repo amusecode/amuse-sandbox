@@ -32,19 +32,10 @@ def planetplot():
 
     channels = instance.orbiters.new_channel_to(planets)
 
-    pdb.set_trace()
-
     err = instance.evolve_model(10|units.day)
+    pdb.set_trace()
     channels.copy()
     planets.savepoint(10|units.day)
-
-    pdb.set_trace()
-
-    err = instance.evolve_model(20|units.day)
-    channels.copy()
-    planets.savepoint(20|units.day)
-
-
     pdb.set_trace()
 
     for time in timerange:
