@@ -1,7 +1,7 @@
 #define FLOAT  double
 #define CLFLOAT cl_double
 #define CLFLOAT4 cl_double4
-#define DOUBLE double//long double
+#define DOUBLE long double
 #define INT int
 #define UINT unsigned int
 #define LONG long
@@ -9,7 +9,6 @@
 
 #define SWAP(a,b,c) {c t;t=(a);(a)=(b);(b)=t;}
 
-//#define LOG(fmt, ...) fprintf(logfh, "%s:%d\t", __FILE__, __LINE__); fprintf(logfh, fmt, ## __VA_ARGS__);
 #define LOG(fmt, ...) {\
 	printf("%s:%d\t", __FILE__, __LINE__);\
 	printf(fmt, ## __VA_ARGS__);\
@@ -24,8 +23,7 @@
 	exit(-1);\
 }
 
-struct particle
-{
+struct particle {
   UINT id;
   FLOAT mass;
   FLOAT radius; /*not used*/
@@ -40,23 +38,20 @@ struct particle
   //UINT visited_cc;
 };
 
-struct jparticle
-{
+struct jparticle {
   FLOAT mass;
   FLOAT pos[3];
   FLOAT vel[3];
 };
 
-struct sys
-{
+struct sys {
   UINT n; 
   struct particle *part;
   struct particle *last;
   struct sys *next_cc;
 };
 
-enum intopt
-{
+enum intopt {
   CONSTANT,
   UNSPLIT,
   PASS,
@@ -70,7 +65,9 @@ enum intopt
   UNSPLIT4,
   CC_SPLIT4,
   EVOLVE_OK2,
-  EVOLVE_OK4
+  EVOLVE_OK4,
+  TWOBODY,
+  CC_SPLIT2_TWOBODY
 };
 
 extern FLOAT eps2;
@@ -83,7 +80,8 @@ void do_evolve(struct sys s, double dt, int inttype);
 DOUBLE system_potential_energy(struct sys s);
 DOUBLE system_kinetic_energy(struct sys s);
 
-void get_evolve_statistics_(int *ttot, int *ktot, int *dtot, int *tstot, int *kstot, int *dstot);
+//void get_evolve_statistics_(int *ttot, int *ktot, int *dtot, int *tstot, int *kstot, int *dstot);
+void get_evolve_statistics_(double *ttot, double *ktot, double *dtot, double *tstot, double *kstot, double *dstot, double *cetot);
 DOUBLE sys_initial_timestep(struct sys s);
 DOUBLE sys_forces_min_timestep(struct sys s);
 DOUBLE ok_timestep_ij_fw(struct particle *i, struct particle *j);

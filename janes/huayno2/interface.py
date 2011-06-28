@@ -17,7 +17,8 @@ class inttypes:
     HOLD_DKD_CC4 = 11
     OK2 = 12
     OK4 = 13
-
+    TWOBODY = 14
+    CC2_TWOBODY=15
 
 class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
     include_headers = ['worker_code.h']
@@ -107,7 +108,7 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
         return function
 
     @legacy_function    
-    def evolve():
+    def evolve_model():
         function = LegacyFunctionSpecification()  
         function.addParameter('time_end', dtype='d', direction=function.IN)
         function.result_type = 'i'
@@ -171,12 +172,13 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
     @legacy_function    
     def get_evolve_statistics():
         function = LegacyFunctionSpecification()   
-        function.addParameter('ttot', dtype='i', direction=function.OUT)
-        function.addParameter('ktot', dtype='i', direction=function.OUT)
-        function.addParameter('dtot', dtype='i', direction=function.OUT)
-        function.addParameter('tstot', dtype='i', direction=function.OUT)
-        function.addParameter('kstot', dtype='i', direction=function.OUT)
-        function.addParameter('dstot', dtype='i', direction=function.OUT)
+        function.addParameter('ttot', dtype='d', direction=function.OUT)
+        function.addParameter('ktot', dtype='d', direction=function.OUT)
+        function.addParameter('dtot', dtype='d', direction=function.OUT)
+        function.addParameter('tstot', dtype='d', direction=function.OUT)
+        function.addParameter('kstot', dtype='d', direction=function.OUT)
+        function.addParameter('dstot', dtype='d', direction=function.OUT)
+        function.addParameter('cetot', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
 
@@ -284,7 +286,7 @@ class Huayno(GravitationalDynamics):
         GravitationalDynamics.define_methods(self, object)
 
         object.add_method("get_evolve_statistics", (),
-            (units.none, units.none, units.none, units.none, units.none, units.none, object.ERROR_CODE)
+            (units.none, units.none, units.none, units.none, units.none, units.none, units.none, object.ERROR_CODE)
         )
 
     def define_particle_sets(self, object):

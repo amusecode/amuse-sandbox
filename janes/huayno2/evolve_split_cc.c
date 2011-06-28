@@ -367,11 +367,25 @@ void free_sys(struct sys * s) {
 	free(s);
 }
 
+DOUBLE sys_forces_max_timestep(struct sys s) {
+  DOUBLE ts = 0.0;
+  DOUBLE ts_ij;
+  for (UINT i = 0; i < s.n; i++) {
+    for (UINT j = 0; j < s.n; j++) {
+      if (i != j) {
+        ts_ij = timestep_ij(s, i, s, j);
+        if (ts_ij >= ts) { ts = ts_ij; };
+      }
+    }
+  }
+  return ts;
+}
+
 void evolve_split_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 	struct sys c = zerosys, r = zerosys;
 	clevel++;
-	if (etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+	if (etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
 
 #ifdef CC2_SPLIT_CONSISTENCY_CHECKS
 	if (clevel == 0) {
@@ -414,7 +428,7 @@ void evolve_split_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 #ifdef CC2_SPLIT_SHORTCUTS
 	if (s.n == c.n) {
-		DOUBLE initial_timestep = sys_forces_min_timestep(s);
+		DOUBLE initial_timestep = sys_forces_max_timestep(s);
 		DOUBLE dt_step = dt;
 
 		while (dt_step > initial_timestep) dt_step = dt_step / 2;
@@ -471,6 +485,130 @@ void evolve_split_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 	free_sys(c.next_cc);
 }
 
+void evolve_split_cc2_twobody(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
+  // TODO fail/warn if smoothing is non-zero
+  // TODO use kepler solver only if dt is larger than the orbital period
+  if (s.n == 2) {
+    //LOG("evolve: close encounters!\n");
+    evolve_twobody(s, stime, etime, dt);
+  } else {
+    //LOG("evolve: regular!\n");
+    struct sys c = zerosys, r = zerosys;
+    clevel++;
+    if (etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+
+#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
+    if (clevel == 0) {
+      printf("consistency_checks: ", s.n, clevel);
+    }
+#endif
+
+#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
+    // debug: make a copy of s to verify that the split has been done properly
+    struct sys s_before_split;
+    s_before_split.n = s.n;
+    s_before_split.part = (struct particle*) malloc(s.n*sizeof(struct particle));
+    s_before_split.last = &( s_before_split.part[s.n - 1] );
+    s_before_split.next_cc = NULL;
+    memcpy(s_before_split.part, s.part, s.n*sizeof(struct particle));
+#endif
+
+    split_cc(s, &c, &r, dt);
+    //if (s.n != c.n) LOG_CC_SPLIT(&c, &r); // print out non-trivial splits
+
+#ifdef CC2_SPLIT_CONSISTENCY_CHECKS
+  /*
+      if (s.n != r.n) {
+      LOG("s: ");
+      LOGSYS_ID(s_before_split);
+      LOG("c: ");
+      LOGSYSC_ID(c);
+      LOG("r: ");
+      LOGSYS_ID(r);
+    }
+  */
+    // verify the split
+    split_cc_verify(s_before_split, &c, &r);
+    split_cc_verify_ts(&c, &r, dt);
+    free(s_before_split.part);
+    if (clevel == 0) {
+      printf("ok ");
+    }
+#endif
+
+#ifdef CC2_SPLIT_SHORTCUTS
+    if (s.n == c.n) {
+      DOUBLE initial_timestep = sys_forces_max_timestep(s);
+      DOUBLE dt_step = dt;
+
+      while (dt_step > initial_timestep) dt_step = dt_step / 2;
+
+      LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", clevel, dt / dt_step);
+      for (DOUBLE dt_now = 0; dt_now < dt; dt_now += dt_step) {
+        evolve_split_cc2(s, dt_now, dt_now + dt_step,(DOUBLE) dt_step);
+      }
+
+      clevel--;
+      free_sys(c.next_cc);
+      return;
+    }
+#endif
+
+    if (IS_ZEROSYSs(c)) {
+      deepsteps++;
+      simtime+=dt;
+    }
+
+    // evolve all fast components, 1st time
+    for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
+      evolve_split_cc2_twobody(*ci, stime, stime+dt/2, dt/2);
+    }
+
+    drift(r, stime+dt/2, dt/2); // drift r, 1st time
+
+    // kick ci <-> cj
+    for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
+      for (struct sys *cj = &c; !IS_ZEROSYS(cj); cj = cj->next_cc) {
+        if (ci != cj) {
+          kick(*ci, *cj, dt);
+          //kick(*cj, *ci, dt);
+        }
+      }
+    }
+
+    // kick c <-> rest
+    for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
+      kick(r, *ci, dt);
+      kick(*ci, r, dt);
+    }
+
+    kick(r, r, dt); // kick rest
+
+    drift(r, etime, dt/2);  // drift r, 2nd time
+
+    // evolve all fast components, 2nd time
+    for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) {
+      evolve_split_cc2_twobody(*ci, stime+dt/2, etime, dt/2);
+    }
+
+    clevel--;
+    free_sys(c.next_cc);
+  }
+}
+
+void evolve_split_cc4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt);
+void evolve_split_cc4_chunks(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int chunks) {
+  //LOG("\nsys_initial_timestep=%Le, dt=%e\n", initial_timestep, dt);
+  DOUBLE dt_step = dt / chunks;
+  DOUBLE stime_i = stime;
+  for (int i = 0; i < chunks; i++) {
+    //LOG("chunk %d\n", chunks);
+    evolve_split_cc4(s, stime_i, stime_i + dt_step, (DOUBLE)dt_step);
+    stime_i += dt_step;
+  }
+  //LOG("making: %Le steps\n", dt / dt_step);
+}
+
 void evolve_split_cc4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 
 	//LOG("evolve_split_hold_dkd_cc: stime=%LE etime=%LE dt=%LE\n", stime, etime, dt);
@@ -486,33 +624,33 @@ void evolve_split_cc4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 		simtime+=dt;
 	}
 
-	#define EVOLVE_CC(TIME, DT) \
-		for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) { \
-			evolve_split_cc4(*ci, (TIME), (TIME) + (DT), (DT)); \
-		} \
-		(TIME) += (DT);
+#define EVOLVE_CC(TIME, DT, CHUNKS) \
+  for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) { \
+    evolve_split_cc4_chunks(*ci, (TIME), (TIME) + (DT), (DT), (CHUNKS)); \
+  } \
+  (TIME) += (DT);
 
-	#define DRIFT_RI(TIME, DT) \
-		drift(r, (TIME) + (DT), (DT)); \
-		(TIME) += (DT);
+#define DRIFT_RI(TIME, DT) \
+  drift(r, (TIME) + (DT), (DT)); \
+  (TIME) += (DT);
 
-	#define KICK_RI(TIME, DT) \
-		/* kick ci <-> cj */ \
-		for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) { \
-			for (struct sys *cj = &c; !IS_ZEROSYS(cj); cj = cj->next_cc) { \
-				if (ci != cj) { \
-					kick(*ci, *cj, (DT)); \
-				} \
-			} \
-		} \
-		/* kick c <-> rest */ \
-		for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) { \
-			kick(r, *ci, (DT)); \
-			kick(*ci, r, (DT)); \
-		} \
-		/* kick rest */ \
-		kick(r, r, (DT)); \
-		(TIME) += (DT);
+#define KICK_RI(TIME, DT) \
+  /* kick ci <-> cj */ \
+  for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) { \
+    for (struct sys *cj = &c; !IS_ZEROSYS(cj); cj = cj->next_cc) { \
+      if (ci != cj) { \
+        kick(*ci, *cj, (DT)); \
+      } \
+    } \
+  } \
+  /* kick c <-> rest */ \
+  for (struct sys *ci = &c; !IS_ZEROSYS(ci); ci = ci->next_cc) { \
+    kick(r, *ci, (DT)); \
+    kick(*ci, r, (DT)); \
+  } \
+  /* kick rest */ \
+  kick(r, r, (DT)); \
+  (TIME) += (DT);
 
 	// time-keeping counters
 	DOUBLE time_c = stime;
@@ -541,9 +679,9 @@ void evolve_split_cc4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 	#define A2 0.353172906049774
 	#define A3 -.0420650803577195
 	#define A4 (1 - 2*((A1) + (A2) + (A3))) // A4=0.21937695575349958
-	#define B1 0.209515106613362
-	#define B2 -.143851773179818
-	#define B3 (0.5 - (B1) - (B2)) // B3=0.43433666656645598
+	#define B1 0.209515106613362 // div4
+	#define B2 -.143851773179818 // div3
+	#define B3 (0.5 - (B1) - (B2)) // B3=0.43433666656645598 // div9
 
 	#define EVOLVE_SPLIT_DKD4(EVOLVE_A, EVOLVE_B, TIME_A, TIME_B, DT) \
 		EVOLVE_A(TIME_A, A1*(DT)); \
@@ -560,23 +698,39 @@ void evolve_split_cc4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 		EVOLVE_B(TIME_B, B1*(DT)); \
 		EVOLVE_A(TIME_A, A1*(DT));
 
-	#define EVOLVE_SPLIT_CRI4(EVOLVE_A, EVOLVE_B, TIME_A, TIME_B, DT) \
-		EVOLVE_A(TIME_A, A1*(DT)); \
-		EVOLVE_B(TIME_B, B1*(DT)); \
-		EVOLVE_A(TIME_A, A2*(DT)); \
-		EVOLVE_B(TIME_B, B2*(DT)); \
-		EVOLVE_A(TIME_A, A3*(DT)); \
-		EVOLVE_B(TIME_B, B3*(DT)); \
-		EVOLVE_A(TIME_A, A4*(DT)); \
-		EVOLVE_B(TIME_B, B3*(DT)); \
-		EVOLVE_A(TIME_A, A3*(DT)); \
-		EVOLVE_B(TIME_B, B2*(DT)); \
-		EVOLVE_A(TIME_A, A2*(DT)); \
-		EVOLVE_B(TIME_B, B1*(DT)); \
-		EVOLVE_A(TIME_A, A1*(DT));
-
-	#define EVOLVE_RI(TIME, DT) EVOLVE_SPLIT_DKD4(DRIFT_RI, KICK_RI, time_d, time_k, (DT));
-	EVOLVE_SPLIT_CRI4(EVOLVE_RI, EVOLVE_CC, time_c, time_r, dt);
+#define CC4_REDUCE_FACTOR 1
+#define EVOLVE_SPLIT_CRI4(EVOLVE_A, EVOLVE_B, TIME_A, TIME_B, DT) \
+    EVOLVE_A(TIME_A, A1*(DT)); \
+    EVOLVE_B(TIME_B, B1*(DT), 4 * CC4_REDUCE_FACTOR); \
+    EVOLVE_A(TIME_A, A2*(DT)); \
+    EVOLVE_B(TIME_B, B2*(DT), 3 * CC4_REDUCE_FACTOR); \
+    EVOLVE_A(TIME_A, A3*(DT)); \
+    EVOLVE_B(TIME_B, B3*(DT), 9 * CC4_REDUCE_FACTOR); \
+    EVOLVE_A(TIME_A, A4*(DT)); \
+    EVOLVE_B(TIME_B, B3*(DT), 9 * CC4_REDUCE_FACTOR); \
+    EVOLVE_A(TIME_A, A3*(DT)); \
+    EVOLVE_B(TIME_B, B2*(DT), 3 * CC4_REDUCE_FACTOR); \
+    EVOLVE_A(TIME_A, A2*(DT)); \
+    EVOLVE_B(TIME_B, B1*(DT), 4 * CC4_REDUCE_FACTOR); \
+    EVOLVE_A(TIME_A, A1*(DT));
+/*
+#define EVOLVE_SPLIT_CRI4(EVOLVE_A, EVOLVE_B, TIME_A, TIME_B, DT) \
+    EVOLVE_A(TIME_A, A1*(DT)); \
+    EVOLVE_B(TIME_B, B1*(DT), 1); \
+    EVOLVE_A(TIME_A, A2*(DT)); \
+    EVOLVE_B(TIME_B, B2*(DT), 1); \
+    EVOLVE_A(TIME_A, A3*(DT)); \
+    EVOLVE_B(TIME_B, B3*(DT), 1); \
+    EVOLVE_A(TIME_A, A4*(DT)); \
+    EVOLVE_B(TIME_B, B3*(DT), 1); \
+    EVOLVE_A(TIME_A, A3*(DT)); \
+    EVOLVE_B(TIME_B, B2*(DT), 1); \
+    EVOLVE_A(TIME_A, A2*(DT)); \
+    EVOLVE_B(TIME_B, B1*(DT), 1); \
+    EVOLVE_A(TIME_A, A1*(DT));
+*/
+#define EVOLVE_RI(TIME, DT) EVOLVE_SPLIT_DKD4(DRIFT_RI, KICK_RI, time_d, time_k, (DT));
+	EVOLVE_SPLIT_CRI4(EVOLVE_RI, EVOLVE_CC, time_r, time_c, dt);
 	//EVOLVE_SPLIT_CRI4(EVOLVE_CC, EVOLVE_RI, time_c, time_r, dt);
 
 	clevel--;

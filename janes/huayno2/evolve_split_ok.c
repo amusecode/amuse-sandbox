@@ -240,7 +240,7 @@ void ok_evolve2(struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBL
 	if (IS_ZEROFORCES(f) && clevel == -1) { f = ok_main_forces; }
 	clevel++;
     if ((etime <= stime) || (dt == 0) || (clevel >= MAXLEVEL))
-      ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u", etime, stime, dt, clevel);
+      ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
 
     // all particles are drifted together
     if (f.n == 0) {

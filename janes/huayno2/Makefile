@@ -1,5 +1,5 @@
 
-AMUSE_DIR =../../../
+AMUSE_DIR =../../..
 
 # fix for MacPorts+OpenMPI compilers
 ifneq (,$(shell type -P openmpicxx))
@@ -12,7 +12,8 @@ MPICC ?= mpicc
 
 # -std=c99 is needed for the LOGSYS_TS macro, may be removed if deemed necessary
 # -D_GNU_SOURCE is needed to define M_SQRT2 when compiling on certain machines (gpu-1@strw)
-CXXFLAGS += -O2 -Wall -std=c99 -D_GNU_SOURCE
+CCFLAGS += -O2 -Wall -std=c99 -D_GNU_SOURCE
+CXXFLAGS += -O2 -Wall -D_GNU_SOURCE
 LIBS += -lm
 INCLUDE =
 
@@ -61,7 +62,7 @@ huayno_worker_cl: __init__.py worker_code.cc worker_code.h evolve_kern.clh evolv
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
 
 .c.o: $<
-	$(MPICC) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICC) $(CCFLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
 	awk 'BEGIN{print "const char srcstr[]=" } {print "\""$$0"\\n\""} END{print ";"}' $< > $@

@@ -28,6 +28,7 @@ DOUBLE simtime;
 static int clevel;
 static unsigned long tcount[MAXLEVEL],kcount[MAXLEVEL],dcount[MAXLEVEL],deepsteps;
 static unsigned long tstep[MAXLEVEL],kstep[MAXLEVEL],dstep[MAXLEVEL];
+static unsigned long cecount[MAXLEVEL]; // twobody solver execution counts
 #ifdef EVOLVE_OPENCL
 static unsigned long cpu_step,cl_step,cpu_count,cl_count;
 #endif
@@ -50,23 +51,34 @@ DOUBLE timestep_ij(struct sys r, UINT i, struct sys s, UINT j);
 DOUBLE timestep_ij_bw(struct sys r, UINT i, struct sys s, UINT j);
 
 #include "conserved_quantities.c"
+#include "evolve_twobody.c"
 #include "evolve_split_cc.c"
 #include "evolve_split_ok.c"
 
-void evolve_unsplit(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
-{
+static FLOAT global_timestep(struct sys s) {
+  UINT i;
+  FLOAT mindt;
+  mindt = HUGE_VAL;
+  for (i = 0; i < s.n; i++) {
+    if (mindt > s.part[i].timestep) mindt = s.part[i].timestep;
+  }
+  return mindt;
+}
+
+/*
+ * Single global adaptive time step, 2nd order split.
+ */
+void evolve_unsplit(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
   clevel++;
-  if(etime <= stime ||  dt==0 || clevel>MAXLEVEL) endrun((char *)"timestep too small");
+  if(etime <= stime ||  dt==0 || clevel>MAXLEVEL)
+    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
   if(calc_timestep) timestep(s,s);
-  dtsys=global_timestep(s);
-  if(dtsys < dt)
-  {
+  dtsys = global_timestep(s);
+  if(dtsys < dt) {
     evolve_unsplit(s,stime, stime+dt/2,dt/2,0);
     evolve_unsplit(s,stime+dt/2, etime,dt/2,1);
-  }
-  else
-  {
+  } else {
     deepsteps++;
     simtime+=dt;
     kdk(s,zerosys, stime, etime, dt);
@@ -75,23 +87,22 @@ void evolve_unsplit(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int cal
 }
 
 /*
- * Unsplit integrator with a 4th order split
+ * Single global adaptive time step, 4th order split.
  */
 void evolve_unsplit4(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
-//	if (clevel == 0) LOG("evolve_unsplit4\n");
-
 	FLOAT dtsys;
 	clevel++;
-	if(etime <= stime ||  dt==0 || clevel>MAXLEVEL) endrun((char *)"timestep too small");
+	if(etime <= stime ||  dt==0 || clevel>MAXLEVEL)
+    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
 	if(calc_timestep) timestep(s,s);
-	dtsys=global_timestep(s);
+	dtsys = global_timestep(s);
 	if(dtsys < dt) {
 		evolve_unsplit4(s,stime, stime+dt/2,dt/2,0);
 		evolve_unsplit4(s,stime+dt/2, etime,dt/2,1);
 	} else {
 		deepsteps++;
 		simtime+=dt;
-	    dkd4(s, stime, etime, dt);
+	  dkd4(s, stime, etime, dt);
 	}
 	clevel--;
 }
@@ -102,7 +113,7 @@ void evolve_split_pass(struct sys sys1,struct sys sys2,
 {
   struct sys slow=zerosys,fast=zerosys;
   clevel++;
-  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("time step too small");
   if(calc_timestep) timestep(sys1, join(sys1,sys2));
 //  if(calc_timestep) timestep(sys1, sys1);
   split((FLOAT) dt, sys1, &slow, &fast);
@@ -122,7 +133,7 @@ void evolve_split_naive(struct sys sys1,struct sys sys2,
 {
   struct sys slow=zerosys,fast=zerosys;
   clevel++;
-  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("time step too small");
   if(calc_timestep) timestep(sys1, join(sys1,sys2));
 //  if(calc_timestep) timestep(sys1, sys1);
   split((FLOAT) dt, sys1, &slow, &fast);
@@ -144,7 +155,7 @@ void evolve_split_bridge(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, in
 {
   struct sys slow=zerosys,fast=zerosys;
   clevel++;
-  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("time step too small");
   if(calc_timestep) timestep(s,s);
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
@@ -166,7 +177,7 @@ void evolve_split_hold(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int 
 {
   struct sys slow=zerosys,fast=zerosys;
   clevel++;
-  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("time step too small");
   if(calc_timestep) timestep(s,s);
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
@@ -184,7 +195,7 @@ void evolve_split_hold_dkd(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
 {
   struct sys slow=zerosys,fast=zerosys;
   clevel++;
-  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("time step too small");
   if(calc_timestep) timestep(s,s);
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
@@ -197,7 +208,6 @@ void evolve_split_hold_dkd(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   if(fast.n>0) evolve_split_hold_dkd(fast, stime+dt/2, etime, dt/2,1);
   clevel--;
 }
-
 
 DOUBLE sys_forces_min_timestep(struct sys s) {
 	DOUBLE ts = 0.0;
@@ -218,7 +228,7 @@ void evolve_split_pass_dkd(struct sys sys1,struct sys sys2,
 {
   struct sys slow=zerosys,fast=zerosys;
   clevel++;
-  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("time step too small");
   if(calc_timestep) timestep(sys1, join(sys1,sys2));
 //  if(calc_timestep) timestep(sys1, sys1);
   split((FLOAT) dt, sys1, &slow, &fast);
@@ -293,11 +303,8 @@ void do_evolve(struct sys s, double dt, int inttype)
     tstep[i]=0;tcount[i]=0;
     kstep[i]=0;kcount[i]=0;
     dstep[i]=0;dcount[i]=0;
+    cecount[i]=0;
   }
-
-  DOUBLE initial_timestep;
-  DOUBLE dt_step;
-
   switch (inttype)
   {
     case UNSPLIT:
@@ -327,19 +334,12 @@ void do_evolve(struct sys s, double dt, int inttype)
     case CC_SPLIT2:
    	  evolve_split_cc2(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
+    case CC_SPLIT2_TWOBODY:
+      evolve_split_cc2_twobody(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
     case CC_SPLIT4:
-    	initial_timestep = sys_forces_min_timestep(s);
-        LOG("\nsys_initial_timestep=%Le, dt=%e\n", initial_timestep, dt);
-        dt_step = dt;
-        while (dt_step > initial_timestep) {
-        	dt_step = dt_step / 2;
-        }
-        LOG("making: %Le steps\n", dt / dt_step);
-        for (DOUBLE dt_now = 0; dt_now < dt; dt_now += dt_step) {
-        	evolve_split_cc4(s, dt_now, dt_now + dt_step,(DOUBLE) dt_step);
-        }
-    	//evolve_split_cc4(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
-        break;
+    	evolve_split_cc4(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
     case EVOLVE_OK2:
     	ok_evolve_init(s);
     	ok_evolve2(s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
@@ -350,6 +350,9 @@ void do_evolve(struct sys s, double dt, int inttype)
     	ok_evolve4(s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
     	ok_evolve_stop();
     	break;
+    case TWOBODY:
+      evolve_twobody(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
     default:  
       endrun((char*)" unknown integrator\n");
       break;
@@ -357,19 +360,6 @@ void do_evolve(struct sys s, double dt, int inttype)
   for(p=0;p<s.n;p++) s.part[p].pot=0;
   potential(s,s);
   //report(s,(DOUBLE) dt, inttype);
-}
-
-
-static FLOAT global_timestep(struct sys s)
-{
-  UINT i;
-  FLOAT mindt;
-  mindt=HUGE_VAL;
-  for(i=0;i<s.n;i++)
-  {
-    if(mindt>s.part[i].timestep) mindt=s.part[i].timestep;
-  }
-  return mindt;
 }
 
 static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
@@ -754,7 +744,7 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   fflush(stdout);
 }
 
-void get_evolve_statistics_(int *ttot, int *ktot, int *dtot, int *tstot, int *kstot, int *dstot) {
+void get_evolve_statistics_(double *ttot, double *ktot, double *dtot, double *tstot, double *kstot, double *dstot, double *cetot) {
 
     *ttot = 0;
     *ktot = 0;
@@ -762,6 +752,7 @@ void get_evolve_statistics_(int *ttot, int *ktot, int *dtot, int *tstot, int *ks
     *tstot = 0;
     *kstot = 0;
     *dstot = 0;
+    *cetot = 0;
 
 	for(int i = 0; i < MAXLEVEL; i++) {
 	    *ttot += tcount[i];
@@ -770,6 +761,7 @@ void get_evolve_statistics_(int *ttot, int *ktot, int *dtot, int *tstot, int *ks
 	    *tstot += tstep[i];
 	    *kstot += kstep[i];
 	    *dstot += dstep[i];
+      *cetot += cecount[i];
 	}
 
 	//printf("kcount: %18li, dcount: %18li, tcount: %18li ", ktot, dtot, ttot);
