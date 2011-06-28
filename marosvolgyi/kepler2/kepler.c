@@ -1,6 +1,8 @@
 /* 
 Kepler integrator, two-body problem
 
+Marcell Marosvolgyi 2010
+
 code based on:
 Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd Edition
 */
