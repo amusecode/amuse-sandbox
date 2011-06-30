@@ -2,6 +2,8 @@
 #define CLFLOAT cl_double
 #define CLFLOAT4 cl_double4
 #define DOUBLE long double
+#define FLT(x) __CONCAT(x,)
+#define DBL(x) __CONCAT(x,l)
 #define INT int
 #define UINT unsigned int
 #define LONG long
@@ -52,22 +54,22 @@ struct sys {
 };
 
 enum intopt {
-  CONSTANT,
-  UNSPLIT,
-  PASS,
-  HOLD,
-  BRIDGE,
-  NAIVE,
-  VARIABLE,
-  PASS_DKD,
-  HOLD_DKD,
-  CC_SPLIT2,
-  UNSPLIT4,
-  CC_SPLIT4,
-  EVOLVE_OK2,
-  EVOLVE_OK4,
-  TWOBODY,
-  CC_SPLIT2_TWOBODY
+  CONSTANT, //0
+  UNSPLIT,  //1
+  PASS,     //2
+  HOLD,     //3
+  BRIDGE,   //4
+  NAIVE,    //5
+  VARIABLE, //6
+  PASS_DKD, //7
+  HOLD_DKD, //8
+  CC_SPLIT2, //9
+  UNSPLIT4, //10
+  CC_SPLIT4,  //11
+  EVOLVE_OK2, //12
+  EVOLVE_OK4, //13
+  TWOBODY, //14
+  CC_SPLIT2_TWOBODY //15 
 };
 
 extern FLOAT eps2;

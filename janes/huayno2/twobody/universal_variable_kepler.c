@@ -1,18 +1,16 @@
 #include <stdio.h>
 #include <math.h>
 
-#define TOLERANCE  1.e-14
-#define ORDER  4
-#define MAXITER 20
+#define TOLERANCE  1.e-15
+#define ORDER  5
+#define MAXITER 30
 
-#define SIGN(x)  ((x)>0? 1:-1)
-
-//#include "../evolve.h"
+#define SIGN(x)  ((x)>=0? 1:-1)
 
 DOUBLE stumpff_C(DOUBLE z)
 {
-  if(z>0) return (1-cos(sqrt(z)))/z;  
-  if(z<0) return -(cosh(sqrt(-z))-1)/z;  
+  if(z>0) return (1-DBL(cos)(DBL(sqrt)(z)))/z;  
+  if(z<0) return -(DBL(cosh)(DBL(sqrt)(-z))-1)/z;  
   return 1/2.;
 }
 
@@ -21,13 +19,13 @@ DOUBLE stumpff_S(DOUBLE z)
   double sz;
   if(z>0)
   {
-    sz=sqrt(z);  
-    return (sz-sin(sz))/(sz*z);  
+    sz=DBL(sqrt)(z);  
+    return (sz-DBL(sin)(sz))/(sz*z);  
   }
   if(z<0)
   {
-    sz=sqrt(-z);  
-    return (sz-sinh(sz))/(sz*z);  
+    sz=DBL(sqrt)(-z);  
+    return (sz-DBL(sinh)(sz))/(sz*z);  
   }
   return 1/6.;
 }
@@ -97,15 +95,15 @@ int laguerre(DOUBLE x0, DOUBLE *x, DOUBLE *arg,
     fv=(*f)(*x,arg);
     dfv=(*fprime)(*x,arg);
     ddfv=(*fprimeprime)(*x,arg);
-//    printf("a: %d %f %f %f %f\n", i,(float) fabsl(*x),(float)fv,(float)dfv,(float)ddfv);
+//    printf("a: %d %f %f %f %f\n", i,(float) DBL(fabs)(*x),(float)fv,(float)dfv,(float)ddfv);
     if(dfv==0 || ddfv==0) return -2;
-//    delta=-ORDER*fv/(dfv+
-//      SIGN(dfv)*sqrt(fabsl((ORDER-1)*(ORDER-1)*dfv*dfv-ORDER*(ORDER-1)*fv*ddfv)));
-    delta=-fv/dfv;
+    delta=-ORDER*fv/(dfv+
+      SIGN(dfv)*DBL(sqrt)(DBL(fabs)((ORDER-1)*(ORDER-1)*dfv*dfv-ORDER*(ORDER-1)*fv*ddfv)));
+//    delta=-fv/dfv;
     (*x)+=delta;
-    if(fabsl(delta)<TOLERANCE*fabsl(*x))
+//    printf("%d %14.12Lg | %14.12Lg, %14.12Lg\n", i,DBL(fabs)(delta),*x,TOLERANCE*DBL(fabs)(*x));
+    if(DBL(fabs)(delta)<TOLERANCE*DBL(fabs)(*x))
     {
-      printf("%d\n", i);
       return 0;
     }
     i+=1;
@@ -131,9 +129,9 @@ DOUBLE fprimeprime(DOUBLE xi, DOUBLE *arg)
 int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3], 
              DOUBLE vel0[3],DOUBLE pos[3], DOUBLE vel[3])
 {
-  DOUBLE smu=sqrt(mu);
-  DOUBLE r0=sqrt(pos0[0]*pos0[0]+pos0[1]*pos0[1]+pos0[2]*pos0[2]);
-  DOUBLE v0=sqrt(vel0[0]*vel0[0]+vel0[1]*vel0[1]+vel0[2]*vel0[2]);
+  DOUBLE smu=DBL(sqrt)(mu);
+  DOUBLE r0=DBL(sqrt)(pos0[0]*pos0[0]+pos0[1]*pos0[1]+pos0[2]*pos0[2]);
+  DOUBLE v0=DBL(sqrt)(vel0[0]*vel0[0]+vel0[1]*vel0[1]+vel0[2]*vel0[2]);
   DOUBLE vr0=(pos0[0]*vel0[0]+pos0[1]*vel0[1]+pos0[2]*vel0[2])/r0;
   DOUBLE alpha=2./r0-v0*v0/mu;
   DOUBLE xi0,dxi0,arg[5],xi;
@@ -145,12 +143,12 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
     xi0=smu*alpha*dt;
   } else
   {
-    xi0=SIGN(dt)/sqrt(-alpha)*log(1-2*mu*dt*alpha/((vr0*r0)+  
-          SIGN(dt)*smu/sqrt(-alpha)*(1-r0*alpha)));
+    xi0=SIGN(dt)/DBL(sqrt)(-alpha)*log(1-2*mu*dt*alpha/((vr0*r0)+  
+          SIGN(dt)*smu/DBL(sqrt)(-alpha)*(1-r0*alpha)));
 // this last formula is 4.5.11 in bate et al., fundamentals of astrodynamics 
 // with +1 in the logarithm
     dxi0=smu/r0*dt;
-    if(fabsl(alpha*dxi0*dxi0)<1) xi0=dxi0;
+    if(DBL(fabs)(alpha*dxi0*dxi0)<1) xi0=dxi0;
   }
   
   arg[0]=smu*dt;
@@ -158,11 +156,14 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
   arg[2]=vr0;
   arg[3]=smu;
   arg[4]=alpha;
-//  printf("arg: %f %f %f %f %f\n", (float) arg[0], (float) arg[1], 
-//  (float) arg[2]  , (float) arg[3], (float) arg[4]);
 
   err=laguerre(xi0, &xi, arg, &f,&fprime,&fprimeprime);
-  if(err !=0) return err;
+  if(err !=0) {
+   printf("%f arg: %f %f %f %f %f\n", (float) xi0,(float) arg[0], (float) arg[1], 
+  (float) arg[2]  , (float) arg[3], (float) arg[4]);
+
+  return err;
+  }
   {
     int i;
     DOUBLE r;
@@ -171,7 +172,7 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
     DOUBLE ldf=lagrange_dfdxi(xi,r0,vr0,smu,alpha);
     DOUBLE ldg=lagrange_dgdxi(xi,r0,vr0,smu,alpha);
     for(i=0;i<3;i++) pos[i]=pos0[i]*lf+vel0[i]*lg;
-    r=sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
+    r=DBL(sqrt)(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
     for(i=0;i<3;i++) vel[i]=pos0[i]*smu/r*ldf+vel0[i]*smu/r*ldg;  
   }
 //  printf("out: %f %f %f %f\n", (float) dt,(float)mu,(float)pos[0],(float)vel[0]);
