@@ -26,31 +26,33 @@ void evolve_twobody(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   vel_cm[0] = (m1 * s.part->vel[0] + m2 * s.last->vel[0]) / mtot;
   vel_cm[1] = (m1 * s.part->vel[1] + m2 * s.last->vel[1]) / mtot;
   vel_cm[2] = (m1 * s.part->vel[2] + m2 * s.last->vel[2]) / mtot;
-  // call kepler solver
-
-  {int err=universal_variable_kepler_solver(dt,mtot,dpos0,dvel0,dpos,dvel);
-  if ( err != 0) ENDRUN("kepler_evolve() failed %d\n",err);
-  }
   // evolve center of mass for dt
   pos_cm[0] += vel_cm[0] * dt;
   pos_cm[1] += vel_cm[1] * dt;
   pos_cm[2] += vel_cm[2] * dt;
-  // translate coordinates from 2-body frame to original frame
-  s.part->pos[0] = pos_cm[0] + f1 * dpos[0];
-  s.part->pos[1] = pos_cm[1] + f1 * dpos[1];
-  s.part->pos[2] = pos_cm[2] + f1 * dpos[2];
-  s.part->vel[0] = vel_cm[0] + f1 * dvel[0];
-  s.part->vel[1] = vel_cm[1] + f1 * dvel[1];
-  s.part->vel[2] = vel_cm[2] + f1 * dvel[2];
-  s.last->pos[0] = pos_cm[0] - f2 * dpos[0];
-  s.last->pos[1] = pos_cm[1] - f2 * dpos[1];
-  s.last->pos[2] = pos_cm[2] - f2 * dpos[2];
-  s.last->vel[0] = vel_cm[0] - f2 * dvel[0];
-  s.last->vel[1] = vel_cm[1] - f2 * dvel[1];
-  s.last->vel[2] = vel_cm[2] - f2 * dvel[2];
-  // dummy test: evolve with shared global time step
-  //evolve_unsplit4(s, stime, etime, dt, 1);
-  // update statistics
+  // call kepler solver
+  int err = universal_variable_kepler_solver(dt,mtot,dpos0,dvel0,dpos,dvel);
+  if (err != 0) {
+    // failsafe kepler solver
+    LOG("Kepler solver failed\n");
+    cefail[clevel]++;
+    evolve_unsplit4(s, stime, etime, dt, 1);
+  } else {
+    // translate coordinates from 2-body frame to original frame
+    s.part->pos[0] = pos_cm[0] + f1 * dpos[0];
+    s.part->pos[1] = pos_cm[1] + f1 * dpos[1];
+    s.part->pos[2] = pos_cm[2] + f1 * dpos[2];
+    s.part->vel[0] = vel_cm[0] + f1 * dvel[0];
+    s.part->vel[1] = vel_cm[1] + f1 * dvel[1];
+    s.part->vel[2] = vel_cm[2] + f1 * dvel[2];
+    s.last->pos[0] = pos_cm[0] - f2 * dpos[0];
+    s.last->pos[1] = pos_cm[1] - f2 * dpos[1];
+    s.last->pos[2] = pos_cm[2] - f2 * dpos[2];
+    s.last->vel[0] = vel_cm[0] - f2 * dvel[0];
+    s.last->vel[1] = vel_cm[1] - f2 * dvel[1];
+    s.last->vel[2] = vel_cm[2] - f2 * dvel[2];
+    // update statistics
+  }
   cecount[clevel]++;
   clevel--;
 }
