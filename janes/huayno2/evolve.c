@@ -28,7 +28,7 @@ DOUBLE simtime;
 static int clevel;
 static unsigned long tcount[MAXLEVEL],kcount[MAXLEVEL],dcount[MAXLEVEL],deepsteps;
 static unsigned long tstep[MAXLEVEL],kstep[MAXLEVEL],dstep[MAXLEVEL];
-static unsigned long cecount[MAXLEVEL]; // twobody solver execution counts
+static unsigned long cecount[MAXLEVEL], cefail[MAXLEVEL]; // twobody solver execution counts, twobody solver fail counts
 #ifdef EVOLVE_OPENCL
 static unsigned long cpu_step,cl_step,cpu_count,cl_count;
 #endif
@@ -54,6 +54,7 @@ DOUBLE timestep_ij_bw(struct sys r, UINT i, struct sys s, UINT j);
 #include "evolve_twobody.c"
 #include "evolve_split_cc.c"
 #include "evolve_split_ok.c"
+#include "evolve_split_rok.c"
 
 static FLOAT global_timestep(struct sys s) {
   UINT i;
@@ -300,10 +301,10 @@ void do_evolve(struct sys s, double dt, int inttype)
   simtime=0.;
   for(i=0;i<MAXLEVEL;i++)
   {
-    tstep[i]=0;tcount[i]=0;
-    kstep[i]=0;kcount[i]=0;
-    dstep[i]=0;dcount[i]=0;
-    cecount[i]=0;
+    tstep[i]=0; tcount[i]=0;
+    kstep[i]=0; kcount[i]=0;
+    dstep[i]=0; dcount[i]=0;
+    cecount[i]=0; cefail[i]=0;
   }
   switch (inttype)
   {
@@ -353,7 +354,12 @@ void do_evolve(struct sys s, double dt, int inttype)
     case TWOBODY:
       evolve_twobody(s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
-    default:  
+    case EVOLVE_ROK2:
+      rok_evolve_init(s);
+      rok_evolve2(s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      rok_evolve_stop();
+      break;
+    default:
       endrun((char*)" unknown integrator\n");
       break;
   } 
@@ -744,7 +750,10 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   fflush(stdout);
 }
 
-void get_evolve_statistics_(double *ttot, double *ktot, double *dtot, double *tstot, double *kstot, double *dstot, double *cetot) {
+void get_evolve_statistics_(
+    double *ttot, double *ktot, double *dtot,
+    double *tstot, double *kstot, double *dstot,
+    double *cetot, double *cetotfail) {
 
     *ttot = 0;
     *ktot = 0;
@@ -753,6 +762,7 @@ void get_evolve_statistics_(double *ttot, double *ktot, double *dtot, double *ts
     *kstot = 0;
     *dstot = 0;
     *cetot = 0;
+    *cetotfail = 0;
 
 	for(int i = 0; i < MAXLEVEL; i++) {
 	    *ttot += tcount[i];
@@ -762,6 +772,7 @@ void get_evolve_statistics_(double *ttot, double *ktot, double *dtot, double *ts
 	    *kstot += kstep[i];
 	    *dstot += dstep[i];
       *cetot += cecount[i];
+      *cetotfail += cefail[i];
 	}
 
 	//printf("kcount: %18li, dcount: %18li, tcount: %18li ", ktot, dtot, ttot);

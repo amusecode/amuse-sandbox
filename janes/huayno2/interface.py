@@ -19,6 +19,7 @@ class inttypes:
     OK4 = 13
     TWOBODY = 14
     CC2_TWOBODY=15
+    ROK2 = 16
 
 class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
     include_headers = ['worker_code.h']
@@ -179,6 +180,7 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
         function.addParameter('kstot', dtype='d', direction=function.OUT)
         function.addParameter('dstot', dtype='d', direction=function.OUT)
         function.addParameter('cetot', dtype='d', direction=function.OUT)
+        function.addParameter('cetotfail', dtype='d', direction=function.OUT)        
         function.result_type = 'i'
         return function
 
@@ -190,7 +192,16 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
         return function
 
     @legacy_function    
-    def get_interaction_fw_timestep():
+    def get_ok_timestep_ij_fw():
+        function = LegacyFunctionSpecification()   
+        function.addParameter('id_i', dtype='i', direction=function.IN)
+        function.addParameter('id_j', dtype='i', direction=function.IN)
+        function.addParameter('timestep', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def get_rok_timestep_ij_fw():
         function = LegacyFunctionSpecification()   
         function.addParameter('id_i', dtype='i', direction=function.IN)
         function.addParameter('id_j', dtype='i', direction=function.IN)
@@ -286,7 +297,7 @@ class Huayno(GravitationalDynamics):
         GravitationalDynamics.define_methods(self, object)
 
         object.add_method("get_evolve_statistics", (),
-            (units.none, units.none, units.none, units.none, units.none, units.none, units.none, object.ERROR_CODE)
+            (units.none, units.none, units.none, units.none, units.none, units.none, units.none, units.none, object.ERROR_CODE)
         )
 
     def define_particle_sets(self, object):

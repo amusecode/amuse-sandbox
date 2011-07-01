@@ -69,7 +69,8 @@ enum intopt {
   EVOLVE_OK2, //12
   EVOLVE_OK4, //13
   TWOBODY, //14
-  CC_SPLIT2_TWOBODY //15 
+  CC_SPLIT2_TWOBODY, //15
+  EVOLVE_ROK2 //16
 };
 
 extern FLOAT eps2;
@@ -83,7 +84,7 @@ DOUBLE system_potential_energy(struct sys s);
 DOUBLE system_kinetic_energy(struct sys s);
 
 //void get_evolve_statistics_(int *ttot, int *ktot, int *dtot, int *tstot, int *kstot, int *dstot);
-void get_evolve_statistics_(double *ttot, double *ktot, double *dtot, double *tstot, double *kstot, double *dstot, double *cetot);
+void get_evolve_statistics_(double *ttot, double *ktot, double *dtot, double *tstot, double *kstot, double *dstot, double *cetot, double *cetotfail);
 DOUBLE sys_initial_timestep(struct sys s);
 DOUBLE sys_forces_min_timestep(struct sys s);
 DOUBLE ok_timestep_ij_fw(struct particle *i, struct particle *j);

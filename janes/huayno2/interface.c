@@ -471,9 +471,9 @@ int get_potential_at_point(double x, double y, double z, double pot) {
 }
 
 int get_evolve_statistics(double *ttot, double *ktot, double *dtot,
-    double *tstot, double *kstot, double *dstot, double *cetot) {
+    double *tstot, double *kstot, double *dstot, double *cetot, double *cetotfail) {
   //double *cetot = malloc(sizeof(double));
-  get_evolve_statistics_(ttot, ktot, dtot, tstot, kstot, dstot, cetot);
+  get_evolve_statistics_(ttot, ktot, dtot, tstot, kstot, dstot, cetot, cetotfail);
   return 0;
 }
 
@@ -482,9 +482,14 @@ int get_sys_initial_timestep(double *timestep) {
   return 0;
 }
 
-int get_interaction_fw_timestep(int id_i, int id_j, double *timestep) {
-  *timestep = (double) ok_timestep_ij_fw(&(mainsys.part[id_i]),
-      &(mainsys.part[id_j]));
+int get_ok_timestep_ij_fw(int id_i, int id_j, double *timestep) {
+  *timestep = (double) ok_timestep_ij_fw(&(mainsys.part[id_i]), &(mainsys.part[id_j]));
+  LOG("*timestep=%f ok_timestep_ij_fw=%LE\n", *timestep, ok_timestep_ij_fw(&(mainsys.part[id_i]), &(mainsys.part[id_j])));
+  return 0;
+}
+
+int get_rok_timestep_ij_fw(int id_i, int id_j, double *timestep) {
+  *timestep = (double) rok_timestep_ij_fw(&(mainsys.part[id_i]), &(mainsys.part[id_j]));
   return 0;
 }
 
