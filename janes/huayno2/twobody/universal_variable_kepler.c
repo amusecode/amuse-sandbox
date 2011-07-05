@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <math.h>
+#include <tgmath.h>
 
 #define TOLERANCE  1.e-15
 #define ORDER  4
@@ -9,8 +9,8 @@
 
 DOUBLE stumpff_C(DOUBLE z)
 {
-  if(z>0.04) return (1-DBL(cos)(DBL(sqrt)(z)))/z;  
-  if(z<-0.04) return -(DBL(cosh)(DBL(sqrt)(-z))-1)/z;  
+  if(z>0.04) return (1-cos(sqrt(z)))/z;  
+  if(z<-0.04) return -(cosh(sqrt(-z))-1)/z;  
   return 1.L/2-z/24+z*z/720-z*z*z/40320+z*z*z*z/3628800-z*z*z*z*z/479001600;
 }
 
@@ -19,13 +19,13 @@ DOUBLE stumpff_S(DOUBLE z)
   DOUBLE sz;
   if(z>0.04)
   {
-    sz=DBL(sqrt)(z);  
-    return (sz-DBL(sin)(sz))/(sz*z);  
+    sz=sqrt(z);  
+    return (sz-sin(sz))/(sz*z);  
   }
   if(z<-0.04)
   {
-    sz=DBL(sqrt)(-z);  
-    return (sz-DBL(sinh)(sz))/(sz*z);  
+    sz=sqrt(-z);  
+    return (sz-sinh(sz))/(sz*z);  
   }
   return 1.L/6-z/120+z*z/5040-z*z*z/362880+z*z*z*z/39916800-z*z*z*z*z/6227020800;
 }
@@ -93,21 +93,21 @@ int laguerre(DOUBLE x0, DOUBLE *x, DOUBLE *arg,DOUBLE xtol,DOUBLE ytol,
   while( i< MAXITER)
   {
     fv=(*f)(*x,arg);
-    if(DBL(fabs)(fv) <= ytol) return 0;
+    if(fabs(fv) <= ytol) return 0;
     dfv=(*fprime)(*x,arg);
     ddfv=(*fprimeprime)(*x,arg);
     if(dfv==0) return -2;
     if(i<=MAXITER/4)
     {
     delta=-ORDER*fv/(dfv+
-      SIGN(dfv)*DBL(sqrt)(DBL(fabs)((ORDER-1)*(ORDER-1)*dfv*dfv-ORDER*(ORDER-1)*fv*ddfv)));
+      SIGN(dfv)*sqrt(fabs((ORDER-1)*(ORDER-1)*dfv*dfv-ORDER*(ORDER-1)*fv*ddfv)));
     } else{
     delta=-fv/dfv;
     }
     (*x)+=delta;
 //    if(i>MAXITER/4) printf("%d %14.12Lg | %14.12Lg, %14.12Lg\n", i,delta,*x,xtol);
 //    if(i>MAXITER/4) printf("   %14.12Lg %14.12Lg, %14.12Lg\n", fv,dfv,ddfv);
-    if(DBL(fabs)(delta)<xtol)
+    if(fabs(delta)<xtol)
     {
       return 0;
     }
@@ -130,7 +130,7 @@ int bracketroot(DOUBLE *x1, DOUBLE *x2, DOUBLE *arg,
   for(i=0;i<MAXITER;i++)
   {
     if(f1*f2 < 0) return 0;  
-    if(DBL(fabs)(f1)<DBL(fabs)(f2))
+    if(fabs(f1)<fabs(f2))
     {
       (*x1)+=FAC*(*x1-*x2);
       f1=(*f)(*x1,arg);    
@@ -156,14 +156,14 @@ int saferoot(DOUBLE *x, DOUBLE x1, DOUBLE x2, DOUBLE *arg,
   if(f1<0) {xl=x1;xh=x2;}
   else {xl=x2;xh=x1;}
   (*x)=(xl+xh)/2;
-  dxold=DBL(fabs)(xl-xh);
+  dxold=fabs(xl-xh);
   dx=dxold;
   fv=(*f)(*x,arg);
   df=(*fprime)(*x,arg);
   for(i=0;i<MAXITER;i++)
   {
     if( (((*x)-xh)*df-fv)*(((*x)-xl)*df-fv) > 0   || 
-        DBL(fabs)(2*fv) > DBL(fabs)(dxold*df))
+        fabs(2*fv) > fabs(dxold*df))
     {
       dxold=dx;
       dx=(xh-xl)/2;
@@ -177,9 +177,9 @@ int saferoot(DOUBLE *x, DOUBLE x1, DOUBLE x2, DOUBLE *arg,
       (*x)-=dx;
       if(temp==(*x)) return 0;
     }
-    if(DBL(fabs)(dx)<xtol) return 0;
+    if(fabs(dx)<xtol) return 0;
     fv=(*f)(*x,arg);
-    if(DBL(fabs)(fv)<=ytol) return 0;    
+    if(fabs(fv)<=ytol) return 0;    
     df=(*fprime)(*x,arg);
     if(fv<0) xl=*x;
     else xh=*x;
@@ -220,9 +220,9 @@ DOUBLE fprimeprime(DOUBLE xi, DOUBLE *arg)
 int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3], 
              DOUBLE vel0[3],DOUBLE pos[3], DOUBLE vel[3])
 {
-  DOUBLE smu=DBL(sqrt)(mu);
-  DOUBLE r0=DBL(sqrt)(pos0[0]*pos0[0]+pos0[1]*pos0[1]+pos0[2]*pos0[2]);
-  DOUBLE v0=DBL(sqrt)(vel0[0]*vel0[0]+vel0[1]*vel0[1]+vel0[2]*vel0[2]);
+  DOUBLE smu=sqrt(mu);
+  DOUBLE r0=sqrt(pos0[0]*pos0[0]+pos0[1]*pos0[1]+pos0[2]*pos0[2]);
+  DOUBLE v0=sqrt(vel0[0]*vel0[0]+vel0[1]*vel0[1]+vel0[2]*vel0[2]);
   DOUBLE vr0=(pos0[0]*vel0[0]+pos0[1]*vel0[1]+pos0[2]*vel0[2])/r0;
   DOUBLE alpha=2./r0-v0*v0/mu;
   DOUBLE xi0,dxi0,arg[5],xi,xtol,ytol;
@@ -233,12 +233,12 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
     xi0=smu*alpha*dt;
   } else
   {
-    xi0=SIGN(dt)/DBL(sqrt)(-alpha)*log(1-2*mu*dt*alpha/((vr0*r0)+  
-          SIGN(dt)*smu/DBL(sqrt)(-alpha)*(1-r0*alpha)));
+    xi0=SIGN(dt)/sqrt(-alpha)*log(1-2*mu*dt*alpha/((vr0*r0)+  
+          SIGN(dt)*smu/sqrt(-alpha)*(1-r0*alpha)));
 // this last formula is 4.5.11 in bate et al., fundamentals of astrodynamics 
 // with +1 in the logarithm
     dxi0=smu/r0*dt;
-    if(DBL(fabs)(alpha*dxi0*dxi0)<1) xi0=dxi0;
+    if(fabs(alpha*dxi0*dxi0)<1) xi0=dxi0;
   }
 */
   xi0=smu*dt/r0;
@@ -248,8 +248,8 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
   arg[2]=vr0;
   arg[3]=smu;
   arg[4]=alpha;
-  ytol=DBL(fabs)(TOLERANCE*smu*dt);
-  xtol=DBL(fabs)(TOLERANCE*xi0);
+  ytol=fabs(TOLERANCE*smu*dt);
+  xtol=fabs(TOLERANCE*xi0);
 
   err=findroot(xi0, &xi, arg, xtol,ytol,&f,&fprime,&fprimeprime);
   if(err !=0 || SIGN(xi)!=SIGN(dt)) {
@@ -266,7 +266,7 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
     DOUBLE ldf=lagrange_dfdxi(xi,r0,vr0,smu,alpha);
     DOUBLE ldg=lagrange_dgdxi(xi,r0,vr0,smu,alpha);
     for(i=0;i<3;i++) pos[i]=pos0[i]*lf+vel0[i]*lg;
-    r=DBL(sqrt)(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
+    r=sqrt(pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2]);
     for(i=0;i<3;i++) vel[i]=pos0[i]*smu/r*ldf+vel0[i]*smu/r*ldg;  
   }
 //  printf("out: %f %f %f %f\n", (float) dt,(float)mu,(float)pos[0],(float)vel[0]);
