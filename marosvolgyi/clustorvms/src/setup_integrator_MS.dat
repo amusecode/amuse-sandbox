@@ -1,0 +1,18 @@
+string file_in		= /disks/strw2/boekholt/Major_Research/workspace_07_12/CLUSTOR/INITIATOR/N3_pythagoras.init
+string file_out		= out/N3_pythagoras_t10_e10_Lw256.out
+
+double t_sim 		= 10
+
+double dt_min 		= 1e-100
+double dt_max 		= 1e-1
+double dv_max 		= 1e-1
+
+double dt_print 	= 1e-0
+
+int numBits 		= 256
+
+double epsilon 		= 1e-10
+int n_max 		= 64
+int k_max 		= 64
+
+double softening	= 0
