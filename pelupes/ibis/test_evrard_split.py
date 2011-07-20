@@ -1,6 +1,9 @@
+#import cProfile
+
 import os
 import sys
 import numpy
+
 
 try:
     from matplotlib import pyplot
@@ -34,7 +37,7 @@ class copycat(object):
     self.epsilon_squared=eps2
         
   def get_gravity_at_point(self,radius,x,y,z):
-    instance=self.baseclass(self.converter,channel_type='ibis')
+    instance=self.baseclass(self.converter,channel_type='sockets')
     instance.parameters.epsilon_squared = self.epsilon_squared
     instance.particles.add_particles(self.system.particles)
     ax,ay,az=instance.get_gravity_at_point(radius,x,y,z)
@@ -42,7 +45,7 @@ class copycat(object):
     return ax,ay,az
 
   def get_potential_at_point(self,radius,x,y,z):
-    instance=self.baseclass(self.converter,channel_type='ibis')
+    instance=self.baseclass(self.converter,channel_type='sockets')
     instance.parameters.epsilon_squared = self.epsilon_squared
     instance.particles.add_particles(self.system.particles)
     phi=instance.get_potential_at_point(radius,x,y,z)
@@ -56,7 +59,7 @@ class copycat2(object):
     self.system=system
     self.converter=converter
     self.epsilon_squared=eps2
-    self.instance=self.baseclass(self.converter,channel_type='ibis')
+    self.instance=self.baseclass(self.converter,channel_type='sockets')#,hostname='paddegat')
         
   def get_gravity_at_point(self,radius,x,y,z):
     self.instance.initialize_code()
@@ -97,7 +100,7 @@ def run_evrard(x):
   parts.radius=0. | units.parsec
   parts.h_smooth=0. | units.parsec
 
-  sph=Fi(conv,channel_type='ibis',hostname='paddegat')
+  sph=Fi(conv,channel_type='sockets')
   sph.initialize_code()
 
   sph.parameters.use_hydro_flag=True
@@ -151,4 +154,5 @@ def run_evrard(x):
   energy_plot(time,Ek,Ep,Eth)
 
 if __name__=="__main__":
-  run_evrard(100000)
+#  cProfile.run( 'run_evrard(1000)','pprof')  
+  run_evrard(10000)
