@@ -12,59 +12,52 @@
 	for (struct sys *_ci = (C); !IS_ZEROSYS(_ci); _ci = _ci->next_cc) printf(" %d ", _ci->n ); \
 	printf("} r.n = %d\n", (R)->n); \
 };
-
 #define LOGSYS_ID(SYS) for (UINT i = 0; i < (SYS).n; i++) { printf("%u ", (SYS).part[i].id); } printf("\n");
 #define LOGSYSp_ID(SYS) for (UINT i = 0; i < (SYS)->n; i++) { printf("%u ", (SYS)->part[i].id); } printf("\n");
 #define LOGSYSC_ID(SYS) for (struct sys *_ci = &(SYS); !IS_ZEROSYS(_ci); _ci = _ci->next_cc) {printf("{"); for (UINT i = 0; i < _ci->n; i++) {printf("%u ", _ci->part[i].id); } printf("}\t");} printf("\n");
 
 DOUBLE timestep_ij(struct sys r, UINT i, struct sys s, UINT j) {
-
+  /*
+   * calculate the time step between particle i in sys r and particle j in sys s
+   */
 	FLOAT timestep;
 	FLOAT dx[3],dr3,dr2,dr,dv[3],dv2,mu,vdotdr2,tau,dtau;
-
-	//if(s.part[i].timestep !=HUGE_VAL) endrun((char *)"timestep??");
-
-    timestep=HUGE_VAL;
-
-    dx[0]=r.part[i].pos[0]-s.part[j].pos[0];
-    dx[1]=r.part[i].pos[1]-s.part[j].pos[1];
-    dx[2]=r.part[i].pos[2]-s.part[j].pos[2];
-    dr2=dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]+eps2;
-
-    if(dr2>0) {
-    	dr=sqrt(dr2);
-    	dr3=dr*dr2;
-        dv[0]=r.part[i].vel[0]-s.part[j].vel[0];
-        dv[1]=r.part[i].vel[1]-s.part[j].vel[1];
-        dv[2]=r.part[i].vel[2]-s.part[j].vel[2];
-        vdotdr2=(dv[0]*dx[0]+dv[1]*dx[1]+dv[2]*dx[2])/dr2;
-        dv2=dv[0]*dv[0]+dv[1]*dv[1]+dv[2]*dv[2];
-        mu=r.part[i].mass+s.part[j].mass;
-
+	//if(s.part[i].timestep !=HUGE_VAL) ENDRUN("timestep??");
+  timestep=HUGE_VAL;
+  dx[0]=r.part[i].pos[0]-s.part[j].pos[0];
+  dx[1]=r.part[i].pos[1]-s.part[j].pos[1];
+  dx[2]=r.part[i].pos[2]-s.part[j].pos[2];
+  dr2=dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]+eps2;
+  if(dr2>0) {
+    dr=sqrt(dr2);
+    dr3=dr*dr2;
+      dv[0]=r.part[i].vel[0]-s.part[j].vel[0];
+      dv[1]=r.part[i].vel[1]-s.part[j].vel[1];
+      dv[2]=r.part[i].vel[2]-s.part[j].vel[2];
+      vdotdr2=(dv[0]*dx[0]+dv[1]*dx[1]+dv[2]*dx[2])/dr2;
+      dv2=dv[0]*dv[0]+dv[1]*dv[1]+dv[2]*dv[2];
+      mu=r.part[i].mass+s.part[j].mass;
 #ifdef RATIMESTEP
-        tau=RARVRATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
-        dtau=3/2.*tau*vdotdr2;
+      tau=RARVRATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
+      dtau=3/2.*tau*vdotdr2;
+      if(dtau>1.) dtau=1.;
+      tau/=(1-dtau/2);
+      if(tau < timestep) timestep=tau;
+#endif
+#ifdef RVTIMESTEP
+      if(dv2>0) {
+        tau=dt_param*dr/sqrt(dv2);
+        dtau=tau*vdotdr2*(1+mu/(dv2*dr));
         if(dtau>1.) dtau=1.;
         tau/=(1-dtau/2);
         if(tau < timestep) timestep=tau;
+      }
 #endif
-
-#ifdef RVTIMESTEP
-        if(dv2>0) {
-        	tau=dt_param*dr/sqrt(dv2);
-        	dtau=tau*vdotdr2*(1+mu/(dv2*dr));
-        	if(dtau>1.) dtau=1.;
-        	tau/=(1-dtau/2);
-        	if(tau < timestep) timestep=tau;
-        }
-#endif
-    }
-
-    if (timestep < 0) {
-		endrun((char*)"timestep_ij: negative timestep!\n");
-	}
-
-    return timestep;
+  }
+  if (timestep < 0) {
+    ENDRUN("timestep_ij: negative timestep!\n");
+  }
+  return timestep;
 }
 
 DOUBLE timestep_ij_bw(struct sys r, UINT i, struct sys s, UINT j) {
@@ -111,7 +104,7 @@ DOUBLE timestep_ij_bw(struct sys r, UINT i, struct sys s, UINT j) {
     }
 
     if (timestep < 0) {
-		endrun((char*)"timestep_ij_bw: negative timestep!\n");
+		ENDRUN("timestep_ij_bw: negative timestep!\n");
 	}
 
     return -timestep;
@@ -223,7 +216,7 @@ void split_cc(struct sys s, struct sys *c, struct sys *r, DOUBLE dt) {
 
 	if (processed != s.n) {
 		LOG("split_cc: processed=%u s.n=%u r->n=%u\n", processed, s.n, r->n);
-		endrun((char*)"split_cc: zomg epic fail!\n");
+		ENDRUN("split_cc: zomg epic fail!\n");
 	}
 
 	// create r system
@@ -270,7 +263,7 @@ void split_cc_verify(struct sys s, struct sys *c, struct sys *r) {
 			if (& ( cj->part[cj->n - 1] ) != cj->last) {
 				LOG("split_cc_verify: last pointer for c is not set correctly!");
 				LOG_CC_SPLIT(c, r);
-				endrun((char*)"data structure corrupted\n");
+				ENDRUN("data structure corrupted\n");
 			}
 	    }
 
@@ -287,7 +280,7 @@ void split_cc_verify(struct sys s, struct sys *c, struct sys *r) {
 		if (particle_found != 1) {
 			LOG("split_cc_verify: particle %d particle_found=%d ", i, particle_found);
 			LOG_CC_SPLIT(c, r);
-			endrun((char*)"data structure corrupted\n");
+			ENDRUN("data structure corrupted\n");
 		}
 
 	}
@@ -295,19 +288,19 @@ void split_cc_verify(struct sys s, struct sys *c, struct sys *r) {
 	//if (& ( r->part[r->n - 1] ) != r->last) {
 	//	LOG("split_cc_verify: last pointer for r is not set correctly! %d %d",&( r->part[r->n - 1] ), r->last);
 	//	LOG_CC_SPLIT(c, r);
-	//	endrun((char*)"data structure corrupted\n");
+	//	ENDRUN("data structure corrupted\n");
 	//}
 
 	if (pcount_check + r->n != s.n) {
 		LOG("split_cc_verify: particle count mismatch (%d %d)\n", pcount_check + r->n, s.n);
 		LOG_CC_SPLIT(c, r);
-		endrun((char*)"data structure corrupted\n");
-		//endrun((char*)"split_cc_verify: particle count mismatch\n");
+		ENDRUN("data structure corrupted\n");
+		//ENDRUN("split_cc_verify: particle count mismatch\n");
 	} else {
 		//LOG("split_cc_verify pong\n");
 	}
 
-	//endrun((char*)"Fin.\n");
+	//ENDRUN("Fin.\n");
 
 }
 
@@ -326,7 +319,7 @@ void split_cc_verify_ts(struct sys *c, struct sys *r, DOUBLE dt) {
     	    		//LOG("comparing %d %d\n", ci->part[i].id, cj->part[j].id);
     	    		//LOG("%f %f \n", ts_ij, dt);
     	    		if (dt > ts_ij) {
-    	    			endrun((char*)"split_cc_verify_ts C-C timestep underflow\n");
+    	    			ENDRUN("split_cc_verify_ts C-C timestep underflow\n");
     	    		}
         		}
     		}
@@ -340,7 +333,7 @@ void split_cc_verify_ts(struct sys *c, struct sys *r, DOUBLE dt) {
     		for (UINT j = 0; j < r->n; j++) {
 	    		ts_ij = timestep_ij(*ci, i, *r, j);
     	   		if (ts_ij < dt) {
-    	   			endrun((char*)"split_cc_verify_ts C-R timestep underflow\n");
+    	   			ENDRUN("split_cc_verify_ts C-R timestep underflow\n");
     	   		}
         	}
     	}
@@ -352,7 +345,7 @@ void split_cc_verify_ts(struct sys *c, struct sys *r, DOUBLE dt) {
     		if (i == j) continue;
     		ts_ij = timestep_ij(*r, i, *r, j);
     		if (ts_ij < dt) {
-    			endrun((char*)"split_cc_verify_ts R-R timestep underflow\n");
+    			ENDRUN("split_cc_verify_ts R-R timestep underflow\n");
     		}
 		}
 	}
@@ -486,7 +479,6 @@ void evolve_split_cc2(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
 }
 
 void evolve_split_cc2_twobody(struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
-  // TODO fail/warn if smoothing is non-zero
   // TODO use kepler solver only if dt is larger than the orbital period
   if (s.n == 2) {
     //LOG("evolve: close encounters!\n");

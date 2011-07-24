@@ -1,7 +1,7 @@
 
 AMUSE_DIR =../../..
 
-# fix for MacPorts+OpenMPI compilers
+# (ugly) fix for MacPorts+OpenMPI compilers
 ifneq (,$(shell type -P openmpicxx))
 	MPICXX = openmpicxx
 	MPICC = openmpicc

@@ -336,6 +336,7 @@ void do_evolve(struct sys s, double dt, int inttype)
    	  evolve_split_cc2(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
     case CC_SPLIT2_TWOBODY:
+      // TODO fail/warn if smoothing is non-zero
       evolve_split_cc2_twobody(s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
     case CC_SPLIT4:
