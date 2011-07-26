@@ -5,7 +5,6 @@ import time
 import numpy as np
 from amuse.support.units import units
 import amuse.support.units.nbody_system as nbu
-
 import nbody_experiments.nbody_experiments as nbe
 import nbody_experiments.problems.two_body as tbp
 import nbody_experiments.problems.plummer_with_planets as plummer
@@ -13,17 +12,18 @@ import nbody_experiments.problems.mn08_problems as mn08
 import nbody_experiments.problems.pythagorean_test as pt
 import ceutils.ceutils as ce
 import matplotlib.pyplot as plt
-
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.ph4.interface import ph4
 from amuse.community.huayno.interface import Huayno
 
-huayno_labels = ["SHARED2", "CC2", "OK2"]
+huayno_labels = ["SHARED2", "CC2", "CC2_KEPLER", "OK2", "SHARED4"]
 huayno_inttypes = [
-    Huayno.inttypes.SHARED,
+    Huayno.inttypes.SHARED2,
     Huayno.inttypes.CC,
+    Huayno.inttypes.CC_KEPLER,
     Huayno.inttypes.OK,
+    Huayno.inttypes.SHARED4,
 ]
 eta = 0.01
 reference_labels = ["Hermite", "PhiGRAPE"]
