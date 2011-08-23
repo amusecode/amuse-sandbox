@@ -12,7 +12,7 @@ from amuse.ext.evrard_test import uniform_random_unit_cube,uniform_unit_sphere
 
 from matplotlib import pyplot
 
-from amuse.support.io import write_set_to_file
+from amuse.io import write_set_to_file
 
 mu=1.| units.amu
 muion =0.5 | units.amu

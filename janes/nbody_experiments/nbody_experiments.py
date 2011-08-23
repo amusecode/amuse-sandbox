@@ -49,7 +49,7 @@ import numpy as np
 
 import time
 
-from amuse.support.io import read_set_from_file, write_set_to_file
+from amuse.io import read_set_from_file, write_set_to_file
 
 from amuse.support.units import units
 from amuse.support.units import nbody_system

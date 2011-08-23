@@ -9,7 +9,7 @@ from amuse.community.fi.interface import Fi
 from amuse.support.data.core import Grid
 
 
-from amuse.support.io import read_set_from_file
+from amuse.io import read_set_from_file
 
 first=350
 nsnap=351

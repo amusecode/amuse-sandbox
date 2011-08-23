@@ -201,7 +201,7 @@ class grav_gas_sse(object):
     return self.evo.particles
 
   def dump_system_state(self,filename):    
-    from amuse.support.io import write_set_to_file
+    from amuse.io import write_set_to_file
     import cPickle
     write_set_to_file(self.grav.particles,filename+".grav","amuse",append_to_file=False)  
     write_set_to_file(self.gas_particles,filename+".gas","amuse",append_to_file=False)  
@@ -224,7 +224,7 @@ class grav_gas_sse(object):
 
   @classmethod
   def load_system_state(cls,filename,new_gas_options=()):    
-    from amuse.support.io import read_set_from_file
+    from amuse.io import read_set_from_file
     import cPickle
     star_parts=read_set_from_file(filename+".grav",'amuse')
     gas_parts=read_set_from_file(filename+".gas",'amuse')

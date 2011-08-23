@@ -6,7 +6,7 @@ from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 import amuse.legacy.twobody.twobody as twobody
 
 from sandbox.marosvolgyi.viewer import planetarium
-from amuse.support.io.horizons import LoadStar, NewStar
+from amuse.io.horizons import LoadStar, NewStar
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system

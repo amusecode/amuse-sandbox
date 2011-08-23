@@ -10,7 +10,7 @@ from amuse.legacy.fi.interface import Fi
 from amuse.support.data.core import Grid
 
 
-from amuse.support.io import read_set_from_file
+from amuse.io import read_set_from_file
 
 
 font = {'family' : 'normal',
