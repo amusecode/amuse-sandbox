@@ -9,7 +9,7 @@ except ImportError:
     
 
 
-from amuse.support.io.horizons import LoadStar
+
 from amuse.support.data import core
 from amuse.support.units import units
 
@@ -18,7 +18,7 @@ import time
 
 import sys
 import numpy as np
-
+from amuse.io.horizons import LoadStar
 class SolarSystemView(object):
     def __init__(self, *kargs):
         if len(kargs)==2:

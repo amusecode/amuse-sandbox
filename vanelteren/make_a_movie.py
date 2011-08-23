@@ -18,9 +18,7 @@ except ImportError:
 
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.io import store
-
-
+from amuse.io import store
 class PlotXYandMass(object):
     
     def __init__(self, indices_to_plot = None):

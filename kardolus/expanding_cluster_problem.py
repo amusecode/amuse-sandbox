@@ -21,12 +21,12 @@ from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.community.sse.interface import SSE
 from amuse.support.codes.core import is_mpd_running
 
-from amuse.support.io import store
+
 from os import system
 
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
-
+from amuse.io import store
 system("echo \" \" > simple_ToverV.dat")
 
 file = open('simple_ToverV.dat', 'a')

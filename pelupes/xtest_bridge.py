@@ -4,13 +4,13 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
 
 from amuse.support.data import core 
-from amuse.support.io import text
+
 
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.bhtree.interface import BHTree
 import bridge
-
+from amuse.io import text
 def parts_from_file(input_file):
   io=text.TableFormattedText(input_file)
   io.header_prefix_string=";"

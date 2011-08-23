@@ -26,9 +26,9 @@ from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.community.sse.interface import SSE
 from amuse.support.codes.core import is_mpd_running
 
-from amuse.support.io import write_set_to_file
-from amuse.support.io import read_set_from_file
-from amuse.support.io import store
+
+
+
 
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
@@ -36,7 +36,9 @@ from amuse.ext.salpeter import SalpeterIMF
 from os import system
 
 from time import time as time_code
-
+from amuse.io import write_set_to_file
+from amuse.io import read_set_from_file
+from amuse.io import store
 bold = "\033[1m"
 reset = "\033[0;0m"
 
