@@ -3,7 +3,7 @@ from amuse.community.mercury.interface import MercuryWayWard
 from amuse.community.sse.interface import SSE
 from amuse.ext.solarsystem import Solarsystem
 from amuse.support.units import units
-from amuse.support.data.values import VectorQuantity
+from amuse.support.units.values import VectorQuantity
 
 from amuse.plot import *
 

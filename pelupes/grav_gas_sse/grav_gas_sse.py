@@ -11,7 +11,7 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
     
 from amuse.support.data import core
-from amuse.support.data.values import zero
+from amuse.support.units.values import zero
 
 from fast import FAST
 from lmech import lmech

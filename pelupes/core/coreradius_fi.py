@@ -11,7 +11,7 @@ except ImportError:
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.units import constants
-from amuse.support.data.values import zero
+from amuse.support.units.values import zero
 
 from amuse.legacy.fi.interface import Fi
 

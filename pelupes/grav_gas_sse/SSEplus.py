@@ -4,7 +4,7 @@ from amuse.community.sse.interface import SSE
 from amuse.support.data import core
 
 from amuse.support.units import units
-from amuse.support.data.values import zero
+from amuse.support.units.values import zero
 
 from lmech import lmech
 
