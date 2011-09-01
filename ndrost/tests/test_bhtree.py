@@ -10,11 +10,11 @@ import math
 from amuse.community.bhtree.interface import BHTreeInterface, BHTree
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
-from amuse.support.data import values
 from amuse.support.data import particle_attributes
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from amuse.support.units import quantities
 from amuse.ext import plummer
 
 try:
@@ -591,7 +591,7 @@ class TestBHTree(TestWithMPI):
         copyof =  instance.particles.copy()
         
         com = instance.center_of_mass_position
-        self.assertAlmostEqual(com[0], values.new_quantity(0.0, units.m), constants.precision)
+        self.assertAlmostEqual(com[0], quantities.new_quantity(0.0, units.m), constants.precision)
     
     def test14(self):
         print "Test14: Testing BHTree parameters (I)"
