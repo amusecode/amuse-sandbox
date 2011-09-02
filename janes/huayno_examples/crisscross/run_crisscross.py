@@ -3,8 +3,8 @@ import optparse
 import sys
 import time
 import numpy as np
-from amuse.support.units import units
-import amuse.support.units.nbody_system as nbu
+from amuse.units import units
+import amuse.units.nbody_system as nbu
 import nbody_experiments.nbody_experiments as nbe
 import nbody_experiments.problems.two_body as tbp
 import nbody_experiments.problems.plummer_with_planets as plummer

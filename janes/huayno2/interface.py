@@ -1,7 +1,7 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
-from amuse.support.units import units
+from amuse.units import units
 
 # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python
 class inttypes:

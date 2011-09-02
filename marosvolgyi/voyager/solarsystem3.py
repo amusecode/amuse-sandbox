@@ -6,8 +6,8 @@ from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 import amuse.legacy.twobody.twobody as twobody
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
 from mpl_toolkits.mplot3d import Axes3D
 from pylab import *
 

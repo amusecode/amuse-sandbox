@@ -2,10 +2,10 @@ import math
 import random
 import numpy as np
 from time import clock
-from amuse.support.units import units
-from amuse.support.units import nbody_system
+from amuse.units import units
+from amuse.units import nbody_system
 from amuse.support.data import core
-import amuse.support.units.nbody_system as nbu
+import amuse.units.nbody_system as nbu
 from amuse.ext.plummer import new_plummer_sphere, MakePlummerModel
 from nbody_experiments.problems.two_body import two_body_initial_conditions, two_body_orbital_period
 import nbody_experiments as nbe

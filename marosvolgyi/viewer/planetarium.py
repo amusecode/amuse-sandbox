@@ -7,18 +7,16 @@ except ImportError:
     if __name__ == '__main__':
         raise Exception("OpenGL and pygame bindings are not installed, cannot run")
     
-
-
-
+from amuse.io.horizons import LoadStar
+from amuse.units import units
 from amuse.support.data import core
-from amuse.support.units import units
 
 from datetime import date, timedelta
 import time
 
 import sys
 import numpy as np
-from amuse.io.horizons import LoadStar
+
 class SolarSystemView(object):
     def __init__(self, *kargs):
         if len(kargs)==2:

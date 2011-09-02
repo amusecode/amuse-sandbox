@@ -1,5 +1,4 @@
-from amuse.support.units.units import *
-
+from amuse.units.units import *
 if __name__ == "__main__":
     eps0_2=1/(mu0*c**2)
 

@@ -3,7 +3,7 @@ import math
 import numpy as np
 from amuse.support.data import core
 
-from amuse.support.units import nbody_system
+from amuse.units import nbody_system
 
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
@@ -77,7 +77,7 @@ def binary_with_neighbours_initial_conditions():
     orbital period: roughly 200
     """
     from amuse.support.data import core
-    from amuse.support.units import nbody_system
+    from amuse.units import nbody_system
     a = 10
     e = 0.9
     G = 1

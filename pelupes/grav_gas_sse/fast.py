@@ -3,8 +3,8 @@
 # - a common coordinate system is used for all systems
 # - sync of systems should be checked
 # - timestepping: adaptive dt?
-from amuse.support.units import units
-from amuse.support.units.quantities import zero
+from amuse.units import units
+from amuse.units.quantities import zero
 from amuse.support.data import core
 import threading
 

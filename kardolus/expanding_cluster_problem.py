@@ -12,21 +12,21 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
 
+from amuse.io import store
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.community.sse.interface import SSE
 from amuse.support.codes.core import is_mpd_running
 
-
 from os import system
 
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
-from amuse.io import store
+
 system("echo \" \" > simple_ToverV.dat")
 
 file = open('simple_ToverV.dat', 'a')

@@ -1,7 +1,7 @@
 import numpy
 from amuse.community.sse.interface import SSE
 from amuse.support.data import core
-from amuse.support.units import units
+from amuse.units import units
 from amuse.ext.solarsystem import Solarsystem
 from amuse.plot import *
 

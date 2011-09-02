@@ -1,7 +1,7 @@
 import numpy 
 numpy.random.seed(122222)
 
-from amuse.support.units import nbody_system
+from amuse.units import nbody_system
 from amuse.ext.plummer import MakePlummerModel
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 

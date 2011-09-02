@@ -5,19 +5,17 @@ import random
 import collections
 import os
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-
+from amuse.io import store
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.support.codes.core import is_mpd_running
 
-
-
 from amuse.ext.plummer import MakePlummerModel
 from amuse.support.data import particle_attributes
-from amuse.io import store
+
 def print_log(time, gravity, particles, total_energy_at_t0):
     kinetic_energy = gravity.kinetic_energy
     potential_energy = gravity.potential_energy

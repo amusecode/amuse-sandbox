@@ -1,11 +1,9 @@
 import numpy 
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-
+from amuse.io import text
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.support.data import core 
-
-
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.bhtree.interface import BHTree
@@ -13,7 +11,7 @@ from amuse.community.fi.interface import Fi
 import bridge
 
 from amuse.support.codes import channel
-from amuse.io import text
+
 channel.MessageChannel.DEBUGGER=channel.MessageChannel.XTERM
 
 def parts_from_file(input_file):

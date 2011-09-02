@@ -11,8 +11,8 @@ import numpy
 from amuse.community.octgrav.interface import OctgravInterface, Octgrav
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
 from amuse.support.codes import channel
 
 from amuse.ext.plummer import *

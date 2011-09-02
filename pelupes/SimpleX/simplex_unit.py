@@ -1,5 +1,5 @@
-from amuse.support.units import units
-from amuse.support.units import constants
+from amuse.units import units
+from amuse.units import constants
 from amuse.community.simplex.interface import SimpleX
 
 from amuse.support.data import core

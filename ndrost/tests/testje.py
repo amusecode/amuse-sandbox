@@ -1,7 +1,7 @@
 from amuse.community.bhtree.interface import BHTree
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
 convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 instance = BHTree(convert_nbody,channel_type='ibis')
 instance.parameters.epsilon_squared = 0.001 | units.AU**2

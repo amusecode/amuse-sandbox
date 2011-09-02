@@ -3,9 +3,9 @@ import cPickle
 
 from matplotlib import pyplot,rc
 
-from amuse.support.units import units
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
+from amuse.units import units
+from amuse.units import constants
+from amuse.units import nbody_system
 from amuse.legacy.fi.interface import Fi
 from amuse.support.data.core import Grid
 

@@ -3,8 +3,8 @@ import numpy
 from amuse.community.sse.interface import SSE
 from amuse.support.data import core
 
-from amuse.support.units import units
-from amuse.support.units.quantities import zero
+from amuse.units import units
+from amuse.units.quantities import zero
 
 from lmech import lmech
 

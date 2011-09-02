@@ -1,5 +1,5 @@
-from amuse.support.units.units import *
-from amuse.support.units import constants
+from amuse.units.units import *
+from amuse.units import constants
 
 def convert_to_freq(wavelengths = [355.1, 468.6, 616.5, 748.1, 893.1] | nano(m)):
    """

@@ -7,8 +7,8 @@ import tidal_field
 from interface import twobodympInterface
 from interface import twobodymp
 
-from amuse.support.units.units import *
-from amuse.support.units import nbody_system as NU
+from amuse.units.units import *
+from amuse.units import nbody_system as NU
 
 import numpy
 import time

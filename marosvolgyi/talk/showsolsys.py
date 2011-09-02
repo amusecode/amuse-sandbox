@@ -2,8 +2,8 @@ import numpy
 import pdb
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.ext.solarsystem import Solarsystem
-from amuse.support.units import units
-from amuse.support.units.quantities import VectorQuantity as Vq
+from amuse.units import units
+from amuse.units.quantities import VectorQuantity as Vq
 from amuse.plot import *
 
 try:

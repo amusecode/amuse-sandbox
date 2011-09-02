@@ -37,7 +37,7 @@ class unit(object):
     base units
         The base units in a given system of units. For SI, these
         are meter, kilogram, second, ampere, kelvin, mole and 
-        candele. See the si module :mod:`amuse.support.units.si`
+        candele. See the si module :mod:`amuse.units.si`
     derived units
         Derived units are created by dividing or multiplying
         with a number or with another unit. For example, 
@@ -93,7 +93,7 @@ class unit(object):
             
         Examples
         
-        >>> from amuse.support.units import units
+        >>> from amuse.units import units
         >>> 100 | units.kg
         quantity<100 kg>
         """
@@ -140,7 +140,7 @@ class unit(object):
         
         :result: Unit with only a factor and power terms
         
-        >>> from amuse.support.units import units
+        >>> from amuse.units import units
         >>> N = (units.m * units.kg) / (units.s * units.s)
         >>> N
         unit<m * kg / s * s>
@@ -202,7 +202,7 @@ class unit(object):
         
         Examples
         
-        >>> from amuse.support.units import units
+        >>> from amuse.units import units
         >>> ton = 1000 * units.kg
         >>> ton.as_quantity_in(units.kg)
         quantity<1000.0 kg>
@@ -224,7 +224,7 @@ class unit(object):
         :argument unit: wanted unit of the value
         :returns: number in the given unit
         
-        >>> from amuse.support.units import units
+        >>> from amuse.units import units
         >>> x = units.km
         >>> x.value_in(units.m)
         1000.0
@@ -260,7 +260,7 @@ class unit(object):
         :argument other: unit to compare base to
         :result: True, if bases are compatiple.
         
-        >>> from amuse.support.units import units
+        >>> from amuse.units import units
         >>> mps = units.m / units.s
         >>> kph = units.km / units.hour
         >>> mps.has_same_base_as(kph)
@@ -379,7 +379,7 @@ class named_unit(unit):
         or quantities
     :argument unit: The unit to alias
     
-    >>> from amuse.support.units import si
+    >>> from amuse.units import si
     >>> 60 * si.s
     unit<60 * s>
     >>> minute = named_unit("minute","min", 60*si.s)
@@ -423,7 +423,7 @@ class factor_unit(derived_unit):
     :argument unit: The unit to derive from.
     :argument factor: The multiplication factor.
     
-    >>> from amuse.support.units import si
+    >>> from amuse.units import si
     >>> minute = 60.0 * si.s
     >>> minute.as_quantity_in(si.s)
     quantity<60.0 s>
@@ -476,7 +476,7 @@ class mul_unit(derived_unit):
     :argument left_hand: Left hand side of the multiplication.
     :argument right_hand: Right hand side of the multiplication.
     
-    >>> from amuse.support.units import si
+    >>> from amuse.units import si
     >>> area = si.m * si.m
     >>> area
     unit<m * m>
@@ -520,7 +520,7 @@ class pow_unit(derived_unit):
     :argument power: Power of the unit
     :argument unit: The unit to derive from
     
-    >>> from amuse.support.units import si
+    >>> from amuse.units import si
     >>> area = si.m**2
     >>> area
     unit<m**2>
@@ -570,7 +570,7 @@ class div_unit(derived_unit):
     :argument left_hand: Left hand side of the multiplication.
     :argument right_hand: Right hand side of the multiplication.
     
-    >>> from amuse.support.units import si
+    >>> from amuse.units import si
     >>> speed = si.m / si.s
     >>> speed
     unit<m / s>

@@ -9,8 +9,8 @@ from sandbox.marosvolgyi.viewer import planetarium
 from amuse.io.horizons import LoadStar, NewStar
 
 from amuse.support.data import core
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
 
 from pylab import *
 

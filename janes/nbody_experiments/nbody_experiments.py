@@ -51,9 +51,9 @@ import time
 
 from amuse.io import read_set_from_file, write_set_to_file
 
-from amuse.support.units import units
-from amuse.support.units import nbody_system
-import amuse.support.units.nbody_system as nbu
+from amuse.units import units
+from amuse.units import nbody_system
+import amuse.units.nbody_system as nbu
 from amuse.support.data import core
 
 try:

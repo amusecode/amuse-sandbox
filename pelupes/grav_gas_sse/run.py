@@ -5,7 +5,7 @@
 
 import numpy
 import clustergas_gadget as clustergas
-from amuse.support.units import units
+from amuse.units import units
 
 numpy.random.seed(123491)
 

@@ -4,8 +4,8 @@
 # - sync van systemen
 # - timestepping: adaptive dt?
 
-from amuse.support.units import units
 from amuse.support.data import core
+from amuse.units import units
 
 def potential_energy(system, get_potential):
   parts=system.particles.copy()

@@ -1,17 +1,12 @@
 import numpy
 
 from amuse.community.twobody import twobody
-
-from amuse.support.units import units
+from amuse.units import units
+from amuse.units import constants
+from amuse.units import nbody_system
 from amuse.support.data import core
-from amuse.support.units import constants
-from amuse.support.units import nbody_system
 
-# M1,M2: stellar masses
-# ecc=eccentricity
-# period=orbital period of binary
-# binary is started at aphelion, semi major axes oriented along x-axes,
-# orbit in xy plane
+
 def binary(m1=1.|units.MSun, m2=1|units.MSun, r1=1.| units.RSun, r2=1.|units.RSun, \
              period=1.| units.yr,ecc=0):
   convert_nbody = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)

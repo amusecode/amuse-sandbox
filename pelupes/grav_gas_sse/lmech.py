@@ -1,7 +1,7 @@
 import numpy
 
-from amuse.support.units import units
-from amuse.support.units import constants
+from amuse.units import units
+from amuse.units import constants
 
 def mdot_leitherer1992_variant(star):
   m_msun=star.mass.value_in(units.MSun)

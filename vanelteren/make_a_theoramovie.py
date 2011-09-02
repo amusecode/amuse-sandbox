@@ -15,10 +15,10 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-
-from amuse.support.units import nbody_system
-from amuse.support.units import units
 from amuse.io import store
+from amuse.units import nbody_system
+from amuse.units import units
+
 class PlotXYandMass(object):
     
     def __init__(self, indices_to_plot = None):

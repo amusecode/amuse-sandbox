@@ -12,8 +12,8 @@ except ImportError:
 
 
 from amuse.support.data import core
-from amuse.support.units import units
-from amuse.support.units import nbody_system 
+from amuse.units import units
+from amuse.units import nbody_system
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.kingmodel import MakeKingModel
 from amuse.community.hermite0.interface import Hermite
