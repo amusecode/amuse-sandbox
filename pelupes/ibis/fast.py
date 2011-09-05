@@ -5,9 +5,9 @@
 # - timestepping: adaptive dt?
 
 from amuse.units import units
-from amuse.support.data import core
 import threading
 
+from amuse.support import data
 def potential_energy(system, get_potential):
   parts=system.particles.copy()
   pot=get_potential(parts.radius,parts.x,parts.y,parts.z)
@@ -137,7 +137,7 @@ class FAST(object):
     for x in self.systems:
       if hasattr(x,"particles"):
         arr.append(x.particles)
-    return core.ParticlesSuperset(arr)          
+    return data.ParticlesSuperset(arr)          
 
   @property
   def gas_particles(self):
@@ -145,7 +145,7 @@ class FAST(object):
     for x in self.systems:
       if hasattr(x,"gas_particles"):
         arr.append(x.gas_particles)
-    return core.ParticlesSuperset(arr)          
+    return data.ParticlesSuperset(arr)          
 
 # 'private' functions
 

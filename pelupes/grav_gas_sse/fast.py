@@ -5,9 +5,9 @@
 # - timestepping: adaptive dt?
 from amuse.units import units
 from amuse.units.quantities import zero
-from amuse.support.data import core
 import threading
 
+from amuse.support import data
 def radius_or_hsmooth(parts):
   d=set(dir(parts))
   if "radius" in d:
@@ -156,7 +156,7 @@ class FAST(object):
     for x in self.systems:
       if hasattr(x,"particles"):
         arr.append(x.particles)
-    return core.ParticlesSuperset(arr)          
+    return data.ParticlesSuperset(arr)          
 
   @property
   def gas_particles(self):
@@ -164,7 +164,7 @@ class FAST(object):
     for x in self.systems:
       if hasattr(x,"gas_particles"):
         arr.append(x.gas_particles)
-    return core.ParticlesSuperset(arr)          
+    return data.ParticlesSuperset(arr)          
 
 # 'private' functions
 

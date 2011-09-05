@@ -1,6 +1,5 @@
 import struct
 
-from amuse.support.data import core
 from amuse.units import units
 from amuse.units import nbody_system 
 from amuse.ext.plummer import MakePlummerModel
@@ -17,6 +16,7 @@ import sys
 import numpy as np
 import random
 
+from amuse.support import data
 if __name__ == "__main__":
 
     nstars = int(sys.argv[1])

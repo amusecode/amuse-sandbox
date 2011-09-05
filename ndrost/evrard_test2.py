@@ -1,7 +1,6 @@
 """
 initial conditions for the SPH evrard collapse test
 """
-from amuse.support.data import core
 from amuse.units import units
 from amuse.units import nbody_system
 
@@ -9,8 +8,9 @@ from math import *
 import numpy
 from amuse.units import generic_unit_system as generic_system 
 from amuse.units import nbody_system
-from amuse.support.data.core import Particles, ParticlesWithUnitsConverted
-
+from amuse.support import data
+from amuse.support.data import Particles
+from amuse.support.data import ParticlesWithUnitsConverted
 class uniform_random_unit_cube(object):
   def __init__(self,targetN):
     self.targetN=targetN
@@ -98,7 +98,7 @@ class MakeEvrardTest(object):
     @property
     def result(self):
         mass,x,y,z,vx,vy,vz,u = self.new_model()
-        result = core.Particles(self.actualN)
+        result = data.Particles(self.actualN)
         result.mass = nbody_system.mass.new_quantity(mass)
         result.x = nbody_system.length.new_quantity(x)
         result.y = nbody_system.length.new_quantity(y)
@@ -109,7 +109,7 @@ class MakeEvrardTest(object):
         result.u = (nbody_system.speed**2).new_quantity(u)
 
         if not self.convert_nbody is None:
-            result = core.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = data.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
             result = result.copy_to_memory()
             
         return result

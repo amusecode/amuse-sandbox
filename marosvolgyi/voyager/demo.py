@@ -8,7 +8,6 @@ import amuse.legacy.twobody.twobody as twobody
 from sandbox.marosvolgyi.viewer import planetarium
 from amuse.io.horizons import LoadStar, NewStar
 
-from amuse.support.data import core
 from amuse.units import nbody_system
 from amuse.units import units
 
@@ -16,6 +15,7 @@ from pylab import *
 
 from datetime import date, timedelta
 
+from amuse.support import data
 class Horizons():
     def __init__(self):
 
@@ -83,8 +83,8 @@ class SolarSystemModel(object):
 
         self.model_t0 = self.start_date
 
-        self.planets = core.Stars(10)
-        self.voyagerI = core.Particle()
+        self.planets = data.Stars(10)
+        self.voyagerI = data.Particle()
 
         #set I.C. using Horizons database
         self.set_IC_at_date([self.planets_data.Sun, self.planets_data.Mercury, self.planets_data.Venus, 
@@ -179,7 +179,7 @@ class SolarSystemModel(object):
         self.code.update_particles(self.all_particles)
 
     def restore_pair(self, state, a_planet):
-        self.voyagerI = core.Particle()
+        self.voyagerI = data.Particle()
         voyagerI_attrib = self.voyagerI.as_set()
         rel_vr = ([state['vx'],state['vy'],state['vz']]|units.m/units.s).as_quantity_in(units.AUd)
         rel_r = ([state['x'],state['y'],state['z']]|units.m).as_quantity_in(units.AU)

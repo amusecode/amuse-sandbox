@@ -12,7 +12,6 @@ except ImportError:
 
 import struct
 
-from amuse.support.data import core
 from amuse.units import units
 from amuse.units import nbody_system 
 from amuse.ext.plummer import MakePlummerModel
@@ -29,6 +28,7 @@ import sys
 import numpy as np
 import random
 
+from amuse.support import data
 XRES = 100
 YRES = 100
 ZRES = 100

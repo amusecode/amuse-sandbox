@@ -4,14 +4,14 @@ import numpy as np
 from time import clock
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.support.data import core
 import amuse.units.nbody_system as nbu
 from amuse.ext.plummer import new_plummer_sphere, MakePlummerModel
 from nbody_experiments.problems.two_body import two_body_initial_conditions, two_body_orbital_period
 import nbody_experiments as nbe
 
+from amuse.support import data
 def particles_from_floats(m, x, y, z, vx, vy, vz):
-    stars = core.Stars(len(x))
+    stars = data.Stars(len(x))
     for i in range(len(stars)):
         star = stars[i]
         star.mass = m[i] | nbody_system.mass
@@ -44,7 +44,7 @@ def plummer_with_planets_initial_conditions(n=128, frac_planets=0.5, m_star = No
     if not (m_star is None):
         for star in stars:
             star.mass = m_star | nbu.mass
-    planets = core.Stars(int(frac_planets * n))
+    planets = data.Stars(int(frac_planets * n))
     for (star, planet) in zip(stars, planets):
         adj = two_body_initial_conditions(star.mass.value_in(nbu.mass), m_planet, a_planet, e_planet)
         planet.position = star.position + adj[1].position
@@ -91,7 +91,7 @@ def plummer_initial_conditions(n=128):
     vx-=cmvx
     vy-=cmvy
     vz-=cmvz
-    stars = core.Stars(len(x))
+    stars = data.Stars(len(x))
     for i in range(len(stars)):
         star = stars[i]
         star.mass = mass[i] | nbody_system.mass

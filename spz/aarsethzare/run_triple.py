@@ -1,7 +1,7 @@
 from interface import AarsethZare 
 #from numpy import *
 #Enable unit handling by import amuse.legacy
-from amuse.legacy import *
+from amuse.community import *
 
 def get_outer_binary_elements(mass,pos,vel) :
     r = zeros(3)
@@ -63,7 +63,7 @@ def check_orbits(m, pos, vel) :
     return year_per_step
 
 def SunEarthMars():
-    particles = core.Particles(3)
+    particles = data.Particles(3)
     particles.time = 0 | units.s
     particles.mass = [0, 5.9736e24, 6.46e23] | units.kg
     particles[0].mass = 1.0 | units.MSun

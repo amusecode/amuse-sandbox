@@ -1,6 +1,5 @@
 import numpy 
 
-from amuse.support.data import core 
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.io import text

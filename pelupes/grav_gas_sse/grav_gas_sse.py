@@ -10,7 +10,6 @@ import numpy
 from amuse.units import nbody_system
 from amuse.units import units
     
-from amuse.support.data import core
 from amuse.units.quantities import zero
 
 from fast import FAST
@@ -18,6 +17,7 @@ from lmech import lmech
 from copycat import copycat
 from amuse.ext.evrard_test import uniform_unit_sphere
 
+from amuse.support import data
 numpy.random.seed(123456)
 
 def sys_from_parts(base_class, parts=None, gasparts=None, parameters=None,converter=None, extra=dict()):
@@ -120,7 +120,7 @@ class grav_gas_sse(object):
     channel.copy_attribute("Emech_last_feedback")
     del channel
 
-    new_sph=core.Particles(0)
+    new_sph=data.Particles(0)
     
     star_particles.dmass=star_particles.grav_mass-star_particles.mass
     star_particles.u=(star_particles.Emech-star_particles.Emech_last_feedback)/star_particles.dmass    
@@ -133,7 +133,7 @@ class grav_gas_sse(object):
     print losers.y.value_in(units.parsec)   
     print losers.z.value_in(units.parsec)   
     while len(losers) > 0:            
-      add=core.Particles(len(losers))
+      add=data.Particles(len(losers))
       add.mass=self.mgas
       add.h_smooth=0. | units.parsec
       dx,dy,dz=uniform_unit_sphere(len(losers)).make_xyz()

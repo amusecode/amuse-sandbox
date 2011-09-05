@@ -11,7 +11,6 @@ except ImportError:
 #from OpenGL.GLUT import *
 import struct
 
-from amuse.support.data import core
 from amuse.units import units
 from amuse.units import nbody_system 
 from amuse.ext.plummer import MakePlummerModel
@@ -30,6 +29,7 @@ import sys
 import numpy as np
 import random
 
+from amuse.support import data
 XRES = 180.
 YRES = 180.
 ZRES = 3.
@@ -342,7 +342,7 @@ def init_integrator(method):
     return gravity
 
 def setup_particle_system(n_dust):    
-    stars = core.Stars(n_dust)
+    stars = data.Stars(n_dust)
     generate_dust(stars)
     
     sun = stars[0]

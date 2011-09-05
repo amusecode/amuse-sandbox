@@ -8,7 +8,6 @@ import amuse.legacy.twobody.twobody as twobody
 from sandbox.marosvolgyi.viewer import planetarium
 from amuse.io.horizons import LoadStar, NewStar
 
-from amuse.support.data import core
 from amuse.units import nbody_system
 from amuse.units import units
 
@@ -16,6 +15,7 @@ from pylab import *
 
 from datetime import date, timedelta
 
+from amuse.support import data
 class SolarSystemModel(object):
 
     def __init__(self):
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     I = SolarSystemModel()
     
     #make bodies in mem
-    I.stars = core.Stars(10)
+    I.stars = data.Stars(10)
 
     two_body_mode_radius = 300
 
@@ -166,7 +166,7 @@ if __name__ == '__main__':
             P.go = True
             break
 
-    voyagers = core.Stars(1)
+    voyagers = data.Stars(1)
     voyagerI = voyagers[0]
     VoyagerI = LoadStar('voyagerI')
     voyagerI.mass = units.kg(500)

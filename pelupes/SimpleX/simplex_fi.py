@@ -6,14 +6,13 @@ from amuse.units import constants
 from amuse.community.simplex.interface import SimpleX
 from amuse.community.fi.interface import Fi
 
-from amuse.support.data import core
-
 from amuse.ext.evrard_test import uniform_random_unit_cube,uniform_unit_sphere
 
 from matplotlib import pyplot
 
 from amuse.io import write_set_to_file
 
+from amuse.support import data
 mu=1.| units.amu
 muion =0.5 | units.amu
 xtrans=0.06
@@ -45,7 +44,7 @@ def glass(N, target_rms=0.01):
   vx,vy,vz=uniform_unit_sphere(N).make_xyz()
    
 
-  p=core.Particles(N)
+  p=data.Particles(N)
   p.x=L*x
   p.y=L*y
   p.z=L*z
@@ -104,7 +103,7 @@ def iliev_test_5_ic( N=10000,
 #  x,y,z=uniform_random_unit_cube(N).make_xyz()
   x,y,z=glass(N,target_rms=0.025)
   
-  p=core.Particles(N)
+  p=data.Particles(N)
   p.x=L*x
   p.y=L*y
   p.z=L*z
@@ -118,7 +117,7 @@ def iliev_test_5_ic( N=10000,
   p.flux=0. | (units.s**-1)
   p.xion=0. | units.none
 
-  sources=core.Particles(Ns)
+  sources=data.Particles(Ns)
   x,y,z=uniform_unit_sphere(Ns).make_xyz()
 
   sources.x=L*x*(1./N)**(1./3)/10

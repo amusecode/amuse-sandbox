@@ -2,13 +2,13 @@ from amuse.community.sse.interface import SSE
 from amuse.community.evtwin.interface import EVtwin
 from amuse.community.mesa.interface import MESA
 
-from amuse.support.data import core
 from amuse.units import units
 
+from amuse.support import data
 se=SSE()
 se.initialize_code()
 
-star=core.Particle()
+star=data.Particle()
 star.mass= 0.831 | units.MSun
 
 se.commit_parameters()

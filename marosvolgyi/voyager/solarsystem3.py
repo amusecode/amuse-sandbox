@@ -5,7 +5,6 @@ from amuse.legacy.hermite0.interface import HermiteInterface, Hermite
 from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 import amuse.legacy.twobody.twobody as twobody
 
-from amuse.support.data import core
 from amuse.units import nbody_system
 from amuse.units import units
 from mpl_toolkits.mplot3d import Axes3D
@@ -13,6 +12,7 @@ from pylab import *
 
 from datetime import date, timedelta
 
+from amuse.support import data
 class LoadStar(object):
 
     def __init__(self, planet):
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     I = SolarSystemModel()
     
     #make bodies in mem
-    I.stars = core.Stars(10)
+    I.stars = data.Stars(10)
 
     bodies = [I.Sun, I.Mercury, I.Venus, I.Earth, I.Moon, I.Mars, 
               I.Jupiter, I.Saturn, I. Uranus,I.Neptune]
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     I.model_t0 = date(1971,10,26)    
     I.evolve(date(1971,10,26),date(1978,1,3),10)#till voyager launch + some days
     
-    voyagers = core.Stars(1)
+    voyagers = data.Stars(1)
 
     voyagerI = voyagers[0]#I.stars.new_particle()
     #voyagerII = voyagers[1]# I.stars.new_particle()
@@ -318,7 +318,7 @@ if __name__ == '__main__':
 
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         
-        stars = core.Stars(10)
+        stars = data.Stars(10)
         
         sun = stars[0]
         sun.mass = units.MSun(1.0)

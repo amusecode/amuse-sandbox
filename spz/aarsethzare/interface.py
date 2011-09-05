@@ -66,7 +66,7 @@ class AarsethZare(InCodeComponentImplementation):
     def __init__(self, unit_converter=None,**keyword_arguments):
         self.unit_converter = unit_converter
         InCodeComponentImplementation.__init__(self,  AarsethZareInterface(**keyword_arguments))
-        self.particles = core.Particles()
+        self.particles = data.Particles()
     def define_converter(self, object):
         if not self.unit_converter is None:
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())

@@ -54,8 +54,7 @@ from amuse.io import read_set_from_file, write_set_to_file
 from amuse.units import units
 from amuse.units import nbody_system
 import amuse.units.nbody_system as nbu
-from amuse.support.data import core
-
+from amuse.support import data
 try:
     import matplotlib
     matplotlib.use("PDF")
@@ -106,7 +105,7 @@ def _vprod(a,b):
         ]
 
 def particles_from_floats(m, x, v):
-    stars = core.Stars(len(x))
+    stars = data.Stars(len(x))
     for i in range(len(stars)):
         star = stars[i]
         star.mass = m[i] | nbody_system.mass

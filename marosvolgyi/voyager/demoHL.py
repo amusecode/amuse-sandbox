@@ -8,7 +8,6 @@ import amuse.legacy.twobody.twobody as twobody
 from sandbox.marosvolgyi.viewer import planetarium
 from amuse.io.horizons import LoadStar, NewStar
 
-from amuse.support.data import core
 from amuse.units import nbody_system
 from amuse.units import units
 
@@ -16,6 +15,7 @@ from pylab import *
 
 from datetime import date, timedelta
 
+from amuse.support import data
 class Horizons():
     def __init__(self):
 
@@ -155,8 +155,8 @@ if __name__ == '__main__':
 
     I.model_t0 = start_date
 
-    planets = core.Stars(10)
-    voyagerI = core.Particle()
+    planets = data.Stars(10)
+    voyagerI = data.Particle()
 
     #set I.C. using Horizons database
     set_IC_at_date([planets_data.Sun, planets_data.Mercury, planets_data.Venus, 
@@ -253,7 +253,7 @@ if __name__ == '__main__':
             if retreat(state):
                 two_body_mode = False
                 print "retreat"
-                voyagerI = core.Particle()
+                voyagerI = data.Particle()
                 voyagerI_attrib = voyagerI.as_set()
                 rel_vr = ([state['vx'],state['vy'],state['vz']]|units.m/units.s).as_quantity_in(units.AUd)
                 rel_r = ([state['x'],state['y'],state['z']]|units.m).as_quantity_in(units.AU)
@@ -294,7 +294,7 @@ if __name__ == '__main__':
 """
 """
     #add voyager to model
-    I.voyagers = core.Stars(1)
+    I.voyagers = data.Stars(1)
 
     voyagerI = voyagers[0]
 

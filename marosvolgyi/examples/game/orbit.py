@@ -11,7 +11,6 @@ except ImportError:
 #from OpenGL.GLUT import *
 
 
-from amuse.support.data import core
 from amuse.units import units
 from amuse.units import nbody_system 
 from amuse.ext.plummer import MakePlummerModel
@@ -28,6 +27,7 @@ import sys
 import numpy as np
 import random
 
+from amuse.support import data
 class Viewer(object):
     def __init__(self, *kargs):
         if len(kargs)==3:
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     print nstars
     seed = None
 
-    stars = core.Stars(3)
+    stars = data.Stars(3)
     earth = stars[0]
     earth.mass = units.kg(5.9736e24)
     earth.position = units.m(np.array((0.0,0.0,0.0)))
