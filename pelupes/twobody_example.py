@@ -4,7 +4,7 @@ from amuse.community.twobody import twobody
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
-from amuse.support import data
+from amuse import datamodel
 def binary(m1=1.|units.MSun, m2=1|units.MSun, r1=1.| units.RSun, r2=1.|units.RSun, \
              period=1.| units.yr,ecc=0):
   convert_nbody = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
@@ -33,7 +33,7 @@ def binary(m1=1.|units.MSun, m2=1|units.MSun, r1=1.| units.RSun, r2=1.|units.RSu
   vy2=m1/(m1+m2)*va
   vx2=vz2=0.*vy2
   
-  parts=data.Particles(2)
+  parts=datamodel.Particles(2)
 
   parts[0].mass=m1
   parts[0].radius=r1

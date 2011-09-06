@@ -9,7 +9,7 @@ from amuse.units import nbody_system
 from amuse.legacy.fi.interface import Fi
 from amuse.io import read_set_from_file
 
-from amuse.support.data import Grid
+from amuse.datamodel import Grid
 def average(N,r,dat):
   n=len(r)
   a=numpy.argsort(r)

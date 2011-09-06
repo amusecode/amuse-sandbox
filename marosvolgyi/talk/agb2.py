@@ -4,7 +4,7 @@ from amuse.units import units
 from amuse.ext.solarsystem import Solarsystem
 from amuse.plot import *
 
-from amuse.support import data
+from amuse import datamodel
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True

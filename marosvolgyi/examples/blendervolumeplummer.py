@@ -16,7 +16,7 @@ import sys
 import numpy as np
 import random
 
-from amuse.support import data
+from amuse import datamodel
 if __name__ == "__main__":
 
     nstars = int(sys.argv[1])

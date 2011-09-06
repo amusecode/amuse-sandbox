@@ -6,7 +6,7 @@ from amuse.units.quantities import zero
 
 from lmech import lmech
 
-from amuse.support import data
+from amuse import datamodel
 def e_supernova(stellar_type,prev_stellar_type):
   i=numpy.where( (stellar_type>=13 | units.stellar_type) &
                  (stellar_type<=15 | units.stellar_type) &
@@ -48,7 +48,7 @@ class SSEplus(SSE):
 if __name__=="__main__":
   evo=SSEplus()
   evo.initialize_module_with_default_parameters() 
-  p=data.Particles(4)
+  p=datamodel.Particles(4)
   p.mass=units.MSun([15,25,35,50])
   evo.particles.add_particles(p)
 

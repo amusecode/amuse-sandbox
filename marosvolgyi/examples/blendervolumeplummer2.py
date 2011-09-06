@@ -28,7 +28,7 @@ import sys
 import numpy as np
 import random
 
-from amuse.support import data
+from amuse import datamodel
 XRES = 100
 YRES = 100
 ZRES = 100

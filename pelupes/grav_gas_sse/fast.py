@@ -7,7 +7,7 @@ from amuse.units import units
 from amuse.units.quantities import zero
 import threading
 
-from amuse.support import data
+from amuse import datamodel
 def radius_or_hsmooth(parts):
   d=set(dir(parts))
   if "radius" in d:
@@ -156,7 +156,7 @@ class FAST(object):
     for x in self.systems:
       if hasattr(x,"particles"):
         arr.append(x.particles)
-    return data.ParticlesSuperset(arr)          
+    return datamodel.ParticlesSuperset(arr)          
 
   @property
   def gas_particles(self):
@@ -164,7 +164,7 @@ class FAST(object):
     for x in self.systems:
       if hasattr(x,"gas_particles"):
         arr.append(x.gas_particles)
-    return data.ParticlesSuperset(arr)          
+    return datamodel.ParticlesSuperset(arr)          
 
 # 'private' functions
 

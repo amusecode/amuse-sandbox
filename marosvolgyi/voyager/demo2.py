@@ -15,7 +15,7 @@ from pylab import *
 
 from datetime import date, timedelta
 
-from amuse.support import data
+from amuse import datamodel
 class SolarSystemModel(object):
 
     def __init__(self):
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     I = SolarSystemModel()
     
     #make bodies in mem
-    I.stars = data.Stars(10)
+    I.stars = datamodel.Stars(10)
 
     two_body_mode_radius_ratio = 20000000000000.0
 
@@ -153,7 +153,7 @@ if __name__ == '__main__':
             break
 
     #add voyager to mem
-    voyagers = data.Stars(1)
+    voyagers = datamodel.Stars(1)
 
     voyagerI = voyagers[0]
     voyagerI_data = LoadStar('voyagerI')

@@ -8,9 +8,9 @@ from amuse.community.phiGRAPE.interface import PhiGRAPE
 
 import sys
 
-from amuse.support import data
+from amuse import datamodel
 def particles_from_floats(m, x, v):
-    stars = data.Stars(len(x))
+    stars = datamodel.Stars(len(x))
     for i in range(len(stars)):
         star = stars[i]
         star.mass = m[i] | nbody_system.mass
@@ -97,7 +97,7 @@ def binary_with_neighbours_initial_conditions():
     x.append([-20*X,  0,  0])
     v.append([ 0, -3*V,  0])
     v.append([ 0, +3*V,  0])
-    stars = data.Stars(len(x))
+    stars = datamodel.Stars(len(x))
     for i in range(len(stars)):
         star = stars[i]
         star.mass = 0.5 | nbody_system.mass

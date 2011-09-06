@@ -2,7 +2,7 @@ import sys
 
 from amuse.community.simplex.interface import SimpleXInterface as mpi_interface
 
-from amuse.support import data
+from amuse import datamodel
 def rad_from_file(input_file):
 
   ids=[]

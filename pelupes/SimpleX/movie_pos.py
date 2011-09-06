@@ -7,7 +7,7 @@ from amuse.units import units
 from amuse.units import nbody_system
 from amuse.community.fi.interface import Fi
 from amuse.io import read_set_from_file
-from amuse.support.data import Grid
+from amuse.datamodel import Grid
 font = {'family' : 'normal',
         'weight' : 'normal',
         'size'   : 16}

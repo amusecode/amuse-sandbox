@@ -2,14 +2,14 @@ from amuse.units import units
 from amuse.units import nbody_system
 import numpy as np
 
-from amuse.support import data
+from amuse import datamodel
 def Pythagorean_initial_conditions(): 
     """ 
     Initial conditions for the Pythagorean system, from:
         amuse/sandbox/spz/Pythagorean.py
     """
 
-    stars = data.Stars(3)
+    stars = datamodel.Stars(3)
         
     unit_velocity = nbody_system.length/nbody_system.time
     star0 = stars[0]

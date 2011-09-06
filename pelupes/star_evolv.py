@@ -4,11 +4,11 @@ from amuse.community.mesa.interface import MESA
 
 from amuse.units import units
 
-from amuse.support import data
+from amuse import datamodel
 se=SSE()
 se.initialize_code()
 
-star=data.Particle()
+star=datamodel.Particle()
 star.mass= 0.831 | units.MSun
 
 se.commit_parameters()

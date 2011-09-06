@@ -7,11 +7,11 @@ from amuse.ext.gasplummer import MakePlummerGasModel
 
 
 
-from amuse.support import data
+from amuse import datamodel
 class BoxedFi(Fi):
   def __init__(self, *args, **kargs):
     Fi.__init__(self, *args, **kargs)
-    self.escapers=data.Particles(0)
+    self.escapers=datamodel.Particles(0)
   
   def evolve_model(self, *args, **kargs):
     self.stopping_conditions.out_of_box_detection.enable()

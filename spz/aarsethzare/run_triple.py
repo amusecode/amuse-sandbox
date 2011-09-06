@@ -63,7 +63,7 @@ def check_orbits(m, pos, vel) :
     return year_per_step
 
 def SunEarthMars():
-    particles = data.Particles(3)
+    particles = datamodel.Particles(3)
     particles.time = 0 | units.s
     particles.mass = [0, 5.9736e24, 6.46e23] | units.kg
     particles[0].mass = 1.0 | units.MSun

@@ -20,7 +20,7 @@ from amuse.ext.plummer import *
 
 
 
-from amuse.support import data
+from amuse import datamodel
 class BonsaiInterfaceTests(TestWithMPI):
     
     def test0(self):

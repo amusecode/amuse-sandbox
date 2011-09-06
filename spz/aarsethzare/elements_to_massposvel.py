@@ -4,8 +4,8 @@ import sys
 import subprocess
 
 # prevent units from being printed:
-#from amuse.support.data import console
-#from amuse.support.data.console import set_printing_strategy
+#from amuse.support.datamodel import console
+#from amuse.support.datamodel.console import set_printing_strategy
 #set_printing_strategy(console.NoUnitsPrintingStrategy) 
 
 import double_star

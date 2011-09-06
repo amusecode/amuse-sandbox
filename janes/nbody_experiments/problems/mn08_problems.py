@@ -53,7 +53,7 @@ def cuboctahedron_initial_conditions(m = 1):
         v.append([-vx, +vy, -vz])
         v.append([-vx, -vy, +vz])
 
-    stars = data.Stars(len(x))
+    stars = datamodel.Stars(len(x))
     for i in range(len(stars)):
         star = stars[i]
         star.mass = 1. | nbody_system.mass
@@ -149,7 +149,7 @@ def planar_crisscross_initial_conditions():
     
     return particles_from_floats(m, x, v)
 
-    stars = data.Stars(len(x))
+    stars = datamodel.Stars(len(x))
     for i in range(len(stars)):
         star = stars[i]
         star.mass = 1.0 | nbody_system.mass

@@ -15,7 +15,7 @@ from pylab import *
 
 from datetime import date, timedelta
 
-from amuse.support import data
+from amuse import datamodel
 class SolarSystemModel(object):
 
     def __init__(self):
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     I = SolarSystemModel()
     
     #make bodies in mem
-    I.stars = data.Stars(10)
+    I.stars = datamodel.Stars(10)
 
     bodies = [I.Sun, I.Mercury, I.Venus, I.Earth, I.Moon, I.Mars, 
               I.Jupiter, I.Saturn, I. Uranus,I.Neptune]

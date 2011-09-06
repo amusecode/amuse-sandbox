@@ -6,11 +6,11 @@ from amuse.units import nbody_system
 from amuse.ext.plummer import MakePlummerModel
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 from amuse.ext.salpeter import SalpeterIMF
-from amuse.support.data import particle_attributes
 from amuse.legacy.sse.interface import SSE
 from amuse.legacy.mesa.interface import MESA
 
 
+from amuse.datamodel import particle_attributes
 def demo3(N):
 
   initial_mass_function = SalpeterIMF()

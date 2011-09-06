@@ -29,7 +29,7 @@ import sys
 import numpy as np
 import random
 
-from amuse.support import data
+from amuse import datamodel
 XRES = 180.
 YRES = 180.
 ZRES = 3.
@@ -342,7 +342,7 @@ def init_integrator(method):
     return gravity
 
 def setup_particle_system(n_dust):    
-    stars = data.Stars(n_dust)
+    stars = datamodel.Stars(n_dust)
     generate_dust(stars)
     
     sun = stars[0]

@@ -14,8 +14,7 @@ from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.support.codes.core import is_mpd_running
 
 from amuse.ext.plummer import MakePlummerModel
-from amuse.support.data import particle_attributes
-
+from amuse.datamodel import particle_attributes
 def print_log(time, gravity, particles, total_energy_at_t0):
     kinetic_energy = gravity.kinetic_energy
     potential_energy = gravity.potential_energy

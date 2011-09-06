@@ -15,7 +15,7 @@ from pylab import *
 
 from datetime import date, timedelta
 
-from amuse.support import data
+from amuse import datamodel
 class Horizons():
     def __init__(self):
 
@@ -155,8 +155,8 @@ if __name__ == '__main__':
 
     I.model_t0 = start_date
 
-    planets = data.Stars(10)
-    voyagerI = data.Particle()
+    planets = datamodel.Stars(10)
+    voyagerI = datamodel.Particle()
 
     #set I.C. using Horizons database
     set_IC_at_date([planets_data.Sun, planets_data.Mercury, planets_data.Venus, 
@@ -253,7 +253,7 @@ if __name__ == '__main__':
             if retreat(state):
                 two_body_mode = False
                 print "retreat"
-                voyagerI = data.Particle()
+                voyagerI = datamodel.Particle()
                 voyagerI_attrib = voyagerI.as_set()
                 rel_vr = ([state['vx'],state['vy'],state['vz']]|units.m/units.s).as_quantity_in(units.AUd)
                 rel_r = ([state['x'],state['y'],state['z']]|units.m).as_quantity_in(units.AU)

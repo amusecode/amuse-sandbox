@@ -6,7 +6,7 @@ from amuse.ext.evrard_test import uniform_random_unit_cube,uniform_unit_sphere
 
 from matplotlib import pyplot
 
-from amuse.support import data
+from amuse import datamodel
 Tinit=100. | units.K
 Tion=10000. | units.K
 gamma1=1.666667-1
@@ -23,7 +23,7 @@ def iliev_test_5( N=10000,
 
  
   x,y,z=uniform_random_unit_cube(N).make_xyz()
-  p=data.Particles(N)
+  p=datamodel.Particles(N)
   p.x=L*x+L
   p.y=L*y+L
   p.z=L*z+L
@@ -35,7 +35,7 @@ def iliev_test_5( N=10000,
   p.flux=0. | (units.s**-1)
   p.xion=0. | units.none
 
-  sources=data.Particles(Ns)
+  sources=datamodel.Particles(Ns)
   x,y,z=uniform_unit_sphere(Ns).make_xyz()
 
   sources.x=L*x*(1./N)**(1./3)+L

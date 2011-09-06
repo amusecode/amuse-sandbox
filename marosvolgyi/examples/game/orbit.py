@@ -27,7 +27,7 @@ import sys
 import numpy as np
 import random
 
-from amuse.support import data
+from amuse import datamodel
 class Viewer(object):
     def __init__(self, *kargs):
         if len(kargs)==3:
@@ -297,7 +297,7 @@ if __name__ == "__main__":
     print nstars
     seed = None
 
-    stars = data.Stars(3)
+    stars = datamodel.Stars(3)
     earth = stars[0]
     earth.mass = units.kg(5.9736e24)
     earth.position = units.m(np.array((0.0,0.0,0.0)))

@@ -5,15 +5,15 @@ from amuse.community.bhtree.interface import BHTreeInterface, BHTree
 from amuse.community.hermite0.interface import HermiteInterface, Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 
-from amuse.support import data
 from amuse.units import nbody_system
 from amuse.units import units
 
 from amuse.support.codes.core import is_mpd_running
 
+from amuse import datamodel
 def Pythagorean_system() : 
 
-    stars = data.Stars(3)
+    stars = datamodel.Stars(3)
         
     unit_velocity = nbody_system.length/nbody_system.time
     star0 = stars[0]

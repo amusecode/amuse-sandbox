@@ -8,7 +8,7 @@ from amuse.units import nbody_system
 from amuse.units import units
 from mpl_toolkits.mplot3d import Axes3D
 from pylab import *
-from amuse.support import data
+from amuse import datamodel
 """
 JDCT 
    X     Y     Z
@@ -109,7 +109,7 @@ class SolarSystemModel(object):
     def setup_solar_system(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         
-        stars = data.Stars(8)
+        stars = datamodel.Stars(8)
         
         sun = stars[0]
         sun.mass = units.MSun(1.0)

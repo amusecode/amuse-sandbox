@@ -27,7 +27,7 @@ import sys
 import numpy as np
 import random
 
-from amuse.support import data
+from amuse import datamodel
 class Viewer(object):
     def __init__(self, *kargs):
         if len(kargs)==2:

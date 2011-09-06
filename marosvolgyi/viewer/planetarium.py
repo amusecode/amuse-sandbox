@@ -15,7 +15,7 @@ import time
 import sys
 import numpy as np
 
-from amuse.support import data
+from amuse import datamodel
 class SolarSystemView(object):
     def __init__(self, *kargs):
         if len(kargs)==2:
