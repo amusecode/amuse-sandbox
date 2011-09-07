@@ -1,6 +1,5 @@
 from amuse.community import *
-from amuse.support.codes.lit import LiteratureReferencesMixIn
-    
+from amuse.support.literature import LiteratureReferencesMixIn
 class PACOInterface(CodeInterface, LiteratureReferencesMixIn):
     """
     PACO - Pattern AutoCOrrelation orbit classification scheme
