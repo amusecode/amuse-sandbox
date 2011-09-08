@@ -9,8 +9,7 @@ from amuse.community.bhtree.interface import BHTree
 from amuse.community.fi.interface import Fi
 import bridge
 
-from amuse.support.codes import channel
-
+from amuse.rfi import channel
 channel.MessageChannel.DEBUGGER=channel.MessageChannel.XTERM
 
 def parts_from_file(input_file):

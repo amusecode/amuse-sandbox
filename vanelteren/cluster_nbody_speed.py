@@ -12,10 +12,9 @@ from amuse.units import units
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
-from amuse.support.codes.core import is_mpd_running
-
 from amuse.ext.plummer import MakePlummerModel
 from amuse.datamodel import particle_attributes
+from amuse.rfi.core import is_mpd_running
 def print_log(time, gravity, particles, total_energy_at_t0):
     kinetic_energy = gravity.kinetic_energy
     potential_energy = gravity.potential_energy

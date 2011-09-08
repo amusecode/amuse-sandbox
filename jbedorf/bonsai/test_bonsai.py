@@ -12,8 +12,6 @@ from amuse.community.octgrav.interface import OctgravInterface, Octgrav
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.support.codes import channel
-
 from amuse.ext.plummer import *
 
 
@@ -21,6 +19,7 @@ from amuse.ext.plummer import *
 
 
 from amuse import datamodel
+from amuse.rfi import channel
 class BonsaiInterfaceTests(TestWithMPI):
     
     def test0(self):

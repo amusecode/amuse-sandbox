@@ -15,12 +15,11 @@ from amuse.units import units
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 
-from amuse.support.codes.core import is_mpd_running
-
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 
 import LagrangianRadii as lr
+from amuse.rfi.core import is_mpd_running
 """
    HermiteOrBHTree.py
    Example code for running a simple N-body system either using either
