@@ -29,7 +29,7 @@ def run_code(plot_path):
     path, fname = os.path.split(plot_path)
     sys.path.insert(0, os.path.abspath(path))
     stdout = sys.stdout
-    sys.stdout = cStringIO.StringIO()
+    #sys.stdout = cStringIO.StringIO()
     os.chdir(path)
     fd = None
     try:
