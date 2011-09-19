@@ -11,9 +11,10 @@ except ImportError:
 #from OpenGL.GLUT import *
 
 
+from amuse import datamodel
+from amuse.ic.plummer import new_plummer_sphere
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.ext.kingmodel import MakeKingModel
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
@@ -26,8 +27,6 @@ import sys
 import numpy as np
 import random
 
-from amuse import datamodel
-from amuse.ic.plummer import new_plummer_sphere
 class Viewer(object):
     def __init__(self, *kargs):
         if len(kargs)==2:
@@ -255,7 +254,7 @@ if __name__ == "__main__":
     #convert_nbody = nbody_system.nbody_to_si(1.0|units.MSun, 1.0|units.AU)
     stars = new_plummer_sphere(nstars)#, convert_nbody, random_state = seed).result
     #stars2= MakePlummerModel(nstars).result
-    #stars2 = MakeKingModel(nstars, None, W0=6).result
+    #stars2 = new_king_model(nstars, None, W0=6)
     #stars2.x += 0.5 | nbody_system.length
     #stars2.vy = 35 | nbody_system.speed
     #stars2.mass = 1.0 |nbody_system.mass

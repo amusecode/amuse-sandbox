@@ -14,7 +14,6 @@ import struct
 
 from amuse.units import units
 from amuse.units import nbody_system 
-from amuse.ext.kingmodel import MakeKingModel
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
