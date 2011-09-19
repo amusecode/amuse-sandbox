@@ -21,10 +21,10 @@ from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.community.sse.interface import SSE
 from os import system
 
-from amuse.ext.salpeter import SalpeterIMF
-
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import new_salpeter_mass_distribution
+
 system("echo \" \" > simple_ToverV.dat")
 
 file = open('simple_ToverV.dat', 'a')
@@ -40,8 +40,8 @@ def move_particles_to_center_of_mass(particles):
 def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
     random.seed()
     
-    initial_mass_function = SalpeterIMF()
-    total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
+    salpeter_masses = new_salpeter_mass_distribution(number_of_stars)
+    total_mass = salpeter_masses.sum()
     
     convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
     convert_nbody.set_as_default()

@@ -15,7 +15,6 @@ from amuse.units.quantities import zero
 
 from amuse.legacy.fi.interface import Fi
 
-from amuse.ext.salpeter import SalpeterIMF
 from amuse.ic.plummer import new_plummer_sphere
 numpy.random.seed(12345)
 

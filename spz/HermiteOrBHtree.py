@@ -15,11 +15,10 @@ from amuse.units import units
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 
-from amuse.ext.salpeter import SalpeterIMF
-
 import LagrangianRadii as lr
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import new_salpeter_mass_distribution
 """
    HermiteOrBHTree.py
    Example code for running a simple N-body system either using either
@@ -75,8 +74,8 @@ if __name__ == '__main__':
     alpha = -2.35
 
     r_vir = 1 | length_unit
-    initial_mass_function = SalpeterIMF(m_min, m_max, alpha)
-    m_tot, masses = initial_mass_function.next_set(nstars)
+    masses = new_salpeter_mass_distribution(nstars, m_min, m_max, alpha)
+    m_tot = masses.sum()
 
     end_time = 1 | nbody_system.time
     dt = 0.25 | nbody_system.time 

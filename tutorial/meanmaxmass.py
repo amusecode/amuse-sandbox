@@ -8,7 +8,7 @@ numpy.random.seed(123456)
 
 #import AMUSE units and Salpeter IMF
 from amuse.units import units
-from amuse.ext.salpeter import new_salpeter_mass_distribution
+from amuse.ic.salpeter import new_salpeter_mass_distribution
 
 # calculate the maximum stellar mass for Nset realizations of 
 # an N star cluster

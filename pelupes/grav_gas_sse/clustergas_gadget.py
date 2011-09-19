@@ -23,7 +23,6 @@ from amuse.community.phiGRAPE.interface import PhiGRAPE
 
 from SSEplus import SSEplus
 
-from amuse.ext.salpeter import SalpeterIMF
 from amuse.ext.gasplummer import MakePlummerGasModel
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
@@ -33,6 +32,7 @@ import cProfile
 #numpy.random.seed(12345)
 
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import salpeter_masses
 def smaller_nbody_power_of_two(dt, conv):
   nbdt=conv.to_nbody(dt).value_in(nbody_system.time)
   idt=numpy.floor(numpy.log2(nbdt))
@@ -93,7 +93,8 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
   eps=0.05 * Rscale
   eps_star=0.001 * Rscale
 
-  total_star_mass, star_masses = SalpeterIMF(mass_max = 100. | units.MSun).next_set(Nstar)
+  star_masses = new_salpeter_mass_distribution(Nstar, mass_max = 100. | units.MSun)
+  total_star_mass = star_masses.sum()
   total_mass=total_star_mass/sfeff
   print "maxmass:", max(star_masses)
   print "Tcross", (2.8*(Rscale**3/ constants.G/ total_star_mass)**0.5).in_(units.Myr)

@@ -4,13 +4,13 @@ numpy.random.seed(122222)
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
-from amuse.ext.salpeter import SalpeterIMF
 from amuse.datamodel import particle_attributes
 from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.salpeter import new_salpeter_mass_distribution
 def demo2(N):
 
-  initial_mass_function = SalpeterIMF()
-  total_mass, salpeter_masses = initial_mass_function.next_set(N)
+  salpeter_masses = new_salpeter_mass_distribution(N)
+  total_mass = salpeter_masses.sum()
 
   convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
 
