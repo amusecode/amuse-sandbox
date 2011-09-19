@@ -4,12 +4,14 @@ import numpy as np
 from time import clock
 from amuse.units import units
 from amuse.units import nbody_system
+from amuse import datamodel
+from amuse.ic.plummer import new_plummer_sphere
 import amuse.units.nbody_system as nbu
-from amuse.ext.plummer import new_plummer_sphere, MakePlummerModel
+
 from nbody_experiments.problems.two_body import two_body_initial_conditions, two_body_orbital_period
 import nbody_experiments as nbe
 
-from amuse import datamodel
+
 def particles_from_floats(m, x, y, z, vx, vy, vz):
     stars = datamodel.Stars(len(x))
     for i in range(len(stars)):

@@ -15,11 +15,11 @@ from amuse.units import units
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 
-from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 
 import LagrangianRadii as lr
 from amuse.rfi.core import is_mpd_running
+from amuse.ic.plummer import new_plummer_sphere
 """
    HermiteOrBHTree.py
    Example code for running a simple N-body system either using either
@@ -92,7 +92,7 @@ if __name__ == '__main__':
         dt = convert_nbody.to_si(dt).as_quantity_in(units.Myr)
         print m_tot
 
-    stars = MakePlummerModel(nstars, convert_nbody, random_state = seed).result;
+    stars = new_plummer_sphere(nstars, convert_nbody, random_state = seed);
     stars.mass = masses 
     to_com(stars)
     scale(stars)

@@ -4,16 +4,16 @@ import numpy
 import cPickle
 
 
-from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface as phi
-
-from amuse.ext.plummer import MakePlummerModel
-
-from amuse.legacy.hop.interface import HopInterface as Hop
+from amuse.ic.plummer import MakePlummerModel
+from amuse.ic.plummer import new_plummer_sphere
+from amuse.community.phiGRAPE.interface import PhiGRAPEInterface as phi
+from amuse.community.hop.interface import HopInterface as Hop
 
 #from matplotlib import pyplot
 
 import logging
 #logging.basicConfig(level=logging.DEBUG)
+
 
 numpy.random.seed(123456)
 

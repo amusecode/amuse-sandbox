@@ -12,9 +12,9 @@ from amuse.units import units
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
-from amuse.ext.plummer import MakePlummerModel
 from amuse.datamodel import particle_attributes
 from amuse.rfi.core import is_mpd_running
+from amuse.ic.plummer import new_plummer_sphere
 def print_log(time, gravity, particles, total_energy_at_t0):
     kinetic_energy = gravity.kinetic_energy
     potential_energy = gravity.potential_energy
@@ -27,7 +27,7 @@ def print_log(time, gravity, particles, total_energy_at_t0):
     print "KE+PE : ", kinetic_energy + potential_energy
     
 def simulate_small_cluster(number_of_stars, end_time = 40 | nbody_system.time, number_of_workers = 1):
-    particles = MakePlummerModel(number_of_stars).result
+    particles = new_plummer_sphere(number_of_stars)
     particles.scale_to_standard()
     particles.radius = 0.0 | nbody_system.length
    

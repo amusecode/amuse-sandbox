@@ -22,13 +22,13 @@ from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 from amuse.legacy.sse.interface import SSE
 
 from amuse.ext.salpeter import SalpeterIMF
-from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.gasplummer import MakePlummerGasModel
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 
 import cProfile
 
+from amuse.ic.plummer import new_plummer_sphere
 numpy.random.seed(123456)
 
 def smaller_nbody_power_of_two(dt, conv):
@@ -48,7 +48,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=1.0 | units.Myr,
   print "maxmass:", max(star_masses)
   conv = nbody_system.nbody_to_si(total_mass,Rscale)
 
-  star_parts=MakePlummerModel(Nstar,convert_nbody=conv).result
+  star_parts = new_plummer_sphere(Nstar,convert_nbody=conv)
   star_parts.mass=star_masses
   star_parts.radius=eps_star
 

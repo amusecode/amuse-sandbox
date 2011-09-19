@@ -13,7 +13,6 @@ import struct
 
 from amuse.units import units
 from amuse.units import nbody_system 
-from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.kingmodel import MakeKingModel
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.ph4.interface import ph4
@@ -30,6 +29,7 @@ import numpy as np
 import random
 
 from amuse import datamodel
+from amuse.ic.plummer import new_plummer_sphere
 XRES = 180.
 YRES = 180.
 ZRES = 3.

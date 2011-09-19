@@ -3,7 +3,6 @@ numpy.random.seed(122222)
 
 from amuse.units import units
 from amuse.units import nbody_system
-from amuse.ext.plummer import MakePlummerModel
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 from amuse.ext.salpeter import SalpeterIMF
 from amuse.legacy.sse.interface import SSE
@@ -11,6 +10,7 @@ from amuse.legacy.mesa.interface import MESA
 
 
 from amuse.datamodel import particle_attributes
+from amuse.ic.plummer import new_plummer_sphere
 def demo3(N):
 
   initial_mass_function = SalpeterIMF()
@@ -20,7 +20,7 @@ def demo3(N):
 
   print convert_nbody.to_nbody(100 | units.Myr)
 
-  parts=MakePlummerModel(N,convert_nbody).result
+  parts = new_plummer_sphere(N,convert_nbody)
   parts.radius=0. | units.RSun
   parts.mass = salpeter_masses
   parts.move_to_center()

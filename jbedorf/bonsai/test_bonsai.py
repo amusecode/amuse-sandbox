@@ -12,14 +12,9 @@ from amuse.community.octgrav.interface import OctgravInterface, Octgrav
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.ext.plummer import *
-
-
-
-
-
 from amuse import datamodel
 from amuse.rfi import channel
+from amuse.ic.plummer import *
 class BonsaiInterfaceTests(TestWithMPI):
     
     def test0(self):
@@ -35,8 +30,7 @@ class BonsaiInterfaceTests(TestWithMPI):
     def test1(self):
         plummer_size = 500
 #        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        plummer =  MakePlummerModel(plummer_size)
-        stars = plummer.result
+        plummer =  new_plummer_sphere(plummer_size)
 #        stars.radius = range(1, plummer_size+1)|units.km
         mass=stars.mass.number
         radius=stars.radius.number

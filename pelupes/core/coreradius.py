@@ -2,8 +2,6 @@ import os
 import sys
 import numpy
 
-from amuse.ext.plummer import MakePlummerModel
-
 from amuse.legacy.hop.interface import HopInterface as Hop
 
 from matplotlib import pyplot
@@ -11,6 +9,7 @@ from matplotlib import pyplot
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
+from amuse.ic.plummer import new_plummer_sphere
 numpy.random.seed(1234)
 
 def hopfromnb(nb,ids):

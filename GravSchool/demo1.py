@@ -2,12 +2,12 @@ import numpy
 numpy.random.seed(122222)
 
 from amuse.units import nbody_system
-from amuse.ext.plummer import MakePlummerModel
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 
 
+from amuse.ic.plummer import new_plummer_sphere
 def demo1(N):
-  parts=MakePlummerModel(N).result
+  parts = new_plummer_sphere(N)
   parts.radius=0. | nbody_system.length
 
   #interface=PhiGRAPE(use_gl=True)

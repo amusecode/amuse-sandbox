@@ -3,11 +3,11 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import pyopencl as cl
 import numpy as np
-from amuse.ext.plummer import MakePlummerModel
 import sys
 import ctypes
 import time
 
+from amuse.ic.plummer import new_plummer_sphere
 drag = False
 trail = False
 box = False
@@ -23,11 +23,10 @@ frame=0
 t0=time.time()
 t1=t0
 
-parts = MakePlummerModel(nbodies).result
+parts = new_plummer_sphere(nbodies)
 
 #x_r = np.random.rand(nbodies,4).astype('float32')
 #v_r = 0.0 * np.ones((nbodies,4)).astype('float32')
-
 x_r = np.vstack([parts.x.number,parts.y.number,parts.z.number, parts.mass.number]).transpose()
 x_r = np.array(x_r,dtype='float32')
 x_r = x_r.flatten()

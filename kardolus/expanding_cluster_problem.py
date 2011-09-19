@@ -22,10 +22,10 @@ from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.community.sse.interface import SSE
 from os import system
 
-from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 
 from amuse.rfi.core import is_mpd_running
+from amuse.ic.plummer import new_plummer_sphere
 system("echo \" \" > simple_ToverV.dat")
 
 file = open('simple_ToverV.dat', 'a')
@@ -104,7 +104,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
     convert_nbody.set_as_default()
     
-    particles = MakePlummerModel(number_of_stars, convert_nbody).result;
+    particles = new_plummer_sphere(number_of_stars, convert_nbody);
 
     gravity = PhiGRAPE(convert_nbody,mode="gpu")
     gravity.initialize_code()
