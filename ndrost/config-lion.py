@@ -15,12 +15,12 @@ class compilers(object):
     fc_flags = '-m64'
     
     found_fftw = 'yes'
-    fftw_flags = '-I /opt/local/include'
-    fftw_libs = '-L /opt/local/lib/'
+    fftw_flags = '-I/opt/local/include  '
+    fftw_libs = '-L/opt/local/lib -lfftw3 -lm  '
     
     found_gsl = 'yes'
-    gsl_flags = '-I /opt/local/include'
-    gsl_libs = '-L /opt/local/lib/'
+    gsl_flags = '-I/opt/local/include  '
+    gsl_libs = '-L/opt/local/lib -lgsl -lgslcblas -lm  '
     
 
 class mpi(object):
