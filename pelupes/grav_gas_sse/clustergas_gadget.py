@@ -23,7 +23,7 @@ from amuse.community.phiGRAPE.interface import PhiGRAPE
 
 from SSEplus import SSEplus
 
-from amuse.ext.gasplummer import MakePlummerGasModel
+from amuse.ic.gasplummer import new_plummer_gas_model
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 
@@ -119,7 +119,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
 
   print "t_end:", conv.to_nbody(t_end)
   
-  gas_parts=MakePlummerGasModel(Ngas,convert_nbody=conv, base_grid=body_centered_grid_unit_cube).result
+  gas_parts=new_plummer_gas_model(Ngas,convert_nbody=conv, base_grid=body_centered_grid_unit_cube)
   gas_parts.h_smooth=0. | units.parsec
   gas_parts.mass=gas_parts.mass*(1-sfeff)
 

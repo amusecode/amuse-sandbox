@@ -1,7 +1,7 @@
 
 from amuse.units import nbody_system
 from amuse.units import units
-from amuse.ext.gasplummer import MakePlummerGasModel
+from amuse.ic.gasplummer import new_plummer_gas_model
 
 from amuse.community.fi.interface import Fi
 
@@ -35,7 +35,7 @@ if __name__=="__main__":
   conv = nbody_system.nbody_to_si(100 | units.MSun, 1 | units.parsec)
   dt=conv.to_si(1|nbody_system.time)/100
   print dt.in_(units.Myr)
-  parts=MakePlummerGasModel(Ngas,convert_nbody=conv).result
+  parts=new_plummer_gas_model(Ngas,convert_nbody=conv)
   parts.h_smooth=0 | units.parsec
   outofbox=0.9*10. | units.parsec
   escapers=parts.select_array(
