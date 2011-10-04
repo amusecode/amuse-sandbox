@@ -13,7 +13,7 @@ clustergas.clustergas(sfeff=0.3,
                     Ngas=10000,
                     Rscale=0.5 | units.parsec,
                     feedback_efficiency=0.1,
-                    runid="cl_Ns1k_Ng100k_sf03_sn01_R05_s1")
+                    runid="demo-output")
 
 #clustergas.merge_clusters_with_gas(Nstar=[5000,5000],totalNgas=400000,
 #                    runid="mergetest2",tmerge=2. | units.Myr, 

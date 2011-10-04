@@ -25,8 +25,8 @@ from SSEplus import SSEplus
 
 from amuse.support.data import core
 
-from amuse.ext.salpeter import SalpeterIMF
-from amuse.ext.plummer import MakePlummerModel
+from amuse.ic.salpeter import salpeter_masses
+from amuse.ic.plummer import new_plummer_sphere
 from amuse.ic.gasplummer import new_plummer_gas_model
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
