@@ -2,22 +2,22 @@
 notes: contains ugly fix with time_offset to keep track of total time between 
 restarts
 
-version with feedback safety
-
 """
+
+
 import numpy
     
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
     
-from amuse.support.data import core
-from amuse.support.data.values import zero
+from amuse.units.quantities import zero
 
 from fast import FAST
 from lmech import lmech
 from copycat import copycat
 from amuse.ext.evrard_test import uniform_unit_sphere
 
+from amuse import datamodel
 numpy.random.seed(123456)
 
 def sys_from_parts(base_class, parts=None, gasparts=None, parameters=None,converter=None, extra=dict()):
@@ -40,9 +40,7 @@ class grav_gas_sse(object):
                grav_parameters=(),gas_parameters=(),couple_parameters=(),
                feedback_efficiency=.01, feedback_radius=0.01 | units.parsec,
                total_feedback_energy=zero,evo_particles=None, star_particles_addition=None,
-               start_time_offset=zero, feedback_safety=1.e-4*1.e51 | units.erg,
-               feedback_dt=(10. | units.yr, 7500. | units.yr), feedback_period=20000. | units.yr,
-               feedback_lasttime=None):
+               start_time_offset=zero):
     
     self.codes=(gas_code,grav_code,se_code,grav_couple_code)
     self.parameters=(grav_parameters,gas_parameters,couple_parameters)
@@ -53,16 +51,17 @@ class grav_gas_sse(object):
                          converter=conv,extra=dict(number_of_workers=1,use_gl=False, redirection='none'))                         
     self.grav=sys_from_parts(grav_code, parts=star_parts, 
                           parameters=grav_parameters,
-                          converter=conv,extra=dict(mode='gpu', redirection='none'))
+                          converter=conv,extra=dict(mode='normal', redirection='none'))
 
     print gas_parameters
-    print
+    print "fip"
     print self.sph.parameters
+#    raise Exception
   
     self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,
-                            parameters=couple_parameters)
+                            parameters=couple_parameters, extra=dict(hostname='localhost', channel_type='sockets'))
     self.star_grav=copycat(grav_couple_code, (self.sph,), conv,
-                            parameters=couple_parameters)
+                            parameters=couple_parameters, extra=dict(hostname='localhost', channel_type='sockets'))
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
     self.fast.add_system(self.sph, (self.sph_grav,),False)
@@ -85,6 +84,7 @@ class grav_gas_sse(object):
 
     self.time=self.fast.model_time+start_time_offset
     self.time_offset=start_time_offset            
+    self.evo.model_time=self.time
     if star_particles_addition is None:
       self.star_particles_addition=star_parts.empty_copy()
       self.star_particles_addition.Emech_last_feedback=0. | units.erg
@@ -93,18 +93,6 @@ class grav_gas_sse(object):
 
     self.feedback_efficiency=feedback_efficiency
     self.feedback_radius=feedback_radius
-    
-    self.feedback_safety=feedback_safety
-    self.feedback_dt=feedback_dt    
-    self.feedback_period=feedback_period
-    if self.feedback_period < 1.0001*self.dt_feedback:
-      print "feedback_period < dt_feedback, resetting to dt_feedback=", \
-        self.dt_feedback.in_(units.yr)
-      self.feedback_period=1.0001*self.dt_feedback
-    if feedback_lasttime is None:
-      self.feedback_lasttime=self.time-2*self.feedback_period
-    else:
-      self.feedback_lasttime=feedback_lasttime
 
   def evolve_model(self,tend):
     dt=self.dt_feedback
@@ -112,24 +100,10 @@ class grav_gas_sse(object):
     
     while time<tend-dt/2:
       time+=dt
-      print self.feedback_lasttime.in_(units.yr) ,time.in_(units.yr) ,self.feedback_period.in_(units.yr) 
-      if time > self.feedback_lasttime+self.feedback_period:
-        self.sph.parameters.max_size_timestep=self.feedback_dt[1]
-        print "long timestep"      
-      else:
-        self.sph.parameters.max_size_timestep=self.feedback_dt[0]
-        print "short timestep"      
-
       self.fast.evolve_model(time-self.time_offset)
       print self.fast.model_time,',',self.sph.model_time,self.grav.model_time
-      self.evo.evolve_model(self.fast.model_time)
-      energy_added=self.mechanical_feedback()
-
-      print energy_added.in_(units.erg), self.feedback_safety.in_(units.erg)
-      print self.feedback_lasttime.in_(units.yr) ,time.in_(units.yr) 
-      if energy_added > self.feedback_safety:
-        self.feedback_lasttime=time
-          
+      self.evo.evolve_model(self.fast.model_time+self.time_offset)
+      self.mechanical_feedback()
     self.time=self.fast.model_time+self.time_offset
             
   def mechanical_feedback(self):
@@ -146,7 +120,7 @@ class grav_gas_sse(object):
     channel.copy_attribute("Emech_last_feedback")
     del channel
 
-    new_sph=core.Particles(0)
+    new_sph=datamodel.Particles(0)
     
     star_particles.dmass=star_particles.grav_mass-star_particles.mass
     star_particles.u=(star_particles.Emech-star_particles.Emech_last_feedback)/star_particles.dmass    
@@ -155,8 +129,11 @@ class grav_gas_sse(object):
       raise Exception
           
     losers=star_particles.select_array(lambda x: x > self.mgas, ["dmass"])
+    print losers.x.value_in(units.parsec)
+    print losers.y.value_in(units.parsec)   
+    print losers.z.value_in(units.parsec)   
     while len(losers) > 0:            
-      add=core.Particles(len(losers))
+      add=datamodel.Particles(len(losers))
       add.mass=self.mgas
       add.h_smooth=0. | units.parsec
       dx,dy,dz=uniform_unit_sphere(len(losers)).make_xyz()
@@ -175,10 +152,10 @@ class grav_gas_sse(object):
 
     print "gas particles added:", len(new_sph)
     if len(new_sph) == 0:
-      return zero     
+      return      
     self.sph.gas_particles.add_particles(new_sph)
-    feedback_energy_added=(new_sph.mass*new_sph.u).sum()
-    self.total_feedback_energy=self.total_feedback_energy+feedback_energy_added
+    self.total_feedback_energy=self.total_feedback_energy+(new_sph.mass*new_sph.u).sum()
+    print new_sph.u**0.5
 
     channel = star_particles.new_channel_to(self.particles)
     channel.copy_attribute("grav_mass","mass")  
@@ -187,8 +164,6 @@ class grav_gas_sse(object):
     channel=star_particles.new_channel_to(self.star_particles_addition)
     channel.copy_attribute("Emech_last_feedback")
     del channel
-    
-    return feedback_energy_added
 
   def synchronize_model(self):
     return self.fast.synchronize_model()
@@ -226,7 +201,7 @@ class grav_gas_sse(object):
     return self.evo.particles
 
   def dump_system_state(self,filename):    
-    from amuse.support.io import write_set_to_file
+    from amuse.io import write_set_to_file
     import cPickle
     write_set_to_file(self.grav.particles,filename+".grav","amuse",append_to_file=False)  
     write_set_to_file(self.gas_particles,filename+".gas","amuse",append_to_file=False)  
@@ -243,17 +218,13 @@ class grav_gas_sse(object):
                   self.time,
                   self.dt_feedback,
                   self.dt_fast,
-                  self.total_feedback_energy.in_(1.e51*units.erg),
-                  self.feedback_safety,
-                  self.feedback_dt,
-                  self.feedback_period,
-                  self.feedback_lasttime
-                  ),f)
+#                  self.total_feedback_energy),f)
+                  self.total_feedback_energy.in_(1.e51*units.erg)),f)
     f.close()
 
   @classmethod
   def load_system_state(cls,filename,new_gas_options=()):    
-    from amuse.support.io import read_set_from_file
+    from amuse.io import read_set_from_file
     import cPickle
     star_parts=read_set_from_file(filename+".grav",'amuse')
     gas_parts=read_set_from_file(filename+".gas",'amuse')
@@ -277,18 +248,12 @@ class grav_gas_sse(object):
     dt_feedback=data[7]
     dt_fast=data[8]
     tfe=data[9]
-    fs=data[10]
-    fdt=data[11]
-    fp=data[12]
-    flt=data[13]
     
     gasp=gasp+new_gas_options    
-        
+    
     return conv,cls(grav_code,gas_code,se_code,grav_couple_code, 
                conv,mgas,star_parts,gas_parts,dt_feedback, dt_fast,
                grav_parameters=gravp,gas_parameters=gasp,couple_parameters=cp,
                feedback_efficiency=fe, feedback_radius=fr,
                total_feedback_energy=tfe,evo_particles=evo, star_particles_addition=add,
-               start_time_offset=to,feedback_safety=fs,
-               feedback_dt=fdt, feedback_period=fp,
-               feedback_lasttime=flt)
+               start_time_offset=to)

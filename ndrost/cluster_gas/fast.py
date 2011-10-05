@@ -3,11 +3,11 @@
 # - a common coordinate system is used for all systems
 # - sync of systems should be checked
 # - timestepping: adaptive dt?
-from amuse.support.units import units
-from amuse.support.data.values import zero
-from amuse.support.data import core
+from amuse.units import units
+from amuse.units.quantities import zero
 import threading
 
+from amuse import datamodel
 def radius_or_hsmooth(parts):
   d=set(dir(parts))
   if "radius" in d:
@@ -156,7 +156,7 @@ class FAST(object):
     for x in self.systems:
       if hasattr(x,"particles"):
         arr.append(x.particles)
-    return core.ParticlesSuperset(arr)          
+    return datamodel.ParticlesSuperset(arr)          
 
   @property
   def gas_particles(self):
@@ -164,7 +164,7 @@ class FAST(object):
     for x in self.systems:
       if hasattr(x,"gas_particles"):
         arr.append(x.gas_particles)
-    return core.ParticlesSuperset(arr)          
+    return datamodel.ParticlesSuperset(arr)          
 
 # 'private' functions
 

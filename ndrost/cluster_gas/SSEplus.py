@@ -1,13 +1,12 @@
 import numpy
 
 from amuse.community.sse.interface import SSE
-from amuse.support.data import core
-
-from amuse.support.units import units
-from amuse.support.data.values import zero
+from amuse.units import units
+from amuse.units.quantities import zero
 
 from lmech import lmech
 
+from amuse import datamodel
 def e_supernova(stellar_type,prev_stellar_type):
   i=numpy.where( (stellar_type>=13 | units.stellar_type) &
                  (stellar_type<=15 | units.stellar_type) &
@@ -20,11 +19,12 @@ def e_supernova(stellar_type,prev_stellar_type):
     return (units.erg).new_quantity(e[0])
   else:
     return (units.erg).new_quantity(e)
+
     
 class SSEplus(SSE):
   def __init__(self,**options):
+    self.model_time=zero
     SSE.__init__(self,**options)
-    self.mech_time=self.model_time
 
   def evolve_model(self,tend):
     if not hasattr(self.particles,'Emech'):
@@ -35,10 +35,9 @@ class SSEplus(SSE):
     prev_lm=self.particles.Lmech.copy()
     
     ret=SSE.evolve_model(self,tend)
-    tend=self.model_time
-    if tend>self.mech_time:
-      dt=tend-self.mech_time    
-      self.mech_time=tend
+    if tend>self.model_time:
+      dt=tend-self.model_time    
+      self.model_time=tend
       lm=lmech(self.particles)
       self.particles.Lmech=lm.copy()
       self.particles.Emech=self.particles.Emech+dt*(prev_lm+lm)/2. + \
@@ -49,8 +48,8 @@ class SSEplus(SSE):
 if __name__=="__main__":
   evo=SSEplus()
   evo.initialize_module_with_default_parameters() 
-  p=core.Particles(4)
-  p.mass=units.MSun([15.,25.,35.,50.])
+  p=datamodel.Particles(4)
+  p.mass=units.MSun([15,25,35,50])
   evo.particles.add_particles(p)
 
   t=zero
@@ -60,24 +59,3 @@ if __name__=="__main__":
     
   print evo.particles.Emech.in_(1.e51*units.erg)
   print evo.model_time
-
-  parts=evo.particles.copy()
-
-  evo2=SSEplus()
-  evo2.initialize_module_with_default_parameters() 
-  evo2.particles.add_particles(parts)
-  
-  print
-  print evo2.model_time
-  print evo2.mech_time
-#  print evo2.particles
-  
-  evo2.evolve_model( 1 | units.Myr)
-
-  print
-  print evo2.model_time
-  print evo2.mech_time
-#  print evo2.particles  
-  
-  evo.stop()
-  evo2.stop()

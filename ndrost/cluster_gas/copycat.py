@@ -1,16 +1,17 @@
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
 
 
 class copycat(object):
-  def __init__(self,baseclass, systems, converter, parameters=None):
+  def __init__(self,baseclass, systems, converter, parameters=None, extra=dict()):
     self.baseclass=baseclass
     self.systems=systems
     self.converter=converter
     self.parameters=parameters
+    self.extra=extra
         
   def get_gravity_at_point(self,radius,x,y,z):
-    instance=self.baseclass(self.converter)
+    instance=self.baseclass(self.converter, **self.extra)
     for param,value in self.parameters:
       err=instance.parameters.__setattr__(param,value)
     for system in self.systems:
@@ -20,7 +21,7 @@ class copycat(object):
     return ax,ay,az
 
   def get_potential_at_point(self,radius,x,y,z):
-    instance=self.baseclass(self.converter)
+    instance=self.baseclass(self.converter, **self.extra)
     for param,value in self.parameters:
       err=instance.parameters.__setattr__(param,value)
     for system in self.systems:
