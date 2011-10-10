@@ -15,9 +15,11 @@ from amuse.units.quantities import zero
 from fast import FAST
 from lmech import lmech
 from copycat import copycat
+from copycat import persistentcopycat
 from amuse.ext.evrard_test import uniform_unit_sphere
 
 from amuse import datamodel
+
 numpy.random.seed(123456)
 
 def sys_from_parts(base_class, parts=None, gasparts=None, parameters=None,converter=None, extra=dict()):
@@ -40,7 +42,7 @@ class grav_gas_sse(object):
                grav_parameters=(),gas_parameters=(),couple_parameters=(),
                feedback_efficiency=.01, feedback_radius=0.01 | units.parsec,
                total_feedback_energy=zero,evo_particles=None, star_particles_addition=None,
-               start_time_offset=zero):
+               start_time_offset=zero, grav_code_extra=dict(),gas_code_extra=dict(),se_code_extra=dict(),grav_couple_code_extra=dict()):
     
     self.codes=(gas_code,grav_code,se_code,grav_couple_code)
     self.parameters=(grav_parameters,gas_parameters,couple_parameters)
@@ -48,26 +50,26 @@ class grav_gas_sse(object):
     
     self.sph=sys_from_parts(gas_code, gasparts=gas_parts,
                          parameters=gas_parameters,
-                         converter=conv,extra=dict(number_of_workers=1,use_gl=False, redirection='none'))                         
+                         converter=conv,extra=gas_code_extra)                         
     self.grav=sys_from_parts(grav_code, parts=star_parts, 
                           parameters=grav_parameters,
-                          converter=conv,extra=dict(mode='normal', redirection='none'))
+                          converter=conv,extra=grav_code_extra)
 
     print gas_parameters
     print "fip"
     print self.sph.parameters
 #    raise Exception
   
-    self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,
-                            parameters=couple_parameters, extra=dict(hostname='localhost', channel_type='sockets'))
-    self.star_grav=copycat(grav_couple_code, (self.sph,), conv,
-                            parameters=couple_parameters, extra=dict(hostname='localhost', channel_type='sockets'))
+    self.sph_grav=persistentcopycat(grav_couple_code, (self.sph,self.grav), conv,
+                            parameters=couple_parameters, extra=grav_couple_code_extra)
+    self.star_grav=persistentcopycat(grav_couple_code, (self.sph,), conv,
+                            parameters=couple_parameters, extra=grav_couple_code_extra)
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
     self.fast.add_system(self.sph, (self.sph_grav,),False)
     self.fast.add_system(self.grav, (self.star_grav,),False)
 
-    self.evo=se_code(redirection='none')
+    self.evo=se_code(redirection='none', **se_code_extra)
     self.evo.initialize_module_with_default_parameters() 
     if evo_particles is None:
       self.evo.particles.add_particles(star_parts)

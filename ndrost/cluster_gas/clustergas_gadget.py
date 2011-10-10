@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy
+import time
 
 try:
     from matplotlib import pyplot
@@ -84,7 +85,10 @@ def clustergas_restart(runid, snapshot, t_end=30. | units.Myr,
 
 def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
                  dt_plot= 0.05 | units.Myr, Rscale= 0.5 | units.parsec,
-                 runid="runtest",feedback_efficiency=0.01, subvirialfac=1.):
+                 runid="runtest",feedback_efficiency=0.01, subvirialfac=1.,
+		grav_code=PhiGRAPE,gas_code=Gadget2,se_code=SSEplus,grav_couple_code=Octgrav,
+                grav_code_extra=dict(),gas_code_extra=dict(),se_code_extra=dict(),grav_couple_code_extra=dict()
+):
 
   try:
     os.mkdir(runid)
@@ -153,7 +157,8 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
   star_parts.move_to_center()
   gas_parts.move_to_center()
   
-  sys=grav_gas_sse(PhiGRAPE,Gadget2,SSEplus,Fi, 
+  sys=grav_gas_sse(
+		grav_code,gas_code,se_code,grav_couple_code,
                conv,mgas,star_parts,gas_parts,dt_feedback,dt_fast,
                grav_parameters=(["epsilon_squared", eps_star**2],["timestep_parameter", 0.001]),
 #                                ["timestep", dt_star]),
@@ -168,7 +173,12 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
                                ["time_limit_cpu", 3600000 | units.s]),
                couple_parameters=(["epsilon_squared", eps**2],
                             ["opening_angle",0.5]),
-               feedback_efficiency=feedback_efficiency, feedback_radius=0.025*Rscale)
+               feedback_efficiency=feedback_efficiency, feedback_radius=0.025*Rscale,
+               grav_code_extra=grav_code_extra,
+	       gas_code_extra=gas_code_extra,
+               se_code_extra=se_code_extra,
+               grav_couple_code_extra=grav_couple_code_extra
+)
 
   nsnap=0
   sys.synchronize_model()
@@ -188,6 +198,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
   print 'feedback radius:',(0.01*Rscale).in_(units.parsec)
 
   while (t<t_end-dt/2):
+    beginning = time.time()
     sys.evolve_model(t+dt)
     sys.synchronize_model()
     t=sys.model_time
@@ -199,6 +210,8 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
     print 't Ek Ep Eth Ef:', tout,ek,ep,eth,ef,ek+ep+eth-ef
     nsnap+=1
     sys.dump_system_state(runid+"/dump-%6.6i" %nsnap)
+    end = time.time()
+    print 'iteration', nsnap , 'took:', (end - beginning), 'seconds'
   
 if __name__=="__main__":
   import time

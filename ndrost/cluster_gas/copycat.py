@@ -1,7 +1,6 @@
 from amuse.units import nbody_system
 from amuse.units import units
 
-
 class copycat(object):
   def __init__(self,baseclass, systems, converter, parameters=None, extra=dict()):
     self.baseclass=baseclass
@@ -30,16 +29,33 @@ class copycat(object):
     instance.stop()
     return phi
 
-def sys_from_parts(base_class, parts=None, gasparts=None, parameters=None,converter=None, extra=dict()):
-  sys=base_class(convert_nbody=converter, **extra)
-  sys.initialize_code()
-  for param,value in parameters:
-    err=sys.parameters.__setattr__(param,value)
-  sys.commit_parameters()
-  if parts is not None:
-    sys.particles.add_particles(parts)
-  if gasparts is not None:
-    sys.gas_particles.add_particles(gasparts)
-  if hasattr(sys,"start_viewer"):
-    sys.start_viewer()
-  return sys
+class persistentcopycat(object):
+  def __init__(self,baseclass, systems, converter, parameters=None, extra=dict()):
+    self.baseclass=baseclass
+    self.systems=systems
+    self.converter=converter
+    self.parameters=parameters
+    self.extra=extra
+    self.instance=self.baseclass(self.converter, **self.extra)
+        
+  def get_gravity_at_point(self,radius,x,y,z):
+    self.instance.initialize_code()
+    for param,value in self.parameters:
+      err=self.instance.parameters.__setattr__(param,value)
+    for system in self.systems:
+      self.instance.particles.add_particles(system.particles)
+    ax,ay,az=self.instance.get_gravity_at_point(radius,x,y,z)
+    self.instance.cleanup_code()
+    return ax,ay,az
+
+  def get_potential_at_point(self,radius,x,y,z):
+    self.instance.initialize_code()
+    for param,value in self.parameters:
+      err=self.instance.parameters.__setattr__(param,value)
+    for system in self.systems:
+      self.instance.particles.add_particles(system.particles)
+    phi=self.instance.get_potential_at_point(radius,x,y,z)
+    self.instance.cleanup_code()
+    return phi
+
+
