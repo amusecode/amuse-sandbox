@@ -32,8 +32,9 @@ clustergas.clustergas(sfeff=0.3,
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='ibis', hostname='VU'),
 
-                    grav_couple_code=Fi,
-                    grav_couple_code_extra=dict(channel_type='ibis', hostname='VU')
+                    grav_couple_code=Octgrav,
+                    grav_couple_code_extra=dict(channel_type='sockets')
+                    #grav_couple_code_extra=dict(channel_type='ibis', hostname='VU')
 )
 
 
