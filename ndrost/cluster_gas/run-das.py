@@ -13,8 +13,11 @@ from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from SSEplus import SSEplus
 
+#nice big star with 100 stars
+#numpy.random.seed(123489)
 
-numpy.random.seed(123489)
+#best guess inti's original seed
+numpy.random.seed(123491)
 
 clustergas.clustergas(sfeff=0.3, 
                     Nstar=1000,
@@ -24,17 +27,16 @@ clustergas.clustergas(sfeff=0.3,
                     runid="demo-output",
 
                     grav_code=PhiGRAPE,
-                    grav_code_extra=dict(mode='gpu', channel_type='ibis', hostname='VU-GPU'),
+                    grav_code_extra=dict(mode='gpu', channel_type='sockets', hostname='localhost'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=8,number_of_nodes=2,use_gl=False, channel_type='ibis', hostname='VU'),
+                    gas_code_extra=dict(number_of_workers=64,number_of_nodes=4,use_gl=False, channel_type='ibis', hostname='VU'),
 
                     se_code=SSEplus,
-                    se_code_extra=dict(channel_type='ibis', hostname='VU'),
+                    se_code_extra=dict(channel_type='sockets', hostname='localhost'),
 
                     grav_couple_code=Octgrav,
-                    grav_couple_code_extra=dict(channel_type='sockets')
-                    #grav_couple_code_extra=dict(channel_type='ibis', hostname='VU')
+                    grav_couple_code_extra=dict(channel_type='sockets', hostname='localhost')
 )
 
 
