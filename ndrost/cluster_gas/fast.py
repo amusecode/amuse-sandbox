@@ -8,6 +8,9 @@ from amuse.units.quantities import zero
 import threading
 
 from amuse import datamodel
+
+from sys import stderr
+
 def radius_or_hsmooth(parts):
   d=set(dir(parts))
   if "radius" in d:
@@ -174,28 +177,28 @@ class FAST(object):
       if hasattr(x,"evolve_model"):
         offset=self.time_offsets[x]
         if(self.verbose):
-          print "evolving", x.__class__.__name__,
+          print >> stderr, "evolving", x.__class__.__name__
         threads.append(threading.Thread(target=x.evolve_model, args=(tend-offset,)) )
     for x in threads:
       x.start()
     for x in threads:
       x.join()
     if(self.verbose): 
-      print ".. done"
+      print >> stderr, "evolving .. done"
     return 0
 
   def kick_systems(self,dt):
     for x in self.systems:
       if self.do_sync[x]:
         if hasattr(x,"synchronize_model"):
-          if(self.verbose): print x.__class__.__name__,"is synchronizing",
+          if(self.verbose): print >> stderr, x.__class__.__name__,"is synchronizing",
           x.synchronize_model()    
           if(self.verbose):  print ".. done"
     for x in self.systems:
       if hasattr(x,"particles"):
         for y in self.partners[x]:
           if x is not y:
-            if(self.verbose):  print x.__class__.__name__,"receives kick from",y.__class__.__name__,
+            if(self.verbose):  print >> stderr, x.__class__.__name__,"receives kick from",y.__class__.__name__,
             kick_system(x,y.get_gravity_at_point,dt)
-            if(self.verbose):  print ".. done"
+            if(self.verbose):  print >> stderr, ".. done"
     return 0
