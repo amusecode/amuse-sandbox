@@ -225,6 +225,26 @@ def integrate_ode(function, x, t_end, eps = 0.001):
 
 
 
+def cooling_hydro_evolve(sph, t_end, dt):
+    print (global_mu / constants.kB * sph.gas_particles.u.amin()).in_(units.K), 
+    print (global_mu / constants.kB * sph.gas_particles.u.amax()).in_(units.K)
+
+    t = 0.0 | units.Myr
+    while t < t_end - dt/2.0:
+        print t
+        print "sph1"
+        sph.evolve_model(t + dt/2.0)
+        print "rad"
+        sph.gas_particles.u = evolve_internal_energy(sph.gas_particles.u, dt, 
+            sph.gas_particles.rho/global_mu, sph.gas_particles.du_dt)
+        print (global_mu / constants.kB * sph.gas_particles.u.amin()).in_(units.K), 
+        print (global_mu / constants.kB * sph.gas_particles.u.amax()).in_(units.K)
+        print "sph2"
+        sph.evolve_model(t + dt)
+        
+        t+=dt
+
+
 if __name__ == '__main__':
     set_printing_strategy("cgs")
     plot_cooling_function(gerritsen_cooling_function, "gerritsen_cooling_function.png")
