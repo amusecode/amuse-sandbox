@@ -1,6 +1,8 @@
 import numpy
 
 try:
+    import matplotlib
+    matplotlib.use('Agg')
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
     from amuse.plot import plot, xlabel, ylabel, loglog
@@ -157,11 +159,11 @@ def u_from_T(T):
 def T_from_u(u):
     return 2.0/3.0 * u * global_mu / constants.kB
 
-def evolve_internal_energy(u_0, dt, n_H, T_0 = None, du_dt_adiabatic = zero, figure_name = None):
+def evolve_and_plot_internal_energy(u_0, dt, n_H, T_0 = None, du_dt_adiabatic = zero, figure_name = None):
     if not T_0 is None:
         u_0 = u_from_T(T_0)
     function = lambda u: du_dt_adiabatic * u/u_0 + (gerritsen_heating_function() - n_H * my_cooling_function(T_from_u(u))) / global_mu
-    time, u = integrate_ode(function, u_0, dt)
+    time, u = integrate_ode_for_plot(function, u_0, dt)
     
     if figure_name and HAS_MATPLOTLIB:
         pyplot.figure(figsize = (12, 10))
@@ -180,7 +182,7 @@ def evolve_internal_energy(u_0, dt, n_H, T_0 = None, du_dt_adiabatic = zero, fig
     else:
         print u[-1]
 
-def integrate_ode(function, x, t_end, eps = 0.001):
+def integrate_ode_for_plot(function, x, t_end, eps = 0.001):
     """
     Integrates the given ordinary differential equation of the form:
     dx/dt = function(x)
@@ -198,6 +200,28 @@ def integrate_ode(function, x, t_end, eps = 0.001):
         times.append(t)
         values.append(x)
     return times, values
+
+
+
+def evolve_internal_energy(u_0, dt, n_H, du_dt_adiabatic = zero):
+    function = lambda u: (du_dt_adiabatic * u/u_0 + (gerritsen_heating_function() 
+                        - n_H * my_cooling_function(T_from_u(u))) / global_mu)
+    return integrate_ode(function, u_0, dt)
+
+def integrate_ode(function, x, t_end, eps = 0.001):
+    """
+    Integrates the given ordinary differential equation of the form:
+    dx/dt = function(x)
+    for a time 't_end', using the initial value 'x'.
+    The routine takes small steps, such that (abs(dx) <= eps * x)
+    """
+    t = 0 | units.s
+    while t < t_end:
+        fx = function(x)
+        step = min( (t_end-t), ((eps*x)/abs(fx)).amin() )
+        t += step
+        x += fx * step
+    return x
 
 
 
@@ -219,20 +243,24 @@ if __name__ == '__main__':
     
     for i in range(-2, 3):
         dens = 10.0**i | units.cm**-3
-        evolve_internal_energy(None, 1e6 | units.yr, dens, T_0 = 1.0 | units.K, 
+        evolve_and_plot_internal_energy(None, 1e6 | units.yr, dens, T_0 = 1.0 | units.K, 
             du_dt_adiabatic = zero, figure_name = "internal_energy_evolution_{0:=03}.png".format(i))
         print "Equilibrium temperature:",
         print 10.0**log_equilibrium_temperature(dens, my_cooling_function, gerritsen_heating_function) | units.K
     
     for i in range(-2, 3):
         dens = 10.0**i | units.cm**-3
-        evolve_internal_energy(None, 1.0 | units.Myr, dens, T_0 = 1.0 | units.K, 
+        evolve_and_plot_internal_energy(None, 1.0 | units.Myr, dens, T_0 = 1.0 | units.K, 
             du_dt_adiabatic = u_from_T(10 | units.K)**1.5 / (1.0 | units.parsec), 
             figure_name = "internal_energy_evolution_dudtad_{0:=03}.png".format(i))
         print "Equilibrium temperature:",
         print 10.0**log_equilibrium_temperature(dens, my_cooling_function, gerritsen_heating_function) | units.K
     
-    evolve_internal_energy(None, 10.0 | units.Myr, 1.0 | units.cm**-3, T_0 = 1.0 | units.K, 
+    evolve_and_plot_internal_energy(None, 10.0 | units.Myr, 1.0 | units.cm**-3, T_0 = 1.0 | units.K, 
         du_dt_adiabatic = u_from_T(10 | units.K)**1.5 / (1.0 | units.parsec), 
         figure_name = "internal_energy_evolution_dudtad_000_long.png")
+    
+    u_0 = u_from_T([1000.0]*5 | units.K)
+    n_H = (units.cm**-3).new_quantity([10.0**i for i in range(-2, 3)])
+    print T_from_u(evolve_internal_energy(u_0, 1e6 | units.yr, n_H))
     
