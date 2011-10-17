@@ -4,8 +4,9 @@
 
 
 import numpy
-
 from matplotlib import pyplot
+from optparse import OptionParser
+
 
 from amuse.community.fi.interface import Fi
 from amuse.community.mocassin.interface import Mocassin
@@ -19,11 +20,14 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Grid
 
 
-def make_grid(sph,N=100,L=1):
-    grid = Grid.create((N,N,N), [L, L, L] | units.AU)
+def new_grid_from_code(sph, number_of_cells=100, box_size=1 | units.AU):
+    grid = Grid.create(
+        (number_of_cells,number_of_cells,number_of_cells),
+        ([1,1,1]|units.none) * box_size
+    )
     
-    half_length = L / 2 
-    grid.position -= (half_length,half_length,half_length)  | units.AU
+    half_length = box_size / 2 
+    grid.position -= ([1,1,1]|units.none) * half_length
     
     grid.vx = 0 | units.kms
     grid.vy = 0 | units.kms
@@ -35,19 +39,20 @@ def make_grid(sph,N=100,L=1):
     
     return grid
     
-if __name__ in ("__main__","__plot__"):
 
-    N=20000
-    tend=1. | units.yr
-    Mstar=1. | units.MSun
+def main(number_of_gas_particles = 2000, t_end = 1, star_mass = 1):
+    #numpy.random.seed(1234)
+    
+    t_end = t_end | units.yr
+    star_mass = star_mass | units.MSun
         
-    convert=nbody_system.nbody_to_si(Mstar, 1. | units.AU)
-    proto=ProtoPlanetaryDisk(N,convert_nbody=convert,densitypower=1.5,Rmin=4,Rmax=20,q_out=1.)
+    convert=nbody_system.nbody_to_si(star_mass, 1. | units.AU)
+    proto=ProtoPlanetaryDisk(number_of_gas_particles,convert_nbody=convert,densitypower=1.5,Rmin=4,Rmax=20,q_out=1.)
     gas=proto.result
     gas.h_smooth=0.06 | units.AU
          
     sun=Particles(1)
-    sun.mass=Mstar
+    sun.mass=star_mass
     sun.radius=2. | units.AU
     sun.x=0.|units.AU
     sun.y=0.|units.AU
@@ -69,51 +74,77 @@ if __name__ in ("__main__","__plot__"):
     sph.gas_particles.add_particles(gas)
     sph.particles.add_particles(sun)
         
-    #sph.evolve_model(tend)    
-            
-    L=50
-    grid_size = 41
+    #sph.evolve_model(t_end)    
+    number_of_cells = 41
+    box_size = 50 | units.AU
     print 1
-    grid=make_grid(sph,N=grid_size,L=L)
+    grid=new_grid_from_code(sph,number_of_cells=number_of_cells,box_size = box_size)
     print 2
     
     sph.stop()
     
-    radiative_transfer = Mocassin() #redirection = "none")
+    radiative_transfer = Mocassin(redirection = "none", number_of_workers = 3)
     radiative_transfer.set_input_directory(radiative_transfer.get_default_input_directory())
     radiative_transfer.initialize_code()
-    radiative_transfer.set_symmetricXYZ(False)
-    radiative_transfer.set_constant_hydrogen_density(100.0 | (1/units.cm**3))
-    
-    radiative_transfer.parameters.length_x = L | units.AU
-    radiative_transfer.parameters.length_y = L | units.AU
-    radiative_transfer.parameters.length_z = L | units.AU
-    radiative_transfer.parameters.mesh_size = (grid_size, grid_size, grid_size)
-    
+    radiative_transfer.set_symmetricXYZ(False)    
+    radiative_transfer.parameters.length_x = box_size
+    radiative_transfer.parameters.length_y = box_size
+    radiative_transfer.parameters.length_z = box_size
+    radiative_transfer.parameters.mesh_size = (number_of_cells, number_of_cells, number_of_cells)
     radiative_transfer.commit_parameters()
+    
     sun.temperature = 20000 | units.K
     sun.luminosity = 1.0  | units.LSun
-    print radiative_transfer.grid.shape
-    print radiative_transfer.grid.z[21]
-    sys.exit(0)
-    print 3
-    #radiative_transfer.set_has_constant_hydrogen_density(True)
+    radiative_transfer.grid.hydrogen_density = (grid.rho / (1.0 | units.amu))
+    
     radiative_transfer.commit_grid()
     radiative_transfer.particles.add_particle(sun)
     radiative_transfer.commit_particles()
     
-    rho = (grid.rho * (1.0 / (1.0 | units.kg)))
-    print radiative_transfer.grid.shape
-    radiative_transfer.grid.hydrogen_density = rho
-    print radiative_transfer.grid.x[5]
-    print "done"
-    hden = radiative_transfer.grid.hydrogen_density[...,...,20]
-    print     hden
-    print rho[...,...,5]
+    radiative_transfer.step()
+    
+    etemp = radiative_transfer.grid.electron_temperature[...,...,number_of_cells / 2 + 1]
+    print etemp[..., number_of_cells / 2 + 1]
     pyplot.figure(figsize=(8,8))
-    pyplot.imshow(hden.value_in(1/units.cm**3),
-        extent=[-L/2,L/2,-L/2,L/2])#,vmin=10,vmax=15)    
-    pyplot.title(tend)
+    pyplot.imshow(
+        etemp.value_in(units.K),
+        extent = (([-0.5,0.5,-0.5,0.5]|units.none) * box_size).value_in(units.AU),
+    )
+    pyplot.title(t_end)
     pyplot.xlabel('AU')
+    pyplot.ylabel('AU')
     pyplot.show()
          
+def new_option_parser():
+    result = OptionParser()
+    result.add_option(
+        "-p", "--ngasparticles", 
+        default = 20000,
+        dest="number_of_gas_particles",
+        help="number of gas particles in the disk",
+        type="int"
+    )
+    result.add_option(
+        "-t", "--endtime", 
+        default = 1,
+        dest="t_end",
+        help="number of years to evolve the protoplanetary disk",
+        type="float"
+    )
+    result.add_option(
+        "-m", "--starmass", 
+        default = 1,
+        dest="star_mass",
+        help="mass of the central star, in solar masses",
+        type="float"
+    )
+    return result
+         
+if __name__ == "__plot__":
+    main(20000, 1, 1)
+    
+if __name__ == "__main__":
+    print units.amu.value_in(units.kg)
+    options, arguments = new_option_parser().parse_args()
+    main(**options.__dict__)
+
