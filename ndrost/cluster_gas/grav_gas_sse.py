@@ -60,9 +60,9 @@ class grav_gas_sse(object):
     print self.sph.parameters
 #    raise Exception
   
-    self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,
+    self.sph_grav=persistentcopycat(grav_couple_code, (self.sph,self.grav), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
-    self.star_grav=copycat(grav_couple_code, (self.sph,), conv,
+    self.star_grav=persistentcopycat(grav_couple_code, (self.sph,), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
