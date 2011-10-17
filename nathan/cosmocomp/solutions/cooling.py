@@ -182,14 +182,14 @@ def evolve_and_plot_internal_energy(u_0, dt, n_H, T_0 = None, du_dt_adiabatic = 
     else:
         print u[-1]
 
-def integrate_ode_for_plot(function, x, t_end, eps = 0.001):
+def integrate_ode_for_plot(function, x, t_end, eps = 0.01):
     """
     Integrates the given ordinary differential equation of the form:
     dx/dt = function(x)
     for a time 't_end', using the initial value 'x'.
     The routine takes small steps, such that (abs(dx) <= eps * x)
     """
-    t = 0 | units.s
+    t = 0 | t_end.unit
     times = [0.0] | t_end.unit
     values = x.as_vector_with_length(1)
     while t < t_end:
@@ -208,14 +208,14 @@ def evolve_internal_energy(u_0, dt, n_H, du_dt_adiabatic = zero):
                         - n_H * my_cooling_function(T_from_u(u))) / global_mu)
     return integrate_ode(function, u_0, dt)
 
-def integrate_ode(function, x, t_end, eps = 0.001):
+def integrate_ode(function, x, t_end, eps = 0.01):
     """
     Integrates the given ordinary differential equation of the form:
     dx/dt = function(x)
     for a time 't_end', using the initial value 'x'.
     The routine takes small steps, such that (abs(dx) <= eps * x)
     """
-    t = 0 | units.s
+    t = 0 * t_end
     while t < t_end:
         fx = function(x)
         step = min( (t_end-t), ((eps*x)/abs(fx)).amin() )
