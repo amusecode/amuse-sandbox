@@ -1,6 +1,5 @@
 from interface import AarsethZare 
 #from numpy import *
-#Enable unit handling by import amuse.legacy
 from amuse.community import *
 
 def get_outer_binary_elements(mass,pos,vel) :
