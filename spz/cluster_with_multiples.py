@@ -237,7 +237,7 @@ def run_smallN(
 
             print "smallN binaries:"; sys.stdout.flush()
             x = trees.BinaryTreesOnAParticleSet(particles, "child1", "child2")
-            roots = list(x.iter_roots())
+            roots = list(x.iter_binary_trees())
             for r in roots:
                 for level, particle in r.iter_levels():
                     print '  '*level, int(particle.id.number),
@@ -843,7 +843,7 @@ def manage_encounter(star1, star2, stars, gravity_stars, SmallN):
     #     in memory (the descendant nodes are already part of the
     #     set).
 
-    for root in binaries.iter_roots():
+    for root in binaries.iter_binary_trees():
         stars_in_a_multiple = root.get_descendants_subset()
         # print 'root.get_inner_nodes_subset():'
         # print root.get_inner_nodes_subset(); sys.stdout.flush()
@@ -853,7 +853,7 @@ def manage_encounter(star1, star2, stars, gravity_stars, SmallN):
 
     # Must set radii to reflect multiple structure.  TODO
 
-    for root in binaries.iter_roots():
+    for root in binaries.iter_binary_trees():
         root_in_stars = root.particle.as_particle_in_set(stars)
         root_in_stars.id = new_root_index() | units.none
         # print 'root_in_stars:'
@@ -863,7 +863,7 @@ def manage_encounter(star1, star2, stars, gravity_stars, SmallN):
     # 5g. Store the original position and velocity of the root so that
     #     the subparticle position can be updated later.
 
-    for root in binaries.iter_roots():        
+    for root in binaries.iter_binary_trees():        
         root_in_stars = root.particle.as_particle_in_set(stars)
         
         # Save root position and velocity so we can update the
