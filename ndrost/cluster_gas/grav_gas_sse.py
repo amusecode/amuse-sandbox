@@ -16,6 +16,7 @@ from amuse.support.data.values import zero
 from fast import FAST
 from lmech import lmech
 from copycat import copycat
+from copycat import persistentcopycat
 from amuse.ext.evrard_test import uniform_unit_sphere
 
 numpy.random.seed(123456)
@@ -65,9 +66,9 @@ class grav_gas_sse(object):
     print
     print self.sph.parameters
   
-    self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,
+    self.sph_grav=persistentcopycat(grav_couple_code, (self.sph,self.grav), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
-    self.star_grav=copycat(grav_couple_code, (self.sph,), conv,
+    self.star_grav=persistentcopycat(grav_couple_code, (self.sph,), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
