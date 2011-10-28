@@ -14,13 +14,14 @@ from amuse.community.phiGRAPE.interface import PhiGRAPE
 from SSEplus import SSEplus
 
 
-numpy.random.seed(123489)
+#numpy.random.seed(123489)
+#numpy.random.seed(123477)
 
 clustergas.clustergas(sfeff=0.3, 
                     Nstar=1000,
                     Ngas=100000,
                     Rscale=0.5 | units.parsec,
-                    feedback_efficiency=0.03,
+                    feedback_efficiency=0.1,
                     runid="demo-output",
 		    dt_plot=0.01 | units.Myr,
 

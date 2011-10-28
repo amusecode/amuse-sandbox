@@ -24,18 +24,20 @@ clustergas.clustergas(sfeff=0.3,
                     Ngas=100000,
                     Rscale=0.5 | units.parsec,
                     runid="demo-output",
+                    feedback_efficiency=0.1,
+		    dt_plot=0.01 | units.Myr,
 
                     grav_code=PhiGRAPE,
-                    grav_code_extra=dict(mode='normal', channel_type='sockets', hostname='localhost'),
+                    grav_code_extra=dict(mode='gpu', channel_type='sockets', hostname='localhost'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=2,number_of_nodes=2,use_gl=False, channel_type='ibis', hostname='VU'),
+                    gas_code_extra=dict(number_of_workers=1,number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='VU'),
 
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='sockets', hostname='localhost'),
 
-                    grav_couple_code=Fi,
-                    grav_couple_code_extra=dict(channel_type='sockets', hostname='localhost')
+                    grav_couple_code=Octgrav,
+                    grav_couple_code_extra=dict(channel_type='sockets', hostname='localhost', redirection='none')
 )
 
 
