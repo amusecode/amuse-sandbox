@@ -67,9 +67,9 @@ class grav_gas_sse(object):
     print
     print self.sph.parameters
   
-    self.sph_grav=resetparticlescopycat(grav_couple_code, (self.sph,self.grav), conv,
+    self.sph_grav=reinitializecopycat(grav_couple_code, (self.sph,self.grav), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
-    self.star_grav=resetparticlescopycat(grav_couple_code, (self.sph,), conv,
+    self.star_grav=reinitializecopycat(grav_couple_code, (self.sph,), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
