@@ -27,7 +27,8 @@ clustergas.clustergas(sfeff=0.3,
                     grav_code_extra=dict(mode='normal', channel_type='sockets'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=2,use_gl=False, channel_type='mpi'),
+                    gas_code_extra=dict(number_of_workers=2,use_gl=False, channel_type='mpi', gadget_output_directory='bla'),
+
 
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='sockets'),
