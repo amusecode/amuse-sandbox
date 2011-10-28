@@ -23,15 +23,13 @@ clustergas.clustergas(sfeff=0.3,
                     Nstar=1000,
                     Ngas=100000,
                     Rscale=0.5 | units.parsec,
-                    feedback_efficiency=0.1,
                     runid="demo-output",
-		    dt_plot=0.25 | units.Myr,
 
                     grav_code=PhiGRAPE,
                     grav_code_extra=dict(mode='gpu', channel_type='sockets', hostname='localhost'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=4,number_of_nodes=4,use_gl=False, channel_type='ibis', hostname='VU'),
+                    gas_code_extra=dict(number_of_workers=1,number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='Leiden'),
 
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='sockets', hostname='localhost'),

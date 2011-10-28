@@ -20,7 +20,6 @@ clustergas.clustergas(sfeff=0.3,
                     Nstar=100,
                     Ngas=10000,
                     Rscale=0.5 | units.parsec,
-                    feedback_efficiency=0.01,
                     runid="demo-output",
 
                     grav_code=PhiGRAPE,

@@ -83,9 +83,10 @@ def clustergas_restart(runid, snapshot, t_end=30. | units.Myr,
     sys.dump_system_state(runid+"/dump-%6.6i" %nsnap)
                          
 
+#original feedback_efficiency=0.01
 def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
                  dt_plot= 0.05 | units.Myr, Rscale= 0.5 | units.parsec,
-                 runid="runtest",feedback_efficiency=0.01, subvirialfac=1.,
+                 runid="runtest",feedback_efficiency=0.03, subvirialfac=1.,
                  grav_code=PhiGRAPE,gas_code=Gadget2,se_code=SSEplus,grav_couple_code=Octgrav,
                  grav_code_extra=dict(mode='gpu', redirection='none'),
                  gas_code_extra=dict(number_of_workers=3,use_gl=False, redirection='none'),
@@ -143,9 +144,15 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
   
   dt =smaller_nbody_power_of_two(dt_plot, conv)
   dt_star=smaller_nbody_power_of_two( 0.001 | units.Myr, conv) #0.001
-  dt_sph=dt_star
-  dt_fast=dt_star*8  # 8
-  dt_feedback=dt_fast*2 # 1
+
+#original settings  
+#  dt_sph=dt_star
+#  dt_fast=dt_star*8  # 8
+#  dt_feedback=dt_fast*2 # 1
+#new, improved, more snapshots (thanks inti)
+  dt_fast=dt / 8  # 8
+  dt_feedback=dt # 1
+  feedback_dt=(10. | units.yr, dt_fast)
     
   if not dt_star<=dt_fast<=dt_feedback:
     raise Exception 
@@ -155,7 +162,6 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
   print 'dt_feedback:', conv.to_nbody(dt_feedback), dt_feedback.in_(units.Myr)
   print 'dt_fast:', conv.to_nbody(dt_fast), dt_fast.in_(units.Myr)
   print 'dt_star:', conv.to_nbody(dt_star), dt_star.in_(units.Myr)
-  print 'dt_sph:', conv.to_nbody(dt_sph), dt_sph.in_(units.Myr)
 
   star_parts.move_to_center()
   gas_parts.move_to_center()
@@ -176,6 +182,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
                couple_parameters=(["epsilon_squared", eps**2],
                             ["opening_angle",0.5]),
                feedback_efficiency=feedback_efficiency, feedback_radius=0.025*Rscale,
+               feedback_dt=feedback_dt,
                grav_code_extra=grav_code_extra,
                gas_code_extra=gas_code_extra,
                se_code_extra=se_code_extra,
