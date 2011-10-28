@@ -31,13 +31,13 @@ clustergas.clustergas(sfeff=0.3,
                     grav_code_extra=dict(mode='gpu', channel_type='sockets', hostname='localhost'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=1,number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='VU'),
+                    gas_code_extra=dict(number_of_workers=8,number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='VU'),
 
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='sockets', hostname='localhost'),
 
                     grav_couple_code=Octgrav,
-                    grav_couple_code_extra=dict(channel_type='sockets', hostname='localhost', redirection='none')
+                    grav_couple_code_extra=dict(channel_type='sockets', hostname='localhost')
 )
 
 

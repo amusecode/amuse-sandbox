@@ -35,7 +35,7 @@ clustergas.clustergas(sfeff=0.3,
                     se_code_extra=dict(channel_type='sockets'),
 
                     grav_couple_code=Octgrav,
-                    grav_couple_code_extra=dict(channel_type='sockets', redirection='none')
+                    grav_couple_code_extra=dict(channel_type='sockets')
 )
 
 
