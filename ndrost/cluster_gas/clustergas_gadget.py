@@ -44,14 +44,22 @@ def smaller_nbody_power_of_two(dt, conv):
 
 def clustergas_restart(runid, snapshot, t_end=30. | units.Myr,
                          dt_plot= 0.05 | units.Myr,newid=None,
-                         new_gas_options=()):
+                         new_gas_options=(),
+                 grav_code_extra=dict(mode='gpu', redirection='none'),
+                 gas_code_extra=dict(number_of_workers=3,use_gl=False, redirection='none'),
+                 se_code_extra=dict(redirection='none'),
+                 grav_couple_code_extra=dict()):
   if runid is None:
     raise Exception                       
   print "restarting run "+runid+" at snapshot %i"%snapshot                       
   print
   
   conv,sys=grav_gas_sse.load_system_state(runid+"/dump-%6.6i" %snapshot,
-             new_gas_options)
+             new_gas_options,
+             grav_code_extra=grav_code_extra,
+             gas_code_extra=gas_code_extra,
+             se_code_extra=se_code_extra,
+             grav_couple_code_extra=grav_couple_code_extra)
 
   dt =smaller_nbody_power_of_two(dt_plot, conv)
 

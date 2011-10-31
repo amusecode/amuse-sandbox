@@ -260,7 +260,11 @@ class grav_gas_sse(object):
     f.close()
 
   @classmethod
-  def load_system_state(cls,filename,new_gas_options=()):    
+  def load_system_state(cls,filename,new_gas_options=(),
+               grav_code_extra=dict(mode='gpu', redirection='none'),
+               gas_code_extra=dict(number_of_workers=3,use_gl=False, redirection='none'),
+               se_code_extra=dict(redirection='none'),
+               grav_couple_code_extra=dict()):    
     from amuse.support.io import read_set_from_file
     import cPickle
     star_parts=read_set_from_file(filename+".grav",'amuse')
@@ -299,4 +303,8 @@ class grav_gas_sse(object):
                total_feedback_energy=tfe,evo_particles=evo, star_particles_addition=add,
                start_time_offset=to,feedback_safety=fs,
                feedback_dt=fdt, feedback_period=fp,
-               feedback_lasttime=flt)
+               feedback_lasttime=flt,
+	       grav_code_extra=grav_code_extra,
+               gas_code_extra=gas_code_extra,
+               se_code_extra=se_code_extra,
+               grav_couple_code_extra=grav_couple_code_extra)
