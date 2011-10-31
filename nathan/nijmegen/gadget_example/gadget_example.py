@@ -8,8 +8,7 @@ from amuse.units import generic_unit_converter
 from amuse.units import units
 
 from amuse.community.gadget2.interface import Gadget2
-
-from box import box
+from amuse.ext.molecular_cloud import ism_cube
 
 def make_map(sph,L,N=100):
 
@@ -41,7 +40,7 @@ if __name__=="__main__":
   print (u**0.5).in_(units.kms)
   print ((L/u**0.5)/dt).value_in(units.none)
     
-  particles=box(N, L,rho,u)
+  particles = ism_cube(N, L, rho, u).result
 
   UnitLength=L
   UnitMass=particles.mass.sum()
@@ -50,7 +49,7 @@ if __name__=="__main__":
   convert=generic_unit_converter.ConvertBetweenGenericAndSiUnits(UnitLength, UnitMass, UnitVelocity)
   sph=Gadget2(convert,mode='periodic')#,redirection='none')
   
-  sph.parameters.periodic_box_size=L
+  sph.parameters.periodic_box_size = 2*L
   
   sph.gas_particles.add_particles(particles)
   
@@ -61,11 +60,11 @@ if __name__=="__main__":
     i=i+1
     sph.evolve_model(t)
     print t.in_(units.Myr),sph.model_time.in_(units.Myr)
-    rho=make_map(sph,L)
+    rho=make_map(sph, 2*L)
     f=pyplot.figure(figsize=(8,8))
     LL=L.number
     pyplot.imshow(numpy.log10(rho.value_in(units.amu/units.cm**3)),
-        extent=[-LL/2,LL/2,-LL/2,LL/2],vmin=0,vmax=2,origin='lower')
+        extent=[-LL,LL,-LL,LL],vmin=0,vmax=2,origin='lower')
     pyplot.savefig('map-%6.6i.png'%i)
     f.clear()
     pyplot.close(f)
