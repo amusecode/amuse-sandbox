@@ -1,0 +1,18 @@
+#!/bin/bash
+#$ -l num_gpu=1
+#$ -l h_rt=24:00:00
+#$ -N AMUSE
+
+source ~/.bashrc
+source ~/.bash_profile
+
+cd ~/amuse/lib/ibis
+
+scripts/ibis-amuse-daemon&
+
+sleep 10
+
+cd ~/amuse/sandbox/ndrost/cluster_gas/
+
+
+~/bin/amuse restart.py 2>&1 | tee -a output.log
