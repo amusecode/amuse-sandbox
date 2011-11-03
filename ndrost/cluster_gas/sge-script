@@ -26,7 +26,7 @@ kill $JAVA_PID
 
 sleep 10
 
-echo "Killing java process (pid = $(PID)) (just to be sure)"
+echo "Killing java process (pid = ${JAVA_PID}) (just to be sure)"
 
 kill -9 $JAVA_PID
 

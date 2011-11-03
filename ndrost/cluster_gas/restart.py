@@ -6,7 +6,7 @@ from amuse.support.units import units
 
 clustergas.clustergas_restart(
                    "demo-output",
-                   1136,
+                   1463,
 		   dt_plot=0.01 | units.Myr,
                    grav_code_extra=dict(mode='gpu', channel_type='sockets', hostname='localhost'),
                    gas_code_extra=dict(number_of_workers=8,number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='VU'),
