@@ -45,6 +45,8 @@ class reinitializecopycat(object):
     for system in self.systems:
       self.instance.particles.add_particles(system.particles)
     ax,ay,az=self.instance.get_gravity_at_point(radius,x,y,z)
+    for system in self.systems:
+      self.instance.particles.remove_particles(system.particles)
     self.instance.cleanup_code()
     return ax,ay,az
 
@@ -55,6 +57,8 @@ class reinitializecopycat(object):
     for system in self.systems:
       self.instance.particles.add_particles(system.particles)
     phi=self.instance.get_potential_at_point(radius,x,y,z)
+    for system in self.systems:
+      self.instance.particles.remove_particles(system.particles)
     self.instance.cleanup_code()
     return phi
 

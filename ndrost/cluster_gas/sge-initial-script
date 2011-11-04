@@ -1,13 +1,10 @@
 #!/bin/bash
 #$ -cwd
 #$ -l num_gpu=1
-#$ -l h_rt=10:00:00
+#$ -l h_rt=24:00:00
 #$ -N AMUSE
 #$ -o AMUSE.$JOB_ID.out
 #$ -e AMUSE.$JOB_ID.err
-
-#comment!
-# -l fat,m_type=sixcore
 
 source ~/.bash_profile
 
@@ -21,7 +18,7 @@ sleep 10
 
 cd ~/amuse/sandbox/ndrost/cluster_gas/
 
-~/bin/amuse restart.py 
+~/bin/amuse -u run-gadget-das.py 
 
 echo "AMUSE stopped, terminating java process"
 

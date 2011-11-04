@@ -19,19 +19,19 @@ from SSEplus import SSEplus
 #best guess inti's original seed
 numpy.random.seed(123491)
 
-clustergas.clustergas(sfeff=0.3, 
+clustergas.clustergas(sfeff=0.1, 
                     Nstar=1000,
                     Ngas=100000,
                     Rscale=0.5 | units.parsec,
-                    runid="demo-output",
-                    feedback_efficiency=0.1,
+                    runid="/var/scratch/niels/more_gas",
+                    feedback_efficiency=0.01,
 		    dt_plot=0.01 | units.Myr,
 
                     grav_code=PhiGRAPE,
                     grav_code_extra=dict(mode='gpu', channel_type='sockets', hostname='localhost'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=8,number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='local'),
+                    gas_code_extra=dict(output_directory='output', number_of_workers=16, number_of_nodes=2,use_gl=False, channel_type='ibis', hostname='VU', redirection='none'),
 
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='sockets', hostname='localhost'),

@@ -11,9 +11,9 @@ except ImportError:
 
 from grav_gas_sse import grav_gas_sse
 
-from amuse.support.units import nbody_system
-from amuse.support.units import units
-from amuse.support.units import constants
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse.units import constants
 
 from amuse.community.fi.interface import Fi
 from boxedfi import BoxedFi
@@ -24,7 +24,7 @@ from amuse.community.phiGRAPE.interface import PhiGRAPE
 
 from SSEplus import SSEplus
 
-from amuse.support.data import core
+from amuse import datamodel
 
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 from amuse.ic.plummer import new_plummer_sphere
@@ -229,7 +229,9 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
     print 't Ek Ep Eth Ef:', tout,ek,ep,eth,ef,ek+ep+eth-ef
     nsnap+=1
     sys.dump_system_state(runid+"/dump-%6.6i" %nsnap)
+
     end = time.time()
+
     print 'iteration', nsnap , 'took:', (end - beginning), 'seconds'
 
 
@@ -330,8 +332,8 @@ def merge_clusters_with_gas(sfeff=[0.3,0.3], Nstar= [1000,1000],
   print "tmerge:",tmerge
   print "Rsep:",Rsep.in_(units.parsec)
 
-  allgas=core.Particles(0)
-  allstars=core.Particles(0)
+  allgas=datamodel.Particles(0)
+  allstars=datamodel.Particles(0)
   allgas.add_particles(gas[0])
   allgas.add_particles(gas[1])
   allstars.add_particles(stars[0])

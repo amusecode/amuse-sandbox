@@ -7,11 +7,11 @@ version with feedback safety
 """
 import numpy
     
-from amuse.support.units import nbody_system
-from amuse.support.units import units
+from amuse.units import nbody_system
+from amuse.units import units
     
 from amuse import datamodel
-from amuse.support.data.values import zero
+from amuse.units.quantities import zero
 
 from fast import FAST
 from lmech import lmech
@@ -67,9 +67,9 @@ class grav_gas_sse(object):
     print
     print self.sph.parameters
   
-    self.sph_grav=reinitializecopycat(grav_couple_code, (self.sph,self.grav), conv,
+    self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
-    self.star_grav=reinitializecopycat(grav_couple_code, (self.sph,), conv,
+    self.star_grav=copycat(grav_couple_code, (self.sph,), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
@@ -234,7 +234,7 @@ class grav_gas_sse(object):
     return self.evo.particles
 
   def dump_system_state(self,filename):    
-    from amuse.support.io import write_set_to_file
+    from amuse.io import write_set_to_file
     import cPickle
     write_set_to_file(self.grav.particles,filename+".grav","amuse",append_to_file=False)  
     write_set_to_file(self.gas_particles,filename+".gas","amuse",append_to_file=False)  
