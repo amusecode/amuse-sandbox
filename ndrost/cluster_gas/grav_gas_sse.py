@@ -67,9 +67,9 @@ class grav_gas_sse(object):
     print
     print self.sph.parameters
   
-    self.sph_grav=copycat(grav_couple_code, (self.sph,self.grav), conv,
+    self.sph_grav=reinitializecopycat(grav_couple_code, (self.sph,self.grav), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
-    self.star_grav=copycat(grav_couple_code, (self.sph,), conv,
+    self.star_grav=reinitializecopycat(grav_couple_code, (self.sph,), conv,
                             parameters=couple_parameters, extra=grav_couple_code_extra)
   
     self.fast=FAST(verbose=True, timestep=dt_fast)
@@ -265,7 +265,7 @@ class grav_gas_sse(object):
                gas_code_extra=dict(number_of_workers=3,use_gl=False, redirection='none'),
                se_code_extra=dict(redirection='none'),
                grav_couple_code_extra=dict()):    
-    from amuse.support.io import read_set_from_file
+    from amuse.io import read_set_from_file
     import cPickle
     star_parts=read_set_from_file(filename+".grav",'amuse')
     gas_parts=read_set_from_file(filename+".gas",'amuse')
