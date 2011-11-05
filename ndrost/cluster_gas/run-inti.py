@@ -23,7 +23,7 @@ clustergas.clustergas(sfeff=0.3,
                     Nstar=10000,
                     Ngas=1000000,
                     Rscale=0.5 | units.parsec,
-                    runid="10K-1M-inti",
+                    runid="/var/scratch/niels/10K-1M-inti",
                     feedback_efficiency=0.01,
 		    dt_plot=0.05 | units.Myr,
 
@@ -31,7 +31,7 @@ clustergas.clustergas(sfeff=0.3,
                     grav_code_extra=dict(mode='gpu', channel_type='sockets', hostname='localhost'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(output_directory='output', number_of_workers=8, number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='VU', redirection='none'),
+                    gas_code_extra=dict(output_directory='output', number_of_workers=1, number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='local', redirection='none'),
 
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='sockets', hostname='localhost'),

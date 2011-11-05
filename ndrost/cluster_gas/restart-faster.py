@@ -6,7 +6,7 @@ from amuse.units import units
 
 clustergas.clustergas_restart(
                    "/var/scratch/niels/more_gas_faster",
-                   131,
+                   2055,
 		   dt_plot=0.01 | units.Myr,
                    grav_code_extra=dict(mode='gpu', channel_type='sockets'),
                    gas_code_extra=dict(number_of_workers=8,number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='local'),
