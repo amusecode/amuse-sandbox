@@ -29,7 +29,7 @@ clustergas.clustergas(sfeff=0.3,
 
 		    #LGM
                     grav_code=PhiGRAPE,
-                    grav_code_extra=dict(mode='gpu', channel_type='ibis', hostname='LGM'),
+                    grav_code_extra=dict(mode='gpu', channel_type='ibis', hostname='VU-GPU'),
 
 		    #VU
                     gas_code=Gadget2,
