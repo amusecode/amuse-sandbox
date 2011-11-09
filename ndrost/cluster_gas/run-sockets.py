@@ -18,24 +18,24 @@ from SSEplus import SSEplus
 #numpy.random.seed(123477)
 
 clustergas.clustergas(sfeff=0.3, 
-                    Nstar=1000,
-                    Ngas=100000,
+                    Nstar=100,
+                    Ngas=10000,
                     Rscale=0.5 | units.parsec,
                     feedback_efficiency=0.1,
                     runid="demo-output",
 		    dt_plot=0.01 | units.Myr,
 
                     grav_code=PhiGRAPE,
-                    grav_code_extra=dict(mode='gpu', channel_type='sockets', redirection='none'),
+                    grav_code_extra=dict(mode='normal', channel_type='sockets'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=1,use_gl=False, channel_type='sockets', redirection='none'),
+                    gas_code_extra=dict(number_of_workers=1,use_gl=False, channel_type='sockets'),
 
                     se_code=SSEplus,
-                    se_code_extra=dict(channel_type='sockets', redirection='none'),
+                    se_code_extra=dict(channel_type='sockets'),
 
-                    grav_couple_code=Octgrav,
-                    grav_couple_code_extra=dict(channel_type='sockets', redirection='none')
+                    grav_couple_code=Fi,
+                    grav_couple_code_extra=dict(channel_type='sockets')
 )
 
 
