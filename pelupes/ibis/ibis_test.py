@@ -3,6 +3,8 @@ import sys
 import numpy
 
 try:
+    import matplotlib
+    matplotlib.use('Agg')
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
 except ImportError:
