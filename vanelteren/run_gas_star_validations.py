@@ -87,6 +87,77 @@ def run_bridge():
                         env = environment
                     )
                     process.wait()
+                    
+
+def run_sph():
+    
+    script_name = '../../../examples/validation/particles_and_gas_in_cluster.py'
+    common_arguments = [
+        sys.executable,
+        '-m', 'cProfile',
+        '-o', 'run.prof',
+        script_name,
+        '--end-time=1',
+        '--seed=1234',
+        '--allinoone',
+        '--noplot'
+    ]
+    
+    stats_arguments = [
+        sys.executable,
+        '../show_validation_stats.py',
+        'run.prof'
+    ]
+    environment = {}
+    environment.update(os.environ)
+    environment['PYTHONPATH'] = '../../../src'
+    
+    for n in [10, 100, 1000]:
+        for sphcode in ['fi' ]:
+            runname = 'sph_{0}__n_{1}'.format(sphcode, n)
+            
+            if os.path.exists(runname):
+                is_backuped = False
+                for x in range(10):
+                    backupname = runname + '.{0}'.format(x)
+                    if os.path.exists(backupname):
+                        continue
+                    os.rename(runname, backupname)
+                    is_backuped = True
+                    break
+                if not is_backuped:
+                    shutil.rmtree(backupname+'.0')
+                    os.rename(runname, backupname)
+            os.mkdir(runname)
+            arguments = list(common_arguments)
+            arguments.append('--sph-code={0}'.format(sphcode))
+            arguments.append('--nstar={0}'.format(n))
+            
+            with open(os.path.join(runname, 'run.out'), 'wb') as outfile:
+                process = subprocess.Popen(
+                    arguments,
+                    cwd = runname, 
+                    stdout = outfile,
+                    stderr = subprocess.STDOUT,
+                    env = environment
+                )
+            
+                process.wait()
+            
+            
+            time.sleep(4.0)
+            
+            with open(os.path.join(runname, 'run.stat'), 'wb') as outfile:
+                process = subprocess.Popen(
+                    stats_arguments,
+                    cwd = runname, 
+                    stdout = outfile,
+                    stderr = subprocess.STDOUT,
+                    env = environment
+                )
+                process.wait()
+
 if __name__ == '__main__':
+    run_sph()
     run_bridge()
                 
