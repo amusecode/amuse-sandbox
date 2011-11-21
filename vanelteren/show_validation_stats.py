@@ -15,6 +15,9 @@ def get_function_in_module(function_list, name_of_file, name_of_function, line_n
             selected_functions.append( (path, lineno, function_name) )
     if len(selected_functions) == 1:
         return selected_functions[0]
+        
+    if len(selected_functions) == 0:
+        raise Exception("could not find function {0} in file {1}".format(name_of_function, name_of_file))
     
     min_distance = 9999
     index_of_result = -1
@@ -38,12 +41,17 @@ def main(filename):
     stat_list = list(stats.fcn_list)
     
     module = stat_list[0]
-    assert module[-1] == '<module>'
+    assert module[-1] == '<execfile>' or module[-1] == '<module>'
     
     module_stats = FunctionStatistics(*stats.stats[module])
     print "Total time:", module_stats.cumulative_time
     
-    evolve_model_func = get_function_in_module(stat_list, module[0], 'evolve_model', 289)
+    if module[0] == '~':
+        nameformodule='particles_and_gas_in_cluster.py'
+    else:
+        nameformodule = module[0]
+        
+    evolve_model_func = get_function_in_module(stat_list, nameformodule, 'evolve_model', 289)
     evolve_model_stats = FunctionStatistics(*stats.stats[evolve_model_func])
     
     format_per = "{0: >5.1f}%"
@@ -60,9 +68,9 @@ def main(filename):
     drift_stats = FunctionStatistics(*stats.stats[drift_codes_in_bridge])
     print "Drift codes :", format_sec.format(drift_stats.cumulative_time), format_per.format(drift_stats.cumulative_time / evolve_model_stats.cumulative_time * 100.0)
     
-    drift_codes_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'drift', 459)
-    drift_stats = FunctionStatistics(*stats.stats[drift_codes_in_bridge])
-    print "Drift codes :", format_sec.format(drift_stats.cumulative_time), format_per.format(drift_stats.cumulative_time / evolve_model_stats.cumulative_time * 100.0)
+    #drift_codes_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'drift', 459)
+    #drift_stats = FunctionStatistics(*stats.stats[drift_codes_in_bridge])
+    #print "Drift in codes :", format_sec.format(drift_stats.cumulative_time), format_per.format(drift_stats.cumulative_time / evolve_model_stats.cumulative_time * 100.0)
     
     
     receive_overhead = get_function_in_module(stat_list, 'amuse/rfi/channel.py', 'receive_content', 459)
