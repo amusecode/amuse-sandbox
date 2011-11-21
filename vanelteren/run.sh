@@ -1,0 +1,12 @@
+amuse.sh  -m cProfile -o run1.prof particles_and_gas_in_cluster.py   \
+    --nstar=1000 \
+    --gas-code=fi \
+    --star-code=hermite \
+    --end-time=1 \
+    --gas-fraction=0.90 \
+    --seed=1234\
+    --star_smoothing_fraction=0.05 \
+    --gas_smoothing_fraction=0.05 \
+    --interaction-timestep=0.01 \
+    --ntimesteps=10 \
+    --noplot
