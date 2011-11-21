@@ -42,8 +42,8 @@ def run_bridge():
     environment['PYTHONPATH'] = '../../../src'
     
     for n in [10, 100, 1000]:
-        for starcode in ['octgrav', 'phigrape', 'fi'  ]:
-            for gascode in ['fi']:
+        for starcode in ['fi', 'octgrav', 'phigrape' ]:
+            for gascode in ['fi', 'field']:
                 runname = 'star_{0}__gas_{1}__n_{2}'.format(starcode, gascode, n)
                 
                 if os.path.exists(runname):
