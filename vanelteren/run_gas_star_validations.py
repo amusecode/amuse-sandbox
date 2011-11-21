@@ -41,8 +41,8 @@ def run_bridge():
     environment.update(os.environ)
     environment['PYTHONPATH'] = '../../../src'
     
-    for n in [10]:#, 20, 30]: #100, 1000]:
-        for starcode in ['phigrape']:
+    for n in [10, 100, 1000]:
+        for starcode in ['octgrav', 'phigrape', 'fi'  ]:
             for gascode in ['fi']:
                 runname = 'star_{0}__gas_{1}__n_{2}'.format(starcode, gascode, n)
                 

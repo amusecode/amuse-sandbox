@@ -46,7 +46,7 @@ def main(filename):
     module_stats = FunctionStatistics(*stats.stats[module])
     print "Total time:", module_stats.cumulative_time
     
-    if module[0] == '~':
+    if module[0] == '~' or module[0] == '<string>':
         nameformodule='particles_and_gas_in_cluster.py'
     else:
         nameformodule = module[0]
