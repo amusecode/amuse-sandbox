@@ -13,10 +13,10 @@ matplotlib.use('Agg')
 from matplotlib import pyplot
 
 from amuse.support.io import read_set_from_file
-#from amuse.support.io import write_set_to_file,read_set_from_file
-#dummy:
-def write_set_to_file(*args,**kwargs):
-  pass
+from amuse.support.io import write_set_to_file 
+
+write_snapshots=False
+
 
 mu=1.| units.amu
 muion =0.5 | units.amu
@@ -180,7 +180,7 @@ def iliev_test_5( N=10000,
 
 #  sph.start_viewer()
          
-  rad=SimpleX(number_of_workers = 1,redirection='none')
+  rad=SimpleX(number_of_workers = 2,redirection='none')
 
   for x in rad_parameters:
     print x, rad_parameters[x]
@@ -213,7 +213,8 @@ def update_u_fake(sys,pa):
 def radhydro_evolve(sph,rad,tend,dt):
   global label
   i=0
-  write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
+  if write_snapshots:
+    write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
   print (mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
@@ -235,13 +236,15 @@ def radhydro_evolve(sph,rad,tend,dt):
     t+=dt
     i+=1
     
-    write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
+    if write_snapshots:
+      write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
 def radhydro_evolve_fake(sph,rad,tend,dt):
   global label
   i=0
-  write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
+  if write_snapshots:
+    write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
   print (mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
@@ -261,8 +264,8 @@ def radhydro_evolve_fake(sph,rad,tend,dt):
     
     t+=dt
     i+=1
-    
-    write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
+    if write_snapshots:
+      write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
  
@@ -276,7 +279,8 @@ def rad_only_evolve(sph,rad,tend,dt):
   channel.copy_attributes(["xion","rho","u"])  
   print (mu/constants.kB*p.u.amin()).in_(units.K), (mu/constants.kB*p.u.amax()).in_(units.K)
 
-  write_set_to_file(p,label+"-%6.6i"%i,"amuse",
+  if write_snapshots:
+    write_set_to_file(p,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
   t=0. | units.Myr
@@ -292,7 +296,8 @@ def rad_only_evolve(sph,rad,tend,dt):
       channel = rad.particles.new_channel_to(p)
       channel.copy_attributes(["xion","rho","u"])  
       print (mu/constants.kB*p.u.amin()).in_(units.K), (mu/constants.kB*p.u.amax()).in_(units.K)
-      write_set_to_file(p,label+"-%6.6i"%i,"amuse",
+      if write_snapshots:
+        write_set_to_file(p,label+"-%6.6i"%i,"amuse",
                           append_to_file=False)    
 
 
@@ -328,8 +333,8 @@ def test(evolver, rad_parameters=None):
   N=10000
   Ns=10
   L=15. | units.kpc
-  dt=1. | units.Myr  
-  tend=100.| units.Myr
+  dt=10. | units.Myr  
+  tend=10.| units.Myr
 
   if rad_parameters==None:
     rad_parameters=dict(box_size=2*L)
@@ -350,10 +355,18 @@ def test(evolver, rad_parameters=None):
   t=mu/(1.+xion)/constants.kB*p.u
   t=t.value_in(units.K)
 
+  pyplot.figure( figsize=(8,6) ) 
+  pyplot.plot( r,xion,'r.')
+  pyplot.savefig('rx.png')
+
+  pyplot.figure( figsize=(8,6) ) 
+  pyplot.plot( r,t,'r.')
+  pyplot.savefig('rt.png')
+
   aplot(0,label+'xion',((r/15,xion,'r'),(r/15,1-xion,'g')),
           xlim=(0.,1.),ylim=(1.e-6,1.),ylabel='x,(1-x)')
   aplot(0,label+'temp',((r/15,t,'r'),),
-          xlim=(0.,1.),ylim=(0,1.e5),ylabel="T (K)")
+          xlim=(0.,1.),ylim=(100,1.e5),ylabel="T (K)")
 
 if __name__=="__main__":
   global label
@@ -365,6 +378,8 @@ if __name__=="__main__":
   t2=time.time()
   print "test1: monochromatic, non dynamic, no thermal solver",
   print t2-t1,"sec"
+
+  raise Exception
 
   t1=time.time()
   label="test2"
