@@ -42,20 +42,24 @@ def main(filename):
     
     module = stat_list[0]
     assert module[-1] == '<execfile>' or module[-1] == '<module>'
-    
+    format_per = "{0: >5.1f}%"
+    format_sec = "{0: >7.1f}"
     module_stats = FunctionStatistics(*stats.stats[module])
-    print "Total time:", module_stats.cumulative_time
+    print "Total time:", format_sec.format(module_stats.cumulative_time)
     
+    time_spent_in_codes = get_function_in_module(stat_list, 'amuse/rfi/channel.py', 'receive_header', 149)
+    time_spent_in_codes_stats = FunctionStatistics(*stats.stats[evolve_model_in_bridge])
+    print "In Code   :", format_sec.format(time_spent_in_codes_stats.cumulative_time), format_per.format(time_spent_in_codes_stats.cumulative_time/module_stats.cumulative_time * 100.0)
+    receive_header
     if module[0] == '~' or module[0] == '<string>':
         nameformodule='particles_and_gas_in_cluster.py'
     else:
         nameformodule = module[0]
         
+    
     evolve_model_func = get_function_in_module(stat_list, nameformodule, 'evolve_model', 289)
     evolve_model_stats = FunctionStatistics(*stats.stats[evolve_model_func])
-    
-    format_per = "{0: >5.1f}%"
-    format_sec = "{0: >7.1f}"
+   
     evolve_model_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'evolve_model', 459)
     evolve_model_stats = FunctionStatistics(*stats.stats[evolve_model_in_bridge])
     print "Evolve time :", format_sec.format(evolve_model_stats.cumulative_time)
