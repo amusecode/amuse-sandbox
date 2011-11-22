@@ -41,7 +41,7 @@ def run_bridge():
     environment.update(os.environ)
     environment['PYTHONPATH'] = '../../../src'
     
-    for n in [10, 100, 1000]:
+    for n in [50, 500, 5000]:
         for starcode in ['fi', 'octgrav', 'phigrape' ]:
             for gascode in ['fi', 'field']:
                 runname = 'star_{0}__gas_{1}__n_{2}'.format(starcode, gascode, n)
@@ -112,7 +112,7 @@ def run_sph():
     environment.update(os.environ)
     environment['PYTHONPATH'] = '../../../src'
     
-    for n in [10, 100, 1000]:
+    for n in [5000]:
         for sphcode in ['fi' ]:
             runname = 'sph_{0}__n_{1}'.format(sphcode, n)
             
@@ -158,6 +158,6 @@ def run_sph():
                 process.wait()
 
 if __name__ == '__main__':
-    run_sph()
     run_bridge()
+    run_sph()
                 

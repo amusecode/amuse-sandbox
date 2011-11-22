@@ -47,10 +47,13 @@ def main(filename):
     module_stats = FunctionStatistics(*stats.stats[module])
     print "Total time:", format_sec.format(module_stats.cumulative_time)
     
+    time_spent_in_data_transfer = get_function_in_module(stat_list, 'amuse/rfi/channel.py', 'receive_content', 149)
+    time_spent_in_data_transfer_stats = FunctionStatistics(*stats.stats[time_spent_in_data_transfer])
+    # times 2 to account for time spent in the codes
+    print "In data transfer  :", format_sec.format(time_spent_in_data_transfer_stats.cumulative_time*2), format_per.format(time_spent_in_data_transfer_stats.cumulative_time*2/module_stats.cumulative_time * 100.0)
     time_spent_in_codes = get_function_in_module(stat_list, 'amuse/rfi/channel.py', 'receive_header', 149)
-    time_spent_in_codes_stats = FunctionStatistics(*stats.stats[evolve_model_in_bridge])
+    time_spent_in_codes_stats = FunctionStatistics(*stats.stats[time_spent_in_codes])
     print "In Code   :", format_sec.format(time_spent_in_codes_stats.cumulative_time), format_per.format(time_spent_in_codes_stats.cumulative_time/module_stats.cumulative_time * 100.0)
-    receive_header
     if module[0] == '~' or module[0] == '<string>':
         nameformodule='particles_and_gas_in_cluster.py'
     else:
@@ -59,19 +62,23 @@ def main(filename):
     
     evolve_model_func = get_function_in_module(stat_list, nameformodule, 'evolve_model', 289)
     evolve_model_stats = FunctionStatistics(*stats.stats[evolve_model_func])
+    print "In evolve model :", format_sec.format(evolve_model_stats.cumulative_time), format_per.format(evolve_model_stats.cumulative_time/module_stats.cumulative_time * 100.0)
+  
+    try:
+        evolve_model_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'evolve_model', 459)
+        evolve_model_stats = FunctionStatistics(*stats.stats[evolve_model_in_bridge])
+        print "Evolve time :", format_sec.format(evolve_model_stats.cumulative_time)
+    
+        kick_codes_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'kick_codes', 459)
+        kick_stats = FunctionStatistics(*stats.stats[kick_codes_in_bridge])
+        print "Kick codes  :", format_sec.format(kick_stats.cumulative_time), format_per.format(kick_stats.cumulative_time / evolve_model_stats.cumulative_time * 100.0)
+    
+        drift_codes_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'drift_codes', 459)
+        drift_stats = FunctionStatistics(*stats.stats[drift_codes_in_bridge])
+        print "Drift codes :", format_sec.format(drift_stats.cumulative_time), format_per.format(drift_stats.cumulative_time / evolve_model_stats.cumulative_time * 100.0)
+    except:
+	print "No bridge"
    
-    evolve_model_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'evolve_model', 459)
-    evolve_model_stats = FunctionStatistics(*stats.stats[evolve_model_in_bridge])
-    print "Evolve time :", format_sec.format(evolve_model_stats.cumulative_time)
-    
-    kick_codes_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'kick_codes', 459)
-    kick_stats = FunctionStatistics(*stats.stats[kick_codes_in_bridge])
-    print "Kick codes  :", format_sec.format(kick_stats.cumulative_time), format_per.format(kick_stats.cumulative_time / evolve_model_stats.cumulative_time * 100.0)
-    
-    drift_codes_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'drift_codes', 459)
-    drift_stats = FunctionStatistics(*stats.stats[drift_codes_in_bridge])
-    print "Drift codes :", format_sec.format(drift_stats.cumulative_time), format_per.format(drift_stats.cumulative_time / evolve_model_stats.cumulative_time * 100.0)
-    
     #drift_codes_in_bridge = get_function_in_module(stat_list, 'amuse/couple/bridge.py', 'drift', 459)
     #drift_stats = FunctionStatistics(*stats.stats[drift_codes_in_bridge])
     #print "Drift in codes :", format_sec.format(drift_stats.cumulative_time), format_per.format(drift_stats.cumulative_time / evolve_model_stats.cumulative_time * 100.0)
