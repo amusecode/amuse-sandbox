@@ -330,11 +330,11 @@ def aplot(i, tag, xyc,xlim=None,ylim=None,ylabel=""):
 
 
 def test(evolver, rad_parameters=None):    
-  N=10000
+  N=100000
   Ns=10
   L=15. | units.kpc
-  dt=10. | units.Myr  
-  tend=10.| units.Myr
+  dt=1. | units.Myr  
+  tend=200.| units.Myr
 
   if rad_parameters==None:
     rad_parameters=dict(box_size=2*L)
@@ -350,10 +350,14 @@ def test(evolver, rad_parameters=None):
   channel.copy_attributes(["vx","vy","vz"])  
 
   r=(((p.x)**2+(p.y)**2+(p.z)**2) ** 0.5).value_in(units.kpc)
+  v=((p.vx**2+p.vy**2+p.vz**2)**0.5).value_in(units.kms)
+  cs=(p.u**0.5).value_in(units.kms)
   xion=p.xion.number
-
   t=mu/(1.+xion)/constants.kB*p.u
   t=t.value_in(units.K)
+  dens=(p.rho).value_in(units.amu/units.cm**3)
+  pres=(p.u*p.rho).value_in( 100*units.g/units.cm/units.s**2)
+  mach=v/cs+1.e-10
 
   pyplot.figure( figsize=(8,6) ) 
   pyplot.plot( r,xion,'r.')
@@ -363,14 +367,24 @@ def test(evolver, rad_parameters=None):
   pyplot.plot( r,t,'r.')
   pyplot.savefig('rt.png')
 
-  aplot(0,label+'xion',((r/15,xion,'r'),(r/15,1-xion,'g')),
+  i=int(tend.value_in(units.Myr))
+  aplot(i,label+'-xion',((r/15,xion,'r'),(r/15,1-xion,'g')),
           xlim=(0.,1.),ylim=(1.e-6,1.),ylabel='x,(1-x)')
-  aplot(0,label+'temp',((r/15,t,'r'),),
+  aplot(i,label+'-temp',((r/15,t,'r'),),
           xlim=(0.,1.),ylim=(100,1.e5),ylabel="T (K)")
+  aplot(i,label+'-pres',((r/15,pres,'r'),),
+          xlim=(0.,1.),ylim=(1.e-17,1.e-14),ylabel="pres (g/cm/s**2)")
+  aplot(i,label+'-rho',((r/15,dens,'r'),),
+          xlim=(0.,1.),ylim=(0.0001,0.01),ylabel='density (amu/cm**3)')
+  aplot(i,label+'-mach',((r/15,mach,'r'),),
+          xlim=(0.,1.),ylim=(1.e-5,10.),ylabel='Mach')
+
+
 
 if __name__=="__main__":
   global label
   import time
+  
   
   t1=time.time()
   label="test1"
@@ -378,8 +392,6 @@ if __name__=="__main__":
   t2=time.time()
   print "test1: monochromatic, non dynamic, no thermal solver",
   print t2-t1,"sec"
-
-  raise Exception
 
   t1=time.time()
   label="test2"
@@ -408,6 +420,7 @@ if __name__=="__main__":
   t2=time.time()
   print "test5: 5 freq, dynamic, no thermal solver",
   print t2-t1,"sec"
+  
   
   t1=time.time()
   label="test6"
