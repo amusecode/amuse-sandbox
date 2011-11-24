@@ -15,7 +15,7 @@ from matplotlib import pyplot
 from amuse.support.io import read_set_from_file
 from amuse.support.io import write_set_to_file 
 
-write_snapshots=False
+write_snapshots=True
 
 
 mu=1.| units.amu
@@ -26,9 +26,9 @@ Tinit=100. | units.K
 Ttrans=13500. | units.K 
 Tion=13500. | units.K
 rhoinit=0.001 | (units.amu / units.cm**3)
-uinit=constants.kB * Tinit/mu
-utrans=constants.kB * Ttrans/mutrans
-uion=constants.kB * Tion/muion
+uinit=1.5*constants.kB * Tinit/mu
+utrans=1.5*constants.kB * Ttrans/mutrans
+uion=1.5*constants.kB * Tion/muion
 mp=None
 
 def fake_internal_energy_from_xion(xion):
@@ -203,6 +203,10 @@ def update_pos_rho(sys,pa):
 
 def update_u(sys,pa):
   sys.particles.u=pa.u
+
+def update_u_dudt(sys,pa):
+  sys.particles.u=pa.u
+  sys.particles.du_dt=pa.du_dt
   
 def update_u_fake(sys,pa):
   p=pa.copy()
@@ -214,10 +218,13 @@ def radhydro_evolve(sph,rad,tend,dt):
   global label
   i=0
   if write_snapshots:
-    write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
+    p=rad.particles.copy()
+    channel = sph.particles.new_channel_to(p)
+    channel.copy_attributes(["x","y","z","vx","vy","vz","rho"])  	  
+    write_set_to_file(p,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
-  print (mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
+  print (2./3.*mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (2./3.*mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
   #raise Exception
 
   t=0. | units.Myr
@@ -229,25 +236,32 @@ def radhydro_evolve(sph,rad,tend,dt):
     update_pos_rho(rad,sph.gas_particles)
     rad.evolve_model(t+dt)
     update_u(sph,rad.particles)
-    print (mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
+    print (2./3.*mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (2./3.*mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
     print "sph2"
     sph.evolve_model(t+dt)    
     
     t+=dt
     i+=1
-    
-    if write_snapshots:
-      write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
+
+    if i%10==0:    
+      if write_snapshots:
+        p=rad.particles.copy()
+        channel = sph.particles.new_channel_to(p)
+        channel.copy_attributes(["x","y","z","vx","vy","vz","rho"])  	  
+        write_set_to_file(p,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
 def radhydro_evolve_fake(sph,rad,tend,dt):
   global label
   i=0
   if write_snapshots:
-    write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
+    p=rad.particles.copy()
+    channel = sph.particles.new_channel_to(p)
+    channel.copy_attributes(["x","y","z","vx","vy","vz","rho","u"])  	  
+    write_set_to_file(p,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
-  print (mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
+  print (2./3.*mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (2./3.*mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
 
   t=0. | units.Myr
   while t<tend-dt/2:
@@ -258,14 +272,18 @@ def radhydro_evolve_fake(sph,rad,tend,dt):
     update_pos_rho(rad,sph.gas_particles)
     rad.evolve_model(t+dt)
     update_u_fake(sph,rad.particles)
-    print (mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
+    print (2./3.*mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (2./3.*mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
     print "sph2"
     sph.evolve_model(t+dt)    
     
     t+=dt
     i+=1
-    if write_snapshots:
-      write_set_to_file(rad.particles,label+"-%6.6i"%i,"amuse",
+    if i%10==0:
+      if write_snapshots:
+        p=rad.particles.copy()
+        channel = sph.particles.new_channel_to(p)
+        channel.copy_attributes(["x","y","z","vx","vy","vz","rho","u"])  	  
+        write_set_to_file(p,label+"-%6.6i"%i,"amuse",
                         append_to_file=False)    
 
  
@@ -277,7 +295,7 @@ def rad_only_evolve(sph,rad,tend,dt):
   p=sph.particles.copy()
   channel = rad.particles.new_channel_to(p)
   channel.copy_attributes(["xion","rho","u"])  
-  print (mu/constants.kB*p.u.amin()).in_(units.K), (mu/constants.kB*p.u.amax()).in_(units.K)
+  print (2./3.*mu/constants.kB*p.u.amin()).in_(units.K), (2./3.*mu/constants.kB*p.u.amax()).in_(units.K)
 
   if write_snapshots:
     write_set_to_file(p,label+"-%6.6i"%i,"amuse",
@@ -295,7 +313,7 @@ def rad_only_evolve(sph,rad,tend,dt):
       p=sph.particles.copy()
       channel = rad.particles.new_channel_to(p)
       channel.copy_attributes(["xion","rho","u"])  
-      print (mu/constants.kB*p.u.amin()).in_(units.K), (mu/constants.kB*p.u.amax()).in_(units.K)
+      print (2./3.*mu/constants.kB*p.u.amin()).in_(units.K), (2./3.*mu/constants.kB*p.u.amax()).in_(units.K)
       if write_snapshots:
         write_set_to_file(p,label+"-%6.6i"%i,"amuse",
                           append_to_file=False)    
@@ -330,11 +348,11 @@ def aplot(i, tag, xyc,xlim=None,ylim=None,ylabel=""):
 
 
 def test(evolver, rad_parameters=None):    
-  N=100000
+  N=10000
   Ns=10
   L=15. | units.kpc
   dt=1. | units.Myr  
-  tend=200.| units.Myr
+  tend=10.| units.Myr
 
   if rad_parameters==None:
     rad_parameters=dict(box_size=2*L)
@@ -347,13 +365,16 @@ def test(evolver, rad_parameters=None):
 
   p=rad.particles.copy()
   channel = sph.particles.new_channel_to(p)
-  channel.copy_attributes(["vx","vy","vz"])  
+  if evolver==rad_only_evolve:
+    channel.copy_attributes(["vx","vy","vz"])  
+  else:
+    channel.copy_attributes(["vx","vy","vz","u"])  
 
   r=(((p.x)**2+(p.y)**2+(p.z)**2) ** 0.5).value_in(units.kpc)
   v=((p.vx**2+p.vy**2+p.vz**2)**0.5).value_in(units.kms)
   cs=(p.u**0.5).value_in(units.kms)
   xion=p.xion.number
-  t=mu/(1.+xion)/constants.kB*p.u
+  t=2./3.*mu/(1.+xion)/constants.kB*p.u
   t=t.value_in(units.K)
   dens=(p.rho).value_in(units.amu/units.cm**3)
   pres=(p.u*p.rho).value_in( 100*units.g/units.cm/units.s**2)
@@ -409,7 +430,7 @@ if __name__=="__main__":
   
   t1=time.time()
   label="test4"
-  test(radhydro_evolve)
+  test(radhydro_evolve_fake)
   t2=time.time()
   print "test4: monochromatic, dynamic, no thermal solver",
   print t2-t1,"sec"
