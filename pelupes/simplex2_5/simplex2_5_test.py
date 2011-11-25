@@ -352,7 +352,7 @@ def test(evolver, rad_parameters=None):
   Ns=10
   L=15. | units.kpc
   dt=1. | units.Myr  
-  tend=10.| units.Myr
+  tend=200.| units.Myr
 
   if rad_parameters==None:
     rad_parameters=dict(box_size=2*L)
