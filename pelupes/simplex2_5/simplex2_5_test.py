@@ -217,20 +217,10 @@ def update_u_fake(sys,pa):
   
 def radhydro_evolve(sph,rad,tend,dt):
   global label
-  i=0
-  if write_snapshots:
-    p=rad.particles.copy()
-    channel = sph.particles.new_channel_to(p)
-    channel.copy_attributes(["x","y","z","vx","vy","vz","rho"])  	  
-    write_set_to_file(p,label+"-%6.6i"%i,"amuse",
-                        append_to_file=False)    
 
-  print (2./3.*mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (2./3.*mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
-  #raise Exception
-
-  t=0. | units.Myr
+  t=rad.model_time
   while t<tend-dt/2:
-    print t        
+    print rad.model_time.in_(units.Myr)        
     print "sph1"
     sph.evolve_model(t+dt/2)    
     print "rad"
@@ -242,29 +232,21 @@ def radhydro_evolve(sph,rad,tend,dt):
     sph.evolve_model(t+dt)    
     
     t+=dt
-    i+=1
+    i=t.value_in(units.Myr)
 
     if i%10==0:    
       if write_snapshots:
         p=rad.particles.copy()
         channel = sph.particles.new_channel_to(p)
         channel.copy_attributes(["x","y","z","vx","vy","vz","rho"])  	  
-        write_set_to_file(p,label+"-%6.6i"%i,"amuse",
+        write_set_to_file(p,label+"-%6.6i"%int(i),"amuse",
                         append_to_file=False)    
+  return t
 
 def radhydro_evolve_fake(sph,rad,tend,dt):
   global label
-  i=0
-  if write_snapshots:
-    p=rad.particles.copy()
-    channel = sph.particles.new_channel_to(p)
-    channel.copy_attributes(["x","y","z","vx","vy","vz","rho","u"])  	  
-    write_set_to_file(p,label+"-%6.6i"%i,"amuse",
-                        append_to_file=False)    
 
-  print (2./3.*mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (2./3.*mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
-
-  t=0. | units.Myr
+  t=rad.model_time
   while t<tend-dt/2:
     print t        
     print "sph1"
@@ -278,31 +260,21 @@ def radhydro_evolve_fake(sph,rad,tend,dt):
     sph.evolve_model(t+dt)    
     
     t+=dt
-    i+=1
+    i=t.value_in(units.Myr)
     if i%10==0:
       if write_snapshots:
         p=rad.particles.copy()
         channel = sph.particles.new_channel_to(p)
         channel.copy_attributes(["x","y","z","vx","vy","vz","rho","u"])  	  
-        write_set_to_file(p,label+"-%6.6i"%i,"amuse",
+        write_set_to_file(p,label+"-%6.6i"%int(i),"amuse",
                         append_to_file=False)    
-
+  return t
  
 
 def rad_only_evolve(sph,rad,tend,dt):
   global label
 
-  i=    i=t.value_in(units.Myr)
-  p=sph.particles.copy()
-  channel = rad.particles.new_channel_to(p)
-  channel.copy_attributes(["xion","rho","u"])  
-  print (2./3.*mu/constants.kB*p.u.amin()).in_(units.K), (2./3.*mu/constants.kB*p.u.amax()).in_(units.K)
-
-  if write_snapshots:
-    write_set_to_file(p,label+"-%6.6i"%i,"amuse",
-                        append_to_file=False)    
-
-  t=0. | units.Myr
+  t=rad.model_time
   while t<tend-dt/2:
     print t        
     rad.evolve_model(t+dt)
@@ -318,6 +290,7 @@ def rad_only_evolve(sph,rad,tend,dt):
       if write_snapshots:
         write_set_to_file(p,label+"-%6.6i"%int(i),"amuse",
                           append_to_file=False)    
+  return t
 
 
 def average(N,r,dat):
@@ -360,6 +333,14 @@ def test(evolver, rad_parameters=None,dt=1. | units.Myr ):
     rad_parameters["box_size"]=2*L
 
   sph,rad=iliev_test_5(N,Ns,L,dt/2.,rad_parameters=rad_parameters)
+
+  p=sph.particles.copy()
+  channel = rad.particles.new_channel_to(p)
+  channel.copy_attributes(["xion","rho","u"])  
+  print (2./3.*mu/constants.kB*p.u.amin()).in_(units.K), (2./3.*mu/constants.kB*p.u.amax()).in_(units.K)
+  if write_snapshots:
+    write_set_to_file(p,label+"-%6.6i"%0,"amuse",
+                      append_to_file=False)    
 
   for tend in tplot:
     evolver(sph,rad,tend,dt)
