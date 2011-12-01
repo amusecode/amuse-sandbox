@@ -5,8 +5,6 @@ import math
 import subprocess
 import numpy
 import pickle
-#~import pynbody
-#~import pynbody.plot
 
 from amuse.units import units, constants, nbody_system
 from amuse.units.core import enumeration_unit
@@ -30,9 +28,9 @@ from amuse.plot import pynbody_column_density_plot, HAS_PYNBODY
 def new_working_directory():
     i = 0
     current_directory = os.getcwd()
-    while os.path.exists(os.path.join(current_directory, "triple_run_{0:=03}".format(i))):
+    while os.path.exists(os.path.join(current_directory, "run_{0:=03}".format(i))):
         i += 1
-    new_directory = os.path.join(current_directory, "triple_run_{0:=03}".format(i))
+    new_directory = os.path.join(current_directory, "run_{0:=03}".format(i))
     os.mkdir(new_directory)
     print "Created new directory for output:", new_directory
     os.mkdir(os.path.join(new_directory, "plots"))
@@ -210,7 +208,8 @@ def prepare_giant_system(sph_code, giant_model, view_on_giant, time_unit):
     system.dm_particles.add_particle(giant_model.core_particle)
     return system
 
-def evolve_coupled_system(binary_system, giant_system, t_end, n_steps, previous_data=None):
+def evolve_coupled_system(binary_system, giant_system, t_end, n_steps, 
+        do_energy_evolution_plot, previous_data=None):
     directsum = CalculateFieldForParticles(particles=giant_system.particles, gravity_constant=constants.G)
     directsum.smoothing_length_squared = giant_system.parameters.gas_epsilon**2
     coupled_system = Bridge(timestep=(t_end / (2 * n_steps)), verbose=False, use_threading=True)
@@ -227,9 +226,12 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps, previous_
         all_times.extend(times + all_times[-1])
     else:
         all_times = times
-        potential_energies = coupled_system.particles.potential_energy().as_vector_with_length(1).as_quantity_in(units.erg)
-        kinetic_energies = coupled_system.particles.kinetic_energy().as_vector_with_length(1).as_quantity_in(units.erg)
-        thermal_energies = coupled_system.gas_particles.thermal_energy().as_vector_with_length(1).as_quantity_in(units.erg)
+        if do_energy_evolution_plot:
+            potential_energies = coupled_system.particles.potential_energy().as_vector_with_length(1).as_quantity_in(units.erg)
+            kinetic_energies = coupled_system.particles.kinetic_energy().as_vector_with_length(1).as_quantity_in(units.erg)
+            thermal_energies = coupled_system.gas_particles.thermal_energy().as_vector_with_length(1).as_quantity_in(units.erg)
+        else:
+            potential_energies = kinetic_energies = thermal_energies = None
         
         giant_center_of_mass = [] | units.RSun
         ms1_position = [] | units.RSun
@@ -248,9 +250,10 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps, previous_
         coupled_system.evolve_model(time)
         print "   Evolved to:", time,
         
-        potential_energies.append(coupled_system.particles.potential_energy())
-        kinetic_energies.append(coupled_system.particles.kinetic_energy())
-        thermal_energies.append(coupled_system.gas_particles.thermal_energy())
+        if do_energy_evolution_plot:
+            potential_energies.append(coupled_system.particles.potential_energy())
+            kinetic_energies.append(coupled_system.particles.kinetic_energy())
+            thermal_energies.append(coupled_system.gas_particles.thermal_energy())
         
         giant_center_of_mass.append(giant_system.particles.center_of_mass())
         ms1_position.append(binary_system.particles[0].position)
@@ -259,7 +262,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps, previous_
         ms1_velocity.append(binary_system.particles[0].velocity)
         ms2_velocity.append(binary_system.particles[1].velocity)
         
-        if not i_step % 10:
+        if i_step % 10 == 9:
             snapshotfile = os.path.join("snapshots", "hydro_triple_{0:=04}_gas.amuse".format(i_step + i_offset))
             write_set_to_file(giant_system.gas_particles, snapshotfile, format='amuse')
             snapshotfile = os.path.join("snapshots", "hydro_triple_{0:=04}_core.amuse".format(i_step + i_offset))
@@ -306,8 +309,9 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps, previous_
     subprocess.call(['mencoder', "mf://hydro_triple_large*.png", '-ovc', 'lavc', 
         '-o', '../hydro_triple_large.avi', '-msglevel', 'all=1'], cwd="./plots")
     
-    energy_evolution_plot(all_times[:len(kinetic_energies)-1], kinetic_energies, 
-        potential_energies, thermal_energies)
+    if do_energy_evolution_plot:
+        energy_evolution_plot(all_times[:len(kinetic_energies)-1], kinetic_energies, 
+            potential_energies, thermal_energies)
     
     print "   Calculating semimajor axis and eccentricity evolution for inner binary"
     # Some temporary variables to calculate semimajor_axis and eccentricity evolution
@@ -343,7 +347,8 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps, previous_
     orbit_ecc_plot(eccentricity_binary, eccentricity_giant, all_times[:len(eccentricity_binary)])
 
 
-def continue_evolution(sph_code, dynamics_code, t_end, n_steps, relaxed_giant_output_base_name):
+def continue_evolution(sph_code, dynamics_code, t_end, n_steps, 
+        relaxed_giant_output_base_name, do_energy_evolution_plot):
     print "Loading snapshots...",
     files = os.listdir("snapshots")
     files.sort()
@@ -372,7 +377,7 @@ def continue_evolution(sph_code, dynamics_code, t_end, n_steps, relaxed_giant_ou
     giant_system = prepare_giant_system(sph_code, giant_model, view_on_giant, t_end)
     
     print "\nEvolving with bridge between", sph_code.__name__, "and", dynamics_code.__name__
-    evolve_coupled_system(binary_system, giant_system, t_end, n_steps, 
+    evolve_coupled_system(binary_system, giant_system, t_end, n_steps, do_energy_evolution_plot, 
         previous_data = os.path.join("snapshots", files[3]))
     print "Done"
 
@@ -431,9 +436,12 @@ if __name__ == "__main__":
     t_end = 60.0 | units.day
     n_steps = 600
     
+    do_energy_evolution_plot = False
+    
     if os.path.exists("snapshots"):
         print "Found snapshots folder, continuing evolution of previous run"
-        continue_evolution(sph_code, dynamics_code, t_end, n_steps, relaxed_giant_output_base_name)
+        continue_evolution(sph_code, dynamics_code, t_end, n_steps, 
+            relaxed_giant_output_base_name, do_energy_evolution_plot)
         exit(0)
     
     new_working_directory()
@@ -467,5 +475,5 @@ if __name__ == "__main__":
     giant_system = prepare_giant_system(sph_code, giant_model, view_on_giant, t_end)
     
     print "\nEvolving with bridge between", sph_code.__name__, "and", dynamics_code.__name__
-    evolve_coupled_system(binary_system, giant_system, t_end, n_steps)
+    evolve_coupled_system(binary_system, giant_system, t_end, n_steps, do_energy_evolution_plot)
     print "Done"
