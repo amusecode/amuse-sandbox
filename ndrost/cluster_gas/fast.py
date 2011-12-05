@@ -171,20 +171,29 @@ class FAST(object):
 
 # 'private' functions
 
+  def evolve_model_print(self,model,offset):
+    model.evolve_model(offset)
+
+    if(self.verbose):
+      print >> stderr, "evolving", model.__class__.__name__, "done"
+
+    return 0
+
+
   def drift_systems(self,tend):
     threads=[]
     for x in self.systems:
       if hasattr(x,"evolve_model"):
         offset=self.time_offsets[x]
         if(self.verbose):
-          print >> stderr, "evolving", x.__class__.__name__
-        threads.append(threading.Thread(target=x.evolve_model, args=(tend-offset,)) )
+          print >> stderr, "evolving", x.__class__.__name__, ".."
+        threads.append(threading.Thread(target=self.evolve_model_print, args=(x,tend-offset,)) )
     for x in threads:
       x.start()
     for x in threads:
       x.join()
     if(self.verbose): 
-      print >> stderr, "evolving .. done"
+      print >> stderr, "evolving done"
     return 0
 
   def kick_systems(self,dt):

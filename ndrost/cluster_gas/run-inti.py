@@ -23,21 +23,21 @@ clustergas.clustergas(sfeff=0.3,
                     Nstar=10000,
                     Ngas=1000000,
                     Rscale=0.5 | units.parsec,
-                    runid="/var/scratch/niels/10K-1M-inti",
+                    runid="10K-1M-inti",
                     feedback_efficiency=0.01,
 		    dt_plot=0.05 | units.Myr,
 
                     grav_code=PhiGRAPE,
-                    grav_code_extra=dict(mode='gpu', channel_type='sockets', redirection='none'),
+                    grav_code_extra=dict(mode='gpu', channel_type='ibis', redirection='none', hostname='VU-GPU'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(output_directory='output', number_of_workers=1, number_of_nodes=1,use_gl=False,  redirection='none', channel_type='sockets'),
+                    gas_code_extra=dict(output_directory='output', number_of_workers=32, number_of_nodes=4,use_gl=False, channel_type='ibis', hostname='VU'),
 
                     se_code=SSEplus,
-                    se_code_extra=dict(channel_type='sockets', hostname='localhost', redirection='none'),
+                    se_code_extra=dict(channel_type='ibis', hostname='VU', redirection='none'),
 
                     grav_couple_code=Octgrav,
-                    grav_couple_code_extra=dict(channel_type='sockets', hostname='localhost', redirection='none')
+                    grav_couple_code_extra=dict(channel_type='ibis', hostname='VU-GPU', redirection='none')
 )
 
 
