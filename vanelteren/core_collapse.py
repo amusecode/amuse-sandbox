@@ -61,7 +61,7 @@ class MultiplesRun(object):
         self.delta_time = snapshot_every | nbody_system.time
         
         dirname = ''
-        for i in range(100):
+        for i in range(1000):
             dirname = '{0}{1:03d}'.format(base_name, i)
             if not os.path.exists(dirname):
                 break
@@ -144,7 +144,7 @@ class MultiplesRun(object):
         return result
         
     def new_star_code_hermite(self):
-        result = Hermite(number_of_workers=1)
+        result = Hermite(number_of_workers=3, debugger="ddd")
         result.parameters.epsilon_squared = self.star_epsilon ** 2
         return result
         
