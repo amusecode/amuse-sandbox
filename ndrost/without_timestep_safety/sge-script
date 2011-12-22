@@ -1,0 +1,35 @@
+#!/bin/bash
+#$ -cwd
+#$ -l num_gpu=1
+#$ -l h_rt=24:00:00
+#$ -N AMUSE
+#$ -o AMUSE.$JOB_ID.out
+#$ -e AMUSE.$JOB_ID.err
+
+source ~/.bash_profile
+
+cd ~/amuse/lib/ibis
+
+scripts/ibis-amuse-daemon -v&
+
+JAVA_PID=$!
+
+sleep 10
+
+cd ~/amuse/sandbox/ndrost/cluster_gas/
+
+~/bin/amuse -u $@
+
+echo "AMUSE stopped, terminating java process"
+
+kill $JAVA_PID
+
+sleep 10
+
+echo "Killing java process (pid = ${JAVA_PID}) (just to be sure)"
+
+kill -9 $JAVA_PID
+
+echo "SGE Script ended"
+
+
