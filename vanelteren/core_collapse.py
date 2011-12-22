@@ -144,7 +144,7 @@ class MultiplesRun(object):
         return result
         
     def new_star_code_hermite(self):
-        result = Hermite(number_of_workers=3, debugger="ddd")
+        result = Hermite(number_of_workers=3)
         result.parameters.epsilon_squared = self.star_epsilon ** 2
         return result
         
