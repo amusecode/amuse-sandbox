@@ -26,7 +26,6 @@ clustergas.clustergas(sfeff=0.3,
                     runid="demo-output",
                     feedback_efficiency=0.01,
 		    dt_plot=0.01 | units.Myr,
-		    t_end=0.05 | units.Myr,
 
 		    #LGM
                     grav_code=PhiGRAPE,
