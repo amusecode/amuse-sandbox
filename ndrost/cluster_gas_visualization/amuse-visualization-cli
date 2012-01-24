@@ -1,0 +1,5 @@
+#!/bin/sh
+
+MAIN_CLASS=ibis.amuse.visualization.AmuseVisualizationCLI
+
+exec java -Xmx500m -Dapple.laf.useScreenMenuBar=true -classpath lib/* -Djava.library.path=lib/natives $MAIN_CLASS $*
