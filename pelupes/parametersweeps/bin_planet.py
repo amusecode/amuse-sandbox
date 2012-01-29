@@ -6,7 +6,7 @@ from amuse.units import nbody_system,units,constants
 from amuse.units.quantities import AdaptingVectorQuantity
 from amuse.io import write_set_to_file,read_set_from_file
 
-from amuse.community.huayno.interface import Huayno
+from amuse.community.huaynodev.interface import Huayno
 
 
 from amuse.datamodel import Particles
@@ -134,8 +134,11 @@ def binary_with_planet_run(m1=1.|units.MSun, m2=1.| units.MSun, m_planet=1|units
     
     code.parameters.inttype_parameter=code.inttypes.SHARED4
     code.parameters.timestep_parameter=0.01
+    code.parameters.timestep=100. | units.day
+
+    print code.parameters
         
-    dt=100. | units.day
+    dt=1000. | units.day
     
     code.particles.add_particles(three)
 
@@ -275,7 +278,7 @@ if __name__=="__main__":
     t,dE,a,eps,pangle=binary_with_planet_run(
       m1=0.6897 | units.MSun,m2=0.20255 | units.MSun,m_planet=0.333 | units.MJupiter,
       r1=0.6489 | units.RSun,r2=0.22623 | units.RSun,r_planet=0.754 | units.RJupiter,
-      ecc_binary=0.15944,P_binary=41.08| units.day,ecc_planet=0.200685,a_planet=.7048 | units.AU,
-      pangle_planet=0., tend=100| units.yr) 
+      ecc_binary=0.15944,P_binary=41.08| units.day,ecc_planet=0.00685,a_planet=.7048 | units.AU,
+      pangle_planet=0., tend=10000.| units.yr) 
     print t,dE,a,eps,pangle
 
