@@ -242,7 +242,7 @@ def generate_cluster_with_gas(IMF,sfeff,Nstar,Rscale,mgas,
 
     total_mass=total_star_mass/sfeff
     total_gas_mass=(1-sfeff)*total_mass
-    Ngas=long((total_gas_mass/mgas).value_in(units.none))
+    Ngas=long((total_gas_mass/mgas))
 
     print "Ngas:",Ngas  
     print "Tcross", (2.8*(Rscale**3/ constants.G/ total_mass)**0.5).in_(units.Myr)

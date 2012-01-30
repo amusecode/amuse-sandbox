@@ -98,7 +98,7 @@ class double_star :
         maf = accretor.m+dma
         mtf = mdf + maf
         dM  = mt-mtf
-        alpha = (dM/dmd).value_in(units.none)
+        alpha = (dM/dmd)
         fa = (((mdf/md) * (maf/ma))**(1/(1-alpha)) )**(-2) * (mt/mtf)
         print "fa=", fa
         self.a *= fa

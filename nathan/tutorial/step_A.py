@@ -9,7 +9,7 @@ import pickle
 
 from amuse.units import units, constants, nbody_system
 from amuse.io import write_set_to_file, read_set_from_file
-from amuse.ic.plummer import new_plummer_model
+from amuse.ic.plummer import new_plummer_sphere
 
 from amuse.community.hermite0.interface import Hermite
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     new_working_directory()
     
     print "\nGenerating initial conditions"
-    stars = new_plummer_model(number_of_particles, unit_converter)
+    stars = new_plummer_sphere(number_of_particles, unit_converter)
     
     print "\nSetting up {0} system with a cluster of {1} stars".format(dynamics_code.__name__, number_of_particles)
     dynamics_system = set_up_dynamics_code(dynamics_code, unit_converter, stars, number_of_workers)
