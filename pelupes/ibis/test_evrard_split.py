@@ -108,7 +108,7 @@ def run_evrard(x):
   sph.parameters.self_gravity_flag=False
   sph.parameters.integrate_entropy_flag=False
   sph.parameters.timestep=conv.to_si(0.0625 | nbody_system.time)  
-  sph.parameters.verbosity=0 | units.none
+  sph.parameters.verbosity = 0
 
   sph.commit_parameters()
 
