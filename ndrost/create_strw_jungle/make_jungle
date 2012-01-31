@@ -1,0 +1,2 @@
+#!/bin/bash
+getscreen all | awk -f getmachines.awk | awk -f make_strwjungle.awk > strw.jungle
