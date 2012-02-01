@@ -39,7 +39,7 @@ if __name__=="__main__":
   dt=10000 | units.yr
   
   print (u**0.5).in_(units.kms)
-  print ((L/u**0.5)/dt).value_in(units.none)
+  print ((L/u**0.5)/dt)
     
   particles=box(N, L,rho,u)
 

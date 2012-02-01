@@ -68,7 +68,7 @@ def plots(i,label):
   cs=(g.u**0.5).value_in(units.kms)
 #  xion=((g.u-uinit)/uion).value_in(units.none)
 #  xion=xion_from_u(g.u).value_in(units.none)
-  xion=g.xion.value_in(units.none)
+  xion=g.xion
   mus=mu/(1+xion)
   t=(g.u*mus/constants.kB).value_in(units.K)
   rho=g.rho

@@ -83,7 +83,7 @@ def set_up_outer_star(inner_binary_mass):
 
 def estimate_roche_radius(triple, view_on_giant):
     # 'mass ratio' of giant to inner binary
-    q = (view_on_giant.mass / (triple-view_on_giant).total_mass()).value_in(units.none)
+    q = (view_on_giant.mass / (triple-view_on_giant).total_mass())
     # Assume ~ circular orbit:
     a = (view_on_giant.position - (triple-view_on_giant).center_of_mass()).length()
     q13 = q**(1./3.)
@@ -325,7 +325,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     semimajor_axis_binary = (constants.G * total_mass * separation / 
         (2 * constants.G * total_mass - separation * speed_squared)).as_quantity_in(units.AU)
     eccentricity_binary = (1.0 - (rel_position.cross(rel_velocity)**2).sum(axis=1) / 
-        (constants.G * total_mass * semimajor_axis_binary)).sqrt().value_in(units.none)
+        (constants.G * total_mass * semimajor_axis_binary)).sqrt()
     
     print "   Calculating semimajor axis and eccentricity evolution of the giant's orbit"
     # Some temporary variables to calculate semimajor_axis and eccentricity evolution
@@ -341,7 +341,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     semimajor_axis_giant = (constants.G * total_mass * separation / 
         (2 * constants.G * total_mass - separation * speed_squared)).as_quantity_in(units.AU)
     eccentricity_giant = (1.0 - (rel_position.cross(rel_velocity)**2).sum(axis=1) / 
-        (constants.G * total_mass * semimajor_axis_giant)).sqrt().value_in(units.none)
+        (constants.G * total_mass * semimajor_axis_giant)).sqrt()
     
     orbit_parameters_plot(semimajor_axis_binary, semimajor_axis_giant, all_times[:len(semimajor_axis_binary)])
     orbit_ecc_plot(eccentricity_binary, eccentricity_giant, all_times[:len(eccentricity_binary)])

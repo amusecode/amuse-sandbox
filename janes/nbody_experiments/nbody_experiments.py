@@ -164,19 +164,19 @@ class NBodyComputationResult:
         #self.potentialEnergy.append( nb.particles.potential_energy(G=1) )
         #print "potentialEnergy: %E" % (self.potentialEnergy[-1].value_in(nbody_system.length**-1 * nbody_system.mass**2), )
         self.totalEnergy.append( self.kineticEnergy[-1] + self.potentialEnergy[-1] )
-        self.totalEnergyRelativeError.append(((self.totalEnergy[-1] - self.totalEnergy[0]) / self.totalEnergy[0]).value_in(units.none))
+        self.totalEnergyRelativeError.append(((self.totalEnergy[-1] - self.totalEnergy[0]) / self.totalEnergy[0]))
         self.wallClockTime.append( wallClockTime )
 
         if storeHuaynoStats:
             stats = nb.get_evolve_statistics()
-            self.ttot.append(stats[0].value_in(units.none));
-            self.ktot.append(stats[1].value_in(units.none));
-            self.dtot.append(stats[2].value_in(units.none));
-            self.tstot.append(stats[3].value_in(units.none));
-            self.kstot.append(stats[4].value_in(units.none));
-            self.dstot.append(stats[5].value_in(units.none));
-            self.cetot.append(stats[6].value_in(units.none));
-            self.cetotfail.append(stats[7].value_in(units.none));
+            self.ttot.append(stats[0]);
+            self.ktot.append(stats[1]);
+            self.dtot.append(stats[2]);
+            self.tstot.append(stats[3]);
+            self.kstot.append(stats[4]);
+            self.dstot.append(stats[5]);
+            self.cetot.append(stats[6]);
+            self.cetotfail.append(stats[7]);
 
     def appendTimesteps(self, ts, ts_adj):
         for i in range(len(ts)):
