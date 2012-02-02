@@ -33,7 +33,7 @@ clustergas.clustergas(sfeff=0.3,
 
 		    #VU
                     gas_code=Gadget2,
-                    gas_code_extra=dict(output_directory='output', number_of_workers=8, number_of_nodes=8,use_gl=False, channel_type='ibis', hostname='VU'),
+                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=8, number_of_nodes=8,use_gl=False, channel_type='ibis', hostname='VU'),
 
                     #UVA
                     se_code=SSEplus,

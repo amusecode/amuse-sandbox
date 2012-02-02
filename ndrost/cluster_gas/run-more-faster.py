@@ -31,7 +31,7 @@ clustergas.clustergas(sfeff=0.1,
                     grav_code_extra=dict(mode='gpu', channel_type='sockets', hostname='localhost'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(output_directory='output', number_of_workers=8, number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='local'),
+                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=8, number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='local'),
 
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='sockets', hostname='localhost'),
