@@ -18,6 +18,7 @@ print hostname".cores = "$3
 print hostname".memory = "int($2/1024)
 print hostname".latitude = "52.16873+0.005*(rand()-0.5)
 print hostname".longitude = "4.45811+0.005*(rand()-0.5)
+print ""
 }
 
 END{}

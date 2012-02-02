@@ -3,7 +3,7 @@ BEGIN{}
 
 !(/Windows/ || /Virtual/ || /virthost/ || /backblaze/ || /gpu-3/ || /opensim1/ || /para/) {
  platform="";line="";
- ssh="ssh -o StrictHostKeyChecking=no "$1" sh"
+ ssh="ssh -o StrictHostKeyChecking=no -o BatchMode=yes "$1" sh"
  print " uname -i" |&ssh ;
  ssh |& getline platform;
  if (platform == "x86_64" ) {
