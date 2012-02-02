@@ -6,7 +6,7 @@ default.java.path = java\n\
 default.latitude = 52.1686\n\
 default.longitude = 4.4598\n\
 default.amuse.home= /disks/koppoel2/ndrost/amuse-svn\n\
-default.mpirun= /disks/koppoel2/ndrost/amuse-svn/lib/ibis/strw.mpd.wrapper.script\n\
+default.mpiexec= /disks/koppoel2/ndrost/amuse-svn/lib/ibis/strw.mpd.wrapper.script\n\
 "
 
 }
