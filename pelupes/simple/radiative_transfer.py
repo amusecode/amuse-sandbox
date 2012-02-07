@@ -5,15 +5,22 @@ from amuse.ext.molecular_cloud import ism_cube
 from amuse.datamodel import Particle
 
 N=1000
-L=13000. | units.parsec
-rho=0.001 | (units.amu/units.cm**3)
+Lstar=100. | units.LSun
+L=10. | units.parsec
+rho=1. | (units.amu/units.cm**3)
 xion=0.0001 | units.none
-Lsource=5.0e48 | units.s**-1
 u=(9. |units.kms)**2
 
+Lsource=Lstar/ (20. | units.eV)
+
+print Lsource.in_(units.s**-1)
+print ((rho*L**3/(1| units.amu) )/Lsource).in_(units.Myr)
+
 rad = SimpleX()
-        
-particles=ism_cube(N,L/2,rho,u).result
+rad.parameters.box_size=1.001*L    
+rad.parameters.timestep=0.001 | units.Myr
+
+particles=ism_cube(N,L/2.,rho,u).result
 particles.rho = rho
 particles.flux = 0. | units.s**-1
 particles.xion=xion
@@ -29,7 +36,7 @@ source.u = u
 
 rad.particles.add_particles(particles)
 
-rad.evolve_model(10. | units.Myr)
+rad.evolve_model(0.1 | units.Myr)
 
 print "min Xion:", rad.particles.xion.amin()
 print "average Xion:", rad.particles.xion.mean()
