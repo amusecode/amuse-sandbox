@@ -1,4 +1,4 @@
-from amuse.community.simplex2_5.interface import SimpleX
+from amuse.community.simplex.interface import SimpleX
 from amuse.units import units
 from amuse.ext.molecular_cloud import ism_cube
 

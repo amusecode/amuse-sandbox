@@ -2,7 +2,7 @@ import numpy
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 from amuse.support.units import constants
-from amuse.community.simplex2_5.interface import SimpleX
+from amuse.community.simplex.interface import SimpleX
 from amuse.community.fi.interface import Fi
 from amuse.support.data import core
 
