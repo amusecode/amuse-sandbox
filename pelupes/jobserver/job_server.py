@@ -89,7 +89,7 @@ class JobServer(object):
       print "AMUSE JobServer launched with", len(self.idle_codes),"threads"
     
     def submit_job(self,f,args=(),kwargs={}):
-      job=Job(self._normalize(f),args,kwargs)
+      job=Job(f,args,kwargs)
       self.job_list.append( job)
       if len(self.idle_codes)>0: 
           self._add_job(self.job_list.pop(), self.idle_codes.pop())        
@@ -117,11 +117,6 @@ class JobServer(object):
     def _add_job(self,job,code):
       job.request=code.async_func(job.f,*job.args,**job.kwargs)
       self.pool.add_request(job.request,self._finalize_job, [job,code])
-
-    def _normalize(self,f):
-      source=inspect.getmodulename(inspect.getsourcefile(f))
-      mod=__import__(source,fromlist=[f.__name__])
-      return eval("mod."+f.__name__)
     
     def __del__(self):
       self.waitall()
