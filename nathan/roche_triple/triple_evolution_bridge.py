@@ -324,8 +324,8 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     # Now calculate the important quantities:
     semimajor_axis_binary = (constants.G * total_mass * separation / 
         (2 * constants.G * total_mass - separation * speed_squared)).as_quantity_in(units.AU)
-    eccentricity_binary = (1.0 - (rel_position.cross(rel_velocity)**2).sum(axis=1) / 
-        (constants.G * total_mass * semimajor_axis_binary)).sqrt()
+    eccentricity_binary = numpy.sqrt(1.0 - (rel_position.cross(rel_velocity)**2).sum(axis=1) / 
+        (constants.G * total_mass * semimajor_axis_binary))
     
     print "   Calculating semimajor axis and eccentricity evolution of the giant's orbit"
     # Some temporary variables to calculate semimajor_axis and eccentricity evolution
@@ -340,8 +340,8 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     # Now calculate the important quantities:
     semimajor_axis_giant = (constants.G * total_mass * separation / 
         (2 * constants.G * total_mass - separation * speed_squared)).as_quantity_in(units.AU)
-    eccentricity_giant = (1.0 - (rel_position.cross(rel_velocity)**2).sum(axis=1) / 
-        (constants.G * total_mass * semimajor_axis_giant)).sqrt()
+    eccentricity_giant = numpy.sqrt(1.0 - (rel_position.cross(rel_velocity)**2).sum(axis=1) / 
+        (constants.G * total_mass * semimajor_axis_giant))
     
     orbit_parameters_plot(semimajor_axis_binary, semimajor_axis_giant, all_times[:len(semimajor_axis_binary)])
     orbit_ecc_plot(eccentricity_binary, eccentricity_giant, all_times[:len(eccentricity_binary)])
