@@ -5,7 +5,7 @@ from amuse.units import units
 from amuse.units import nbody_system
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 from amuse.datamodel import particle_attributes
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 def demo2(N):
 
@@ -14,7 +14,7 @@ def demo2(N):
 
   convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
 
-  parts = new_plummer_sphere(N,convert_nbody)
+  parts = new_plummer_model(N,convert_nbody)
   parts.radius=0. | nbody_system.length
   parts.mass = salpeter_masses
   parts.move_to_center()

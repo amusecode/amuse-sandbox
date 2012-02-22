@@ -17,7 +17,7 @@ from amuse.community.bhtree.interface import BHTree
 
 import LagrangianRadii as lr
 from amuse.rfi.core import is_mpd_running
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 """
    HermiteOrBHTree.py
@@ -91,7 +91,7 @@ if __name__ == '__main__':
         dt = convert_nbody.to_si(dt).as_quantity_in(units.Myr)
         print m_tot
 
-    stars = new_plummer_sphere(nstars, convert_nbody, random_state = seed);
+    stars = new_plummer_model(nstars, convert_nbody, random_state = seed);
     stars.mass = masses 
     to_com(stars)
     scale(stars)

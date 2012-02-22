@@ -28,7 +28,7 @@ import numpy as np
 import random
 
 from amuse import datamodel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 XRES = 180.
 YRES = 180.
 ZRES = 3.

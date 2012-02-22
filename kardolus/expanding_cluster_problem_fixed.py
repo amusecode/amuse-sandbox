@@ -22,7 +22,7 @@ from amuse.community.sse.interface import SSE
 from os import system
 
 from amuse.rfi.core import is_mpd_running
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 
 system("echo \" \" > simple_ToverV.dat")
@@ -49,7 +49,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print 'end_time:',convert_nbody.to_nbody(end_time)
     print convert_nbody.to_nbody(total_mass)
     
-    particles = new_plummer_sphere(number_of_stars, convert_nbody);
+    particles = new_plummer_model(number_of_stars, convert_nbody);
 
     gravity = PhiGRAPE(convert_nbody,mode="gpu", use_gl="true")
     gravity.parameters.timestep_parameter=0.01

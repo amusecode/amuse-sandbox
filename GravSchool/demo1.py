@@ -5,9 +5,9 @@ from amuse.units import nbody_system
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 def demo1(N):
-  parts = new_plummer_sphere(N)
+  parts = new_plummer_model(N)
   parts.radius=0. | nbody_system.length
 
   #interface=PhiGRAPE(use_gl=True)

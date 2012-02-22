@@ -31,7 +31,7 @@ import cProfile
 
 #numpy.random.seed(12345)
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import salpeter_masses
 def smaller_nbody_power_of_two(dt, conv):
   nbdt=conv.to_nbody(dt).value_in(nbody_system.time)
@@ -104,7 +104,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
 
   conv = nbody_system.nbody_to_si(total_mass,Rscale)
 
-  star_parts = new_plummer_sphere(Nstar,convert_nbody=conv)
+  star_parts = new_plummer_model(Nstar,convert_nbody=conv)
   star_parts.mass=star_masses
   star_parts.radius=eps_star
   

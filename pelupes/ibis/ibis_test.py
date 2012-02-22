@@ -17,11 +17,11 @@ from amuse.units import units
 from amuse.community.fi import interface as interface
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 
 number_of_stars=1000
 
-particles = new_plummer_sphere(number_of_stars)
+particles = new_plummer_model(number_of_stars)
    
 gravity = PhiGRAPE(channel_type="ibis",hostname="paddegat")
 gravity.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2

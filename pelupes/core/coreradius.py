@@ -9,7 +9,7 @@ from matplotlib import pyplot
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 numpy.random.seed(1234)
 
 def hopfromnb(nb,ids):

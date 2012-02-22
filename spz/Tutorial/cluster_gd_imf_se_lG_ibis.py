@@ -80,7 +80,7 @@ def main(N=10, W0=7.0, t_end=10, dt=1, filename="nbody.hdf5", Rvir=1, Mmin=0.1, 
     cluster.particles.add_particles(bodies)
 #    channel_from_gravity_to_framework = cluster.particles.new_channel_to(bodies)
 
-    galaxy_particles = new_plummer_sphere(Ngal, convert_nbody=GC_converter)
+    galaxy_particles = new_plummer_model(Ngal, convert_nbody=GC_converter)
 #    Nbulge = 100
 #    Nhalo = 100
 #    Ndisk = 100

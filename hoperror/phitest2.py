@@ -5,7 +5,7 @@ import cPickle
 
 
 from amuse.ic.plummer import MakePlummerModel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface as phi
 from amuse.community.hop.interface import HopInterface as Hop
 

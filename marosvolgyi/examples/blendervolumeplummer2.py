@@ -27,7 +27,7 @@ import numpy as np
 import random
 
 from amuse import datamodel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 XRES = 100
 YRES = 100
 ZRES = 100
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     method = sys.argv[3]
     print nstars
     seed = None
-    stars = new_plummer_sphere(nstars)#, convert_nbody, random_state = seed).result
+    stars = new_plummer_model(nstars)#, convert_nbody, random_state = seed).result
 
     if method == 'octgrav':
         gravity = Octgrav()

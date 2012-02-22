@@ -26,7 +26,7 @@ import numpy as np
 import random
 
 from amuse import datamodel
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 class Viewer(object):
     def __init__(self, *kargs):
         if len(kargs)==3:

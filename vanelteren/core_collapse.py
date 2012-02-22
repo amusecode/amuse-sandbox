@@ -94,7 +94,7 @@ class MultiplesRun(object):
         return result
         
     def new_particles_cluster(self):
-        particles=plummer.new_plummer_sphere(self.nstars)
+        particles=plummer.new_plummer_model(self.nstars)
         particles.radius= self.star_radius
         particles.scale_to_standard()
         return particles

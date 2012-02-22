@@ -15,7 +15,7 @@ from amuse.units.quantities import zero
 
 from amuse.legacy.fi.interface import Fi
 
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 numpy.random.seed(12345)
 
 def sys_from_parts(base_class, parts=None, gasparts=None, parameters=None,converter=None, extra=dict()):
@@ -39,7 +39,7 @@ Rscale=0.5 | units.parsec
 
 conv = nbody_system.nbody_to_si(total_mass,Rscale)
 
-parts=new_plummer_sphere(Nstar,convert_nbody=conv)
+parts=new_plummer_model(Nstar,convert_nbody=conv)
 parts.radius=zero
 
 fi=sys_from_parts(Fi,parts,converter=conv,parameters=[

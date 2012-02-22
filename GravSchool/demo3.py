@@ -9,7 +9,7 @@ from amuse.legacy.mesa.interface import MESA
 
 
 from amuse.datamodel import particle_attributes
-from amuse.ic.plummer import new_plummer_sphere
+from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 def demo3(N):
 
@@ -20,7 +20,7 @@ def demo3(N):
 
   print convert_nbody.to_nbody(100 | units.Myr)
 
-  parts = new_plummer_sphere(N,convert_nbody)
+  parts = new_plummer_model(N,convert_nbody)
   parts.radius=0. | units.RSun
   parts.mass = salpeter_masses
   parts.move_to_center()
