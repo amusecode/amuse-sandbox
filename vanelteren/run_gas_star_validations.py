@@ -29,6 +29,7 @@ def run_bridge():
         script_name,
         '--end-time=1',
         '--seed=1234',
+        #'--interaction-timestep=0.02',
         '--noplot'
     ]
     
@@ -41,10 +42,11 @@ def run_bridge():
     environment.update(os.environ)
     environment['PYTHONPATH'] = '../../../src'
     
-    for n in [50, 500, 5000]:
+    for n in [500, 1000, 10000]:
         for starcode in ['fi', 'octgrav', 'phigrape' ]:
             for gascode in ['fi', 'field']:
-                runname = 'star_{0}__gas_{1}__n_{2}'.format(starcode, gascode, n)
+		print "start run , starcode:", starcode, ", gascode:", gascode, " n:", n
+                runname = 'run2_star_{0}__gas_{1}__n_{2}'.format(starcode, gascode, n)
                 
                 if os.path.exists(runname):
                     is_backuped = False
@@ -87,6 +89,7 @@ def run_bridge():
                         env = environment
                     )
                     process.wait()
+		print "end run , starcode:", starcode, ", gascode:", gascode, " n:", n
                     
 
 def run_sph():
@@ -112,9 +115,9 @@ def run_sph():
     environment.update(os.environ)
     environment['PYTHONPATH'] = '../../../src'
     
-    for n in [5000]:
+    for n in [500, 1000, 10000]:
         for sphcode in ['fi' ]:
-            runname = 'sph_{0}__n_{1}'.format(sphcode, n)
+            runname = 'run2_sph_{0}__n_{1}'.format(sphcode, n)
             
             if os.path.exists(runname):
                 is_backuped = False
@@ -158,6 +161,6 @@ def run_sph():
                 process.wait()
 
 if __name__ == '__main__':
-    run_bridge()
     run_sph()
+    run_bridge()
                 
