@@ -37,7 +37,7 @@ clustergas.clustergas(sfeff=0.3,
 
                     #UVA
                     se_code=SSEplus,
-                    se_code_extra=dict(channel_type='ibis', hostname='UvA'),
+                    se_code_extra=dict(channel_type='ibis', hostname='Leiden'),
 
                     #DELFT
                     grav_couple_code=Octgrav,
