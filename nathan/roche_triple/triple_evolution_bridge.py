@@ -16,6 +16,7 @@ from amuse.support.exceptions import AmuseException
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, StellarModelInSPH
 from amuse.couple.bridge import Bridge, CalculateFieldForParticles
 from amuse.community.evtwin.interface import EVtwin
+from amuse.community.mesa.interface import MESA
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.twobody.twobody import TwoBody
 
@@ -24,6 +25,11 @@ matplotlib.use("Agg")
 from matplotlib import pyplot
 from amuse.plot import scatter, xlabel, ylabel, plot,loglog,semilogx,semilogy, sph_particles_plot
 from amuse.plot import pynbody_column_density_plot, HAS_PYNBODY
+
+
+# Stop stellar evolution when giant's radius is (radius_factor * Roche lobe radius)
+radius_factor = 1.0
+
 
 def new_working_directory():
     i = 0
@@ -91,17 +97,16 @@ def estimate_roche_radius(triple, view_on_giant):
     return (a*(0.49*q23/(0.6*q23+math.log(1+q13)))).as_quantity_in(units.RSun)
 
 def evolve_stars(triple, view_on_giant, stellar_evolution_code):
-    stop_radius = estimate_roche_radius(triple, view_on_giant)
+    stop_radius = radius_factor * estimate_roche_radius(triple, view_on_giant)
     stellar_evolution = stellar_evolution_code(redirection='file', redirect_file='stellar_evolution_code_out.log')
-    se_stars = stellar_evolution.particles.add_particles(triple)
-    view_on_se_giant = se_stars - (triple - view_on_giant)
-    time = 0 | units.Myr
-    while (view_on_se_giant.radius < stop_radius):
-        time += 1 | units.Myr
-        stellar_evolution.evolve_model(time)
-#~        break
+    se_giant = stellar_evolution.particles.add_particle(view_on_giant)
+    while (se_giant.radius < stop_radius):
+        stellar_evolution.evolve_model(keep_synchronous = False)
     
-    return se_stars, stellar_evolution
+    se_binary = stellar_evolution.particles.add_particles(triple - view_on_giant)
+    for particle in se_binary:
+        particle.evolve_for(se_giant.age)
+    return stellar_evolution.particles, stellar_evolution
 
 def convert_giant_to_sph(view_on_se_giant, number_of_sph_particles):
     giant_in_sph = convert_stellar_model_to_SPH(
@@ -185,7 +190,7 @@ def prepare_binary_system(dynamics_code, binary_particles):
     system.particles.add_particles(binary_particles)
     return system
 
-def prepare_giant_system(sph_code, giant_model, view_on_giant, time_unit):
+def prepare_giant_system(sph_code, giant_model, view_on_giant, time_unit, n_steps):
     hydro_code_options = dict(number_of_workers=2, 
         redirection='file', redirect_file='hydrodynamics_code_out.log')
     unit_converter = ConvertBetweenGenericAndSiUnits(
@@ -194,7 +199,7 @@ def prepare_giant_system(sph_code, giant_model, view_on_giant, time_unit):
         time_unit)
     system = sph_code(unit_converter, **hydro_code_options)
     system.parameters.epsilon_squared = giant_model.core_radius**2
-    system.parameters.max_size_timestep = time_unit
+    system.parameters.max_size_timestep = time_unit / n_steps
     system.parameters.time_max = 1.1 * time_unit
     system.parameters.time_limit_cpu = 7.0 | units.day
 
@@ -277,29 +282,20 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
                     ms1_position, ms2_position, giant_center_of_mass_velocity,
                     ms1_velocity, ms2_velocity), outfile)
         
-        if HAS_PYNBODY:
-            pynbody_column_density_plot(coupled_system.gas_particles, width=8|units.AU, vmin=26, vmax=32)
-            scatter(coupled_system.dm_particles.x, coupled_system.dm_particles.y, c="w")
-        else:
-            pyplot.figure(figsize = [16, 16])
-            sph_particles_plot(coupled_system.gas_particles, gd_particles=coupled_system.dm_particles, 
-                view=[-2.0, 2.0, -2.0, 2.0] | units.AU)
-        figname = os.path.join("plots", "hydro_triple_small{0:=04}.png".format(i_step + i_offset))
-        pyplot.savefig(figname)
-        print "  -   Hydroplots were saved to: ", figname,
-        pyplot.close()
+        figname1 = os.path.join("plots", "hydro_triple_small{0:=04}.png".format(i_step + i_offset))
+        figname2 = os.path.join("plots", "hydro_triple_large{0:=04}.png".format(i_step + i_offset))
+        print "  -   Hydroplots are saved to: ", figname1, "and", figname2
+        for plot_range, plot_name in [(8|units.AU, figname1), (40|units.AU, figname2)]:
+            if HAS_PYNBODY:
+                pynbody_column_density_plot(coupled_system.gas_particles, width=plot_range, vmin=26, vmax=32)
+                scatter(coupled_system.dm_particles.x, coupled_system.dm_particles.y, c="w")
+            else:
+                pyplot.figure(figsize = [16, 16])
+                sph_particles_plot(coupled_system.gas_particles, gd_particles=coupled_system.dm_particles, 
+                    view=plot_range*[-0.5, 0.5, -0.5, 0.5])
+            pyplot.savefig(plot_name)
+            pyplot.close()
         
-        if HAS_PYNBODY:
-            pynbody_column_density_plot(coupled_system.gas_particles, width=40|units.AU, vmin=26, vmax=32)
-            scatter(coupled_system.dm_particles.x, coupled_system.dm_particles.y, c="w")
-        else:
-            pyplot.figure(figsize = [16, 16])
-            sph_particles_plot(coupled_system.gas_particles, gd_particles=coupled_system.dm_particles, 
-                view=[-20.0, 20.0, -20.0, 20.0] | units.AU)
-        figname = os.path.join("plots", "hydro_triple_large{0:=04}.png".format(i_step + i_offset))
-        pyplot.savefig(figname)
-        print "and", figname
-        pyplot.close()
     
     coupled_system.stop()
     
@@ -318,12 +314,12 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     total_mass = ms1_mass + ms2_mass
     rel_position = ms1_position - ms2_position
     rel_velocity = ms1_velocity - ms2_velocity
-    separation = rel_position.lengths()
-    speed_squared = rel_velocity.lengths_squared()
+    separation_in = rel_position.lengths()
+    speed_squared_in = rel_velocity.lengths_squared()
     
     # Now calculate the important quantities:
-    semimajor_axis_binary = (constants.G * total_mass * separation / 
-        (2 * constants.G * total_mass - separation * speed_squared)).as_quantity_in(units.AU)
+    semimajor_axis_binary = (constants.G * total_mass * separation_in / 
+        (2 * constants.G * total_mass - separation_in * speed_squared_in)).as_quantity_in(units.AU)
     eccentricity_binary = numpy.sqrt(1.0 - (rel_position.cross(rel_velocity)**2).sum(axis=1) / 
         (constants.G * total_mass * semimajor_axis_binary))
     
@@ -345,6 +341,15 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     
     orbit_parameters_plot(semimajor_axis_binary, semimajor_axis_giant, all_times[:len(semimajor_axis_binary)])
     orbit_ecc_plot(eccentricity_binary, eccentricity_giant, all_times[:len(eccentricity_binary)])
+    
+    orbit_parameters_plot(separation_in.as_quantity_in(units.AU), 
+        separation.as_quantity_in(units.AU), 
+        all_times[:len(eccentricity_binary)], 
+        par_symbol="r", par_name="separation")
+    orbit_parameters_plot(speed_squared_in.as_quantity_in(units.km**2 / units.s**2), 
+        speed_squared.as_quantity_in(units.km**2 / units.s**2), 
+        all_times[:len(eccentricity_binary)], 
+        par_symbol="v^2", par_name="speed_squared")
 
 
 def continue_evolution(sph_code, dynamics_code, t_end, n_steps, 
@@ -374,7 +379,7 @@ def continue_evolution(sph_code, dynamics_code, t_end, n_steps,
     binary_system = prepare_binary_system(dynamics_code, binary)
     
     print "\nSetting up {0} to simulate giant in SPH".format(sph_code.__name__)
-    giant_system = prepare_giant_system(sph_code, giant_model, view_on_giant, t_end)
+    giant_system = prepare_giant_system(sph_code, giant_model, view_on_giant, t_end, n_steps)
     
     print "\nEvolving with bridge between", sph_code.__name__, "and", dynamics_code.__name__
     evolve_coupled_system(binary_system, giant_system, t_end, n_steps, do_energy_evolution_plot, 
@@ -410,31 +415,31 @@ def orbit_ecc_plot(eccentricity_in,eccentricity_out,time):
     pyplot.close()
 
 
-def orbit_parameters_plot(semi_major_in,semi_major_out, time):
+def orbit_parameters_plot(semi_major_in,semi_major_out, time, par_symbol="a", par_name="semimajor_axis"):
     figure = pyplot.figure(figsize = (10, 6), dpi = 100)
     subplot = figure.add_subplot(2, 1, 1)
     plot(time,semi_major_in )
     xlabel('t')
-    ylabel('$a_\mathrm{binary}$')
+    ylabel('$'+par_symbol+'_\mathrm{binary}$')
     
     subplot = figure.add_subplot(2, 1, 2)
     plot(time,semi_major_out )
     xlabel('t')
-    ylabel('$a_\mathrm{giant}$')
+    ylabel('$'+par_symbol+'_\mathrm{giant}$')
     pyplot.minorticks_on()
-    pyplot.savefig("semimajor_axis_evolution.png")
+    pyplot.savefig(par_name+"_evolution.png")
     pyplot.close()
 
 
 if __name__ == "__main__":
-    stellar_evolution_code = EVtwin
+    stellar_evolution_code = MESA
     sph_code = Gadget2
     dynamics_code = TwoBody
 
-    number_of_sph_particles = 100000
+    number_of_sph_particles = 50000
     relaxed_giant_output_base_name = "relaxed_giant_" + str(number_of_sph_particles)
-    t_end = 60.0 | units.day
-    n_steps = 600
+    t_end = 300.0 | units.day
+    n_steps = 3000
     
     do_energy_evolution_plot = False
     
@@ -455,7 +460,8 @@ if __name__ == "__main__":
     triple.radius = se_stars.radius
     print "\nStellar evolution done:\n", se_stars
     
-    if os.path.exists(os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse")):
+    # Loading turned off, since result depends on radius_factor
+    if False and os.path.exists(os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse")):
         print "\nLoading SPH model for giant from:", 
         print os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse")
         giant_model = load_giant_model(relaxed_giant_output_base_name)
@@ -472,7 +478,7 @@ if __name__ == "__main__":
     binary_system = prepare_binary_system(dynamics_code, triple - view_on_giant)
     
     print "\nSetting up {0} to simulate giant in SPH".format(sph_code.__name__)
-    giant_system = prepare_giant_system(sph_code, giant_model, view_on_giant, t_end)
+    giant_system = prepare_giant_system(sph_code, giant_model, view_on_giant, t_end, n_steps)
     
     print "\nEvolving with bridge between", sph_code.__name__, "and", dynamics_code.__name__
     evolve_coupled_system(binary_system, giant_system, t_end, n_steps, do_energy_evolution_plot)
