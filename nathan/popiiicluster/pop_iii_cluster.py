@@ -88,8 +88,6 @@ def main():
         
         if gravity.stopping_conditions.collision_detection.is_set():
             print '(' + str(len(gravity.stopping_conditions.collision_detection.particles(0))), 'collision(s) detected)'
-            time_col = gravity.model_time
-            
             gd_primaries = gravity.stopping_conditions.collision_detection.particles(0)
             gd_secondaries = gravity.stopping_conditions.collision_detection.particles(1)
             print gd_primaries + gd_secondaries
