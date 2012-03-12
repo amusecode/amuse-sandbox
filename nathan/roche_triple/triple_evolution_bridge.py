@@ -27,10 +27,6 @@ from amuse.plot import scatter, xlabel, ylabel, plot,loglog,semilogx,semilogy, s
 from amuse.plot import pynbody_column_density_plot, HAS_PYNBODY
 
 
-# Stop stellar evolution when giant's radius is (radius_factor * Roche lobe radius)
-radius_factor = 1.0
-
-
 def new_working_directory():
     i = 0
     current_directory = os.getcwd()
@@ -96,7 +92,7 @@ def estimate_roche_radius(triple, view_on_giant):
     q23 = q13**2
     return (a*(0.49*q23/(0.6*q23+math.log(1+q13)))).as_quantity_in(units.RSun)
 
-def evolve_stars(triple, view_on_giant, stellar_evolution_code):
+def evolve_stars(triple, view_on_giant, stellar_evolution_code, radius_factor):
     stop_radius = radius_factor * estimate_roche_radius(triple, view_on_giant)
     stellar_evolution = stellar_evolution_code(redirection='file', redirect_file='stellar_evolution_code_out.log')
     se_giant = stellar_evolution.particles.add_particle(view_on_giant)
@@ -299,11 +295,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     
     coupled_system.stop()
     
-    print "   Creating movie from snapshots"
-    subprocess.call(['mencoder', "mf://hydro_triple_small*.png", '-ovc', 'lavc', 
-        '-o', '../hydro_triple_small.avi', '-msglevel', 'all=1'], cwd="./plots")
-    subprocess.call(['mencoder', "mf://hydro_triple_large*.png", '-ovc', 'lavc', 
-        '-o', '../hydro_triple_large.avi', '-msglevel', 'all=1'], cwd="./plots")
+    make_movie()
     
     if do_energy_evolution_plot:
         energy_evolution_plot(all_times[:len(kinetic_energies)-1], kinetic_energies, 
@@ -351,6 +343,15 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
         all_times[:len(eccentricity_binary)], 
         par_symbol="v^2", par_name="speed_squared")
 
+def make_movie():
+    print "   Creating movie from snapshots"
+    try:
+        subprocess.call(['mencoder', "mf://hydro_triple_small*.png", '-ovc', 'lavc', 
+            '-o', '../hydro_triple_small.avi', '-msglevel', 'all=1'], cwd="./plots")
+        subprocess.call(['mencoder', "mf://hydro_triple_large*.png", '-ovc', 'lavc', 
+            '-o', '../hydro_triple_large.avi', '-msglevel', 'all=1'], cwd="./plots")
+    except Exception as exc:
+        print "   Failed to create movie, error was:", str(exc)
 
 def continue_evolution(sph_code, dynamics_code, t_end, n_steps, 
         relaxed_giant_output_base_name, do_energy_evolution_plot):
@@ -437,7 +438,9 @@ if __name__ == "__main__":
     dynamics_code = TwoBody
 
     number_of_sph_particles = 50000
-    relaxed_giant_output_base_name = "relaxed_giant_" + str(number_of_sph_particles)
+    # Stop stellar evolution when giant's radius is (radius_factor * Roche lobe radius)
+    radius_factor = 1.0
+    relaxed_giant_output_base_name = "relaxed_giant_" + str(number_of_sph_particles) + "_" + str(radius_factor)
     t_end = 300.0 | units.day
     n_steps = 3000
     
@@ -456,12 +459,11 @@ if __name__ == "__main__":
     print "\nInitialization done:\n", triple
     
     print "\nEvolving with", stellar_evolution_code.__name__
-    se_stars, se_code_instance = evolve_stars(triple, view_on_giant, stellar_evolution_code)
+    se_stars, se_code_instance = evolve_stars(triple, view_on_giant, stellar_evolution_code, radius_factor)
     triple.radius = se_stars.radius
     print "\nStellar evolution done:\n", se_stars
     
-    # Loading turned off, since result depends on radius_factor
-    if False and os.path.exists(os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse")):
+    if os.path.exists(os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse")):
         print "\nLoading SPH model for giant from:", 
         print os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse")
         giant_model = load_giant_model(relaxed_giant_output_base_name)
