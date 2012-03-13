@@ -53,6 +53,19 @@ def v_terminal_teff(star):
   t4=t4.clip(0.,1.)
   return (30 | units.km/units.s) + ((4000 | units.km/units.s)*t4)
 
+def e_supernova(stellar_type,prev_stellar_type):
+  i=numpy.where( (stellar_type>=13 | units.stellar_type) &
+                 (stellar_type<=15 | units.stellar_type) &
+                 ((prev_stellar_type<13 | units.stellar_type) |
+                  (prev_stellar_type>15 | units.stellar_type)) )[0] 
+  n=len(stellar_type)
+  e=numpy.array([0.]*n)
+  e[i]=1.e51
+  if(n == 1 ):
+    return (units.erg).new_quantity(e[0])
+  else:
+    return (units.erg).new_quantity(e)
+
 class SSEplus(SSE):
   def __init__(self,**options):
     self.model_time=zero
@@ -75,8 +88,7 @@ class SSEplus(SSE):
       self.particles.Lmech=lm.copy()
       self.particles.Emech_last_feedback=self.particles.Emech
       self.particles.Emech=self.particles.Emech+dt*(prev_lm+lm)/2. 
-#+ \
-#                          e_supernova(self.particles.stellar_type,stellar_type)    
+                          e_supernova(self.particles.stellar_type,stellar_type) 
     return ret        
 
 def main(Mstar=1, Ndisk=100, Mdisk= 0.001, Rmin=1, Rmax=100, t_end=10, n_steps=10, filename="nbody.hdf5"):
