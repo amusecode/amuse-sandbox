@@ -11,7 +11,7 @@ import numpy
 from matplotlib import pyplot
 from amuse.plot import loglog, xlabel, ylabel
 from amuse.lab import *
-from amuse.io import store
+from amuse.io import storea
 from optparse import OptionParser
 
 # import the various N-body codes

@@ -1,0 +1,315 @@
+%% 
+%% This is file `iopbk10.clo'
+%% 
+%% This file is distributed in the hope that it will be useful, 
+%% but WITHOUT ANY WARRANTY; without even the implied warranty of 
+%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+%% 
+%% \CharacterTable
+%%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%%   Digits        \0\1\2\3\4\5\6\7\8\9
+%%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%%   Dollar        \$     Percent       \%     Ampersand     \&
+%%   Acute accent  \'     Left paren    \(     Right paren   \)
+%%   Asterisk      \*     Plus          \+     Comma         \,
+%%   Minus         \-     Point         \.     Solidus       \/
+%%   Colon         \:     Semicolon     \;     Less than     \<
+%%   Equals        \=     Greater than  \>     Question mark \?
+%%   Commercial at \@     Left bracket  \[     Backslash     \\
+%%   Right bracket \]     Circumflex    \^     Underscore    \_
+%%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%%   Right brace   \}     Tilde         \~}
+\ProvidesFile{iopart10.clo}[1997/01/13 v1.0 IOP Book file (size option)]
+\renewcommand\normalsize{%
+   \@setfontsize\normalsize\@xpt\@xiipt
+   \abovedisplayskip 10\p@ \@plus2\p@ \@minus5\p@
+   \abovedisplayshortskip \z@ \@plus3\p@
+   \belowdisplayshortskip 6\p@ \@plus3\p@ \@minus3\p@
+   \belowdisplayskip \abovedisplayskip
+   \let\@listi\@listI}
+\normalsize
+\newcommand\small{%
+   \@setfontsize\small\@ixpt{11}%
+   \abovedisplayskip 8.5\p@ \@plus3\p@ \@minus4\p@
+   \abovedisplayshortskip \z@ \@plus2\p@
+   \belowdisplayshortskip 4\p@ \@plus2\p@ \@minus2\p@
+   \def\@listi{\leftmargin\leftmargini
+               \topsep 4\p@ \@plus2\p@ \@minus2\p@
+               \parsep 2\p@ \@plus\p@ \@minus\p@
+               \itemsep \parsep}%
+   \belowdisplayskip \abovedisplayskip
+}
+\newcommand\footnotesize{%
+   \@setfontsize\footnotesize\@viiipt{9.5}%
+   \abovedisplayskip 6\p@ \@plus2\p@ \@minus4\p@
+   \abovedisplayshortskip \z@ \@plus\p@
+   \belowdisplayshortskip 3\p@ \@plus\p@ \@minus2\p@
+   \def\@listi{\leftmargin\leftmargini
+               \topsep 3\p@ \@plus\p@ \@minus\p@
+               \parsep 2\p@ \@plus\p@ \@minus\p@
+               \itemsep \parsep}%
+   \belowdisplayskip \abovedisplayskip
+}
+\newcommand\scriptsize{\@setfontsize\scriptsize\@viipt\@viiipt}
+\newcommand\tiny{\@setfontsize\tiny\@vpt\@vipt}
+\newcommand\large{\@setfontsize\large\@xiipt{14}}
+\newcommand\Large{\@setfontsize\Large\@xivpt{18}}
+\newcommand\LARGE{\@setfontsize\LARGE\@xviipt{22}}
+\newcommand\huge{\@setfontsize\huge\@xxpt{25}}
+\newcommand\Huge{\@setfontsize\Huge\@xxvpt{30}}
+\if@twocolumn
+  \setlength\parindent{1em}
+\else
+  \setlength\parindent{15\p@}
+\fi
+\setlength\headheight{12\p@}
+\setlength\headsep   {12\p@}
+\setlength\topskip   {10\p@}
+\setlength\footskip{24\p@}
+\setlength\maxdepth{.5\topskip}
+\setlength\@maxdepth\maxdepth
+\setlength\oddsidemargin  {30\p@}
+\setlength\evensidemargin {30\p@}
+\setlength\marginparwidth {48\p@}
+\setlength\marginparsep {10\p@}
+\setlength\marginparpush{5\p@}
+\setlength\topmargin{0\p@}
+\setlength\footnotesep{6.65\p@}
+\setlength{\skip\footins}  {9\p@ \@plus 4\p@ \@minus 2\p@}
+\setlength\floatsep       {12\p@ \@plus 2\p@ \@minus 2\p@}
+\setlength\textfloatsep   {20\p@ \@plus 2\p@ \@minus 4\p@}
+\setlength\intextsep      {12\p@ \@plus 2\p@ \@minus 2\p@}
+\setlength\dblfloatsep    {12\p@ \@plus 2\p@ \@minus 2\p@}
+\setlength\dbltextfloatsep{20\p@ \@plus 2\p@ \@minus 4\p@}
+\setlength\@fptop{0\p@ \@plus 1fil}
+\setlength\@fpsep{8\p@ \@plus 2fil}
+\setlength\@fpbot{0\p@ \@plus 1fil}
+\setlength\@dblfptop{0\p@ \@plus 1fil}
+\setlength\@dblfpsep{8\p@ \@plus 2fil}
+\setlength\@dblfpbot{0\p@ \@plus 1fil}
+\setlength\partopsep{2\p@ \@plus 1\p@ \@minus 1\p@}
+\def\@listI{\leftmargin\leftmargini
+            \parsep 4\p@ \@plus2\p@ \@minus\p@
+            \topsep 8\p@ \@plus2\p@ \@minus4\p@
+            \itemsep4\p@ \@plus2\p@ \@minus\p@}
+\let\@listi\@listI
+\@listi
+\def\@listii {\leftmargin\leftmarginii
+              \labelwidth\leftmarginii
+              \advance\labelwidth-\labelsep
+              \topsep    4\p@ \@plus2\p@ \@minus\p@
+              \parsep    2\p@ \@plus\p@  \@minus\p@
+              \itemsep   \parsep}
+\def\@listiii{\leftmargin\leftmarginiii
+              \labelwidth\leftmarginiii
+              \advance\labelwidth-\labelsep
+              \topsep    2\p@ \@plus\p@\@minus\p@
+              \parsep    \z@
+              \partopsep \p@ \@plus\z@ \@minus\p@
+              \itemsep   \topsep}
+\def\@listiv {\leftmargin\leftmarginiv
+              \labelwidth\leftmarginiv
+              \advance\labelwidth-\labelsep}
+\def\@listv  {\leftmargin\leftmarginv
+              \labelwidth\leftmarginv
+              \advance\labelwidth-\labelsep}
+\def\@listvi {\leftmargin\leftmarginvi
+              \labelwidth\leftmarginvi
+              \advance\labelwidth-\labelsep}
+
+\def\part{\cleardoublepage \thispagestyle{empty} \if@twocolumn \onecolumn
+\@tempswatrue \else \@tempswafalse \fi \hbox{}%
+\secdef\@part\@spart} 
+
+\def\@part[#1]#2#3{\ifnum \c@secnumdepth >-2\relax \refstepcounter{part}%
+ \addcontentsline{toc}{part}{PART \thepart\hfill\break
+ #2\hfill\break{\em #3}}\else
+ \addcontentsline{toc}{part}{#1}\fi \markboth{}{}%
+ \vspace*{30pt}%
+ {\parindent=0pt\raggedright
+ \ifnum \c@secnumdepth >-2\relax 
+ {\LARGE\bf PART \thepart}\par
+ \vspace*{12pt}\fi
+ \hrule width \textwidth height 1.5pt%
+ \vspace*{12pt}%
+ {\LARGE\bf \uppercase{#2}\par}
+ \vspace*{30pt}%
+ {\Large\em #3\par}}%
+ \@endpart}  %
+\def\@endpart{\vfil\newpage\if@twoside \hbox{}%
+ \thispagestyle{empty}% 
+ \newpage 
+ \fi \if@tempswa \twocolumn \fi}  %
+\def\@spart#1{\ifnum \c@secnumdepth >-2\relax \refstepcounter{part}%
+ \addcontentsline{toc}{part}{PART \thepart\hfill\break #1}%
+ {\parindent=0pt\raggedright
+ {\LARGE\bf PART \thepart}\par
+ \vspace*{12pt}\fi
+ \hrule width \textwidth height 1.5pt%
+ \vspace*{12pt}%
+ {\LARGE\bf \uppercase{#1}\par}}%
+ \@endpart} 
+
+\def\Part{\cleardoublepage \thispagestyle{empty} \if@twocolumn \onecolumn
+\@tempswatrue \else \@tempswafalse \fi \hbox{}%
+\secdef\@Part\@sPart} 
+
+\def\@Part[#1]#2#3#4{\ifnum \c@secnumdepth >-2\relax \refstepcounter{part}
+ \addcontentsline{toc}{part}{PART \thepart\hfill\break
+ #2\hfill\break{\em #3}}\else
+ \addcontentsline{toc}{part}{#1}\fi \markboth{}{}%
+ \vspace*{30pt}%
+ {\parindent=0pt\raggedright
+ \ifnum \c@secnumdepth >-2\relax 
+ {\LARGE\bf PART \thepart}\par 
+ \vspace*{12pt}\fi
+ \hrule width \textwidth  height 1.5pt%
+ \vspace*{12pt}%
+ {\LARGE\bf \uppercase{#2}\par}%
+ \vspace*{30pt}%
+ {\Large\em #3\par}%
+ \vspace*{12pt}%
+ {\large\em #4\par}}%
+ \@endpart}  %
+\def\@sPart#1#2#3{{\parindent=0pt\raggedright
+ {\LARGE\bf PART \thepart}\par 
+ \vspace*{12pt}\fi
+ \hrule width \textwidth  height 1.5pt
+ \vspace*{12pt}%
+ {\LARGE\bf \uppercase{#1}\par}%
+ \vspace*{30pt}%
+ {\Large\em #2\par}%
+ \vspace*{12pt}%
+ {\large\em #3\par}}%
+ \@endpart} 
+
+
+\def\@makechapterhead#1{\vspace*{30pt}{\parindent 0pt\raggedright 
+ \ifnum \c@secnumdepth >\m@ne \LARGE\bf \@chapapp{} \thechapter \par 
+ \vspace*{12pt}% 
+ \hrule width \textwidth height 1.5pt%
+ \vspace*{12pt}\fi
+ \noindent{\LARGE\bf #1\par}%
+ \nobreak 
+ \vskip 60pt plus6pt minus6pt}}
+
+\def\@makeschapterhead#1{\vspace*{30pt}{\parindent 0pt\raggedright 
+ \ifnum \c@secnumdepth >\m@ne \LARGE\bf #1\par 
+ \vspace*{12pt}% 
+ \hrule width \textwidth height 1.5pt%
+ \vspace*{12pt}\fi
+ \nobreak \vskip 48pt plus6pt minus6pt}}
+
+\def\chapter{\clearpage\thispagestyle{myheadings}\global\@topnum\z@
+\@afterindentfalse \secdef\@chapter\@schapter}  %
+ \def\@chapter[#1]#2{\ifnum \c@secnumdepth >\m@ne
+ \refstepcounter{chapter}%
+ \typeout{\@chapapp\space\thechapter.}%
+ \addcontentsline{toc}{chapter}{\protect
+ \numberline{\thechapter}#2}\else
+ \addcontentsline{toc}{chapter}{#2}\fi
+ \chaptermark{#1}%
+ \addtocontents{lof}{\protect\addvspace{10pt}}%
+ \addtocontents{lot}{\protect\addvspace{10pt}}% 
+ \if@twocolumn\@topnewpage[\@makechapterhead{#2}]% 
+ \else \@makechapterhead{#2}\@afterheading \fi}  %
+\def\@schapter#1{\if@twocolumn \@topnewpage[\@makeschapterhead{#1}]
+ \else \@makeschapterhead{#1}\@afterheading\fi
+ \chaptermark{#1}%
+ \ifnum \c@secnumdepth >\m@ne
+ \addcontentsline{toc}{unnumbered}{\protect
+ \numberline{}#1}\else
+ \addcontentsline{toc}{unnumbered}{#1}\fi}
+%
+\def\Chapter{\clearpage \thispagestyle{myheadings}\global\@topnum\z@
+\@afterindentfalse \secdef\@Chapter\@sChapter}  %
+\def\@Chapter[#1]#2#3{\ifnum \c@secnumdepth >\m@ne
+ \refstepcounter{chapter}%
+ \typeout{\@chapapp\space\thechapter.}%
+ \addcontentsline{toc}{chapter}{\protect
+ \numberline{\thechapter}#2}\else
+ \addcontentsline{toc}{chapter}{#2}\fi
+ \chaptermark{#1}%
+ \addtocontents{lof}{\protect\addvspace{10pt}}%
+ \addtocontents{lot}{\protect\addvspace{10pt}}% 
+ \if@twocolumn\@topnewpage[\@makeChapterhead{#2}{#3}]%
+ \else \@makeChapterhead{#2}{#3}\@afterheading \fi}  %
+\def\@sChapter#1#2{\if@twocolumn \@topnewpage[\@makesChapterhead{#1}{#2}]
+ \else \@makesChapterhead{#1}{#2} 
+ \@afterheading\fi
+ \chaptermark{#1}
+ \ifnum \c@secnumdepth >\m@ne
+ \addcontentsline{toc}{unnumbered}{\protect
+ \numberline{}#1}\else
+ \addcontentsline{toc}{unnumbered}{#1}\fi}
+%
+\def\@makeChapterhead#1#2{\vspace*{30pt}{\parindent 0pt \raggedright 
+ \ifnum \c@secnumdepth >\m@ne \LARGE\bf \@chapapp{} \thechapter \par 
+ \vspace*{12pt}% 
+ \hrule width \textwidth  height 1.5pt
+ \vspace*{12pt}\fi
+ {\LARGE \bf #1\par}
+ \vspace*{18pt}
+ {\large \em #2\par}
+ \nobreak \vskip 48pt plus6pt minus6pt}}
+
+\def\@makesChapterhead#1#2{\vspace*{30pt}{\parindent 0pt \raggedright 
+ \ifnum \c@secnumdepth >\m@ne \LARGE\bf #1\par 
+ \vspace*{12pt}% 
+ \hrule width \textwidth  height 1.5pt
+ \vspace*{18pt}\fi
+ {\large \em #2\par}
+ \nobreak \vskip 48pt plus6pt minus6pt}}
+
+%
+%
+\def\section{\@startsection {section}{1}{\z@}{-3.5ex plus -1ex minus 
+ -.2ex}{2.3ex plus .2ex}{\noindent\large\bf}}
+\def\subsection{\@startsection{subsection}{2}{\z@}{-3.25ex plus -1ex minus 
+ -.2ex}{1.5ex plus .2ex}{\noindent\normalsize\bf}}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{-3.25ex plus
+-1ex minus -.2ex}{1.5ex plus .2ex}{\normalsize\it}}
+\def\paragraph{\@startsection
+ {paragraph}{4}{\z@}{3.25ex plus 1ex minus .2ex}{-1em}{\normalsize\it}}
+\def\subparagraph{\@startsection
+ {subparagraph}{4}{\parindent}{3.25ex plus 1ex minus 
+ .2ex}{-1em}{\normalsize\it}}
+
+\def\chaptermark#1{}
+
+\setcounter{secnumdepth}{3}
+
+\def\appendix{\par
+ \setcounter{chapter}{0}
+ \setcounter{section}{0}
+ \def\@chapapp{Appendix}
+ \def\thechapter{\Alph{chapter}}}
+
+\labelsep 4pt
+
+\leftmargini 20pt
+\leftmarginii 18pt  \leftmarginiii 16pt  \leftmarginiv 14pt  \leftmarginv 10pt
+\leftmarginvi 10pt
+\leftmargin\leftmargini
+\labelwidth\leftmargini\advance\labelwidth-\labelsep
+\parsep 0pt plus 1pt
+\def\@listi{\leftmargin\leftmargini}
+\def\@listii{\leftmargin\leftmarginii
+ \labelwidth\leftmarginii\advance\labelwidth-\labelsep
+ \topsep 3pt plus 1pt minus 1pt
+ \parsep 0pt plus 1pt
+ \itemsep \parsep}
+\def\@listiii{\leftmargin\leftmarginiii
+ \labelwidth\leftmarginiii\advance\labelwidth-\labelsep
+ \topsep 2pt plus 1pt minus 1pt 
+ \parsep \z@ \partopsep 1pt plus 0pt minus 1pt
+ \itemsep \topsep}
+\def\@listiv{\leftmargin\leftmarginiv
+ \labelwidth\leftmarginiv\advance\labelwidth-\labelsep}
+\def\@listv{\leftmargin\leftmarginv
+ \labelwidth\leftmarginv\advance\labelwidth-\labelsep}
+\def\@listvi{\leftmargin\leftmarginvi
+ \labelwidth\leftmarginvi\advance\labelwidth-\labelsep}
+
+

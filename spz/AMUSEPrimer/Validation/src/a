@@ -1,0 +1,35 @@
+Mstars= [0.8, 0.4] MSun 1.2 MSun
+Roche= 0.595602936051 695500000.0 * m 0.0416922055236 695500000.0 * m 0.416922055236 695500000.0 * m
+Diskmass= 8e-05 MSun
+Traceback (most recent call last):
+  File "2001ApJ...551L..89G.fig2.py", line 150, in <module>
+    main(**o.__dict__)
+  File "2001ApJ...551L..89G.fig2.py", line 113, in main
+    gravity_hydro.evolve_model(time)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/couple/bridge.py", line 506, in evolve_model
+    self.drift_codes(self.time+timestep)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/couple/bridge.py", line 634, in drift_codes
+    x.run()
+  File "/usr/lib/python2.6/threading.py", line 484, in run
+    self.__target(*self.__args, **self.__kwargs)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/couple/bridge.py", line 391, in drift
+    self.code.evolve_model(tend)
+  File "2001ApJ...551L..89G.fig2.py", line 26, in evolve_model
+    self.overridden().evolve_model(*args,**kargs)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/support/methods.py", line 109, in __call__
+    result = self.method(*list_arguments, **keyword_arguments)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/support/methods.py", line 109, in __call__
+    result = self.method(*list_arguments, **keyword_arguments)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/support/methods.py", line 109, in __call__
+    result = self.method(*list_arguments, **keyword_arguments)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/rfi/core.py", line 91, in __call__
+    dtype_to_result = self.interface.channel.recv_message(self.specification.id, handle_as_array)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/rfi/channel.py", line 1016, in recv_message
+    message.receive(self.intercomm)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/rfi/channel.py", line 312, in receive
+    header = self.receive_header(comm)
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/rfi/channel.py", line 317, in receive_header
+    self.mpi_receive(comm, [header, MPI.INT])
+  File "/home/spz/Instantaneous/AMUSE/amuse/src/amuse/rfi/channel.py", line 492, in mpi_receive
+    request.Wait()
+KeyboardInterrupt

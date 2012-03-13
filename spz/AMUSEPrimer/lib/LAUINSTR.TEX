@@ -1,0 +1,1977 @@
+\documentclass{iopbk2e}
+% Uncomment following line to include characters from AMS Fonts
+%\usepackage{iopams}
+
+\title{Writing a book for Institute of Physics Publishing using 
+\LaTeXe}
+
+\author{A J Cox\\[2pc]
+Institute of Physics Publishing,\\
+Techno House, Redcliffe Way, Bristol}
+
+\makeindex
+
+\newtheorem{example}{Example}
+
+\begin{document}
+
+\maketitle
+\pagenumbering{roman}
+\setcounter{page}{5}
+\tableofcontents
+
+\chapter*{Preface}
+This article describes the use of \LaTeXe\ and the `iopbk2e.cls' 
+class file for the preparation of books to be 
+published under the Institute of Physics Publishing imprint. 
+A separate style file (iopbk.sty)
+is available for authors still using \LaTeX 2.09.
+Authors who use these systems
+correctly should find that the writing of their book is
+easier, since the output will be in a form directly suitable for 
+camera-ready copy or for direct automatic conversion into the Times 
+fonts usually used for typesetting. 
+In addition, the book should be produced more quickly, and 
+with less chance of typographic error, since it will already be
+in house style. 
+
+After a brief introduction in chapter 1 to 
+the class files and the method of 
+preparing the book, we discuss in chapter~2 the 
+preparation of the preliminary pages. In chapter~3 we consider the 
+text and its basic structures.
+In chapter~4 we discuss the use of \LaTeXe\ in typesetting mathematics 
+and in 
+chapter~5 we present the rules for preparing figures and tabular 
+material. Chapter 6 contains information on references and reference 
+lists while chapter 7 contains a description of the tools available 
+for preparing indexes, 
+and the final chapter discusses the procedures that will be 
+followed in publishing the book. In the appendices we give a list of 
+author-usable macros.
+
+The style files have been developed at IOP Publishing mainly by Tony 
+Cox, but building on earlier work by Robert Harding and Doug Quinney of
+Keele University and Mark Manning of Cambridge University. The translation
+from \LaTeX2.09 to \LaTeXe\ was first done by Steve Lloyd of Queen Mary \&
+Westfield College, University of London. 
+
+\bigskip
+\begin{flushright}
+{\bf A J Cox}\\
+17 February 1997
+\end{flushright}
+\newpage
+
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\chapter{Introduction}
+This document describes the preparation of a book for the Institute of 
+Physics Publishing imprint
+using the \verb"iopbk2e"\index{iopbk2e.cls} class file for \LaTeXe.
+It covers how to prepare your source code, the house style for 
+Institute of Physics Publishing (IOPP) and also the procedures 
+followed during the production of the book. 
+If read carefully and adhered to, it should
+result in trouble-free editing and more rapid publication, as well as 
+ensuring that the final product is of a high quality. 
+Our booklet {\it Notes for Authors}
+contains more general information related to preparing a 
+typescript which is still relevant when using \LaTeXe. 
+
+\section{The IOP book class files}
+The book class files can be obtained from the Institute of Physics World Wide Web
+({\tt http://www.iop.org/Books/Author/texstyle.html}), by e-mail or
+on PC or Mac disk.
+The files should be placed in the current working directory or the
+directory that contains your other
+\LaTeX2e\ class files, e.g.\ \verb"book.cls" and \verb"bk10.clo". 
+The files\index{class files}  contain commands to 
+set the page size, running heads, section and subsection headings, 
+appendices and references. There are also a number of miscellaneous 
+commands that can be used to simplify the typing process. 
+
+The class file \verb"iopbk2e.cls"\index{iopbk2e.cls} 
+is designed for use with \LaTeXe, a style for the old version of \LaTeX\
+(\LaTeX2.09) is also available (\verb"iopbk.sty")\index{iopbk.sty}. 
+
+This document has been prepared using the iopbk2e class file 
+and so illustrates its use and demonstrates the output produced. 
+The complete book from 
+preliminary pages to index (apart from the actual figures) can be 
+produced using \LaTeXe\ with the files provided. Staff at IOP 
+will be glad to answer any queries you have relating to them, 
+their use, or any other aspects of producing your book.
+
+We strongly recommend that authors should use iopbk2e, 
+rather than any other class files 
+that are available. The style has been designed to produce 
+a book in the correct size and to a particular format. If authors use a 
+style file that produces text according to a different page layout, 
+this creates extra work at IOP and can result in 
+difficulties and delays in the production of the book.
+
+Authors may add their own macros 
+at the start of an article 
+provided they do not overwrite existing definitions and 
+that they send copies of their new macros with their files.
+\verb"iopbk2e" can be used with other package files such
+as those loading the AMS extension fonts 
+\verb"msam" and \verb"msbm" (these fonts provide the 
+blackboard bold alphabet 
+and various extra maths symbols as well as symbols useful in figure 
+captions); an extra style file \verb"iopams.sty" is provide to load these
+packages and provide extra definitions for bold Greek letters and certain
+other symbols.
+
+This document is not intended to be a comprehensive guide to \LaTeXe. 
+Authors will need to be familiar with \LaTeX\ and should 
+refer to {\em \LaTeX: a Document Preparation System\/} (Lamport 1986) and 
+{\em The \LaTeX\ companion\/} (Goossens {\it et al\/} 1994)
+for more details.
+
+\section{Preparing the book}
+When writing the book, rather than creating one long file, 
+all chapters\index{chapters} should be written in separate 
+files. The complete book should be run from a master 
+file\index{master file} which calls all chapters 
+in turn or allows chapters can be processed selectively using the 
+\verb"\includeonly" command.
+It is recommended that until the book is complete  
+the page number\index{page numbers} and chapter number\index{chapter
+numbers} should be set manually 
+within the master file, 
+using, for example, \verb"\setcounter{chapter}{2}" and
+\verb"\setcounter{page}{35}". 
+When the book is complete most of these
+counter resettings can be removed and the book processed as a whole
+to generate the complete contents list and 
+index.
+Detailed instructions for the preparation of the book, including notes 
+on preparing text, mathematics, reference lists, index, tables and figures, 
+are provided in the following chapters.
+
+The first line of the file should be \verb"\documentclass{iopbk2e}"
+and then \verb"\title{#1}" and \verb"\author{#1}".
+The iopbk2e style produces by default a book for a 
+Royal Octavo page size with a text
+area, excluding running heads and footlines, of 4.5 in by 6.3 in (114 mm
+$\times$ 160 mm); this is
+the normal size for a monograph. 
+If this is inappropriate for a particular book, the text area can be
+changed by adding an option in square brackets in the documentclass line
+immediately before \verb"{iopbk2e}"
+(e.g. adding \verb"[Crown]" produces a
+Crown Quarto book with a text area of 5.8 in by 8 in (148 mm
+$\times$ 203 mm) or \verb"[Demi]"
+gives a Demi Octavo book with a page area of 4 in by 6.6
+in (102 mm $\times$ 169 mm)). If your book is to be in one of these alternative sizes you will be 
+informed of the appropriate format by the commissioning staff.
+
+The argument of \verb"\title" is the title of the book\index{book title} 
+and that of
+\verb"\author" the list of authors\index{authors}  and their
+address(es)\index{addresses}.
+Any new definitions specific to your book can then be entered before the
+\verb"\begin{document}" command is given to start the book or included in
+a separate file that is read in at this point .
+An example of a master file for a book with five chapters and an appendix
+might be:
+
+\begin{verbatim}
+\documentclass{iopbk2e}
+\title{Physics in the 1980s}
+\author{T J Smith\\[2pc]
+Department of Physics\\
+University of Bristol}
+\makeindex
+%\includeonly{chap1}
+\begin{document}
+\maketitle
+\pagenumbering{roman}
+\setcounter{page}{5}
+\tableofcontents
+\include{preface}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\include{chap1}
+\include{chap2}
+\include{chap3}
+\include{chap4}
+\include{chap5}
+\include{appendix}
+\include{refs}
+\end{document}
+\end{verbatim}
+Using this method it is not necessary to specify the preamble at 
+the start of each chapter and only one \verb".toc" file is generated
+although until the book is complete the page 
+number and chapter numbers would need to be specified 
+before each chapter is loaded.
+
+\chapter{Preliminary pages}
+The preliminary pages\index{preliminary pages} 
+consist of half-title page, series page (if the 
+book is in a series), title page, 
+copyright page, contents, preface, and, if required,
+foreword\index{foreword},
+dedication\index{dedication}, 
+acknowledgments\index{acknowledgments} and list of symbols. 
+We will normally prepare the 
+first four 
+of these pages ourselves and obtain the appropriate cataloguing 
+information to appear on the copyright page, so authors need not 
+worry about the exact format of these pages. 
+The \verb"\maketitle" command can be
+used to produce a sample title page\index{title page} 
+provided that \verb"\title"\index{book title} and
+\verb"\author"\index{authors} 
+are defined in the preamble. The \verb"\author" command should include the
+author(s) names and, separated by \verb"\\[2pc]", the author's
+address\index{addresses}.
+If the address is too long to fit nicely in one line it should be split
+using \verb"\\".
+
+Authors are responsible for the 
+pages containing the contents list\index{contents list}, 
+preface\index{preface} and any dedication or 
+acknowledgment. This 
+information should go in a separate file or files (perhaps called 
+\verb"prelims.tex").  
+The preliminary pages are numbered using lower case roman numerals
+but the first four are normally unnumbered.
+Thus the commands \verb"\pagenumbering{roman}"
+and \verb"\setcounter{page}{5}" have to be given before
+starting the contents list.
+The entries for the 
+contents list are generated automatically from the chapters, 
+sections and subsections
+if the \verb"\tableofcontents"\index{table of contents} 
+command is given at the start of the file. 
+The contents list will include part titles and authors, 
+chapter titles, section 
+and subsection headings; subsubsection headings are not 
+normally included. The \verb".toc" file produced by the
+\verb"\tableofcontents" command may need to be 
+slightly edited, e.g.\ to
+avoid bold symbols, before the final version is produced.
+Page numbers will be automatically included; 
+they may well 
+change during production of the book, so the contents list
+need not be produced until the rest of the book is complete.
+When running a complete book the file must be run through \LaTeXe\ {\bf
+three} times to generate an accurate table of contents.
+
+The preface\index{preface} should appear on a separate page. 
+The preface and similar sections such as dedication and acknowledgments
+are treated as unnumbered chapters and specified by the command
+\verb"\chapter*{title}", 
+where \verb"title" is the name of the section, e.g.\ Preface,
+Acknowledgments or Dedication. 
+A preface should contain personal details about how the book came to be 
+written, a description of the plan of the book, and acknowledgments if 
+a separate section is not used. 
+An {\it introduction\index{introduction}\/} that is an 
+integral part of the actual subject matter of the book should not be 
+included in the preliminary pages but rather as the first chapter of 
+the book. The preface should end with the commands:
+\begin{verbatim}
+\bigskip
+\begin{flushright}
+{\bf Author's name}\\
+Date preface written
+\end{flushright}
+\newpage
+\end{verbatim}
+
+Acknowledgments can be included in the preface, or can be written in a 
+separate section if desired. If acknowledgments\index{acknowledgments} 
+are to appear in a 
+separate section, type the command \verb"\chapter*{Acknowledgments}"
+and follow this 
+with the text of the acknowledgments. 
+
+After the preliminary pages have been completed the page numbering has to
+be changed from small roman numerals to arabic numbers and the page number
+reset so that the first page of the body of the text is page 1. This is
+done with the commands
+\verb"\pagenumbering{arabic}" and
+\verb"\setcounter{page}{1}"\index{page numbers} 
+which should appear in the master file
+before the first chapter of the main body of the book.
+
+\chapter{The text}
+\section{The main body of text}
+\subsection{Parts}
+Some books may be subdivided into 
+distinct parts\index{parts} perhaps by different 
+authors. Each part is then further subdivided into chapters and 
+sections as normal. A part heading always occurs on a right-hand page 
+and so is always an odd-numbered page. It is always followed by a 
+blank page. The part heading should be included in the file for the 
+chapter following it. In the IOP style files 
+there are two commands which can
+be used for part headings depending on whether or not an author and his
+address are given. The command \verb"\part*{#1}" is used for a part heading
+without an author's name with \verb"#1" the title of the part. 
+If the author's name is given but no address 
+then the appropriate command is \verb"\part[#1]{#2}{#3}" where 
+\verb"[#1]" is an optional argument to provide a non-standard 
+table of contents
+entry, \verb"#2" is the part title and \verb"#3" the authors name.
+If the part heading is also to include the author's address then
+the alternative command \verb"\Part[#1]{#2}{#3}{#4}"
+is used. The parameters \verb"#1", \verb"#2" and \verb"#3" are as 
+for \verb"\part" with \verb"#4"
+the author's address.
+
+The title 
+appears in bold capitals and the author's name and address in italic.
+Examples of the code for parts are
+\begin{verbatim}
+\Part{The structure of the atom}{P Smith}{Department of Physics,
+University of Cambridge}
+\end{verbatim}
+and
+\begin{verbatim}
+\part*{Two-body systems}
+\end{verbatim}
+
+
+
+\subsection{Chapters\index{Chapters}}
+Each chapter should normally be in a separate file.
+If necessary the chapter number and page number can be set with
+\verb"\setcounter{chapter}{<no>}" and \verb"\setcounter{page}{<no>}"
+respectively. The heading at the start of the 
+chapter is typeset by using the 
+\verb"\chapter[#1]{#2}" command, where \verb"[#1]" is an optional
+short title to be used as a running head if the main heading is too long
+and \verb"#2" is the full title of the chapter. The full version of the
+title is used in the table of contents and the shortened form only in the
+running head.
+The chapter titles should be typed with an initial capital letter only
+and the rest in lower case.
+
+Unnumbered chapters\index{chapters, unnumbered} 
+such as Preface, Acknowledgment, References are 
+set using the alternative form \verb"\chapter*[#1]{#2}". In this style all 
+unnumbered chapters will have an entry in the table of contents 
+and an alternative shortened form can also be supplied for the running head.  
+
+\subsubsection{Multiauthor books\index{Multiauthor books}}
+Where each chapter of a book is written by a different author 
+then the name of the author has to appear at the start of each 
+chapter. This is accomplished by using the command
+\verb"\Chapter[#1]{#2}{#3}" where \verb"#1" is 
+optional short title, \verb"#2" the chapter title as before,
+and \verb"#3" is the author name(s) and address if necessary.
+If the author's address is given it follows after the author's name
+separated by a \verb"\\". Only an abbreviated address or the name of the
+institution where the author works should be given; full addresses may be
+presented in a list of contributors at the end of the book if necessary. 
+An example of a chapter heading with an author name
+and address is:
+\begin{verbatim}
+\Chapter[Quantum mechanics]{An introduction to the theory
+of quantum mechanics}{I M Boringham\\University of Ware}
+\end{verbatim}
+For an unnumbered section heading with an 
+author the alternative \verb"*" form
+of \verb"\Chapter" is used, e.g.
+\begin{verbatim}
+\Chapter*{Foreword}{A Einstein}
+\end{verbatim}
+
+\subsection{Sections\index{Sections} and subsections\index{subsections}}
+The \verb"\section[#1]{#2}" command is used 
+at the start of each section. It will 
+automatically generate the correct section number. The section 
+heading\index{section 
+heading}, \verb"#2",
+should be typed with an initial capital then lowercase letters.
+The section heading is used 
+as the running head\index{running heads} on odd-numbered pages; 
+if the full
+title is too long to be used then a short form is added in square brackets
+before the full title. 
+
+
+There are \verb"\subsection{#1}" and \verb"\subsubsection{#1}" commands to
+produce subsection and subsubsection headings. These work in a similar way to
+\verb"\section", although there is no optional parameter for the running
+head. Do not put a full stop at the end of sections, subsections or
+subsubsections\index{subsubsections} headings. The headings of subsections
+and subsubsections  should always have an initial capital followed by 
+lowercase letters, rather than capitals throughout.
+
+Chapter\index{cross referencing, chapters} and section\index{cross
+referencing, sections}  headings can be given 
+a label using the command \verb"\label{label}" and 
+this can be referred to in the text using \verb"\ref{label}".
+We have also defined \verb"\cref{label}" which produces
+\verb"chapter~\ref{label}" and \verb"\sref{label}" which produces 
+\verb"section~\ref{label}". 
+There are also versions with an initial capital
+(\verb"\Cref" and \verb"\Sref") which give initial capitals to chapter and
+section and which should only be used at the start of a section.
+
+For an unnumbered section, for instance a reference section if the
+references are to appear at the end of each chapter, an asterisk is added
+immediately after the control sequence, e.g.\ \verb"\section*{references}". 
+
+\subsection{Some matters of style}
+It will help your readers if your article is written in a clear,
+consistent and concise manner. Copy preparation at Institute of Physics
+Publishing will try to make sure that your work is presented to its
+readers in the best possible way without sacrificing the individuality of
+your writing.
+
+The main elements of consistency and style we look for 
+are presented in the booklet 
+{\it Notes for Authors} (available upon request from Institute of Physics 
+Publishing, 
+Techno House, Redcliffe Way, Bristol, BS1 6NX, UK). Some recommended 
+points to note, however, are the following.
+\begin{itemize}
+\item Authors are often inconsistent in the use of `ize' and `ise' endings.
+We recommend using `-ize' spellings (diagonalize, 
+renormalization, minimization, etc) but there are some common 
+exceptions to this, for example: devise, 
+promise and advise.
+
+\item English spellings are preferred (colour, flavour, behaviour, 
+tunnelling, artefact, focused, focusing, fibre, etc). We write of a 
+computer program on disk; otherwise, we use `programme' and `disc'.
+
+\item Compound words beginning `non-' or `self-' are easier to read and
+understand when hyphenated (non-existent, self-consistent, etc).
+
+\item The words table, figure, equation and reference should be written 
+in full and {\bf not} contracted to Tab., fig., eq. and ref.
+
+\item The contractions\index{contractions} 
+`i.e.' and `e.g.' should appear roman, {\bf not} 
+italic, and when followed by a space it should be a control space 
+(\verb"\"{\tt\char'040} ).
+
+\item Text of computer programs or input should be set verbatim in
+typewriter font using the \verb"\begin{verbatim}" \dots
+\verb"\end{verbatim}" commands for displayed material or
+\verb+\verb"<text>"+ for in-line material (note the double quotes
+surrounding the text may be
+replaced by any matching pair of characters except \verb"*"). 
+\end{itemize}
+
+It will help the copy preparation and avoid unnecessary errors if you
+carefully check your work for accuracy, consistency and clarity before
+submission. Remember that your book will probably be read by many
+people whose native language is not English and who may not therefore 
+be aware of many of the subtle meanings of words or idiomatic phases
+present in the English language. It therefore helps if you try and keep
+sentences as short and simple as possible.
+
+While we recommend authors to follow these guidelines, there may be some
+cases where they are not appropriate (for example books aimed
+specifically at the North American market); in these cases authors
+should discuss their proposed style changes with the Commissioning Editor. 
+
+\section{Appendices} 
+If desired, appendices\index{appendices} can be added
+to the end of the book, with material that is considered necessary to the
+understanding of the subject matter, but not sufficiently important to be
+an integral part of the text. 
+
+Appendices are treated like chapters but with letters to distinguish 
+between them rather than numbers, e.g.\ Appendix~A, B, C etc not Appendix
+1, 2, 3. To signify the start of the appendices 
+\verb"\appendix" is used, it  resets
+the chapter number so that \verb"\chapter{#1}",
+\verb"\section{#1}", \verb"\subsection{#1}" will now produce the
+equivalent parts for an appendix, with the appendix letter instead of the
+chapter number.   The typical code
+for the start of an appendix  would be:
+\begin{verbatim}
+\appendix
+\chapter{The title of appendix A}
+\section{Section heading if required}
+\end{verbatim}
+
+When running appendix files separately rather than
+with the rest of the book, the appendix letter can be set at the start 
+of the file (but after the \verb"\appendix" command), 
+using the command \verb"\setcounter{chapter}{#1}". 
+The \verb"#1" parameter is  
+the number corresponding to the appendix letter, e.g.\ 1 gives A, 2
+gives B, etc. 
+
+\chapter{Mathematics}
+\section{Two-line constructions}
+The great advantage of \TeX\ and \LaTeX\ 
+over other text processing systems is their
+ability to handle 
+mathematics\index{mathematics} to almost any degree of complexity. 
+\LaTeX\ gives the author considerable freedom in encoding 
+mathematics; however, in order to produce output that is of book 
+quality, authors should exercise some restraint on the constructions 
+used.
+
+For instance, displayed equations\index{equations} 
+should generally be restricted to a 
+height of two lines, e.g.\ constructions such as 
+\[ 
+P={{\displaystyle{a\over b}+{c\over d}+{b\over c}}\over 
+(a^2+b^2)(c^2+d^2)} 
+\] 
+should not be used. Instead, they should be converted to the 
+equivalent two-line forms 
+\[ 
+P={a/b+c/d+b/c\over (a^2+b^2)(c^2+d^2)} 
+\] 
+or 
+\[
+P=\left({a\over b}+{c\over d}+{b\over c}\right)
+[(a^2+b^2)(c^2+d^2)]^{-1}. 
+\] 
+For simple fractions\index{fractions} 
+in the text the solidus \verb"/", as in 
+$\lambda/2\pi$, should be used instead of \verb"\frac" or \verb"\over", care 
+being taken to use parentheses where necessary to avoid ambiguity, for 
+example to distinguish between $1/(n-1)$ and $1/n-1$. Exceptions to 
+this are the proper fractions $\frac12$, $\frac13$, $\frac34$, 
+etc which are better left in this form. In displayed equations 
+horizontal lines are preferable to solidi provided the equation is 
+kept within a height of two lines. A two-line solidus should not be 
+used; the construction $(\ldots)^{-1}$ should be used instead.
+The command \verb"\case{#1}{#2}" will give a text style fraction in a 
+displayed equation and should be used where fractions such as 
+$\frac{1}{2}$ are the only two-line entities within a display.
+
+\section{Roman and italic in mathematics}
+In maths mode \LaTeX\ automatically sets variables in an italic 
+font. In most cases authors should accept this italicization. However, 
+there are some cases where it is better to use a Roman 
+font\index{mathematics, roman in}; for 
+instance, in IOPP books we use a Roman d for a differential d, a Roman e 
+for an exponential e and a Roman i for the square root of $-1$. To 
+accommodate this and to simplify the  typing of equations we have 
+provided some extra definitions. \verb"\rmd", \verb"\rme" and \verb"\rmi" 
+now gives Roman d, e and i respectively for use in equations, 
+e.g.\ $\rmi x\rme^{2x}\rmd x/\rmd y$ 
+is obtained by typing \verb"$\rmi x\rme^{2x}\rmd x/\rmd y$". 
+\verb"\rme" gives a Roman e for use in simple 
+exponentials such as $\rme^x$. 
+
+Certain other common mathematical functions, such as cos, sin, det and 
+ker, should appear in Roman type. \LaTeX\ provides macros for 
+most of these functions 
+(in the cases above, \verb"\cos", \verb"\sin", \verb"\det" and \verb"\ker" 
+respectively), we have also provided 
+additional definitions for $\Tr$, $\tr$ and 
+$\Or$ (\verb"\Tr", \verb"\tr" and \verb"\Or", respectively). 
+
+Subscripts and superscripts should be in Roman type if they are labels 
+rather than variables or characters that take values. For example in the 
+equation
+\[
+\epsilon_m=-g\mu_{\rm n}Bm
+\]
+$m$, the $z$ component of the nuclear spin, is italic because it can have 
+different values whereas n is Roman because it 
+is a label meaning nuclear ($\mu_{\rm n}$ 
+is the nuclear magneton).
+
+
+\section{Alignment of mathematics}
+IOP books house style is to centre 
+mathematical expressions, as \LaTeX\ does
+by default\index{equations, displayed}\index{displayed equations}. 
+When splitting equations over more than one line, the \LaTeX\ 
+environments \verb"eqnarray" or \verb"eqnarray*" can be used. 
+However, if an equation is so long that it occupies two or more lines, 
+some thought should be given to the correct place at which to break 
+the equation. The author is the best judge of how to break an 
+equation, since break positions may depend on subtleties of the 
+mathematics\index{mathematics} involved, but there are 
+two rules that can be stated.
+\begin{enumerate}
+\item Displayed equations should always be broken {\it before} binary 
+operators and relations, i.e.\ if we break at a `+' sign we begin the 
+second line with a `+' rather than end the first line with a `+'. 
+Furthermore, when an equation is broken before a binary operation the 
+second line should start at least two quads to the right of where the 
+innermost subformula containing the binary operation begins on the 
+first line. (See example~1 below.) A clear discussion of these 
+problems in found in (Knuth, pp~195--7).
+
+\item If an equation {\it must} be split in the middle of a term (for 
+example, between the two bracketed expressions in the term 
+\verb"[(a+b)(c+d)]") then a multiplication sign should be inserted at the 
+beginning of the second line. (See example~2 below.)
+\end{enumerate}
+
+\begin{example} (From Knuth (1986), p~195.)
+The equation
+\[
+\sigma(2^{34}-1,2^{35},1)
+=
+-3+(2^{34}-1)/2^{35}+2^{35}\!/(2^{34}-1)
++7/2^{35}(2^{34}-1)-\sigma(2^{35},2^{34}-1,1).
+\]
+is too long and must be split. In an equation like this, good break 
+points might be immediately before the equals sign, immediately 
+before any of the `+' signs or immediately before the penultimate `$-$' 
+sign. Bad break points would be immediately before all other `$-$' signs 
+(because they are within a subformula rather than linking two parts of 
+a formula) and the `\verb"/"' signs.
+
+Following Knuth, we choose to break just before `+7'. One way of doing 
+this is to type
+\begin{verbatim}
+\begin{eqnarray*}
+\sigma(2^{34}-1,2^{35},1)
+&=&-3+(2^{34}-1)/2^{35}+2^{35}\!/(2^{34}-1)\\
+& & +7/2^{35}(2^{34}-1)-\sigma(2^{35},2^{34}-1,1).
+\end{eqnarray*}
+\end{verbatim}
+which yields
+\begin{eqnarray*}
+\sigma(2^{34}-1,2^{35},1)
+&=&-3+(2^{34}-1)/2^{35}+2^{35}\!/(2^{34}-1)\\
+& &+7/2^{35}(2^{34}-1)-\sigma(2^{35},2^{34}-1,1).
+\end{eqnarray*}
+\end{example}
+
+
+\begin{example} The equation
+\[
+T_{nk\rightarrow n'k'} \propto (a+b)^2
+\bigg\vert \sum_{\alpha'\nu'\alpha\nu} C_{\alpha'\nu'}^{n'\star}(k)
+C_{\alpha\nu}^{n}(k)\sum_l \exp{\rmi k(R_l+\tau_{\nu\nu'})} 
+E_{\alpha\alpha'}^{l\nu\nu'} \epsilon(R_l+\tau_{\nu\nu'}) \bigg\vert^2
+\]
+should be broken thus:
+\begin{eqnarray*}
+T_{nk\rightarrow n'k'}&\propto& 
+(a+b)^2\bigg\vert \sum_{\alpha'\nu'\alpha\nu} 
+C_{\alpha'\nu'}^{n'\star}(k)C_{\alpha\nu}^{n}(k)\\
+&&\times \sum_l \exp[\rmi k(R_l+\tau_{\nu\nu'})] 
+E_{\alpha\alpha'}^{l\nu\nu'} \epsilon(R_l+\tau_{\nu\nu'}) 
+\bigg\vert^2
+\end{eqnarray*}
+which is obtained by the code
+\begin{verbatim}
+\begin{eqnarray*} 
+T_{nk\rightarrow n'k'}&\propto& 
+(a+b)^2\Big\vert \sum_{\alpha'\nu'\alpha\nu} 
+C_{\alpha'\nu'}^{n'\star}(k)C_{\alpha\nu}^{n}(k)\\
+&&\times \sum_l \exp[\rmi k(R_l+\tau_{\nu\nu'})] 
+E_{\alpha\alpha'}^{l\nu\nu'} \epsilon(R_l+\tau_{\nu\nu'}) 
+\Big\vert^2
+\end{eqnarray*}
+\end{verbatim}
+\end{example}
+
+
+For series of short equations occurring consecutively several options 
+are available. 
+\begin{itemize}
+\item If all equations fit on one line and the equations 
+are not referred to separately in the text, 
+then they should be set on a single 
+line with a \verb"\qquad" separating each separate equation, e.g.
+\begin{equation}
+h_{00}=h^*_{00}\qquad h_{0i}=h^*_{0i}+a_{0,i}+a_{i,0}
+\qquad h_{ij}=h^*_{ij}+a_{i,j}+a_{j,i}. \label{eq:hxy}
+\end{equation}
+
+\item If the equations will not fit on one line but do not need 
+individual numbers then they should be set on the minimum number of 
+lines with \verb"\qquad" separating entries (or if each individual 
+equation is of similar length aligning the starts of the equations), 
+e.g.
+\begin{eqnarray*}
+&g_{\mu\nu}=\eta_{\mu\nu}+h_{\mu\nu}\qquad
+\vert h_{\mu\nu}\vert \ll 1&\\
+&\eta_{00}=1\qquad \eta_{i0}=0\qquad \eta_{0j}=0 
+\qquad \eta_{ij}= -\delta_{ij}.&
+\end{eqnarray*}
+
+
+\item If individual equations are referred to separately (i.e.\ they 
+have separate equation numbers) then, if they have similar length 
+left-hand sides, they should be aligned (either left or at the equals 
+sign) using the \verb"eqnarray" environment.
+\end{itemize}
+
+\subsection{Special characters for mathematics}
+Bold italic characters are used in our books to signify vectors (rather
+than using an upright bold or an over arrow). To obtain this effect
+use \verb"\bi{#1}" within maths mode, e.g. $\bi{ABCdef}$. If upright 
+bold characters are required in maths use \verb"\mathbf{#1}" within maths
+mode, e.g. $\mathbf{XYZabc}$.
+
+The American Mathematical Society provides a series of extra symbol fonts
+to use with \LaTeX\ and packages containing the character definitions to
+use these fonts. Authors wishing to use Fraktur \ifiopams$\mathfrak{ABC}$\fi
+or Blackboard Bold \ifiopams$\mathbb{XYZ}$\fi can include the appropriate
+AMS package (e.g. amsgen, amsfonts, amsbsy, amssymb) with a 
+\verb"\usepackage" command or add the command \verb"\usepackage{iopams}"
+which loads the four AMS packages mentioned above and also provides
+definitions for extra bold characters (all Greek letters and some
+additional other symbols). 
+
+The package iopams uses the definition \verb"\boldsymbol" in amsbsy
+which allows individual non-alphabetical symbols and Greek letters to be made
+bold within equations.
+The bold Greek lowercase letters \ifiopams$\balpha \ldots\bomega$,\fi 
+are obtained with the commands 
+\verb"\balpha" \dots\ \verb"\bomega" (but note that
+bold eta\ifiopams, $\bfeta$,\fi\ is \verb"\bfeta" rather than \verb"\beta")
+and the capitals\ifiopams, $\bGamma\ldots\bOmega$,\fi\ with commands 
+\verb"\bGamma" \dots\
+\verb"\bOmega". Bold versions of the following symbols are
+predefined in iopams, other characters are made bold using 
+\verb"\boldsymbol{\symbolname}": 
+bold partial\ifiopams, $\bpartial$,\fi\ \verb"\bpartial",
+bold `ell'\ifiopams, $\bell$,\fi\  \verb"\bell", 
+bold imath\ifiopams, $\bimath$,\fi\  \verb"\bimath", 
+bold jmath\ifiopams, $\bjmath$,\fi\  \verb"\bjmath", 
+bold infinity\ifiopams, $\binfty$,\fi\ \verb"\binfty", 
+bold nabla\ifiopams, $\bnabla$,\fi\ \verb"\bnabla", 
+bold centred dot\ifiopams, $\bdot$,\fi\  \verb"\bdot".
+
+Table~\ref{math-tab2} lists some other macros for use in 
+mathematics with a brief description of their purpose.
+Both \verb"\ms" (medium space) and \verb"\bs" (big space) can be used to
+provide extra spacing between lines of a displayed equation or table.
+This space may be necessary when several separate equations are within the
+same equation environment. 
+
+\begin{table}
+\caption{Other macros defined in IOPP macros for use in maths.
+\label{math-tab2}}
+\begin{tabular*}{\textwidth}{@{}l*{15}{@{\extracolsep{0pt plus
+12pt}}l}}
+\br
+Macro&Result&Description\\
+\mr
+Spaces\\
+\verb"\fl"&&Start line of equation full left\\
+\verb"\ms"&&Spread out lines in displayed equations slightly ($\sim$3pt)\\
+\verb"\bs"&&Bigger space ($\sim$6pt) to separate lines in displays\\
+\verb"\ns"&&Small negative space between lines in displays\\
+\bs
+Miscellaneous\\
+\verb"\case{#1}{#2}"&$\case{\#1}{\#2}$&Text style fraction in display\\
+\verb"\Tr"&$\Tr$&Roman Tr (Trace)\\
+\verb"\tr"&$\tr$&Roman tr (trace)\\
+\verb"\Or"&$\Or$&Roman O (of order of)\\
+\verb"\tdot{#1}"&$\tdot{x}$&Triple dot over character\\
+\verb"\lshad"&$\lshad$&Text size left shadow bracket\\
+\verb"\rshad"&$\rshad$&Text size right shadow bracket\\
+\br
+\end{tabular*}
+\end{table}
+
+
+\section{Miscellaneous points}
+Exponential expressions, especially those containing subscripts or 
+superscripts, are clearer if the notation $\exp(\ldots)$ is used, 
+except for 
+simple examples\index{exponentials}. 
+For instance $\exp[\rmi(kx-\omega t)]$ and $\exp(z^2)$ are 
+preferred to $\e^{\rmi(kx-\omega t)}$ and $\e^{z^2}$, but 
+$\e^2$ 
+is acceptable. 
+
+It is important to distinguish between ln $= \log_\e$ and lg 
+$=\log_{10}$. We recommend braces, brackets and 
+parentheses\index{parentheses} should be used in the 
+order: $\{[(\;)]\}$, but, whatever order they are 
+used in, they should be consistent throughout the book. 
+The same ordering of brackets should be 
+used within each different size occurring. 
+However, this ordering is to be ignored if the
+brackets have a 
+special meaning (e.g.\ if they denote an average or a function). Decimal 
+fractions should 
+always be preceded by a zero\index{decimals}: for example 0.123 {\bf not} .123. For long 
+numbers commas are not inserted but instead a thick space (\verb"\;")
+is added after 
+every third character away from the position of the decimal point unless 
+this leaves a single separated character: e.g.\ $60\;000$, 
+0.123\;456\;78 
+but 4321 and 0.7325 (\verb"\;" has been redefined to allow it to be 
+used in both text and maths mode).
+
+No punctuation\index{punctuation} should be used in 
+displayed mathematics apart from full stops if 
+the equation comes at the end of a sentence. If more than one equation 
+appears on the same line, they should be 
+separated by a \verb"\qquad" of space 
+rather than by a comma or semicolon.
+
+The symbols `$>$' and `$<$' should be used in the sense of `greater 
+than' and `less than'. If an angle bracket is required (for instance 
+in a bra or ket vector) do not use these symbols; instead, use 
+\verb"\rangle" and \verb"\langle". 
+
+Theorems, and other theorem-like structures such as lemmas, corollaries,
+definitions, exercises and examples, should be set using the \verb"\newtheorem"
+declaration to define environments for the particular theorem-like
+structures in your document. There are two arguments to \verb"\newtheorem",
+the first is the name of the environment and the second the text to be
+printed when the environment is called. There is also an optional argument 
+to specify numbering by chapter or section. For more details see Lamport
+(1986) pp~58--9.
+To indicate the end of a theorem 
+a small square, \opensquare, is often used; to obtain one at the end of the line 
+type \verb"\hfill$\square$" or \verb"\hfill\opensquare".
+ 
+
+
+\section{Equation numbering}
+Displayed equations that are referred to in the text should be numbered with 
+the number on the right-hand side\index{equation numbering}. 
+Sequential numbering by chapter should be 
+used: (1.1), (1.2), etc. 
+When referring to an equation in the text, either put 
+the equation number in parentheses without the word `equation', 
+e.g.\ `as in (1.2)', or spell out the 
+word equation in full, e.g.\ `if equation (1.2) is factorized'; do not 
+use abbreviations such as eqn or eq. `Equation' should always be used 
+if an equation number starts a sentence.
+\LaTeX\ generates equation numbers automatically by using the
+\verb"equation" or \verb"eqnarray" environments. 
+Cross referencing\index{cross referencing, equations} can be used
+for equations numbers by adding a label to the equation, e.g.\
+\verb"\label{eq:HF}" and referring to it in the text by
+\verb"(\ref{eq:HF})", or \verb"\eref{eq:HF}" (which automatically surrounds
+the number with parentheses), see \eref{eq:hxy}. Where an equation 
+number starts a sentence \verb"\Eref{#1}" will produce 
+\verb"Equation~(No)" where No is the number corresponding to label 
+\verb"#1".
+
+
+
+
+\chapter{Figures and tables}
+\section{Figures}
+Figures may be included in an article as encapsulated PostScript files or
+using the \LaTeX\ picture environment. Alternatively authors may send in 
+high quality printed versions of their figures (fair copies) and 
+attach copies of the fair copies to each 
+chapter. The fair copies should be in black 
+Indian ink or printing on tracing paper, plastic or white card or 
+paper, or glossy photographs.
+
+Figures are numbered serially within each chapter and
+referred to in the text by number (figure 2.1, etc {\bf not} Fig.\
+2.1). Each figure should have a brief caption describing it and, 
+if necessary, interpreting the various lines and symbols on the 
+figure. As much lettering as possible should be removed from the 
+figure and included in the caption\index{figure captions}. 
+\LaTeX\ provides several macros 
+for use in describing symbols\index{figure captions, symbols} 
+and lines in figures and we have
+provided some additional definitions 
+(symbols for a filled triangle, a filled inverted triangle, a filled star 
+and a filled diamond are only available when using the optional
+file \verb"iopams.sty"):
+\begin{tabbing}
+\verb"\opentriangledown"\qquad\=\kill
+\verb"\opencircle" \>produces\qquad\=\opencircle\\
+\verb"\opensquare" \>produces \>\opensquare\\
+\verb"\opentriangle" \>produces \>\opentriangle\\
+\verb"\opentriangledown"\>produces\>\opentriangledown\\
+\verb"\opendiamond" \>produces \>\opendiamond\\
+\verb"\fullcircle" \>produces \>\fullcircle\\
+\verb"\fullsquare" \>produces \>\fullsquare\\
+\ifiopams
+\verb"\fulltriangle" \>produces \>\fulltriangle\\
+\verb"\fulltriangledown" \>produces \>\fulltriangledown\\
+\verb"\fulldiamond" \>produces \>\fulldiamond\\
+\verb"\fullstar" \>produces \>\fullstar\\
+\fi
+\verb"\dotted" \>produces \>\dotted\\
+\verb"\dashed" \>produces \>\dashed\\
+\verb"\broken" \>produces \>\broken\\
+\verb"\longbroken" \>produces \>\longbroken\\
+\verb"\chain" \>produces \>\chain\\
+\verb"\dashddot" \>produces \>\dashddot\\
+\verb"\full" \>produces \>\full\\
+\end{tabbing}
+
+If a figure has parts\index{parts}, these 
+should be labelled ($a$), ($b$), ($c$) etc. In the text use \verb"($a$)" or 
+\verb"\pt(a)" to obtain \pt(a), etc.
+
+Unless the author can provide suitable encapsulated PostScript files
+or graphics files in some other suitable format the 
+fair copies of the 
+figures\index{Figures} will normally be reduced 
+photographically and pasted into
+spaces left for them.
+The amount of space\index{figures, space for} the reduced version of a figure will occupy will 
+of course depend on its complexity, but will usually be in the range 
+10--15~picas (pc) ($\sim1.5$--2.5~in or 4--7~cm). 
+The figure reductions chosen should be 
+such that the lettering on the figures is of a similar size, or slightly 
+smaller than, the text. If authors are contracted to produce camera-ready 
+copy they should size their figures appropriately otherwise a standard 
+space (e.g.\ 2in) can be left and this will be corrected later by the 
+IOP editors. 
+
+To set the figure captions\index{figure captions} 
+the  \verb"\figure" environment is used.
+Between the \verb"\begin{figure}" and \verb"\end{figure}"
+commands the space for the figure is specified using 
+\verb"\vspace{#1}" and the figure caption with \verb"\caption{#1}".
+The space required is the final size of the figure itself 
+(i.e.\ when it is 
+reduced); 
+allowance is made in the definition for the extra space separating the 
+figure from any preceding text and from the figure caption.
+The argument of \verb"\caption" is just the words of the caption, 
+the label (e.g.\ {\bf Figure 
+3.1.}) is automatically set in the correct style. 
+The default positions for a figure are [htbp] so, if possible, the 
+figure will be inserted at the position it is called at, if this is not
+possible it will be placed at the 
+top of a page, the bottom of a page or lastly on a page by itself. 
+An optional 
+argument can be added it square brackets 
+after \verb"\begin{figure}" to allow 
+the position of a figure on the page to be 
+varied\index{figures, positioning on page}; 
+the available options are \verb"[h]" for putting the figure 
+in the text where the environment appears. 
+\verb"[b]" inserts the figure at the bottom of the current page, 
+\verb"[p]" makes the figure 
+occupy a full page, \verb"[t]" inserts the figure at the top of the
+current or a subsequent page, or any combination of them. 
+It is normally unnecessary to change the default,  \verb"[htbp]", but 
+it may be useful to change from the default to improve the 
+page layout when everything is completed.
+
+As an example, the command
+\begin{verbatim}
+\begin{figure}
+\vspace{5pc}
+\caption{This is a short figure caption.} 
+\end{figure}
+\end{verbatim}
+gives a caption with space for a figure occupying five picas.
+\begin{figure}
+\vspace{5pc}
+\caption{This is a short figure caption.}
+\end{figure}
+
+
+The figure-making commands should be used when the figure is first 
+mentioned in the text. Within text, figures should be referred to as 
+figure~2.1 etc., not fig.~2.1. Cross referencing\index{cross referencing,
+figures} to figures can be made by
+giving the figure environment a label, e.g.\ \verb"\label{fig:test}" and
+referring to it in the text using \verb"\ref{fig:test}". To save typing
+\verb"\fref{#1}" has also 
+been defined to give \verb"figure~\ref{#1}" and \verb"\Fref{#1}" to give
+\verb"Figure~\ref{#1}".
+
+If a figure will only fit on a page 
+landscape\index{landscape}\index{figures, landscape}, 
+i.e.\ when rotated 90$^\circ$, 
+the command \verb"\figblank" (which increments the page 
+number and leaves a blank page) should be included at the appropriate 
+place in the file. The caption should then be 
+set from a separate file to the rest of the book
+with the page dimensions adjusted so that the normal 
+page depth is the page width and the normal page width the page depth.  
+
+\subsection{Inclusion of graphics files}
+If graphics files are available as encapsulated PostScript (EPS) files 
+(or are created within the \LaTeX\ picture environment) they may
+be included within the body of the text at an appropriate point using a
+standard graphics inclusion package. Authors should ensure EPS files meet
+the following criteria
+\begin{itemize}
+\item the Bounding Box should indicate the area of the figure 
+with a minimum of white space around it and not the dimensions of the
+page.
+\item Any fonts used should be from the standard PostScript set (Times,
+Helvetica, Courier and Symbol).
+\item Scanned images should be of 600 dpi resolution for line art (black
+and white) and 150 dpi resolution for grayscale or colour.
+\item Captions and labels (e.g.\ Figure 1) should not be included in the
+EPS file although part letters (e.g.\ ($a$)) are acceptable provided they
+are placed close or within the boundary of the figure. 
+\end{itemize}
+
+The precise coding required will depend on the graphics package being used
+and the printer driver. We use a printer driver compatible with DVIPS but
+authors should avoid using special effects generated by including verbatim
+PostScript code within the \LaTeX\ file with specials other than the
+standard figure inclusion ones.
+
+Using the epsf package figures can be included using code such as:
+\begin{verbatim}
+\begin{figure}
+\begin{center}
+\epsfbox{file.eps}
+\end{center}
+\caption{Figure caption}
+\end{figure}
+\end{verbatim}
+
+
+
+\section{Tables\label{tabsec}}
+Tables\index{Tables} should be used only to improve conciseness or where the 
+information cannot be given satisfactorily in other ways, such as 
+histograms or graphs. Tables are often 
+best arranged with more columns than rows, as in the examples given.
+Tables are numbered serially within each chapter 
+and referred to in the text 
+by number (table 3.1, etc, {\bf not} tab. 3.1). Each table should have an 
+explanatory caption which should be as concise as possible. If a table 
+is divided into parts these should be labelled \pt(a), \pt(b), 
+\pt(c), etc but there should be only one caption for the whole 
+table, not separate ones for each part.
+
+\LaTeX\ uses the table environment 
+to set tables, the table caption\index{table caption} precedes the table 
+and is set 
+with the command \verb"\caption{#1}"
+which has the text of the table caption as its argument. 
+As with figures the default position of tables is \verb"[htbp]"
+and this can be changed if necessary by adding the specific placement
+instruction after \verb"\begin{table}".
+The 
+numbering of the captions is be done automatically and cross
+references\index{cross references, tables} to 
+tables in the text can be done provided a \verb"\label" is given within the
+table environment. Tables with a label \verb"tab" can be referred to in the
+text using \verb"table~\ref{tab}", \verb"\tref{tab}" or \verb"\Tref{tab}". \verb"\tref" sets
+`table' with the number tied to it and \verb"\Tref" `Table' and the number.
+\verb"\Tref" should only be used at the start of sentences.
+
+Tables themselves are normally set using the \LaTeX\ tabular environment,
+see Lamport (1986) for full details.
+IOP house style for tables is simple: there is 
+a bold rule at the top and bottom of the table, with a medium rule to 
+separate the headings from the entries. There should be no vertical 
+rules\index{rules} in the table. 
+We hope that authors will follow the instructions below for setting 
+tables to the IOP style but, in books, authors may use their own format
+if they prefer provided the result is pleasing to the eye and
+it is followed consistently throughout.
+
+\subsection{IOP table style}
+The IOP table style uses the tabular environment within the center
+environment
+with columns normally aligned left.
+The bold rules at the top and bottom of the table are 
+set with the \verb"\br" command 
+(which does not need a \verb"\\" following it).
+The medium rule separating the heading from the entries 
+is set with \verb"\mr"
+or \verb"\hline". To avoid the rules sticking out at either end of the
+table add \verb"@{}" before the first and after the last descriptors,
+e.g.\ \verb"{@{}llll@{}}".
+ 
+\Tref{ex1} demonstrates the IOP table style and the code needed to
+generate it is given below. Note that columns are aligned on the decimal
+point.
+
+\begin{table}
+\caption{A simple example produced using the alignment commands 
+described in \protect\sref{tabsec}.  The default 
+alignment for all columns is left alignment.}
+\label{ex1}
+\begin{center}
+\begin{tabular}{@{}lllllll@{}}
+\br
+$E_0$ (eV)&$\theta_{\text e}$ (deg)&$\lambda$&\phm$\chi$ (deg)
+&\phm$\eta_1$&$\eta_2$&$\eta_3$\\ 
+\mr
+139.7 &60&0.74&$-21.9$&$-0.208$&0.472&146\\ 
+\075.3 &75&0.75&$-15.2$&\phm---&---&---\\ 
+\045.0 &90&0.60&\0$-8.12$&$-0.29$&0.41&\075\\ 
+\023.57&60&0.53&\0$-4.23$&$-0.22$&0.17&\015\\
+\br
+\end{tabular}
+\end{center}
+\end{table}
+
+Three commands have been defined to help align columns\index{tables,
+column alignment} on the 
+decimal point. \verb"\0" has been defined to be a phantom digit. If placed at
+the start of an entry in a left-aligned column
+it will move the entry to the right by the width of a digit (all
+numbers 0--9 have the same width). It can also be used at the end of
+entries in right-aligned columns to move entries one digit to the left.
+\verb"\0" has been used in columns one and four. \verb"\phm" has been defined as a 
+phantom minus sign and is used to aid alignment in columns where most
+entries have minus signs but some do not. In left-aligned columns it is
+inserted at the start of the entries without minus sign and produces a
+space the width of a minus sign. \verb"\phm" has been used in the headings of
+columns four and five and before the dash in column five.
+For columns with only a few minus signs
+an alternative \verb"\m" is used instead of the minus sign to overlap the minus
+sign to the left of the column.
+
+The full code for \tref{ex1} is (note that 
+\verb"\protect" has to be used before
+the cross-reference in the caption):
+\begin{verbatim}
+\begin{table}
+\caption{A simple example produced using the alignment commands 
+described in \protect\sref{tabsec}.  The default 
+alignment for all columns is left alignment.}
+\label{ex1}
+\begin{center}
+\begin{tabular}{@{}lllllll@{}}
+\br
+$E_0$ (eV)&$\theta_{\text e}$ (deg)&$\lambda$&\phm$\chi$ (deg)
+&\phm$\eta_1$&$\eta_2$&$\eta_3$\\ 
+\mr
+139.7 &60&0.74&$-21.9$&$-0.208$&0.472&146\\ 
+\075.3 &75&0.75&$-15.2$&\phm---&---&---\\ 
+\045.0 &90&0.60&\0$-8.12$&$-0.29$&0.41&\075\\ 
+\023.57&60&0.53&\0$-4.23$&$-0.22$&0.17&\015\\
+\br
+\end{tabular}
+\end{center}
+\end{table}
+\end{verbatim}
+
+Headings\index{column headings}\index{table headings}
+which span more than one column should be set using the command
+\verb"\multicolumn{#1}{c}{#3}" where \verb"#1" is the number of columns to be
+spanned and \verb"#3" is the heading. A simplified alternative version is
+\verb"\centre{#1}{#2}" where \verb"#1" is the number of columns to be
+spanned and \verb"#2" the heading.
+There should be a rule spanning the same  
+columns below the heading, it is produced with \verb"\cline{n-m}" 
+where \verb"n" is the number of the first spanned column and \verb"m"
+that of the last spanned column. \verb"\cline" should not be part of a row 
+but follow immediately after a \verb"\\". 
+An alternative way of producing a spanned
+rule is to include \verb"\crule{#1}" within the row following the centred
+heading, with \verb"#1" the number of columns the rule is to span. To reduce
+the
+space between the centred heading and rule \verb"\ns" can be added after the
+\verb"\\" of the row containing the centred heading, see the code for
+\tref{tnote}. 
+ 
+If a table contains notes\index{tables, notes to} 
+they should appear beneath the table set to the width of the page
+and 
+not at the foot of the page. 
+The tabular environment for a table with footnotes must be 
+placed within a \verb"\notedtable{#1}" command to save the table width for 
+use in the notes.
+The appropriate symbols should be included 
+in the body of the table and the table notes are placed
+after the closing brace
+of \verb"\notedtable"
+but before the \verb"\end{center}" and \verb"\end{table}" commands.
+The normal symbols to use for notes to tables are either the 
+footnote symbols: \dag, \ddag, \S\ or $\|$ or, if there are a lot of 
+notes, superscripted lower case roman letters, i.e.\ $^{\text a}$.
+The table notes are set with the command \verb"\tabnote{#1}" where 
+\verb"#1" is 
+the note, including its symbol. There should be a \verb"\tabnote" 
+command for 
+each table note. \Tref{tnote} is an example of a table containing notes.
+
+ 
+\begin{table}
+\caption{A table with headings spanning two columns and containing
+footnotes. 
+To improve the visual effect a negative skip has been 
+put in between the first and second lines of the headings.}
+\label{tnote}
+\begin{center}
+\notedtable{\begin{tabular}{@{}lllll@{}}
+\br
+&&&\centre{2}{Separation energies}\\
+\ns
+&Thickness&&\crule{2}\\
+Nucleus&(mg cm$^{-2}$)&Composition&$\gamma$, n 
+(MeV)&$\gamma$, 2n (MeV)\\
+\mr
+$^{181}$Ta&$19.3\0\pm 0.1^{\text a}$&Natural&7.6&14.2\\
+$^{208}$Pb&$\03.8\0\pm 0.8^{\text b}$&99\%\ enriched&7.4&14.1\\
+$^{209}$Bi&$\02.86\pm 0.01^{\text b}$&Natural&7.5&14.4\\
+\br
+\end{tabular}}
+\tabnote{$^{\text a}$ Self-supporting.}
+\tabnote{$^{\text b}$ Deposited over Al backing.}
+\end{center}
+\end{table}
+
+This table is obtained by using the following code.
+
+
+\begin{verbatim}
+\begin{table}
+\caption{A table with headings ... .}\label{tnote}
+\begin{center}
+\notedtable{\begin{tabular}{@{}lllll@{}}
+\br
+&&&\centre{2}{Separation energies}\\
+\ns
+&Thickness&&\crule{2}\\
+Nucleus&(mg cm$^{-2}$)&Composition&$\gamma$, n 
+(MeV)&$\gamma$, 2n (MeV)\\
+\mr
+$^{181}$Ta&$19.3\0\pm 0.1^{\text a}$&Natural&7.6&14.2\\
+$^{208}$Pb&$\03.8\0\pm 0.8^{\text b}$&99\%\ enriched&7.4&14.1\\
+$^{209}$Bi&$\02.86\pm 0.01^{\text b}$&Natural&7.5&14.4\\
+\br
+\end{tabular}}
+\tabnote{$^{\text a}$ Self-supporting.}
+\tabnote{$^{\text b}$ Deposited over Al backing.}
+\end{center}
+\end{table}
+\end{verbatim}
+
+
+
+
+
+If a table is approximately of page width\index{tables, page width} 
+it can be made to fill the 
+full page width by using the \verb"tabular*" environment.
+Where a table is still too wide to fit on a page it may be possible to 
+reorganize it to fit in (for instance change rows into columns and 
+vice versa). If a large table has to be 
+set landscape\index{tables, landscape} then it should 
+be set separately and the command \verb"\tabblank" inserted at the 
+appropriate place to increment the table number and to leave a blank 
+page. For very narrow tables it may sometimes be necessary to space 
+out the table so that any notes can be set satisfactorily (they are set 
+to the width of the table). To do this simply replace ampersands by 
+double ampersands (or triple ones) to increase the spacing between 
+columns.
+ 
+It can often be difficult to decide on the correct 
+\index{tables, column alignment}alignment of 
+columns and unfortunately there are no hard and fast rules. Useful 
+guidelines, however, are:
+\begin{itemize}
+\item align decimal points\index{decimal points} where possible (Knuth 1986, 
+pp~241, 242);
+
+\item columns of numbers without decimal points should align right as 
+if they had decimal points;
+
+\item dashes in tables (use an em rule, \verb"---") 
+should align with the first complete column on the 
+left-hand side or the entries immediately above them;
+
+\item column headings\index{column headings} should normally be aligned left;
+
+\item minus signs (and other mathematical signs such as +, $<$, etc) 
+should be ignored for alignment purposes (i.e.\ in a 
+column of numbers, some with minus signs, the minuses should stick out 
+to the left); 
+
+\item if there is a small column heading over a wide column with an 
+uneven left-hand edge, the heading may look better if aligned with the 
+left-hand side of the first entry in that column;
+
+\item column headings spanning two or more minor headings should be 
+centred.
+\end{itemize}
+
+It may be difficult to satisfy all these points simultaneously but the 
+most important underlying point is to create a table that is easy to 
+read and understand and that has a pleasing appearance to the eye.
+
+Thus, the procedure to typeset a table is: 
+\begin{itemize}
+\item start the table environment
+with \verb"\begin{table}",
+ type the caption within 
+braces after the \verb"\caption" command, and define the label
+if required;
+\item start the center and tabular environments
+set each column as left aligned with \verb"\begin{center}"
+\verb"\begin{tabular}{@{}lllll@{}}", with one \verb"l" for each column,
+the \verb"@{}" stop the rules overhanging the left and right
+edges of the table;
+\item set the top bold rule with \verb"\br", do not 
+follow it with \verb"\\";
+\item type 
+the various column headings separated by \verb"&"
+(each line should end with a \verb"\\"); 
+\item 
+follow the headings with \verb"\mr" without a \verb"\\" following;
+\item set the table entries as 
+usual, with different columns being separated by \verb"&" and \verb"\\" at the
+end of each line;
+\item insert the final bold rule using \verb"\br";
+\item complete the table with \verb"\end{tabular}", \verb"\end{center}" and
+\verb"\end{table}". 
+\end{itemize}
+
+
+Units should not normally be given within the body of a table but 
+given in brackets following the column heading; however, they can be 
+included in the caption for long column headings or complicated units. 
+
+Where possible, tables should not be broken over pages. If each table 
+is reasonably large then each one can start a new page; however, if 
+there are several consecutive short tables they may appear on the same 
+page.
+
+If a table is not to be typeset but reproduced from artwork obtained from 
+another source (e.g.\ a previous edition or another book)\index{tables,
+from CRC}, 
+the normal table environment should be used together with \verb"\caption" 
+to set the caption.
+\verb"\vspace*{#1}", where \verb"#1" is the 
+space required to fit the artwork in, is then used to provide the
+necessary space before the table environment is closed.
+
+
+
+\chapter{References}
+\section{General remarks}
+Two different styles of referencing are in common use: the 
+Harvard 
+alphabetical system\index{references, Harvard 
+alphabetical system} and the Vancouver numerical 
+system\index{references, Vancouver numerical 
+system}. Either may be 
+used. References\index{References} can be collected 
+together at the end of the book or can be placed at the end of each 
+chapter as a numbered or unnumbered section. 
+If the 
+references are to be placed at the end of the book they should appear 
+in a separate file with  the command
+\verb"\References" or \verb"\Bibliography" at the beginning depending
+on whether the heading is to be `References' or
+`Bibliography', or indeed \verb"\chapter*{Title}" if some other title is
+required for the reference chapter. 
+If the references are to appear at the end of each chapter 
+then they should be 
+included at the end of the appropriate chapter file following a
+command \verb"\section*{heading}" for an unnumbered section, or 
+\verb"\section{heading}" for a numbered one. In each case introductory
+text may
+precede the same of the reference list if desired.
+
+If the Harvard alphabetical 
+system\index{references, Harvard alphabetical system} is to be used the command 
+\begin{verbatim}
+\begin{thereferences}
+\end{verbatim}
+must 
+precede the start of the references (note 
+\verb"\begin{thebibliography}" is reserved for use with numeric reference
+lists and
+\verb"\begin{thereferences}" should only be used for alphabetic
+reference lists). 
+
+The equivalent command for the Vancouver numerical reference
+system\index{references, Vancouver numerical 
+system} is
+\verb"\begin{thebibliography}{#1}", where \verb"#1" is a number 
+with the same number of digits as the highest referencing number used. 
+Thus for a reference list containing 156 entries, \verb"{156}" (or 
+with any other three-digit number) should be used.
+
+The reference environments remove extra 
+spaces after full stops and adjusts the indentation of turnover lines. 
+When the reference list is completed the command \verb"\end{thereferences}" 
+or \verb"\end{thebibliography}" should be 
+used to end the reference environment as appropriate.
+
+The References should be formatted according to a consistent 
+style and that outlined here is highly recommended; 
+it will save a considerable amount of time in copy editing and correction
+if the references are prepared in an acceptable style. 
+If authors wish to use a different
+style for references they should discuss the proposed format with the 
+commissioning staff at the earliest possibility.
+Brief descriptions of the use of the two 
+referencing systems are given below.
+
+\section{Harvard system}
+In the Harvard alphabetical 
+system\index{references, Harvard alphabetical system} 
+the name of the author appears in the text together 
+with the year of publication. 
+As appropriate, either the date or the name 
+and date are included within parentheses. Where there are only two authors 
+both names should be given in the text; if there are more than two 
+authors only the first name should appear followed by `{\it et al}' 
+(which is obtained by 
+typing \verb"\etal"). When two or 
+more references to work by one author or group of authors occur for the 
+same year they should be identified by including a, b, etc after the date 
+(e.g.\ 1986a). If several references to different pages of the same article 
+occur the appropriate page number may be given in the text, e.g.\ Kitchen 
+(1982, p~39).
+
+
+The reference list consists of an 
+alphabetical listing by authors' names and in date order for each 
+author or group of identical authors. Each individual reference must 
+be 
+typed as a separate paragraph.
+
+There will be two basic types of 
+entries within the reference list: (i) those to journal articles and 
+(ii) those to books, conference proceedings and reports. For both of 
+these types of references font changes are required; in the 
+subsections below we describe these font changes.
+
+\subsection{References to journal articles}
+Normal references to  
+journal articles\index{journal articles} contain three changes of 
+font:
+the authors and date appear in roman type, the journal title in 
+italic, the volume number in bold and the page numbers in roman again. 
+A typical journal entry would be:
+\begin{thereferences}
+\item Cisneros A 1971 {\it Astrophys. Space Sci.} {\bf 10} 87
+\end{thereferences}
+which is obtained by typing
+\begin{verbatim}
+\item Cisneros A 1971 {\it Astrophys. Space Sci.} {\bf 10} 87
+\end{verbatim}
+
+Features to note are the following.
+\begin{itemize}
+\item The authors should be in the form: surname (with only the first 
+letter capitalized) {\bf followed} by the initials with {\bf no} 
+periods after the initials. Authors should be separated by a comma 
+except for the last two which should be separated by `and' with no 
+comma preceding it. Titles of articles may be included in the  
+reference list, if desired, in which case 
+the title should be in lower case, except for an initial 
+capital, and should follow the date.
+
+\item The journal is in italic and is 
+abbreviated\index{references, journal abbreviations}. If a journal has 
+several parts denoted by different letters the part letter should be 
+inserted after the journal in roman type, e.g.\ \PR A. An 
+exception to this is \PL where the part letter is 
+included in the volume number. Several frequently referenced journals 
+have been assigned a control sequence that typesets the journal name, 
+in italic and leaves a space after it. 
+Thus \verb"\NP" expands to \NP, and \verb"\JMP" 
+expands to \JMP. An italic correction is included 
+where necessary. Tables of the available journal abbreviations are 
+given in appendix~\ref{jlabs}.
+
+\item The volume number is bold; the page number is roman. Both the 
+initial and final page numbers should be given where possible. The 
+final page number should be in the shortest possible form and 
+separated from the initial page number by an en rule (\verb"--"), e.g.\ 
+1203--14.
+
+\item Where there are two or more references with identical authors, 
+the authors' names should not be repeated but should be replaced by 
+\verb"\dash" on the second and following occasions. Thus
+\begin{verbatim}
+\item Harrison P G and Willett M J 1988 {\it Nature\/} 
+  {\bf 332} 337--9
+\item\dash 1989 {\it J. Chem. Soc. Faraday Trans.} I {\bf 85} 
+  1907--20
+\end{verbatim}
+\end{itemize}
+
+
+\subsection{References to books, conference proceedings and reports}
+References to books\index{references, books},
+proceedings\index{references, proceedings}, reports\index{references,
+reports} and preprints\index{references, preprints} are similar, but have
+only two changes of font. The authors and date of publication are in
+roman, the title of the book is in italic, and the editors, publisher,
+town of publication and page number are in roman. A typical reference to a
+conference and a book are
+\begin{thereferences}
+\item Caplar R 1973 {\it Proc. Int. Conf. on Nuclear Physics, 
+ Munich} vol~1 (Amsterdam: North-Holland) p~517
+\item Dorman L I 1975 {\it Variations of Galactic Cosmic Rays} 
+(Moscow: Moscow State University Press) p~103
+\end{thereferences}     
+which would be obtained by typing
+\begin{verbatim}
+\item Caplar R 1973 {\it Proc. Int. Conf. on Nuclear Physics, 
+ Munich} vol~1 (Amsterdam: North-Holland) p~517
+\item Dorman L I 1975 {\it Variations of Galactic Cosmic Rays} 
+(Moscow: Moscow State University Press) p~103
+\end{verbatim}
+
+
+Features to note are the following:
+\begin{itemize}
+\item Book titles are in italic and should be spelt out in full with 
+initial capital letters for all except minor words. For conference
+proceedings words such as 
+Proceedings, Symposium, International, Conference, Second, etc should 
+be abbreviated to Proc., Symp., Int., Conf., 2nd, 
+respectively, but the rest of the title should be given in full, 
+followed by the town or city where the conference was held. For 
+Laboratory Reports the Laboratory should be spelt out wherever 
+possible, e.g.\ {\it Argonne National Laboratory Report}.
+
+\item The volume number as, for example, vol~2, should be followed by 
+the editors, if any, in a form such as ed~A~J~Smith and P~R~Jones. Use 
+\etal if there are more than two editors. Next comes the town of 
+publication and publisher, within parentheses and separated by a colon, 
+and finally the page numbers preceded by `p' if only one number is given 
+or `pp' if both the initial and final numbers are given. The page 
+numbers should be tied (with a \verb"~") to the p or pp.
+\end{itemize}
+
+The cross referencing facilities of \LaTeX\ are not really useful if
+Harvard style referencing is being used. This is because the reference
+list is alphabetical and so additional references can simply be inserted
+in the list without any renumbering being required and because 
+the form of
+citation in the text varies according to context.
+
+\section{Vancouver system}
+In the Vancouver system references are numbered sequentially 
+throughout the text\index{references, Vancouver numerical system}. 
+The numbers occur within square brackets and one 
+number can be used to designate several references. The reference list 
+is in numerical, not alphabetical, order. The number 
+of the reference appears in square brackets, and each 
+individual reference should to be typed on a separate line. 
+The reference 
+list {\bf must} begin with the command \verb"\begin{thebibliography}{#1}", 
+where \verb"#1" 
+is any number with the same number of digits as the highest reference 
+number used. 
+
+As in the Harvard system, there will be two basic types of entries 
+within the reference list: (i) those to journal articles and (ii) 
+those to books, conference proceedings and reports. For both of these 
+types of references font changes are required; the method is exactly 
+as was described in the previous subsection. In fact, references to 
+journals and books are very similar to those in the Harvard system. 
+There are two major differences. Firstly, the reference number
+must appear at the start of a reference by using \verb"\bibitem"
+instead of \verb"\item" at the start of a new reference. Secondly, 
+when two or more separate references with identical authors occur, the 
+author names are spelt 
+out in full, i.e.\ they are {\bf not} replaced with \verb"\dash". A typical 
+numerical reference list might begin
+\begin{thebibliography}{9}
+\bibitem{dorm} Dorman L I 1975 {\it Variations of Galactic Cosmic Rays} 
+(Moscow: Moscow State 
+University Press) p~103
+\bibitem{casp} Caplar R and Kulisic P 1973 {\it Proc. Int. Conf. on Nuclear 
+Physics, Munich} vol~1 (Amsterdam: North-Holland) p~517
+\bibitem{cis} Cisneros A 1971 {\it Astrophys. Space Sci.} {\bf 10} 87
+\end{thebibliography}
+which would be obtained by typing
+\begin{verbatim}
+\bibitem{dorm} Dorman L I 1975 {\it Variations of Galactic Cosmic Rays} 
+(Moscow: Moscow State University Press) p~103
+\bibitem{casp} Caplar R and Kulisic P 1973 {\it Proc. Int. Conf. on 
+Nuclear Physics, Munich} vol~1 (Amsterdam: North-Holland) p~517
+\bibitem{cis} Cisneros A 1971 {\it Astrophys. Space Sci.} {\bf 10} 87
+\end{verbatim}
+
+Blank lines between each reference are not necessary as a new paragraph
+is started each time a \verb"\bibitem{}" command is used.
+If one number covers more than one reference, and the authors are the 
+same, then separate the references by a semicolon and type the second 
+reference after the first without a paragraph break. For example:
+\begin{verbatim}
+\bibitem{} Bertini R 1984 \PL {\bf 136B} 29; 1985 \PL {\bf 158B} 19
+\end{verbatim}
+If the year and journal are also the same these need not be 
+repeated.
+
+
+If one number covers more than one reference, and the 
+authors are different, then the second reference should appear
+on a separate line but without a number, this is achieved by replacing the 
+\verb"\bibitem{}" command with \verb"\item[]" or \verb"\nonum". 
+For example:
+\begin{verbatim}
+\bibitem{fesh} Feshbach H 1986 \PL {\bf 168B} 318
+\nonum Fano U 1961 \PR {\bf 124} 1866
+\bibitem{bert} Bertini R 1984 \PL {\bf 136B} 29
+\end{verbatim}
+which gives
+\begin{thebibliography}{9}
+\bibitem{fesh} Feshbach H 1986 \PL {\bf 168B} 318
+\item[] Fano U 1961 \PR {\bf 124} 1866
+\bibitem{bert} Bertini R 1984 \PL {\bf 136B} 29
+\end{thebibliography}
+
+If \LaTeX\ cross referencing\index{cross referencing, citations}
+is being used then the label for the 
+reference is included within the brace following \verb"\bibitem"
+and \verb"\cite{label}" is used to refer to the reference in the 
+text, e.g.\ \cite{fesh}. For more details on cross referencing see Lamport 
+(1986).
+
+
+
+\section{Reference lists}
+A complete reference list should provide the reader with enough information 
+to locate the article concerned and should consist of: name(s) and 
+initials, date published, title of journal or book, volume number, 
+editors, if any, and, for books, town of publication and publisher in 
+parentheses, and finally the page numbers. Titles of journal articles may 
+also be included. Up to ten authors may be given in the reference 
+list; where there are more than ten only the first should be given 
+followed by `{\it et al}'. The terms {\it op.\ cit.}, {\it loc.\ cit.}\ 
+and {\it ibid.}\ should not be used. Unpublished conferences and 
+reports should generally not be included in the reference list and 
+articles in the course of publication should be entered only if the 
+form of publication is known. References to preprints should give 
+the title of the preprint and/or preprint number (if relevant). A 
+thesis submitted for a higher degree may be included in the reference 
+list if it has not been superseded by a published paper and is 
+available through a library; sufficient information should be given 
+for it to be traced readily.  
+
+
+
+
+
+\chapter{Indexing}
+\section{Generating an index file}
+An index can be compiled manually, by highlighting words 
+throughout the text and then inserting page numbers when the final 
+version of the text is ready, or semi-automatically, using the \LaTeX\
+indexing facilities. A good index is important; so much so that the author 
+of \TeX\ himself has stated (Knuth 1986) that he does not 
+believe in completely 
+automating the preparation of an index: he puts the final touches to 
+his indexes by hand. The \LaTeX\ indexing facilities, 
+however, should prove to be  
+helpful in preparing a good index. If an index file is to be written 
+the command \verb"\makeindex" should be added to the preamble.
+This causes a \verb".idx" file  to be written containing information
+written by \verb"\index" commands embedded in the text.
+The command \verb"\index{physics}" appearing on page 27 causes an 
+entry on the index file of 
+\verb"\indexentry{physics}{27}". \verb"\index" produces no text and if
+there has been no \verb"\makeindex" command it does nothing. For more
+details of index generation see Lamport (1986).
+The program \verb"makeindex" (\verb"makeindx" on PCs) processes the 
+.idx file produced and sorts entries and puts the extra space between 
+entries starting with different letters, it writes the output onto a file
+with the .ind extension.
+Some extra work such as removing repeated main entries and 
+subentries, removing inconsistencies and adjusting capitalisation
+is required to transform the index file into 
+a really useful index. This should normally be left until the book is
+complete and final proof corrections done and for books for which the
+authoer is not producing camera-ready copy will be done at Institute of
+Physics Publishing.
+
+The .ind file generated from makeindex 
+includes the commands for index environment\index{index} which
+generates the index as a chapter in
+double-column 
+format. The final index is produced by including 
+\verb"\input file.ind" in the master file.
+\verb"file.ind" is the edited version of the output file from makeindex.
+The index file should consist of \verb"\item"s, \verb"\subitem"s and
+\verb"\subsubitem"s, with \verb"\indexspace" inserted each time the 
+initial letter
+changes. A portion of a typical index file is
+\begin{verbatim}
+\begin{index}
+\item Fluctuation measurements, 249
+\item Flux
+\subitem function, 145
+\subitem tube, 29--31
+\indexspace
+\item H mode, 186
+\item HBTX, 21
+\end{index}
+\end{verbatim}
+
+
+
+
+\chapter{Procedures}
+Authors commissioned to write a book in \LaTeX\ should submit a draft
+chapter (both in hard copy and electronic form) 
+to the Commissioning Editor as soon as possible after starting writing. 
+A Desk Editor will then
+evaluate the material sent to check adherence to house style
+and compatibility of the author's files with our production system.
+If problems can be eliminated at this stage it will ensure that the final
+manuscript can be processed without problems or delays.
+It is also possible for authors to meet an editor if 
+there are any queries which could usefully be addressed by such a meeting. 
+Staff at IOP are always willing to advise on production of 
+manuscripts, to maintain the greatest understanding possible between author and 
+editor.
+
+Authors should note that
+it is their responsibility to obtain permission\index{copyright
+permissions} to reproduce any
+previously published material from the author and publisher of the
+material.
+Once the book is complete and has been reviewed and finalized, it will be 
+thoroughly copy-edited\index{production procedures}.
+Figure sizes will be checked and 
+lettering can be added to figures if necessary. 
+Any corrections that are required can either be made 
+by an editor here, or the book can be returned to the author for correction. 
+After corrections have been made and the revised 
+version checked, the figures are inserted in their correct positions and the 
+whole book sent to the author for final approval. When it has been 
+approved the book will be printed.
+
+
+
+\appendix
+
+\chapter{Macros for formatting text and mathematics}
+
+\Tref{txtmacs} lists the basic macros for formatting the text and
+\tref{mathmacs} those for simplifying the coding of mathematics.
+
+\index{macros, for text}\begin{table}[b]
+\caption{Macros available in IOP book style files to format text. 
+Parameters within square 
+brackets are optional arguments as are asterisks.}
+\label{txtmacs}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\br
+Macro name&Purpose\\
+\mr
+\verb"\title"&Title of book\\
+\verb"\author"&Author(s)\\
+\verb"\maketitle"&Generate title page\\
+\verb"\tableofcontents"&Generate contents list\\
+\verb"\makeindex"&Make index file\\
+\verb"\part*{#1}"&Part heading without author's name\\
+\verb"\part[#1]{#2}{#3}"&Part heading without address\\
+\verb"\Part[#1]{#2}{#3}{#4}"&Part heading with address\\
+\verb"\chapter[#1]{#2}"&Chapter or appendix heading\\
+\verb"\chapter*[#1]{#2}"&Unnumbered chapter heading\\
+\verb"\Chapter[#1]{#2}{#3}"&Chapter or appendix with author\\
+\verb"\Chapter*{#1}{#2}"&Unnumbered chapter with author\\
+\verb"\section[#1]{#2}"&Section heading\\
+\verb"\subsection{#1}"&Subsection heading\\
+\verb"\subsubsection{#1}"&Subsubsection heading\\
+\verb"\appendix"&Start of appendices\\
+\verb"\References"&References heading (new chapter)\\
+\verb"\Bibliography"&Bibliography heading (new chapter)\\
+\br
+\end{tabular}
+\end{center}
+\end{table}
+
+\newpage
+
+\index{macros, for text}\begin{table}[t]
+\addtocounter{table}{-1}
+\caption{(Continued.)}
+\begin{center}
+\begin{tabular*}{27pc}{@{}ll@{}}
+\br
+Macro name&Purpose\\
+\mr
+\verb"\begin{thereferences}"&Start Harvard references\\
+\verb"\end{thereferences}"&End Harvard references\\
+\verb"\dash"&Rule for repeated authors\\
+\verb"\begin{thebibliography}{#1}"&Start Vancouver references\\
+\verb"\end{thebibliography}"&End Vancouver references\\
+\verb"\nonum"&Unnumbered reference\\
+\verb"\index"&Entry to be written in index file\\
+\verb"\1"&Entry in index with initial capital\\
+\verb"\2"&Subentry in index\\
+\verb"\begin{theindex}"&Start of index\\
+\verb"\end{theindex}"&End of index\\
+\verb"\etal"&\etal for text and reference lists\\
+\verb"\caption{#1}"&Figure and table caption\\
+\verb"\figblank"&Blank page for landscape figure\\
+\verb"\tabblank"&Blank page for landscape table\\
+\verb"\centre{#1}{#2}"&Heading centred over several columns\\
+\verb"\crule{#1}"&Rule centred over several columns\\
+\verb"\br, \mr"&Bold and medium rules for tables\\
+\verb"\ns"&Small negative space for use in table\\
+\verb"\bs, \ms"&Medium and small interline spaces\\
+\verb"\tabnote{#1}"&Table note\\
+\verb"\0"&Space of a digit (for table alignment)\\
+\verb"\m"&In tables, left overhanging minus sign\\
+\verb"\phm"&In tables, phantom minus sign\\
+\verb"\pt(#1)"&To get letter within (\dots) italic\\
+\verb"\cite{#1}"&Cross referenced citation\\
+\verb"\ref{#1}"&Cross reference\\
+\verb"\cref{#1}, \Cref{#1}"&Chapter cross references\\
+\verb"\sref{#1}, \Sref{#1}"&Section cross references\\
+\verb"\eref{#1}, \Eref{#1}"&Equation cross references\\
+\verb"\fref{#1}, \Fref{#1}"&Figure cross references\\
+\verb"\tref{#1}, \Tref{#1}"&Table cross references\\
+\br
+\end{tabular*}
+\end{center}
+\end{table}
+
+\newpage
+
+
+
+\index{macros, for mathematics}\index{mathematics, macros for}%
+\begin{table}[t]
+\caption{Macros available using the AMS fonts and iopams style file}
+\label{mathmacs}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\br
+Macro name&Purpose\\
+\mr
+\verb"\bi{#1}"&Bold italic for vectors\\
+\verb"\Bbb{#1}"&Black board bold (only with AMS fonts)\\
+\verb"\bGamma...\bOmega"&Bold upright greek capitals\\
+\verb"\bitGamma...\bitOmega"&Bold italic greek capitals\\
+\verb"\balpha...\bvarphi"&Bold greek lower case\\
+\verb"\bfeta"&Bold lower case eta (not $\backslash${\tt beta}!)\\
+\verb"\bell"&Bold $\ell$\\
+\verb"\bpartial"&Bold partial\\
+\verb"\bimath"&Bold dotless i\\
+\verb"\bjmath"&Bold dotless j\\
+\verb"\bnabla"&Bold nabla\\
+\verb"\bdot"&Bold raised dot (for dot products)\\
+\br
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+\chapter{Macros for journal abbreviations}\label{jlabs}
+
+\vspace*{-4pc}\index{journals abbreviations}%
+\begin{table}[b]
+\caption{Abbreviations for the IOP journals.}
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\br
+Macro name&Short form of journal title&Years relevant\\
+\mr
+\verb"\CQG"&Class. Quantum Grav.\\
+\verb"\IP"&Inverse Problems\\
+\verb"\JPA"&J. Phys. A: Math. Gen.\\
+\verb"\JPB"&J. Phys. B: At. Mol. Phys.&1968--1987\\
+\verb"\jpb"&J. Phys. B: At. Mol. Opt. Phys.&1988 and onwards\\
+\verb"\JPC"&J. Phys. C: Solid State Phys.&1968--1988\\
+\verb"\JPCM"&J. Phys: Condens. Matter&1989 and onwards\\
+\verb"\JPD"&J. Phys. D: Appl. Phys.\\
+\verb"\JPE"&J. Phys. E: Sci. Instrum.&1968--1989\\
+\verb"\JPF"&J. Phys. F: Met. Phys.\\
+\verb"\JPG"&J. Phys. G: Nucl. Phys.&1975--1988\\
+\verb"\jpg"&J. Phys. G: Nucl. Part. Phys.&1989 and onwards\\
+\verb"\MST"&Meas. Sci. Technol.&1990 and onwards\\
+\verb"\NET"&Network\\
+\verb"\NL"&Nonlinearity\\
+\verb"\NT"&Nanotechnology\\
+\verb"\PAO"&Pure and Applied Optics\\
+\verb"\PMB"&Phys. Med. Biol.\\
+\verb"\PSST"&Plasma Sources Sci. Technol.\\
+\verb"\QO"&Quantum Opt.\\
+\verb"\RPP"&Rep. Prog. Phys.\\
+\verb"\SST"&Semicond. Sci. Technol.\\
+\verb"\SUST"&Supercond. Sci. Technol.\\
+\verb"\WRM"&Waves in Random Media\\
+\br
+\end{tabular}
+\end{center}
+\end{table}
+
+\newpage
+
+\begin{table}[t]
+\caption{Abbreviations for some more common non-IOP journals.}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\br
+Macro name&Short form of journal\\
+\mr
+\verb"\AC"&Acta Crystallogr.\\
+\verb"\AM"&Acta Metall.\\
+\verb"\AP"&Ann. Phys., Lpz\\
+\verb"\APNY"&Ann. Phys., NY\\
+\verb"\APP"&Ann. Phys., Paris\\
+\verb"\CJP"&Can. J. Phys.\\
+\verb"\JAP"&J. Appl. Phys.\\
+\verb"\JCP"&J. Chem. Phys.\\
+\verb"\JJAP"&Japan. J. Appl. Phys.\\
+\verb"\JMMM"&J. Magn. Magn. Mater.\\
+\verb"\JMP"&J. Math. Phys.\\
+\verb"\JOSA"&J. Opt. Soc. Am.\\
+\verb"\JP"&J. Physique\\
+\verb"\JPhCh"&J. Phys. Chem.\\
+\verb"\JPSJ"&J. Phys. Soc. Japan\\
+\verb"\JQSRT"&J. Quant. Spectrosc. Radiat. Transfer\\
+\verb"\NC"&Nuovo Cimento\\
+\verb"\NIM"&Nucl. Instrum. Methods\\
+\verb"\NP"&Nucl. Phys.\\
+\verb"\PF"&Phys. Fluids\\
+\verb"\PL"&Phys. Lett.\\
+\verb"\PR"&Phys. Rev.\\
+\verb"\PRL"&Phys. Rev. Lett.\\
+\verb"\PRS"&Proc. R. Soc.\\
+\verb"\PS"&Phys. Scr.\\
+\verb"\PSS"&Phys. Status Solidi\\
+\verb"\PTRS"&Phil. Trans. R. Soc.\\
+\verb"\RMP"&Rev. Mod. Phys.\\
+\verb"\RSI"&Rev. Sci. Instrum.\\
+\verb"\SSC"&Solid State Commun.\\
+\verb"\SPJ"&Sov. Phys.--JETP\\
+\verb"\ZP"&Z. Phys.\\
+\br
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+\References
+
+\begin{thereferences}
+
+\item[] American Mathematical Society 1990 {\it AMS-\LaTeX\ Version 1.1
+User's Guide} (Providence, RI: American Mathematical Society)
+
+\item[] American Mathematical Society 1991 {\it AMSFONTS Version 2.1
+User's Guide} (Providence, RI: American Mathematical Society)
+
+
+\item[] Botway L and Biemesderfer C 
+{\it \LaTeX\ Command Summary} (Providence, RI:
+\TeX\ User's Group)                  
+
+\item[] Goossens M, Mittelbach F and Samarin A 1994 {\it The \LaTeX\
+Companion} (Reading, Ma: Addison-Wesley)
+
+\item[] Knuth D E 1986 {\it The \TeX book} (Reading, MA: Addison-Wesley)
+
+\item[] Lamport L 1986 {\it \LaTeX: A Document Preparation System} (Reading, MA: Addison-Wesley)
+
+\item[] Urban M 1990 {\it An Introduction to \LaTeX} (Providence, RI:
+\TeX\ User's Group)
+
+\end{thereferences}
+
+
+\input lauinstr.ind
+\end{document}
+
+ 
+
