@@ -1,0 +1,13 @@
+python 1992AA...260..161H.py  -t 100 -n 200 --Ndisk 4096
+ --Mdisk 1.0 --Mstar 0.1 --Rmin 10.0 --Rmax 100 > calibration.data
+mv 1992AA...260..161H.hdf5 1992AA...260..161H_Q10.calibration
+
+python 1992AA...260..161H.py  -t 100 -n 200 --Ndisk 4096 --Mdisk 1.0 --Mstar 1.0 --Rmin 10.0 --Rmax 100
+mv 1992AA...260..161H.hdf5 1992AA...260..161H_Q1.calibration
+
+python 1992AA...260..161H.py  -t 100 -n 200 --Ndisk 4096 --Mdisk 1.0 --Mstar 0.1 --Rmin 10.0 --Rmax 100 --Bump
+mv 1992AA...260..161H.hdf5 1992AA...260..161H_Q10.production
+
+python 1992AA...260..161H.py  -t 100 -n 200 --Ndisk 4096 --Mdisk 1.0 --Mstar 1.0 --Rmin 10.0 --Rmax 100 --Bump
+mv 1992AA...260..161H.hdf5 1992AA...260..161H_Q1.production
+

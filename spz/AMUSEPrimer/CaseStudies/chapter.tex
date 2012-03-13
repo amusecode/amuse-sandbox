@@ -1,0 +1,129 @@
+%%%%%%%
+% Simon Portegies Zwart
+% Version 2.0 February 2012
+%
+% The Art of Computational Astrophysics
+% Graduate School in Computational Astrophysics
+%%%%%%%
+
+%-------------------------------------------------------------------------
+%-------------------------------------------------------------------------
+\Chapter[Monolythic solvers]
+        {Monolythic solvers}
+        {}
+%       {S. F. Portegies Zwart\\x
+%         Sterrewacht Leiden
+%       }
+
+%-------------------------------------------------------------------------
+\section{Case Studies}\label{Ch:CaseStudies:Introduction}
+
+\subsection{Gravity with stellar evolution}
+\cite{1987MNRAS.224..193T}
+Run models VII and XV, reproduce figures 4 and 6
+
+
+\subsection{Gravity with hydrodynamics}
+
+Martin Heemskerk was a young graduate student at the Astronomical
+Institute ``Anton Pannekoek'' in Amsterdam when he published an
+important research paper \cite{1992A&A...260..161H} in which he
+discussed the development of $M=1$ instabilities in a self-gravitating
+gaseous discs. For this research he developed a grid-based
+hydrodynamics solver in which the central star was not fixed but was
+allowed to move around under the self gravity of the disk. The
+hydrodynamics code he developed for this research solved the equations
+for gravitational hydrodynamics on a cylindrical grid. Both ware
+extremely novel and challenging for that time.
+
+They stated their simulations with an axis symmetric disk around the
+central star $r=0$ with polytropic equation of state with $\gamma =
+1$.  Their density profile falls off near the stellar suface and
+towards the edge of the disk. The outer edge is chosen to be 10 times
+larger than the inner edge of the disk. This choise is motivated by
+the numerical burden of the code to extend the disk closer to the
+central star.  their initial discs are in pressure and gravitational
+equilibrium.
+
+After having generated theis stable disc, \cite{1992A&A...260..161H}
+continue by introducing a small $m=1$ perturbation half-way the disk.
+This perturbation causes the center of mass of the disk and the
+central star to be slightly off the geometric center with respect to
+eachother. As a consequence the disc and star become unstable.  The
+instability is worst for a stellar mass to disk mass ratio of 0.1 to
+1, and deminishes when the stellar mass approaches the disk mass.
+
+We reproduce their results with a small AMUSE script, but there are
+some profound differences in our approach. First of all we adopted an
+SPH code for the hydrodynamics, and a direct N-body integration for
+the single star under the infuence of the self gravitating disk.  The
+gravitational back coupling between star and disk is also integrated
+using the direct N-body code.
+
+We set un the experiment by initializing a axis symmetric Keplerian
+disc with a poer-law density profile between 10\,AU and 100\,AU.  We
+opted for an equation of state with $\gamma=1$ and we varied the disc
+mass between the same mass as the central star to 10 times this value.
+So far our initial conditions are quite similar to those adopted by
+\cite{1992A&A...260..161H}.
+
+Instead of following \cite{1992A&A...260..161H} for the method of
+introducing an $m=1$ perturbation in the disc, we opted for a much
+simpler approach. Adopting a disc size of 10\,AU, we measure the
+number of disc particles within this radius half way the disc. We
+subsequently generate a Plummer distribution of sph particles with a
+radius of 10\,AU and insert this half way the disc. To assure that the
+disc is still in gravitational equilibrium we give each of the
+injected bump particles a velocity consistent with the Keplerian
+velocity at that location in the disc. This is slightly more
+complicated than it sounds becuase due to the high mass of the disc we
+have to account for the total mass withhin the bump's orbit to be able
+to calculate its circular orbital velocity. Having done so, we center
+disk (plus bump) and the central star.
+
+Teh integration of the hydrostatic equations and Newtons' equations we
+opted for two codes, Fi for the hydrodynamics and Hermite1 for the
+self gravity of the disk and star. Inter module communication is
+realized using bridge. BEcause we are interested in the mutual
+influence of gaseous disc on the star and the star of the
+self-gravitating disc we initialize a two-way bridge.
+
+The tricky part in AMUSE is the time stepping between the
+gravitational solver and the hydrodynamics solver.  After a little
+experimenting we decided to have the hydro time step be be 1/10th of
+the gravitational time step.
+
+To qualify and quantify the consistency of the initial conditions and
+the accuracy of the code coupling we run a 4000 particle SPH
+simulation for 100 years. During this time frame the inner edge of the
+disc closes in on the central star, but the disc remains stable and
+static. We perform this simulation with Mdisc/Mstar = 1 and 10.  In
+both cases the disc appears stable on the selected time scale.
+
+For convenence we adopted a softening of $\eps = R_{\rm min}/N_{\rm
+  disc}+N_{\rm bump}$.
+
+python 1992AA...260..161H.py -t 100 -n 200 --Ndisk 4000 --Mdisk 1.0 --Mstar 0.1 --Rmin 10.0 --Rmax 100 &
+
+
+\begin{table}[htbp]
+\begin{center}
+\begin{tabular}{crcccccccccc}\hline
+$M_{\rm star}/M_{\rm disc}$ & $N_{\rm disc}$ & $N_{\rm bump}$  \\
+1  & 4096 \\
+1  & 4096 \\
+10 & 4096 \\
+10 & 4096 \\
+\hline
+\hline
+\end{tabular}
+\caption{\label{Tab:Timings} 
+Simulation results of \cite{1992A&A...260..161H}.
+ }
+\end{center}
+\end{table}
+
+
+\cite{1994A&A...288..807H}
+
+%\input /home/spz/latex/lib/bib/references

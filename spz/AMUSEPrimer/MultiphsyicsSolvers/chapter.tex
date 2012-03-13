@@ -1,0 +1,323 @@
+%%%%%%%
+% Simon Portegies Zwart
+% Version 2.0 February 2012
+%
+% The Art of Computational Astrophysics
+% Graduate School in Computational Astrophysics
+%%%%%%%
+
+%-------------------------------------------------------------------------
+%-------------------------------------------------------------------------
+\Chapter[Multiphysics solvers]
+        {Multiphysics solvers}
+        {}
+%       {S. F. Portegies Zwart\\x
+%         Sterrewacht Leiden
+%       }
+
+%-------------------------------------------------------------------------
+\section{Multiphysics Solvers}\label{Ch:MultiphysicsSolvers:Introduction}
+
+In many real life problems a range of physical phenomena are somehouw
+coupled. Nature has a good sense of doing this, but in the computer it
+is often less clear how to assure that the solution of a coupled
+problem is sufficiently accurate to be able to do a qualitative study.
+In this chapter we discuss the coupling between a number of amuse
+modules in to what one could (or maybe rather would like to) call
+multiphysics solvers. In the previous chapter we almost encountered
+such a coubled problem in the radiative transfer, which requires some
+sort of gas distribution and an ionizing source. In that particular
+example the physics was not coupled. Here in this chapter we will take
+the coupling in the physics into account. 
+
+A word of caution is well placed here, in stating that numerically
+there is probably not one unique way to couple different physical
+domains to a self consistent solution. In fact, we will not even so
+far as claiming that the solution we will acquire is self consistent.
+The AMUSE approach lends itself excellently for problems in which the
+phsyics is rather weakly coupled, and even in these cases validation
+is a dark art, rather than a well documented science.
+
+\section{Gravity with stellar evolution}
+
+Combining gravity with stellar evolution has been done for more than a
+quarter century \cite{MNRAS.224..193T.193T}.  As a
+consequence we sort of understand the numerical subtleties in coupling
+those modules.  The most common way of solving the combination of
+stellar evolution and stellar dynamics is by simply stepping from one
+code to the other in regular time intervals. Generally the time
+interval of choise is set by the dynamics as a fraction of the
+crossing time of the star cluster. 
+
+There are two sort of events that make stellar evolution coupled with
+gravitational dynamics tricky; one of them is the possibility of
+sudden events in the stellar evolution, and the other is the
+possibility that two stars approach eachother withing a distance so
+close that one could consider them to coalesce. Although we do not
+treat any of these here, because they are considered in the later
+chapters where we discuss more elaborate code couplings.
+
+Another aspect of stellar evolution and gravitational dynamics which
+we will ignore here is the possibility of stable binaries in which one
+(or both of the) stars start to affed the evolution of the other. 
+
+What we will discuss here is the simplest possible coupling between
+stellar evolution and gravitational dynamics, much in the spirit of
+\cite{MNRAS.224..193T.193T}.
+
+
+After having initialize all variable and having them supplied with
+units the initial conditions may be generated.  this has to be done is
+a rather speficif order.  In our example snippet we first generate the
+initial mass function, then we construct the converter to be able to
+convert between si and n-body units.  Only then we construct the
+initial density profile, in this case a King model.  As a last step we
+assign the masses from the initial mass function to the King-model
+distributed bodies. 
+\begin{verbatimtab}[8]
+    masses = new_salpeter_mass_distribution(N, Mmin, Mmax)
+    converter=nbody_system.nbody_to_si(masses.sum(),Rvir)
+    bodies = new_king_model(N, W0,convert_nbody=converter)
+    bodies.mass = masses
+\end{verbatimtab}[8]
+
+It would be nice to be able to first generate the density profile
+completely in N-body units and then assign the masses from some mass
+function, as is done in {\tt starlab}, but due to the automated unit
+conversion it is more practical to have this rather arcane ordering in
+the calling sequence for constructing a star cluster. 
+
+As an alternative one could read the initial conditions from a file, like when the file has a starlab format:
+\begin{verbatimtab}[8]
+    bodies = io.read_set_from_file(filename, 'starlab') 
+    converter=nbody_system.nbody_to_si(bodies.particles.masses.sum(),
+                                      bodies.virial_radius())
+\end{verbatimtab}[8]
+
+Having the inital conditions set up, we can initiate the two codes to
+use, one stellar evolution code and a gravitational solver.  The order
+in which you declare the various solvers is not important.
+
+In order to be able to communicate information between the stellar
+evolution, gravity modules and the framework, we declare three
+channels:
+\begin{verbatimtab}[8]
+    channel_from_gd_to_framework = gravity.particles.new_channel_to(bodies)
+    channel_from_se_to_framework = stellar.particles.new_channel_to(bodies)
+    channel_from_framework_to_gd = bodies.new_channel_to(gravity.particles)
+\end{verbatimtab}[8]
+The first and second channel are used to get data from the specific
+module to the framework, whereas the third channel allows us to write
+to the gravitational dnamics module.
+
+The frist channel allows us to copy data from the gravitational dynamics module:
+\begin{verbatimtab}[8]
+        channel_from_gd_to_framework.copy()
+\end{verbatimtab}[8]
+So that we can print the positions of the particle or perform any
+postprocessing activities.
+
+We need the masses of the stars from the stellar evolution module in
+order to adjust the masses in the gravitational dynamics.  For this we
+require two channels, one to copy the mass from stellar evolution to
+the framework, and one to copy the mass to the gravity module.
+
+\begin{verbatimtab}[8]
+        channel_from_gd_to_framework.copy()
+        channel_from_se_to_framework.copy_attributes(["mass"])
+        channel_from_framework_to_gd.copy_attributes(["mass"])
+\end{verbatimtab}[8]
+We do not need a channel from the framework to the stellar evolution
+because in our simple script the stellar evolution operates
+independently of the gravitational dynamics.
+
+In principle we could have constructed a single channel from the
+stellar module directly to the gravity module, but in parctice the
+data stream would still go through the framework. This is neede in
+order to warrant the proper unit conversion from the stellar masses is
+si and the gravitational masses in n-body units.  From a point of view
+contrcuting a channel between stellar and gravity directly would
+reduce the communication overhead with a factor of 2.
+
+\subsection{Improving the combined solver} 
+
+\subsection{Experiment with the combined solver}
+
+As an experiment we will run an extremely wide binary.
+
+
+
+\section{Bridging gravity with gravity}
+
+An often heared complaint about gravitational N-body solvers is their
+unfavorite scaling of the compute time as a function of N. this is one
+of the resasons for the popularity of gravitational tree codes, like
+the Barnes-Hut algorithm \cite{1986Natur.324..446B}.  With direct
+summation one could, on a modern workstation perform simulations of a
+few to several thousand particles, with a treecode one could go to
+several hundred thousand particles.
+
+Direct summation in gravitational solvers is required for many type of
+simulations, like planetary system integration and star cluster
+studies. Once, these objects are considered in a larger environment,
+like a star cluster in a galaxy, one should probably not be
+particularly interested in the very high accuracy of the direct
+summation method for rsolving the tidal field of the cluster in the
+Galaxy. In particular when one is not interested in the response of
+the galaxy on the internal dynamics and evolution of the cluster. Very
+often one is only interested in the effect of the galaxy on the
+cluster. 
+
+When the time and spatial scales are reasonably separated one can
+adopt a hamiltonian splitting of the equations of motion. In these
+cases a kick-drift-kick mechanism, as in the good old Verlet-Leapfrog
+integrator can be adopted to integrate the direct N-body solver as an
+embedded object in the less accurate treecode.
+
+\subsection{Bridge}
+
+In the classical bridge scheme, \cite{2007PASJ...59.1095F} consider a
+star cluster orbiting a parent galaxy.  The cluster is integrated
+using accurate direct summation of the gravitational forces among all
+stars.  Interactions among the stars in the galaxy, and between
+galactic and cluster stars, are computed using a hierarchical tree
+force evaluation method \cite{1986Natur.324..446B}.
+
+In bridge, the Hamiltonian of the entire system is divided into two
+parts:
+\begin{equation}
+        H  =  H_A + H_B,
+\end{equation}
+where $H_A$ is the potential energy of the gravitational interactions
+among galaxy particles ($W_g$) and between galaxy particles
+and the star cluster ($W_{g-c}$):
+\begin{equation}
+        H_A  =  W_g + W_{g-c},
+\end{equation}
+and $H_B$ is the sum of the total kinetic energy of all particles
+($K_g + K_c$) and the potential energy of the star cluster particles
+($W_c$):
+\begin{equation}
+        H_B  =  K_g + K_c + W_c.
+\end{equation}
+The time evolution of any quantity $f$ under this Hamiltonian can then
+be written approximately, because we have truncated the formal
+solution to just the second-order Leapfrog terms, as:
+\begin{equation}
+        f^\prime (t+\Delta t) = e^{\half \Delta t A} e^{\Delta t B}
+						  e^{\half \Delta t A} f(t),
+\end{equation}
+where the operators $A$ and $B$ are defined by $Af = \{f,H_A\}$ and
+$Bf = \{f,H_B\}$, and $\{.,.\}$ is a Poisson bracket.  This is the
+familiar second-order Leapfrog algorithm.  The evolution can be
+impemented as a kick-drift-kick scheme, as illustrated in
+Fig.\,\ref{Fig:bridge}.
+
+\begin{figure}[h] 
+%\psfig{figure=../fig/bridge.eps,width=\columnwidth}
+\caption[]{Schematic kick-drift-kick procedure for the generalized 
+           mixed-variable symplectic method \cite{1991AJ....102.1528W}.
+           \label{Fig:bridge} }
+\end{figure}
+
+\steve{A few comments here.  First, this discussion is pure classical
+  mechanics, and I think it will be incomprehensible to most readers.
+  I have reworded a bit and added a definition of the Poisson bracket
+  operators, which were undefined and unexplained, but I really think
+  this goes too far.  The figure tells almost the whole story.  Also,
+  we should make clear that the example is for a particular coupled
+  dynamical system, but the bridge approach is used in AMUSE as a
+  general means of coupling modules.}
+
+\subsection{Implementation of the bridge}
+
+\begin{verbatimtab}[8]
+    def evolve_model(self, tend,timestep=None):
+        while self.time < tend:    
+            dt=min(timestep,tend-self.time)
+            self.kick_systems(dt/2)   
+            self.drift_systems(self.time+dt)
+            self.time+=dt
+            self.kick_systems(dt/2)
+            self.time=self.time+dt
+        return 0    
+\end{verbatimtab}[8]
+
+\begin{verbatimtab}[8]
+def kick_system(system, get_gravity, dt):
+    parts=system.particles.copy()
+    ax,ay,az=get_gravity(parts.radius,parts.x,parts.y,parts.z)
+    parts.vx=parts.vx+dt*ax
+    parts.vy=parts.vy+dt*ay
+    parts.vz=parts.vz+dt*az
+    channel=parts.new_channel_to(system.particles)
+    channel.copy_attributes(["vx","vy","vz"])   
+\end{verbatimtab}[8]
+
+
+\begin{verbatimtab}[8]
+    def drift_systems(self,tend):
+    self.evolve_model(tend)
+\end{verbatimtab}[8]
+
+\subsection{A star cluster in galactic potential}
+
+We can now write the script to simulate a star cluster in a static
+background potential of the galaxy.  We first construct a gravity
+solver that can provide the potential at any point in the Galaxy. We
+require this function to be able to bridge with the N-body code.
+
+We then generate the initial conditions for the cluster and initialize
+the N-body integrator.
+
+The bridge is started by constructing a new {\tt gravity} solver which
+now contains two codes. The syntax for the bridge is somewhat arcane
+at first but we add a {\tt cluster} to the gravity (bridge) solver
+which will getting its kicks from the {\tt MilkyWay\_Galaxy}.  The
+comma after the {\tt MilkyWay\_Galaxy} is to indicate that it is a
+list of classes that affect the {\tt cluster}, even though it is only
+one external kick-system that affects the cluster in this case.
+\begin{verbatimtab}[8]
+    gravity = bridge.Bridge(use_threading=False)
+    gravity.add_system(cluster_gravity, (MilkyWay_galaxy(),) )
+\end{verbatimtab}[8]
+
+In the event loop we now call the {\tt evolve\_model} from the bridged
+{\tt gravity}:
+\begin{verbatimtab}[8]
+        gravity.evolve_model(time)
+\end{verbatimtab}[8]
+After this we can get some data from the cluster via a channel and
+dump those to a file for later analysis.  Much of the details are
+hidden in the {\tt Bridge} class.
+
+\subsection{Experiment with bridged N-body}
+
+\subsection{example from the literature: Do not do this at home}
+
+Rieder etal 2012.... bridged Cosmogrid...
+
+\section{Bridging gravity with gravity II}
+
+Instead of bridging a star cluster simulation with a fixed background
+potential we can easily replace the galaxy with a life evolving galaxy
+by birdging with another gravity solver rather than with a static
+background potential.  For the Galaxy one probably do not want to use
+a direct N-body solver, but rather a treecode or something else.
+
+
+
+\subsection{Experiment with bridged life gravity}
+
+\section{Bridging gravity with hydrodynamics}
+\subsection{Experiment with gravity and hydrodynamics}
+
+\section{coupling hydrodynamics with radiative transfer}
+\subsection{Experiment with hydrodynamics and radiative transfer}
+
+
+
+\subsection{Hierarchical code coupling}
+
+
+%\input /home/spz/latex/lib/bib/references

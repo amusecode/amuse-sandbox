@@ -1,0 +1,88 @@
+
+%\begin{problem}{}
+\subsection{Wide non-interacting binary}\label{Sect:Ass.GD_SE.Widebinary}
+
+dr. Erik Holmberg was working as a student of Knut Lundmark at Lund
+Observatory in Sweden where he had access to a number of photoray
+tubes. Using these he performed an experiment adopting the principle
+that light falls off in identical fashion as gravity. He decided to use
+this quality of light to perform a simulation of two colliding
+galaxies.
+
+\begin{figure}[htbp] 
+  \begin{center}
+%      \epsfig{figure=./MonolythicSolvers/fig/EHolmberg.eps,width=0.2\columnwidth}
+      \epsfig{figure=./fig/EHolmberg.eps,width=0.2\columnwidth}
+      \caption{Erik Holmberg, 1908-2000\newline 
+          He discovered that
+          colors of paired galaxies are closely correlated, which is
+          now called the "Holmberg effect".  
+      \label{Fig:1941ApJ....94..385H_fig3}
+      }
+  \end{center}
+\end{figure}
+
+The initial setup for a single 'galaxy' in Holmberg's experiment is
+presented in Fig.\,\ref{Fig:1941ApJ....94..385H_fig3}.  This
+experiment made him one of the founders of a large body of
+astronomical research, much of which is reviewed in
+\cite{1987gady.book.....B}. According to some astronomers
+\cite{1987gady.book.....B} is the most important textbook written
+about galactic dynamics to date.
+
+\begin{figure}[htbp] 
+  \begin{center}
+%      \epsfig{figure=./MonolythicSolvers/fig/1941ApJ....94..385H_fig3.eps,width=0.5\columnwidth}
+      \epsfig{figure=./fig/1941ApJ....94..385H_fig3.eps,width=0.5\columnwidth}
+      \caption{{\small Copy of the original fig.3 from
+          \cite{1941ApJ....94..385H} presenting the initial conditions
+          for a single galaxy in Holberg's experiment of two colliding
+          galaxies. }
+      \label{Fig:1941ApJ....94..385H_fig3}
+      }
+  \end{center}
+\end{figure}
+
+The progress of his experiment can be followed in the two pictures
+presented in Fig.\,\ref{Fig:1941ApJ....94..385H_fig4} The arrows here
+indicate the directions in which both 'galaxies' move with respect to
+each other.
+
+\begin{figure}[htbp] 
+  \begin{center}
+%      \epsfig{figure=./MonolythicSolvers/fig/1941ApJ....94..385H_fig4.eps,width=0.5\columnwidth}
+      \epsfig{figure=./fig/1941ApJ....94..385H_fig4.eps,width=0.5\columnwidth}
+      \caption{{\small Copy of the original fig.4 from
+          \cite{1941ApJ....94..385H} presenting one snapshot of the
+          results from his calculations. }
+      \label{Fig:1941ApJ....94..385H_fig4}
+      }
+  \end{center}
+\end{figure}
+
+\subsubsection{Assignment}
+Generate an AMUSE script to reconstruct the initial conditions from
+fig\,\ref{Fig:1941ApJ....94..385H_fig3} from
+\cite{1941ApJ....94..385H}, in which the light bulbs are point masses.
+Run the single 'galaxy' model and study when the pattern starts to
+change substantially. Run the simulation in which two 'galaxies'
+encounter each other to reproduce
+Fig.\,\ref{Fig:1941ApJ....94..385H_fig4} from
+\cite{1941ApJ....94..385H}.
+
+Address the following questions in your report:
+\begin{itemize}
+\item[$\bullet$] what is the best integrator to use for running Holmberg's model?
+\item[$\bullet$] For what time does the isolated 'galaxy' remain unaffected by its own self-gravity?
+\item[$\bullet$] What instability appears in the single 'galaxy' model?
+\item[$\bullet$] What happens when the two galaxies interact?
+\item[$\bullet$] What initial conditions or conclusions must clearly have been
+  different in the original paper?
+\item[$\bullet$] if you run the same initial realization with the worst
+  possible N-body integrator do you still obtain the same answer?
+\end{itemize}
+
+
+%\includeonly{SPZ,/home/spz/tex/lib/bib/references}
+
+

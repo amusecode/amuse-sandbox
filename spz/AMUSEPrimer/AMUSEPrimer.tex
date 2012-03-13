@@ -1,0 +1,37 @@
+\documentclass[dvips]{lib/iopbk2e}
+%\usepackage[dvips]{graphicx}
+\input lib/abbreviations.tex
+\input lib/journals.def
+\input lib/psfig.sty
+
+\makeindex
+
+\title{Computational Astrophysics with AMUSE}
+%\author{Simon Portegies Zwart}
+\makeindex
+
+%\includeonly{SPZ,/home/spz/tex/lib/bib/references}
+
+\begin{document}
+\maketitle
+\pagenumbering{roman}
+\setcounter{page}{5}
+\tableofcontents
+%\include{preface}
+%\include{Acknowledgments/acknowledgements}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\include{Introduction/chapter}
+\include{MyFirstProgram/chapter}
+\include{InitialConditions/chapter}
+\include{MonolythicSolvers/chapter}
+\include{BiphysicsSolvers/chapter}
+\include{MultiphsyicsSolvers/chapter}
+\include{CaseStudies/chapter}
+%\include{appendix}
+%\include{refs}
+\input ./AMUSEPrimer.bbl
+%\input ./AMUSEPrimer.ind
+\input /home/spz/Latex/lib/bib/references
+\end{document}
+

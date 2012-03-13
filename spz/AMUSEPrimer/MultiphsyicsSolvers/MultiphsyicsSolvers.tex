@@ -1,0 +1,29 @@
+%\documentclass[dvips]{../lib/iopbk2e}
+\documentclass[dvips]{article}
+\usepackage{epsfig}
+\usepackage{amssymb}
+%\usepackage[dvips]{graphicx}
+
+\input ../lib/abbreviations.tex
+\input ../lib/journals.def
+\input ../lib/psfig.sty
+
+\makeindex
+
+\title{Computational Astrophysics}
+\author{Simon Portegies Zwart}
+\makeindex
+
+%\includeonly{/home/spz/tex/lib/bib/references}
+
+\begin{document}
+\maketitle
+\pagenumbering{roman}
+\setcounter{page}{5}
+\tableofcontents
+\pagenumbering{arabic}
+\setcounter{page}{1}
+\include{./chapter}
+\input ./amuse.bbl
+\end{document}
+
