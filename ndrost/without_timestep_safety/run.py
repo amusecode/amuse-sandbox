@@ -1,119 +1,51 @@
+"""
+ run script for clustergas runs
+
+"""
+
 import numpy
 import clustergas_gadget as clustergas
 from amuse.units import units
+from amuse.community.fi.interface import Fi
+from amuse.community.octgrav.interface import Octgrav
+from amuse.community.gadget2.interface import Gadget2
+from amuse.community.bhtree.interface import BHTree
+from amuse.community.phiGRAPE.interface import PhiGRAPE
+from SSEplus import SSEplus
 
-numpy.random.seed(123477)
+#nice big star with 100 stars
+#numpy.random.seed(123489)
 
-#clustergas.clustergas_restart(
-#                   "cl_Ns1k_Ng100k_sf03_sn01_R05_s1",
-#                   238)
+#best guess inti's original seed
+numpy.random.seed(123491)
 
 clustergas.clustergas(sfeff=0.3, 
                     Nstar=1000,
                     Ngas=100000,
                     Rscale=0.5 | units.parsec,
-                    feedback_efficiency=0.1,
-                    runid="test")
+                    runid="demo-output",
+                    feedback_efficiency=0.01,
+		    dt_plot=0.01 | units.Myr,
 
-#clustergas.merge_clusters_with_gas(Nstar=[5000,5000],totalNgas=400000,
-#                    runid="mergetest2",tmerge=2. | units.Myr, 
-#                    t_end=7.5 | units.Myr, dt_plot=0.025 | units.Myr,
-#                    eps_star=0.00025 | units.parsec)
+		    #LGM
+                    grav_code=PhiGRAPE,
+                    grav_code_extra=dict(mode='gpu', channel_type='ibis', hostname='LGM'),
+
+		    #VU
+                    gas_code=Gadget2,
+                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=8, number_of_nodes=8,use_gl=False, channel_type='ibis', hostname='VU'),
+
+                    #UVA
+                    se_code=SSEplus,
+                    se_code_extra=dict(channel_type='ibis', hostname='UvA'),
+
+                    #DELFT
+                    grav_couple_code=Octgrav,
+                    grav_couple_code_extra=dict(channel_type='ibis', hostname='Delft-GPU')
+)
+
 
 #clustergas.clustergas_restart(
-#                   "cl_gdg_Ns1k_Ng100k_sf03_sn001_R01_s2",
-#                   659)
-
-#numpy.random.seed(123491)
-#clustergas.clustergas(sfeff=0.05, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.01,
-#                   runid="cl_gdg_Ns1k_Ng100k_sf005_sn001_R05_s2")
-
-
-#numpy.random.seed(12351)
-#clustergas.clustergas(sfeff=0.5, 
-#                   Nstar=100,
-#                   Ngas=10000,t_end=.35 | units.Myr,
-#                   Rscale=0.25 | units.parsec,
-#                   feedback_efficiency=0.1,
-#                   runid="test")
-
-#clustergas.clustergas(sfeff=0.5, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.1,
-#                   runid="cl_gdg_Ns1k_Ng100k_sf05_sn01_R05_s2")
-
-#clustergas.clustergas_restart(
-#                   "cl_gdg_Ns3k_Ng100k_sf05_sn001_R05_s1",
-#                   457)
-
-#clustergas.clustergas(sfeff=0.5, 
-#                   Nstar=3000,
-#                   Ngas=300000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.01,
-#                   runid="cl_gdg_Ns3k_Ng300k_sf05_sn001_R05_s1")
-
-#clustergas.clustergas(sfeff=0.75, 
-#                   Nstar=3000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.01,
-#                   runid="cl_gdg_Ns1k_Ng100k_sf075_sn001_R05")
-
-#clustergas.clustergas(sfeff=0.5, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.01,
-#                   runid="cl_gdg_Ns1k_Ng100k_sf05_sn001_R05")
-
-#clustergas.clustergas(sfeff=0.5, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.1,
-#                   runid="cl_gdg_Ns1k_Ng100k_sf05_sn01_R05")
-
-#clustergas.clustergas(sfeff=0.25, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.01,
-#                   runid="cl_gdg_Ns1k_Ng100k_sf025_sn001_R05-2")
-
-#clustergas.clustergas(sfeff=0.05, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.01,
-#                   runid="cl_gdg_Ns1k_Ng100k_sf005_sn001_R05-2")
-
-
-#clustergas.clustergas(sfeff=0.05, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.01,
-#                   runid="cl_Ns1k_Ng100k_sf005_sn001_R05")
-
-#clustergas.clustergas(sfeff=0.05, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.001,
-#                   runid="cl_Ns1k_Ng100k_sf005_sn0001_R05")
-
-#clustergas.clustergas(sfeff=0.25, 
-#                   Nstar=1000,
-#                   Ngas=100000,
-#                   Rscale=0.5 | units.parsec,
-#                   feedback_efficiency=0.001,
-#                   runid="cl_gdg_Ns1k_Ng100k_sf025_sn0001_R05")
-
+#                   "test",
+#                   250,newid='test_restart')
 

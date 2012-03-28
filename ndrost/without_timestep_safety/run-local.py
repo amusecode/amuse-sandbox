@@ -13,27 +13,33 @@ from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from SSEplus import SSEplus
 
-
+#nice big star with 100 stars
 #numpy.random.seed(123489)
-#numpy.random.seed(123477)
+
+#best guess inti's original seed
+numpy.random.seed(123491)
 
 clustergas.clustergas(sfeff=0.3, 
-                    Nstar=100,
-                    Ngas=10000,
+                    Nstar=1000,
+                    Ngas=100000,
                     Rscale=0.5 | units.parsec,
-                    feedback_efficiency=0.1,
                     runid="demo-output",
+                    feedback_efficiency=0.01,
 		    dt_plot=0.01 | units.Myr,
 
+		    #LGM
                     grav_code=PhiGRAPE,
                     grav_code_extra=dict(mode='normal', channel_type='ibis'),
 
+		    #VU
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=1,use_gl=False, channel_type='ibis'),
+                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=2, number_of_nodes=1,use_gl=False, channel_type='ibis'),
 
+                    #UVA
                     se_code=SSEplus,
                     se_code_extra=dict(channel_type='ibis'),
 
+                    #DELFT
                     grav_couple_code=Fi,
                     grav_couple_code_extra=dict(channel_type='ibis')
 )

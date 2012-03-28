@@ -19,27 +19,29 @@ from SSEplus import SSEplus
 #best guess inti's original seed
 numpy.random.seed(123491)
 
-#                    gas_code_extra=dict(number_of_workers=8,number_of_nodes=1,use_gl=False, channel_type='ibis', hostname='VU'),
-
 clustergas.clustergas(sfeff=0.3, 
                     Nstar=1000,
                     Ngas=100000,
                     Rscale=0.5 | units.parsec,
-#                    feedback_efficiency=0.1,
                     runid="demo-output",
-#		    dt_plot=0.25 | units.Myr,
+                    feedback_efficiency=0.01,
+		    dt_plot=0.01 | units.Myr,
 
+		    #LGM
                     grav_code=PhiGRAPE,
                     grav_code_extra=dict(mode='gpu', channel_type='ibis', hostname='VU-GPU'),
 
+		    #VU
                     gas_code=Gadget2,
-                    gas_code_extra=dict(number_of_workers=1,use_gl=False, channel_type='ibis'),
+                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=8, number_of_nodes=8,use_gl=False, channel_type='ibis', hostname='VU'),
 
+                    #UVA
                     se_code=SSEplus,
-                    se_code_extra=dict(channel_type='ibis', hostname='VU'),
+                    se_code_extra=dict(channel_type='ibis', hostname='Leiden'),
 
-                    grav_couple_code=Fi,
-                    grav_couple_code_extra=dict(channel_type='ibis', hostname='VU')
+                    #DELFT
+                    grav_couple_code=Octgrav,
+                    grav_couple_code_extra=dict(channel_type='ibis', hostname='Delft-GPU')
 )
 
 
