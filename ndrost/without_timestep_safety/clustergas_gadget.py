@@ -159,7 +159,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
 #  dt_feedback=dt_fast*2 # 1
 
 #new, improved, more snapshots (thanks inti)
-  dt_fast=dt / 8  # 8
+  dt_fast=dt / 16  # 8
   dt_feedback=dt/2 # 1
 
   feedback_dt=(10. | units.yr, dt_fast)

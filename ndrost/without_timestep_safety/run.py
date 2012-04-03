@@ -11,6 +11,7 @@ from amuse.community.octgrav.interface import Octgrav
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.ph4.interface import ph4
 from SSEplus import SSEplus
 
 #nice big star with 100 stars
@@ -20,28 +21,29 @@ from SSEplus import SSEplus
 numpy.random.seed(123491)
 
 clustergas.clustergas(sfeff=0.3, 
-                    Nstar=1000,
-                    Ngas=100000,
+                    Nstar=10000,
+                    Ngas=1000000,
                     Rscale=0.5 | units.parsec,
-                    runid="demo-output",
+                    runid="sim-output",
                     feedback_efficiency=0.01,
-		    dt_plot=0.01 | units.Myr,
+		    dt_plot=0.05 | units.Myr,
 
 		    #LGM
-                    grav_code=PhiGRAPE,
-                    grav_code_extra=dict(mode='gpu', channel_type='ibis', hostname='LGM'),
+#                    grav_code=PhiGRAPE,
+                    grav_code=ph4,
+                    grav_code_extra=dict(mode='gpu', channel_type='ibis'),
 
 		    #VU
                     gas_code=Gadget2,
-                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=8, number_of_nodes=8,use_gl=False, channel_type='ibis', hostname='VU'),
+                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=32, number_of_nodes=8,use_gl=False, channel_type='ibis', hostname='VU'),
 
                     #UVA
                     se_code=SSEplus,
-                    se_code_extra=dict(channel_type='ibis', hostname='UvA'),
+                    se_code_extra=dict(channel_type='ibis'),
 
                     #DELFT
                     grav_couple_code=Octgrav,
-                    grav_couple_code_extra=dict(channel_type='ibis', hostname='Delft-GPU')
+                    grav_couple_code_extra=dict(channel_type='ibis')
 )
 
 
