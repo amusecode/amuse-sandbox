@@ -1,0 +1,12 @@
+initialize_code: jd->mpi_size = 1,  jd->have_gpu = 0
+commit_parameters: jd->have_gpu = 0,  jd->use_gpu = 0
+initialize_code: jd->mpi_size = 1,  jd->have_gpu = 0
+commit_parameters: jd->have_gpu = 0,  jd->use_gpu = 0
+initialize_code: jd->mpi_size = 1,  jd->have_gpu = 0
+commit_parameters: jd->have_gpu = 0,  jd->use_gpu = 0
+initialize_code: jd->mpi_size = 1,  jd->have_gpu = 0
+commit_parameters: jd->have_gpu = 0,  jd->use_gpu = 0
+initialize_code: jd->mpi_size = 1,  jd->have_gpu = 0
+commit_parameters: jd->have_gpu = 0,  jd->use_gpu = 0
+initialize_code: jd->mpi_size = 1,  jd->have_gpu = 0
+commit_parameters: jd->have_gpu = 0,  jd->use_gpu = 0
