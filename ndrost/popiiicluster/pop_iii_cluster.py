@@ -16,13 +16,13 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 
 
 def new_gravity_code(stars, convert_nbody):
-    gravity = ph4(convert_nbody, mode='gpu', redirection='file', redirect_file='gravity_code_out.log')
+    gravity = ph4(convert_nbody, mode='gpu', redirection='file', redirect_file='gravity_code_out.log', channel_type='ibis')
     gravity.stopping_conditions.collision_detection.enable()
     gravity.particles.add_particles(stars)
     return gravity
 
 def new_collision_code():
-    star_collider = MakeMeAMassiveStar(redirection='file', redirect_file='star_collider_code_out.log')
+    star_collider = MakeMeAMassiveStar(redirection='file', redirect_file='star_collider_code_out.log', channel_type='ibis')
     star_collider.initialize_code()
     star_collider.parameters.dump_mixed_flag = True
     star_collider.parameters.target_n_shells_mixing = 2000
@@ -40,7 +40,7 @@ def new_stellar_evolution_codes(stars):
     stellar_evolution.parameters.metallicity = 0.0
     stellar_evolution.particles.add_particles(stars[n_low_mass:])
     
-    se_light = SSE(redirection='file', redirect_file='low_mass_stellar_evolution_code_out.log')
+    se_light = SSE(redirection='file', redirect_file='low_mass_stellar_evolution_code_out.log', channel_type='ibis')
     se_light.parameters.metallicity = 0.0001
     se_light.particles.add_particles(stars[:n_low_mass])
     return stellar_evolution, se_light
