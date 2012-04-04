@@ -1,4 +1,5 @@
 import numpy 
+import time
 
 from amuse.units import nbody_system, units
 from amuse.datamodel import Particle, ParticlesSuperset
@@ -48,6 +49,7 @@ def main():
     number_of_stars = 1000
     time_end = 10.0 | units.Myr
     delta_t = 0.01 | units.Myr
+    wallclock_begin = time.time()
 
     numpy.random.seed(12345)
 #    masses = new_salpeter_mass_distribution(number_of_stars, 
@@ -73,18 +75,24 @@ def main():
     mergers = []
     
     while gravity.model_time < time_end:
+	wallclock_iteration_begin = time.time()
         target_time = min(gravity.model_time + delta_t, time_end)
+	print "Evolving gravity model"
         gravity.evolve_model(target_time)
         gravity.synchronize_model()
-        print "\nCollision detected?", gravity.stopping_conditions.collision_detection.is_set()
+        print "\nGravity model evolve done. Collision detected?", gravity.stopping_conditions.collision_detection.is_set()
         try:
+	    print "Evolving stellar evolution model"
             stellar_evolution.evolve_model(gravity.model_time)
+	    print "Stellar evolution model done"
         except AmuseException:
             print "This simulations seems to end now... (stellar_evolution returned exception). Mergers so far:"
             print mergers
             raise
+	print "Evolving low-mass stellar evolution model"
         se_light.evolve_model(gravity.model_time)
         from_stellar_evolution_to_gravity.copy_attributes(["mass", "radius"])
+	print "Low-mass stellar evolution model done"
         
         if gravity.stopping_conditions.collision_detection.is_set():
             print '(' + str(len(gravity.stopping_conditions.collision_detection.particles(0))), 'collision(s) detected)'
@@ -164,6 +172,8 @@ def main():
             print stellar_evolution.particles
             print "   Gravity particles:"
             print gravity.particles
+
+	wallclock_iteration_end = time.time()
         
         print "   Evolved system up to:", gravity.model_time.as_quantity_in(units.Myr)
         print "   System currently contains", len(gravity.particles), "particles."
@@ -176,6 +186,9 @@ def main():
         E_pot = gravity.particles.potential_energy()
         print "   Total energy:", E_kin + E_pot
         print "   Energy ratio:", E_kin / E_pot
+        print "   Step took", (wallclock_iteration_end - wallclock_iteration_begin) | units.s
+        print "   Total time", (wallclock_iteration_end - wallclock_begin) | units.s
+	print "   Myr per hour", gravity.model_time.value_in(units.Myr) / ((wallclock_iteration_end - wallclock_begin)/3600)
 
     print 'Final model:'
     print "   Stellar evolution particles:"
