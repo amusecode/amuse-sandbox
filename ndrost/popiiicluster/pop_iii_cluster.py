@@ -15,7 +15,7 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 
 
 def new_gravity_code(stars, convert_nbody):
-    gravity = ph4(convert_nbody, mode='normal', redirection='file', redirect_file='gravity_code_out.log')
+    gravity = ph4(convert_nbody, mode='gpu', redirection='file', redirect_file='gravity_code_out.log')
     gravity.stopping_conditions.collision_detection.enable()
     gravity.particles.add_particles(stars)
     return gravity
@@ -45,7 +45,7 @@ def new_stellar_evolution_codes(stars):
     return stellar_evolution, se_light
 
 def main():
-    number_of_stars = 100
+    number_of_stars = 1000
     time_end = 10.0 | units.Myr
     delta_t = 0.01 | units.Myr
 

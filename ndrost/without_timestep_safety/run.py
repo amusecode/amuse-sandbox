@@ -29,13 +29,13 @@ clustergas.clustergas(sfeff=0.3,
 		    dt_plot=0.05 | units.Myr,
 
 		    #LGM
-#                    grav_code=PhiGRAPE,
-                    grav_code=ph4,
-                    grav_code_extra=dict(mode='gpu', channel_type='ibis'),
+                    grav_code=PhiGRAPE,
+#                    grav_code=ph4,
+                    grav_code_extra=dict(mode='gpu', channel_type='ibis', redirection='none'),
 
 		    #VU
                     gas_code=Gadget2,
-                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=32, number_of_nodes=8,use_gl=False, channel_type='ibis', hostname='VU'),
+                    gas_code_extra=dict(mode='nogravity', output_directory='output', number_of_workers=32, number_of_nodes=8,use_gl=False, channel_type='ibis', hostname='VU', redirection='none'),
 
                     #UVA
                     se_code=SSEplus,

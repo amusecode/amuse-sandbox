@@ -8,17 +8,17 @@
 
 source ~/.bash_profile
 
-cd ~/amuse/lib/ibis
+cd ~/amuse/
 
-scripts/ibis-amuse-daemon -v&
+./ibis-deploy.sh -j lib/ibis/das.jungle&
 
 JAVA_PID=$!
 
 sleep 10
 
-cd ~/amuse/sandbox/ndrost/cluster_gas/
+cd ~/amuse/sandbox/ndrost/without_timestep_safety
 
-~/bin/amuse -u $@
+~/bin/amuse -u run.py
 
 echo "AMUSE stopped, terminating java process"
 
