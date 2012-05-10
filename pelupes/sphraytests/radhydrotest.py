@@ -131,7 +131,6 @@ def iliev_test_5( N=10000,
 def update_pos_rho(sys,pa):
   p=pa.copy()
   p.rho=3./4/numpy.pi*8*p.mass/p.h_smooth**3
-  p.h_smooth*=2
   channel = p.new_channel_to(sys.gas_particles)
   channel.copy_attributes(["x","y","z","rho","h_smooth"])
 
