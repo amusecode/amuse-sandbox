@@ -355,7 +355,7 @@ def test(evolver, rad_parameters=None,dt=1. | units.Myr ):
     r=(((p.x)**2+(p.y)**2+(p.z)**2) ** 0.5).value_in(units.kpc)
     v=((p.vx**2+p.vy**2+p.vz**2)**0.5).value_in(units.kms)
     cs=(gamma*(gamma-1)*p.u**0.5).value_in(units.kms)
-    xion=p.xion.number
+    xion=p.xion
     t=(gamma-1)*mu/(1.+xion)/constants.kB*p.u
     t=t.value_in(units.K)
     dens=(p.rho).value_in(units.amu/units.cm**3)
@@ -382,7 +382,7 @@ def test(evolver, rad_parameters=None,dt=1. | units.Myr ):
             xlim=(0.,1.),ylim=(0.0001,0.01),ylabel='density (amu/cm**3)')
     aplot(i,label+'-mach',((r/15,mach,'r'),),
             xlim=(0.,1.),ylim=(1.e-5,10.),ylabel='Mach')
-    aplot(i,label+'-vel',((r/15,v,'r'),),
+    aplot(i,label+'-vel',((r/15,v+1.e-8,'r'),),
             xlim=(0.,1.),ylim=(0.1,15.),ylabel='v (km/s)')
 
 
@@ -391,14 +391,14 @@ if __name__=="__main__":
   global label
   import time
   
-  """  
+   
   t1=time.time()
   label="test1"
   test(rad_only_evolve)
   t2=time.time()
   print "test1: monochromatic, non dynamic, no thermal solver",
   print t2-t1,"sec"
-
+  """
   t1=time.time()
   label="test2"
   test(rad_only_evolve, dict(number_of_freq_bins=5, blackbody_spectrum_flag=1) )
@@ -434,7 +434,7 @@ if __name__=="__main__":
   t2=time.time()
   print "test6: 5 freq, dynamic, thermal solver",
   print t2-t1,"sec"
-  """
+  
   t1=time.time()
   label="test7"
   test(radhydro_evolve, dict(number_of_freq_bins=10, blackbody_spectrum_flag=1,thermal_evolution_flag=1) )
@@ -448,3 +448,4 @@ if __name__=="__main__":
   t2=time.time()
   print "test8: 5 freq, dynamic, thermal solver,dt=0.5 Myr",
   print t2-t1,"sec"
+  """
