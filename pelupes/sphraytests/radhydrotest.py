@@ -87,7 +87,7 @@ def iliev_test_5_ic( N=10000,
   sources.y=L*y*(1./N)**(1./3)/10
   sources.z=L*z*(1./N)**(1./3)/10
   sources.luminosity=(5.e48/Ns) | (units.s**-1)
-  sources.SpcType=-1.
+  sources.SpcType=1.
 
   return p,sources
 
@@ -122,6 +122,7 @@ def iliev_test_5( N=10000,
     print x, rad_parameters[x]
     rad.parameters.__setattr__(x,rad_parameters[x])
 
+#  gas.u=100*gas.u
   rad.gas_particles.add_particles(gas)
   rad.src_particles.add_particles(sources)
 
@@ -180,6 +181,33 @@ def radhydro_evolve_fake(sph,rad,tend,dt):
     update_pos_rho(rad,sph.gas_particles)
     rad.evolve_model(t+dt)
     update_u_fake(sph,rad.gas_particles)
+    print (2./3.*mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (2./3.*mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
+    print "sph2"
+    sph.evolve_model(t+dt)    
+    
+    t+=dt
+    i=t/dt
+    if int(i)%10==0:
+      if write_snapshots:
+        p=rad.gas_particles.copy()
+        channel = sph.gas_particles.new_channel_to(p)
+        channel.copy_attributes(["x","y","z","vx","vy","vz","rho","u"])  	  
+        write_set_to_file(p,label+"-%6.6i"%int(i),"amuse",
+                        append_to_file=False)    
+  return t
+
+def radhydro_evolve(sph,rad,tend,dt):
+  global label
+
+  t=rad.model_time  
+  while t<tend-dt/2:
+    print t.in_(units.Myr)        
+    print "sph1"
+    sph.evolve_model(t+dt/2)    
+    print "rad"
+    update_pos_rho(rad,sph.gas_particles)
+    rad.evolve_model(t+dt)
+    update_u(sph,rad.gas_particles)
     print (2./3.*mu/constants.kB*sph.gas_particles.u.amin()).in_(units.K), (2./3.*mu/constants.kB*sph.gas_particles.u.amax()).in_(units.K)
     print "sph2"
     sph.evolve_model(t+dt)    
@@ -311,15 +339,14 @@ if __name__=="__main__":
   print "test3: 5 freq, non dynamic, with thermal solver",
   print t2-t1,"sec"
 
-  """
+  
   t1=time.time()
   label="test4"
   test(radhydro_evolve_fake,dict(isothermal_flag=True, number_of_rays=1000,hydrogen_case_A_flag=False))
   t2=time.time()
   print "test4: monochromatic, dynamic, no thermal solver",
   print t2-t1,"sec"
-  """
-
+  
   t1=time.time()
   label="test5"
   test(radhydro_evolve_fake, dict(number_of_freq_bins=5, blackbody_spectrum_flag=1) )
@@ -327,11 +354,11 @@ if __name__=="__main__":
   print "test5: 5 freq, dynamic, no thermal solver",
   print t2-t1,"sec"
   
-  
+  """
   t1=time.time()
   label="test6"
-  test(radhydro_evolve, dict(number_of_freq_bins=5, blackbody_spectrum_flag=1,thermal_evolution_flag=1) )
+  test(radhydro_evolve, dict(isothermal_flag=False, number_of_rays=10000,hydrogen_case_A_flag=False) )
   t2=time.time()
   print "test6: 5 freq, dynamic, thermal solver",
   print t2-t1,"sec"
-  """
+  
