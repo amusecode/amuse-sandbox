@@ -34,9 +34,8 @@ def plots(i,label):
   cs=((gamma*(gamma-1.)*g.u)**0.5).value_in(units.kms)
   xion=g.xion
   T=((gamma-1)*g.u*mu/(1+xion)/constants.kB).value_in(units.K)
-  rho=g.rho
-  dens=(rho).value_in(units.amu/units.cm**3)
-  pres=(g.u*rho).value_in(units.g/units.cm/units.s**2)
+  dens=(g.rho).value_in(units.amu/units.cm**3)
+  pres=((gamma-1)*g.u*g.rho).value_in(units.g/units.cm/units.s**2)
   mach=v/cs
 
   aplot(i,'xion',((r/15,xion,'r'),(r/15,1-xion,'g')),

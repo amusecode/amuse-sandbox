@@ -11,8 +11,6 @@ from amuse.community.fi.interface import Fi
 
 from amuse.datamodel import Particles
 
-from amuse.ext.evrard_test import uniform_random_unit_cube
-
 from amuse.support.io import write_set_to_file 
 
 suggested_parameter_set=dict()
@@ -25,7 +23,8 @@ suggested_parameter_set[Fi]=dict( radiation_flag=False,
 suggested_parameter_set[SimpleXSplitSet]=dict(number_of_freq_bins=5,
                                               thermal_evolution_flag=1,
                                               blackbody_spectrum_flag=1)
-suggested_parameter_set[SPHRay]=dict(default_spectral_type=1)
+suggested_parameter_set[SPHRay]=dict(default_spectral_type=1,
+                                     number_of_rays=1000 | units.Myr**-1)
 
 def iliev_test_5( N=10000,
                   L=15. | units.kpc,
@@ -37,7 +36,7 @@ def iliev_test_5( N=10000,
 
   gamma=5./3.
   mu=1.| units.amu
-  
+
   gas=Particles(N)
 # set particles homogeneously in space
   gas.x=L*numpy.random.uniform(-1.,1.,N)
@@ -133,4 +132,4 @@ def main( tend=30 | units.Myr,
 
 if __name__=="__main__":
     from radhydro import main
-    main(N=100000,rad_code=SPHRay) # rad_code=SimpleXSplitSet
+    main(rad_code=SPHRay) # rad_code=SimpleXSplitSet
