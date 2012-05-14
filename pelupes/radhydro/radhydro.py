@@ -132,5 +132,5 @@ def main( tend=30 | units.Myr,
   radhydro_evolve(hydro,rad,tend,dt,write_snapshots=write_snapshots)
 
 if __name__=="__main__":
-    from radhydrotest import main
-    main(rad_code=SPHRay) # rad_code=SimpleXSplitSet
+    from radhydro import main
+    main(N=100000,rad_code=SPHRay) # rad_code=SimpleXSplitSet
