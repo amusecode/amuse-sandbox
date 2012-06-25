@@ -3,9 +3,9 @@ import cPickle as pickle
 from amuse.rfi.channel import AsyncRequestsPool
 import inspect
 
-def dump_and_encode(x,):
+def dump_and_encode(x):
   return pickle.dumps(x)
-def decode_and_load(x,):
+def decode_and_load(x):
   return pickle.loads(x)
 
 class CodeImplementation(object):
