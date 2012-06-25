@@ -6,7 +6,7 @@ import numpy
 from evolve_star_to_core import evolve_star_to_core_mass
 
 channel_type="mpi"
-hosts=["paddegat"]+["koppoel"]+["bullewijk"]+["biesbosch"]
+hosts=["paddegat"]*2+["koppoel"]+["biesbosch"]
 
 def new_option_parser():
     result = OptionParser()
@@ -37,8 +37,12 @@ def evolve_stars_to_core_mass(minMZAMS,maxMZAMS,dM, Mcore, z, H_abundance_limit)
    
   while jobserver.wait():
     job=jobserver.last_finished_job
-    t, Mt, Rt, Mtcore =job.result
-    print "For ZAMS star of M=", job.args[0], "at T=", t, "M=", Mt, "R=", Rt, "Mc=", Mtcore 
+    result = job.result
+    if len(result)<4:
+      print "For ZAMS star of M=",job.args[0]," failure",result
+    else:
+      t, Mt, Rt, Mtcore =result
+      print "For ZAMS star of M=", job.args[0], "at T=", t, "M=", Mt, "R=", Rt, "Mc=", Mtcore 
      
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
