@@ -2,6 +2,7 @@ from amuse.rfi.core import *
 import cPickle as pickle
 from amuse.rfi.channel import AsyncRequestsPool
 import inspect
+from collections import deque
 
 def dump_and_encode(x):
   return pickle.dumps(x)
@@ -78,7 +79,7 @@ class Job(object):
 class JobServer(object):
     def __init__(self,hosts,channel_type="mpi",preamble=None):
       self.hosts=hosts
-      self.job_list=[]
+      self.job_list=deque()
       self.idle_codes=[]
       self.last_finished_job=None
       self.channel_type=channel_type
@@ -98,7 +99,7 @@ class JobServer(object):
       job=Job(f,args,kwargs)
       self.job_list.append( job)
       if len(self.idle_codes)>0: 
-          self._add_job(self.job_list.pop(), self.idle_codes.pop())        
+          self._add_job(self.job_list.popleft(), self.idle_codes.pop())        
       return job
 
     def wait(self):
@@ -115,7 +116,7 @@ class JobServer(object):
     def _finalize_job(self,request,job,code):
       job.result,job.err=request.result()
       if len(self.job_list)>0:
-        self._add_job( self.job_list.pop(), code)
+        self._add_job( self.job_list.popleft(), code)
       else:
         self.idle_codes.append(code)  
       self.last_finished_job=job

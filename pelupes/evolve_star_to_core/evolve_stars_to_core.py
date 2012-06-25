@@ -14,7 +14,7 @@ import numpy
 from evolve_star_to_core import evolve_star_to_core_mass
 
 channel_type="mpi"
-hosts=["paddegat"]*4+["koppoel"]*4+["biesbosch"]*4
+hosts=["emphyrio"]*1 #["paddegat"]*4+["koppoel"]*4+["biesbosch"]*4
 
 def new_option_parser():
     result = OptionParser()
