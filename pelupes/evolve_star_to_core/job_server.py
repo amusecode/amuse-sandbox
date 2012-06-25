@@ -26,7 +26,7 @@ class CodeImplementation(object):
        return 0
      except Exception as ex:
        print ex
-       argout.value=dump_and_encode(" ")
+       argout.value=dump_and_encode(ex)
        return -1
 
 class CodeInterface(PythonCodeInterface):    

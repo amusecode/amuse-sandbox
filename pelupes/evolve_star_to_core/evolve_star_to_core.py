@@ -22,8 +22,9 @@ def evolve_star_to_core_mass(MZAMS, Mcore, z, H_abundance_limit):
 
 
 # fix for behaviour where all jobs send their worker to the first machine 
-    from socket import gethostname
-    stellar = MESA(hostname=gethostname())
+#    from socket import gethostname
+    #hostname=gethostname(),
+    stellar = MESA(channel_type="sockets")
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(Particle(mass=MZAMS))
     stellar.commit_particles()
