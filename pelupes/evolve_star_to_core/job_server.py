@@ -14,7 +14,7 @@ class CodeImplementation(object):
      try:
        exec(arg)
        return 0
-     except:  
+     except Exception as ex:  
        print ex
        return -1
    def _func(self,f,argin,kwargin,argout):
