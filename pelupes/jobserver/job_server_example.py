@@ -7,7 +7,7 @@ def example_parallel_jobs(N):
 
   from socket import gethostname
   
-  jobserver=JobServer([gethostname()])
+  jobserver=JobServer(["localhost"])
   
   for i in range(N):
     jobserver.submit_job(somework, (i,))

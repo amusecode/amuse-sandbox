@@ -17,11 +17,11 @@ class CodeImplementation(object):
        arg=Pickle.loads(argin)
        kwarg=Pickle.loads(kwargin)
        result=func(*arg,**kwarg)
-       argout.value=Pickle.dumps(result,-1)
+       argout.value=Pickle.dumps(result,0)
        return 0
      except Exception as ex:
        print ex
-       argout.value=Pickle.dumps(" ",-1)
+       argout.value=Pickle.dumps(" ",0)
        return -1
 
 class CodeInterface(PythonCodeInterface):    
@@ -46,15 +46,15 @@ class CodeInterface(PythonCodeInterface):
         return function
 
     def func(self,f,*args,**kwargs):
-        result,err=self._func( Pickle.dumps( f,-1),
-                               Pickle.dumps( args,-1),
-                               Pickle.dumps( kwargs,-1) )
+        result,err=self._func( Pickle.dumps( f,0),
+                               Pickle.dumps( args,0),
+                               Pickle.dumps( kwargs,0) )
         return Pickle.loads(result[0]),err
 
     def async_func(self,f,*args,**kwargs):
-        request=self._func.async(Pickle.dumps( f,-1),
-                                 Pickle.dumps( args,-1),
-                                 Pickle.dumps( kwargs,-1))
+        request=self._func.async(Pickle.dumps( f,0),
+                                 Pickle.dumps( args,0),
+                                 Pickle.dumps( kwargs,0))
         def f(x):
           result,err=x()
           return Pickle.loads(result[0]),err
