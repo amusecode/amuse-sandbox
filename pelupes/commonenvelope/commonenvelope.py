@@ -248,7 +248,7 @@ def sph_star(N=1000,core_mass=0.32 | units.MSun,code=Fi):
     print convert.to_nbody(gas.u.amin())
     print convert.to_nbody(gas.u.amax())
 
-    sph=code(convert,number_of_workers=2)#,redirection="none")#number_of_workers=1,use_gl=False,debugger='gdb')
+    sph=code(convert)#,redirection="none")#number_of_workers=1,use_gl=False,debugger='gdb')
   
     sph.parameters.periodic_box_size=1000. | units.RSun
 
@@ -506,14 +506,14 @@ if __name__ in ("__main__", "__plot__"):
     r_a=roche_radius_over_a(m1/m2)
     a=71.8| units.RSun
     print r_a,(r_a*a).in_(units.RSun)
-    mcore=(0.56 | units.MSun)
+    mcore=(0.6 | units.MSun)
   
 #    ce_evolve(code=Gadget2,N=10000,m2=m2,Redge=r_a*a,a=0.95*a,tend=180.| units.day)
 
-    generate_stellar_model(mass=m1,Rtarget=r_a*a)
+#    generate_stellar_model(mass=m1,Rtarget=r_a*a)
 #    sse_evolve(mass=m1,Rtarget=r_a*a)
 
-    single_star_test(N=1000,tend=120.|units.day,core_mass=mcore)
+    single_star_test(N=1000,tend=40.|units.day,core_mass=mcore)
 #    rotating_star_test(N=10000,tend=120.|units.day,core_mass=mcore,m2=m2,Redge=r_a*a,a=a,
 #      code=Gadget2,V_Vcrit=0.95)
 
