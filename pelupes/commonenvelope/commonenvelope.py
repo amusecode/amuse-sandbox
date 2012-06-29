@@ -513,8 +513,9 @@ if __name__ in ("__main__", "__plot__"):
     generate_stellar_model(mass=m1,Rtarget=r_a*a)
 #    sse_evolve(mass=m1,Rtarget=r_a*a)
 
-    single_star_test(N=10000,tend=120.|units.day,core_mass=mcore,m2=m2,Redge=r_a*a,a=a,
-      code=Gadget2,V_Vcrit=0.95)
+    single_star_test(N=1000,tend=120.|units.day,core_mass=mcore)
+#    rotating_star_test(N=10000,tend=120.|units.day,core_mass=mcore,m2=m2,Redge=r_a*a,a=a,
+#      code=Gadget2,V_Vcrit=0.95)
 
 #    import cProfile
 #    cProfile.run("sph_particles = create_particles()","prof_100k")
