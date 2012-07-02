@@ -5,7 +5,7 @@ import inspect
 from collections import deque
 
 def dump_and_encode(x):
-  return pickle.dumps(x)
+  return pickle.dumps(x,0)
 def decode_and_load(x):
   return pickle.loads(x)
 
@@ -26,7 +26,6 @@ class CodeImplementation(object):
        argout.value=dump_and_encode(result)
        return 0
      except Exception as ex:
-       print ex
        argout.value=dump_and_encode(ex)
        return -1
 
@@ -87,7 +86,9 @@ class JobServer(object):
       i=0
       for host in hosts:
         i+=1; print i,
-        self.idle_codes.append(CodeInterface(channel_type=self.channel_type,hostname=host))
+        self.idle_codes.append(CodeInterface(channel_type=self.channel_type,
+                                             hostname=host,
+                                             copy_worker_code=True) )
       print
       if preamble is not None:
         for code in self.idle_codes:
