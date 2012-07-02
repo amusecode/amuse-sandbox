@@ -13,8 +13,8 @@ import numpy
 
 from evolve_star_to_core import evolve_star_to_core_mass
 
-channel_type="mpi"
-hosts=["emphyrio"]*1 #["paddegat"]*4+["koppoel"]*4+["biesbosch"]*4
+channel_type="ibis"
+hosts=["koppoel"]*2+["biesbosch"]*2+["paddegat"]*2+["gaasp"]*2
 
 def new_option_parser():
     result = OptionParser()
