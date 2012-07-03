@@ -76,19 +76,28 @@ class Job(object):
       self.err=None
 
 class JobServer(object):
-    def __init__(self,hosts,channel_type="mpi",preamble=None):
+    def __init__(self,hosts,channel_type="mpi",preamble=None, retry_jobs=True):
       self.hosts=hosts
       self.job_list=deque()
       self.idle_codes=[]
+      self.failed_codes=[] # for as long as __del__ is not fixed
       self.last_finished_job=None
       self.channel_type=channel_type
+      self.retry_jobs=retry_jobs
       print "connecting hosts",
       i=0
       for host in hosts:
         i+=1; print i,
-        self.idle_codes.append(CodeInterface(channel_type=self.channel_type,
+        try: 
+          code=CodeInterface(channel_type=self.channel_type,
                                              hostname=host,
-                                             copy_worker_code=True) )
+                                             copy_worker_code=True) 
+        except Exception as ex:
+          print
+          print "startup failed on", host
+          print ex
+        else:
+          self.idle_codes.append(code)
       print
       if preamble is not None:
         for code in self.idle_codes:
@@ -115,11 +124,18 @@ class JobServer(object):
         self.pool.wait()   
 
     def _finalize_job(self,request,job,code):
-      job.result,job.err=request.result()
-      if len(self.job_list)>0:
-        self._add_job( self.job_list.popleft(), code)
+      try: 
+        job.result,job.err=request.result()
+      except Exception as ex:
+        job.result,job.err=ex,-2
+        if self.retry_jobs:
+          self.job_list.append( job)
+        self.failed_codes.append(code)  
       else:
-        self.idle_codes.append(code)  
+        if len(self.job_list)>0:
+          self._add_job( self.job_list.popleft(), code)
+        else:
+          self.idle_codes.append(code)  
       self.last_finished_job=job
     
     def _add_job(self,job,code):
