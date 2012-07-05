@@ -20,10 +20,10 @@ def evolve_star_to_core_mass(MZAMS, Mcore, z, H_abundance_limit):
     MZAMS = MZAMS | units.MSun
     Mcore = Mcore | units.MSun
 
-# fix for behaviour where all jobs send their worker to the first machine 
-#    from socket import gethostname
+# fix for behaviour where all jobs send their worker to the first machine (if substarted in mpi channel)
+    from socket import gethostname
     #hostname=gethostname(),channel_type="sockets"
-    stellar = MESA( channel_type="mpi",
+    stellar = MESA( #channel_type="sockets",redirection="none",
                     output_data_root_directory="/disks/paddegat2/pelupes/amuse/amuse-strw/data", 
                     input_data_root_directory="/disks/paddegat2/pelupes/amuse/amuse-strw/data", 
                     default_path_to_MESA_data="/disks/paddegat2/pelupes/amuse/amuse-strw/src/amuse/community/mesa/src/mesa/data")
@@ -32,8 +32,8 @@ def evolve_star_to_core_mass(MZAMS, Mcore, z, H_abundance_limit):
     stellar.commit_particles()
 
     Mtcore = 0 | units.MSun
+    
     while Mtcore<Mcore:
-
         stellar.evolve_model()
         if stellar.particles[0].stellar_type>=HeWhiteDwarf:
             break

@@ -6,7 +6,7 @@ mpiexec.hydra python evolve_stars_to_core.py -m 0.4 -l 7 -u 8 -d 0.1
 it is necessary to start it from a directory which is visible from all machines
 """
 
-from job_server import JobServer
+from amuse.ext.job_server import JobServer
 from optparse import OptionParser
 
 import numpy
@@ -14,7 +14,7 @@ import numpy
 from evolve_star_to_core import evolve_star_to_core_mass
 
 channel_type="ibis"
-hosts=["koppoel"]*2+["biesbosch"]*2+["paddegat"]*2+["gaasp"]*2
+hosts=["koppoel"]*2+2*["paddegat"]+2*["gaasp"]
 
 def new_option_parser():
     result = OptionParser()
