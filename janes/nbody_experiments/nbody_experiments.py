@@ -201,8 +201,8 @@ class NBodyComputationResult:
         traj = []        
         for t in range(len(self.systemStates)):
             currentState = self.systemStates[t]
-            particleKey = currentState.get_all_keys_in_store()[particleIndex]
-            traj.append( currentState.get_value_in_store(particleKey, axisName).value_in(nbody_system.length) )
+            particle = currentState[particleIndex]
+            traj.append(getattr(particle, axisName).value_in(nbody_system.length))
         return traj
 
     def _getParticlesMomentum(self, particles, axisName):
