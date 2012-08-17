@@ -5,11 +5,11 @@ from time import clock
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse import datamodel
-from amuse.ic.plummer import new_plummer_model
+from amuse.ic.plummer import new_plummer_sphere
 import amuse.units.nbody_system as nbu
 
-from nbody_experiments.problems.two_body import two_body_initial_conditions, two_body_orbital_period
-import nbody_experiments as nbe
+from shared_code.nbody_experiments.problems.two_body import two_body_initial_conditions, two_body_orbital_period
+import shared_code.nbody_experiments as nbe
 
 
 def particles_from_floats(m, x, y, z, vx, vy, vz):
@@ -30,7 +30,7 @@ def create_planet(m1 = 1/1000, m2 = 10e-10, a = 0.01, e = 0.0):
     return [m2, x, v]
 
 def plummer_with_planets_initial_conditions(n=128, frac_planets=0.5, m_star = None, m_planet=10e-10, a_planet=0.001, e_planet=0.5, v=False):
-    stars = new_plummer_model(n)
+    stars = new_plummer_sphere(n)
     # print average distance between stars
     if v:
         avg_star_dist = 0.0
@@ -66,7 +66,7 @@ def plummer_with_planets_initial_conditions(n=128, frac_planets=0.5, m_star = No
     return stars
 
 def plummer_initial_conditions(n=128):
-    particles = new_plummer_model(n)
+    particles = new_plummer_sphere(n)
     particles.scale_to_standard()
     return particles
     """
