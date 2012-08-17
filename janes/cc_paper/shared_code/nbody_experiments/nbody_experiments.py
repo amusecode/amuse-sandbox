@@ -273,15 +273,33 @@ class NBodyComputationResult:
         rw.save_variable(self, label)
         self.systemStates = systemStatesTemp
 
+
     def loadFromDisk(self, label, rr):
+        def read_set_from_file_with_close(filename, format = 'csv', **format_specific_keyword_arguments):
+            import amuse.io.store
+            processor = amuse.io.store.StoreHDF(filename, False, open_for_writing=False)
+            r = processor.load()
+            processor.close()
+            return r
+            """
+            #if not os.path.exists(filename): raise IoException("Error: file '{0}' does not exist.".format(filename))
+            processor_factory = amuse.io.base._get_processor_factory(format)
+            processor = processor_factory(filename, format = format)
+            processor.set_options(format_specific_keyword_arguments)
+            r = processor.load()
+            processor.close()
+            return r
+            """
+
         loaded = rr.load_variable(label)
         # http://stackoverflow.com/questions/243836/how-to-copy-all-properties-of-an-object-to-another-object-in-python
         self.__dict__ = loaded.__dict__.copy()
 
         rr.cdto_expdir()
         for i in range(len(self.systemStates)):
-            self.systemStates[i] = read_set_from_file("%s-systemStates-%d.hdf5" % (label, i), "amuse")
+            self.systemStates[i] = read_set_from_file_with_close("%s-systemStates-%d.hdf5" % (label, i), "amuse")
             self.systemStates[i].copy_to_memory()
+            #self.systemStates[i].close()
         rr.cdto_prevdir()
 
 class NBodyComputation:
