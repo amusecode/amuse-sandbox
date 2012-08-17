@@ -31,8 +31,7 @@ A rough outline on the intended way the classes should go together follows.
     r.plotCoordinates(coordinates = [[0, 0], [0, 1], [0, 2]]) // plots the coordinate
     r.plotCoordinateError(coordinates = [[0, 0], [0, 1], [0, 2]]) // plots coordinate error, needs analytic solution
 
-The 'problems' sub-package contains initial conditions as well as analytic solutions for several test problems, including:
-
+The 'problems' sub-package contains initial conditions as well as analytic solutions for several test problems:
     standard two-body problem
     Cuboctahedron orbit from [MN08]
     Planar criss-cross orbit from [MN08]
@@ -210,7 +209,8 @@ class NBodyComputationResult:
 
         for particle in particles:
             #x = particles.get_value_in_store(particle.key, axisName)
-            vx = particles.get_value_in_store(particle.key, "v" + axisName)
+            #vx = particles.get_value_in_store(particle.key, "v" + axisName)
+            vx = getattr(particle, "v" + axisName)
             momentum += particle.mass * vx
             #print "%e" % (momentum.value_in(nbody_system.mass * nbody_system.length / nbody_system.time),)
             
@@ -339,8 +339,9 @@ class NBodyComputation:
         while abs(t) < abs(self.tFinal):
             
             if printProgress:
-                evolve_msg = "evolving '%s': t = %f tFinal = %f " % (label, t.value_in(nbody_system.time), self.tFinal.value_in(nbody_system.time))
-                print evolve_msg
+                evolve_msg = "evolving '%s': t=%.2f tFinal=%.2f" % (label, t.value_in(nbody_system.time), 
+                                                                    self.tFinal.value_in(nbody_system.time))
+                print evolve_msg,
     
             ts_ok = []
             ts_rok = []
@@ -351,6 +352,7 @@ class NBodyComputation:
 
             t = t + self.dt
             wallClock1 = time.time()
+            #print nb.parameters
             nb.evolve_model(t)
             wallClock2 = time.time()
             wallClockTime = wallClock2 - wallClock1
@@ -360,7 +362,7 @@ class NBodyComputation:
 
             res.appendState(nb, storeHuaynoStats, wallClockTime)
 
-            if printProgress: print "%s time = %s sec" % (evolve_msg, wallClockTime)
+            if printProgress: print "time=%.4f sec" % (wallClockTime,)
 
         nb.stop()
         self.results[ label ] = res
@@ -370,7 +372,7 @@ class NBodyComputation:
         fig.savefig(fname)
         print "NBodyComputation: wrote figure %s" % (fname,)
             
-    def plotTotalEnergyRelativeError(self, labels, writeFigure=True, logYScale=False, tag=None, extAx=None, plotLegend=True):
+    def plotTotalEnergyRelativeError(self, labels, linestyles=None, writeFigure=True, logYScale=False, tag=None, extAx=None, plotLegend=True):
 
         if extAx is None:
             # plot relative error
@@ -390,10 +392,10 @@ class NBodyComputation:
             if not logYScale:
                 #print res.time
                 #print res.totalEnergyRelativeError
-                ax.plot(res.time, res.totalEnergyRelativeError, linestyle='', marker=markers[i])
+                ax.plot(res.time, res.totalEnergyRelativeError, linestyle=linestyles[i], marker=markers[i])
             else:
                 #print "rel energy log plot: (... %E, %E, %E)" % (res.totalEnergyRelativeError[-3], res.totalEnergyRelativeError[-2], res.totalEnergyRelativeError[-1])
-                ax.semilogy(res.time, map(abs, res.totalEnergyRelativeError), linestyle='', marker=markers[i])
+                ax.semilogy(res.time, map(abs, res.totalEnergyRelativeError), linestyle=linestyles[i], marker=markers[i])
 
         ax.set_xlabel('time')
         ax.set_ylabel('total energy, relative error')
@@ -750,12 +752,12 @@ class NBodyComputation:
         if (writeFigure): self._writeFigure(fig, 'wallClockTime', tag)
         return fig
 
-    def plotAxQuantityTimeline(self, ax, labels, getQuantity, logYScale=False, colors=None, markers=None, refLabel=None, linestyle=None):
+    def plotAxQuantityTimeline(self, ax, labels, getQuantity, logYScale=False, colors=None, markers=None, refLabel=None, linestyles=None):
         if colors is None: colors = ['k'] * len(labels)
         if markers is None: markers = _getMarkers()
-        if linestyle is None: linestyle = '-'
+        if linestyles is None: linestyles = '-'
         ax.grid(True)
-        for (label, marker, color) in zip(labels, markers, colors):
+        for (label, marker, color, linestyle) in zip(labels, markers, colors, linestyles):
             res = getQuantity(label)
             x = res[0]
             y = res[1]

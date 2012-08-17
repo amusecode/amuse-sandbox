@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Utility routines for doing computational experiments.
+Ductape: utility routines for doing computational experiments.
 Jürgen Jänes <jurgen.janes@gmail.com>
 
-Warning: This package is mscware and needs significant refactoring and documentation
+Warning: This package is mscware and needs significant refactoring and documentation 
 to become effortlessly usable.
 """
 
@@ -73,19 +73,19 @@ def mkresdir(exp_name):
 def mkresfile(exp_name, file_name):
     return os.path.join(exp_name, file_name)
 
-def save_variable(val, exp_name, file_name):
+def save_variable(val, exp_name, file_name, v=False):
     #cr.save_variable((self.x1, self.y1, self.x2, self.y2), dout, "%d-%d-coordinates" % (iSlice, iROI), v)
     outf = open(mkresfile(exp_name, '%s.pkl' % (file_name)), 'wb')
     pickle.dump(val, outf)
     outf.close()
-    print "save_variable: wrote to %s" % (outf,)
+    if v: print "save_variable: wrote to %s" % (outf,)
 
-def load_variable(exp_name, file_name):
+def load_variable(exp_name, file_name, v=False):
     #(self.x1, self.y1, self.x2, self.y2) = cr.load_variable(din, "%d-%d-coordinates" % (iSlice, iROI), v)
     inpf = open(mkresfile(exp_name, '%s.pkl' % (file_name)), 'rb')
     val = pickle.load(inpf)
     inpf.close()
-    print "load_variable: read from %s" % (inpf,)
+    if v: print "load_variable: read from %s" % (inpf,)
     return val
 
 class ResultsWriter:
@@ -104,7 +104,7 @@ class ResultsWriter:
         os.dup2(tee.stdin.fileno(), sys.stderr.fileno())
 
         # make a copy of the s    
-        print "ic: making copy of the driver script\n\tfrom: %s\n\tto: %s" % (__main__.__file__, self.exp_fname)
+        print "ductape: making copy of the driver script\n\tfrom: %s\n\tto: %s" % (__main__.__file__, self.exp_fname)
         shutil.copy(__main__.__file__, self.exp_fname)
 
         self.computation_start = datetime.datetime.now()
@@ -126,20 +126,20 @@ class ResultsWriter:
     def save_variable(self, val, file_name):
         save_variable(val, self.exp_fname, file_name)
 
-    def cdto_expdir(self, subDir = None):
+    def cdto_expdir(self, subDir = None, v=False):
         self.prevdir = os.getcwd()
         newdir = self.exp_fname if (subDir is None) else os.path.join(self.prevdir, self.exp_fname, subDir)
         if not os.path.isdir(newdir):
             os.mkdir(newdir)
         os.chdir(newdir)
-        print "ic: now in directory: %s" % (newdir,)
+        if v: print "ductape: now in directory: %s" % (newdir,)
 
-    def cdto_prevdir(self):
+    def cdto_prevdir(self, v=False):
         os.chdir(self.prevdir)
-        print "ic: now in directory: %s" % (self.prevdir,)
+        if v:print "ductape: now in directory: %s" % (self.prevdir,)
 
 class ResultsReader(ResultsWriter):
-    def __init__(self, exp_fname=None):
+    def __init__(self, exp_fname=None, v=False):
         self.exp_name = os.path.basename( os.path.splitext(__main__.__file__)[0] )
         if not (exp_fname is None):
             self.exp_fname = exp_fname
@@ -149,8 +149,8 @@ class ResultsReader(ResultsWriter):
             p = re.compile("^%s" % self.exp_name)
             results = filter(p.match, results)
             self.exp_fname = results[-1]
-            print "setting exp_fname to: %s" % (self.exp_fname)
-        print "ic: loading results from: %s" % (self.exp_fname)
+            if v: print "setting exp_fname to: %s" % (self.exp_fname)
+        if v: print "ductape: loading results from: %s" % (self.exp_fname)
 
     def load_variable(self, file_name):
         return load_variable(self.exp_fname, file_name)
