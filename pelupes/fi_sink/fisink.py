@@ -39,12 +39,12 @@ fi.reinit_sink(sink)
 
 
 class SinkFi(Fi):
-    def __init__(self, density_threshold=None, *args, **kargs):
+    def __init__(self, *args, **kargs):
         Fi.__init__(self, *args, **kargs)
         self.sink=None
-        if density_threshold is None:
+        if not kargs.has_key('density_threshold'):
           raise Exception("provide density threshold")
-        self.density_threshold=density_threshold
+        self.density_threshold=kargs['density_threshold']
     
     def evolve(self, *args, **kargs):
         self.parameters.stopping_condition_maximum_density = self.density_threshold
