@@ -1,0 +1,35 @@
+from amuse.units import nbody_system
+from amuse.units import units
+
+import amuse.datamodel as core
+from amuse.community.fi.interface import Fi
+
+from amuse.ext.sink import SinkParticles
+
+class SinkFi(Fi):
+    def __init__(self, *args, density_threshold=None, **kargs):
+        Fi.__init__(self, *args, **kargs)
+        self.sink=None
+        if density_threshold is None:
+          raise Exception("provide density threshold")
+        self.density_threshold=density_threshold
+    
+    def evolve(self, *args, **kargs):
+        self.parameters.stopping_condition_maximum_density = self.density_threshold
+        density_limit_detection = self.stopping_conditions.density_limit_detection
+        density_limit_detection.enable()
+        self.overridden().evolve_model(*args,**kargs)        
+        while density_limit_detection.is_set():
+          highdens = density_limit_detection.particles().copy_to_memory()
+          self.gas_particles.remove_particles(highdens)
+          if self.sink is not None:
+            self.sink.accrete(highdens)
+            highdens_in_code = self.dm_particles.add_particles(high_dens)
+            self.sinks.add_sinks(highdens_in_code)
+          else:
+            highdens_in_code = self.dm_particles.add_particles(high_dens)
+            self.sink=SinkParticles(highdens_in_code)
+          self.overridden().evolve_model(*args,**kargs)
+          
+    def init_sink(self):
+        self.sink=SinkParticles(self.dm_particles)
