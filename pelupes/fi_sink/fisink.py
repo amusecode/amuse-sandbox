@@ -39,7 +39,7 @@ fi.reinit_sink(sink)
 
 
 class SinkFi(Fi):
-    def __init__(self, *args, density_threshold=None, **kargs):
+    def __init__(self, density_threshold=None, *args, **kargs):
         Fi.__init__(self, *args, **kargs)
         self.sink=None
         if density_threshold is None:
