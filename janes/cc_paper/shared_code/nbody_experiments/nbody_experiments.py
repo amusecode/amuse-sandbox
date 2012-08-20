@@ -174,8 +174,8 @@ class NBodyComputationResult:
             self.tstot.append(stats[3]);
             self.kstot.append(stats[4]);
             self.dstot.append(stats[5]);
-            self.cetot.append(stats[6]);
-            self.cetotfail.append(stats[7]);
+            #self.cetot.append(stats[6]);
+            #self.cetotfail.append(stats[7]);
 
     def appendTimesteps(self, ts, ts_adj):
         for i in range(len(ts)):
@@ -773,7 +773,7 @@ class NBodyComputation:
     def plotAxQuantityTimeline(self, ax, labels, getQuantity, logYScale=False, colors=None, markers=None, refLabel=None, linestyles=None):
         if colors is None: colors = ['k'] * len(labels)
         if markers is None: markers = _getMarkers()
-        if linestyles is None: linestyles = '-'
+        if linestyles is None: linestyles = ['-'] * len(labels)
         ax.grid(True)
         for (label, marker, color, linestyle) in zip(labels, markers, colors, linestyles):
             res = getQuantity(label)
