@@ -64,6 +64,6 @@ class SinkFi(Fi):
           self.overridden().evolve_model(*args,**kargs)
           
     def reinit_sink(self,sinks):
-        self.sink=SinkParticles(self.dm_particles,sink_radius=sinks.sink_radius)
+        self.sink=SinkParticles(sinks.get_intersecting_subset_in(self.dm_particles),sink_radius=sinks.sink_radius)
 
 
