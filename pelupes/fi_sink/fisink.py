@@ -6,6 +6,38 @@ from amuse.community.fi.interface import Fi
 
 from amuse.ext.sink import SinkParticles
 
+"""
+SinkFi
+
+fi with sink particles
+
+initialize with:
+fi=Fi(density_threshold=maximum_density)
+
+this will make a Fi SPH code where during evolve particles which exceed the maximum density are either
+converted to sink particles or accreted by existing sink particles. Low density particles are NOT
+accreted.
+
+- writing out and restarting:
+
+write out gas and dm sets as usual, in addition:
+write_set_to_file(fi.sink,filename, file_format)
+
+- when restarting:
+
+read in all particle sets, and additionally the sink set, and initialize:
+
+fi=Fi(density_threshold=maximum_density)
+<set parameters>
+fi.gas_particles.add_particles(gas)
+fi.dm_particles.add_particles(dm)
+fi.reinit_sink(sink)
+
+
+"""
+
+
+
 class SinkFi(Fi):
     def __init__(self, *args, density_threshold=None, **kargs):
         Fi.__init__(self, *args, **kargs)
@@ -31,5 +63,7 @@ class SinkFi(Fi):
             self.sink=SinkParticles(highdens_in_code)
           self.overridden().evolve_model(*args,**kargs)
           
-    def init_sink(self):
-        self.sink=SinkParticles(self.dm_particles)
+    def reinit_sink(self,sinks):
+        self.sink=SinkParticles(self.dm_particles,sink_radius=sinks.sink_radius)
+
+
