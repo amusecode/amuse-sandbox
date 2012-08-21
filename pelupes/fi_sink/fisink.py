@@ -56,8 +56,9 @@ class SinkFi(Fi):
           self.gas_particles.remove_particles(highdens)
           if self.sinks is not None:
             self.sinks.accrete(highdens)
-            highdens_in_code = self.dm_particles.add_particles(highdens)
-            self.sinks.add_sinks(highdens_in_code)
+            if len(highdens)>0:
+              highdens_in_code = self.dm_particles.add_particles(highdens)
+              self.sinks.add_sinks(highdens_in_code)
           else:
             highdens_in_code = self.dm_particles.add_particles(highdens)
             self.sinks=SinkParticles(highdens_in_code)
