@@ -1,5 +1,20 @@
 # test of huayno with fractal ic
 
+"""
+Energy error and runtime as a function of fractal dimension for 
+different integrators. Plotted are the energy error (top panel) and
+runtime (bottom panel) of runs with 1024 particles as a 
+function of the fractal dimension of the particle distribution for the 
+EXTRAPOLATE (dashed line), SF-split (dash-dotted line) and the CC 
+(dotted) and CC_KEPLER (drawn) split integrators. Note that all 
+integrators have similar error behaviour, while the run time increases 
+for decreasing fractal dimension (so for more structured particle 
+distributions) for the EXTRAPOLATE and SF split integrators, while the 
+runtime is flat and even decreases slightly for lower fractal dimension 
+for the CC integrators. 
+
+"""
+
 import os
 import sys
 import numpy
