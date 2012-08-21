@@ -46,7 +46,7 @@ class SinkFi(Fi):
           raise Exception("provide density threshold")
         self.density_threshold=kargs['density_threshold']
     
-    def evolve(self, *args, **kargs):
+    def evolve_model(self, *args, **kargs):
         self.parameters.stopping_condition_maximum_density = self.density_threshold
         density_limit_detection = self.stopping_conditions.density_limit_detection
         density_limit_detection.enable()
@@ -56,10 +56,10 @@ class SinkFi(Fi):
           self.gas_particles.remove_particles(highdens)
           if self.sink is not None:
             self.sink.accrete(highdens)
-            highdens_in_code = self.dm_particles.add_particles(high_dens)
+            highdens_in_code = self.dm_particles.add_particles(highdens)
             self.sinks.add_sinks(highdens_in_code)
           else:
-            highdens_in_code = self.dm_particles.add_particles(high_dens)
+            highdens_in_code = self.dm_particles.add_particles(highdens)
             self.sink=SinkParticles(highdens_in_code)
           self.overridden().evolve_model(*args,**kargs)
           
