@@ -41,7 +41,7 @@ fi.reinit_sink(sink)
 class SinkFi(Fi):
     def __init__(self, *args, **kargs):
         Fi.__init__(self, *args, **kargs)
-        self.sinks=None
+        self.sinks=core.Particles()
         if not kargs.has_key('density_threshold'):
           raise Exception("provide density threshold")
         self.density_threshold=kargs['density_threshold']
@@ -54,7 +54,7 @@ class SinkFi(Fi):
         while density_limit_detection.is_set():
           highdens = density_limit_detection.particles().copy_to_memory()
           self.gas_particles.remove_particles(highdens)
-          if self.sinks is not None:
+          if len(self.sinks)>0:
             self.sinks.accrete(highdens)
             if len(highdens)>0:
               highdens_in_code = self.dm_particles.add_particles(highdens)
