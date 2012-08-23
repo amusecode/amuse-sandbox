@@ -34,6 +34,8 @@ fi.dm_particles.add_particles(dm)
 fi.reinit_sink(sink)
 
 
+note hard coded factor 2 (appropiate for fi: sink radius is smoothing kernel size)
+
 """
 
 
@@ -52,8 +54,10 @@ class SinkFi(Fi):
         density_limit_detection.enable()
         self.overridden().evolve_model(*args,**kargs)        
         while density_limit_detection.is_set():
-          highdens = density_limit_detection.particles().copy_to_memory()
+#          highdens = density_limit_detection.particles().copy_to_memory()
+          highdens=self.gas_particles.select_array(lambda rho:rho> self.density_threshold,["rho"]).copy()
           self.gas_particles.remove_particles(highdens)
+          highdens.radius*=2
           if len(self.sinks)>0:
             self.sinks.accrete(highdens)
             if len(highdens)>0:
