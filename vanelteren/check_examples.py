@@ -191,7 +191,7 @@ def print_table(rows):
     print table.draw() + "\n"
 
 def print_time(seconds):
-    return  str(datetime.timedelta(seconds=seconds))
+    return  str(datetime.timedelta(seconds=round(seconds,1)))
     
 def main(references_directory = 'check', current_directory='currrent', must_make_references = False):
     if not os.path.exists(references_directory):
