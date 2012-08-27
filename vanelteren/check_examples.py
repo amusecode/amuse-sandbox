@@ -18,6 +18,7 @@ from optparse import OptionParser
 from matplotlib import _pylab_helpers
 from amuse.community import get_amuse_root_dir
 from amuse.support.thirdparty.texttable import Texttable
+from amuse.support import literature
 
              
 def clear_state():
@@ -180,12 +181,16 @@ def get_reference(name, references):
 
 
 def print_table(rows):
+    rows = [ [name, print_time(t1), print_time(t2), comment] for name, t1, t2, comment in rows]
     table = Texttable()
     table.set_cols_align(["l", "r", "r", "l"])
     table.set_cols_dtype(['t', 'f', 'f', 't'])  
     rows.insert(0,['Name', 'reference\ntime', 'current\ntime', 'comment'])
     table.add_rows(rows)
     print table.draw() + "\n"
+
+def print_time(seconds):
+    return  str(datetime.timedelta(seconds=seconds))
     
 def main(references_directory = 'check', current_directory='currrent', must_make_references = False):
     if not os.path.exists(references_directory):
@@ -219,7 +224,10 @@ def main(references_directory = 'check', current_directory='currrent', must_make
             rows.append([ name, 0.0, dt, 'example not in reference']) 
         elif referror:
             has_a_difference = True
-            rows.append([ name, refdt, dt,  'error in reference: '+referror]) 
+            if error == referror:
+                rows.append([ name, refdt, dt,  'error in reference+check: '+referror])
+            else:
+                rows.append([ name, refdt, dt,  'error in reference: '+referror])
         elif error:
             has_a_difference = True
             rows.append([ name, refdt, dt,  'error in current: '+error]) 
@@ -252,5 +260,6 @@ def main(references_directory = 'check', current_directory='currrent', must_make
     
    
 if __name__ == '__main__':
+    literature.TrackLiteratureReferences.suppress_output()
     options, arguments = new_option_parser().parse_args()
     sys.exit(main(**options.__dict__))
