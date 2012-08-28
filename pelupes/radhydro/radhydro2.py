@@ -9,7 +9,7 @@ from amuse.community.sphray.interface import SPHRay
 
 from amuse.community.fi.interface import Fi
 
-from radhydro_code import fi_radhydro
+from radhydro_code import RadiativeHydro
 
 from amuse.datamodel import Particles
 
@@ -77,8 +77,8 @@ def radhydro_evolve(radhydro,tend,dt,write_snapshots=True):
   if write_snapshots:
     write_combined_set("radhydro-%6.6i"%0,radhydro) 
   while t<tend-dt/2:
-    hydro.evolve_model(t)
     t+=dt
+    radhydro.evolve_model(t)
 
     T=T_from_u(radhydro.rad_particles.xion,radhydro.gas_particles.u)
     print t.in_(units.Myr),
@@ -97,7 +97,7 @@ def main( tend=30 | units.Myr,
           source_luminosity=5.e48 | units.s**-1,
           rhoinit=0.001 | (units.amu / units.cm**3),
           Tinit=100. | units.K,
-          radhydro_code=fi_radhydro,
+          hydro_code=Fi,
           rad_code=SPHRay,
           write_snapshots=True):
 
@@ -105,14 +105,21 @@ def main( tend=30 | units.Myr,
                        rhoinit=rhoinit,Tinit=Tinit)
 
   converter=nbody_system.nbody_to_si(L**3*rhoinit, L)
-  radhydro=radhydro_code(converter, mode='periodic', rad=rad_code)
-  hydro_parameters=suggested_parameter_set[hydro_code]
+  def hydrocode():
+    return hydro_code(converter, mode='periodic')
+  
+  def radcode():
+    return rad_code()
+  
+  radhydro=RadiativeHydro(rad=radcode,hydro=hydrocode)
+  
+  hydro_parameters=suggested_parameter_set[Fi]
   hydro_parameters['timestep']=dt/2  
   hydro_parameters['periodic_box_size']=2*L
   for x in hydro_parameters:
     radhydro.hydro_parameters.__setattr__(x,hydro_parameters[x])
   radhydro.gas_particles.add_particles(gas)
-    
+      
   rad_parameters=suggested_parameter_set[rad_code]
   rad_parameters["box_size"]=2*L
   for x in rad_parameters:
@@ -123,5 +130,5 @@ def main( tend=30 | units.Myr,
   radhydro_evolve(radhydro,tend,dt,write_snapshots=write_snapshots)
 
 if __name__=="__main__":
-    from radhydro import main
+    from radhydro2 import main
     main(rad_code=SPHRay) # rad_code=SimpleXSplitSet
