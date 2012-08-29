@@ -1,5 +1,7 @@
 import numpy
 
+numpy.random.seed(1234567)
+
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 from amuse.support.units import constants
@@ -8,6 +10,7 @@ from amuse.community.simplex.interface import SimpleXSplitSet
 from amuse.community.sphray.interface import SPHRay
 
 from amuse.community.fi.interface import Fi
+from amuse.community.gadget2.interface import Gadget2
 
 from radhydro_code import RadiativeHydro
 
@@ -22,11 +25,15 @@ suggested_parameter_set[Fi]=dict( radiation_flag=False,
                                   gamma=1,
                                   isothermal_flag=True,
                                   integrate_entropy_flag=False )
+
+suggested_parameter_set[Gadget2]=dict( )
+
 suggested_parameter_set[SimpleXSplitSet]=dict(number_of_freq_bins=5,
                                               thermal_evolution_flag=1,
                                               blackbody_spectrum_flag=1)
 suggested_parameter_set[SPHRay]=dict(default_spectral_type=1,
-                                     number_of_rays=1000 | units.Myr**-1)
+                                     number_of_rays=1000 | units.Myr**-1,
+                                     isothermal_flag=False)
 
 def iliev_test_5( N=10000,
                   L=15. | units.kpc,
@@ -52,8 +59,8 @@ def iliev_test_5( N=10000,
   gas.u = 1/(gamma-1)*constants.kB * Tinit/mu
   gas.rho = rhoinit
   gas.mass = rhoinit*(2*L)**3/N
-#  gas.flux = 0. | (units.s**-1)
-  gas.xion = 0. | units.none
+  gas.xion = 0.1 | units.none
+  gas.dudt=gas.u/(1.| units.Myr)
 
 # set source in the center of the box
   sources=Particles(1)
@@ -64,31 +71,10 @@ def iliev_test_5( N=10000,
 
   return gas,sources
 
-def write_combined_set(filename,radhydro):
-    write_set_to_file(radhydro.radhydro_particles_copy(),filename,"amuse", append_to_file=False)    
-
 def T_from_u(xe,u):
     mu=1.| units.amu
     gamma=5./3.    
     return (gamma-1)*mu/(1.+xe)/constants.kB*u
-
-def radhydro_evolve(radhydro,tend,dt,write_snapshots=True):
-  t=radhydro.model_time  
-  if write_snapshots:
-    write_combined_set("radhydro-%6.6i"%0,radhydro) 
-  while t<tend-dt/2:
-    t+=dt
-    radhydro.evolve_model(t)
-
-    T=T_from_u(radhydro.rad_particles.xion,radhydro.gas_particles.u)
-    print t.in_(units.Myr),
-    print "min T:", T.amin().value_in(units.K),
-    print "max T:", T.amax().value_in(units.K)
-
-    i=t/dt
-    if int(i)%10==0:
-      if write_snapshots:
-        write_combined_set("radhydro-%6.6i"%int(i),radhydro)
 
 def main( tend=30 | units.Myr,
           N=10000, 
@@ -113,7 +99,7 @@ def main( tend=30 | units.Myr,
   
   radhydro=RadiativeHydro(rad=radcode,hydro=hydrocode)
   
-  hydro_parameters=suggested_parameter_set[Fi]
+  hydro_parameters=suggested_parameter_set[hydro_code]
   hydro_parameters['timestep']=dt/2  
   hydro_parameters['periodic_box_size']=2*L
   for x in hydro_parameters:
@@ -122,13 +108,30 @@ def main( tend=30 | units.Myr,
       
   rad_parameters=suggested_parameter_set[rad_code]
   rad_parameters["box_size"]=2*L
+  rad_parameters["momentum_kicks_flag"]=False
   for x in rad_parameters:
     radhydro.rad_parameters.__setattr__(x,rad_parameters[x])
   radhydro.rad_particles.add_particles(gas)
-  radhydro.src_particles.add_particles(src)
+#  radhydro.src_particles.add_particles(src)
 
-  radhydro_evolve(radhydro,tend,dt,write_snapshots=write_snapshots)
+  t=radhydro.model_time  
+  while t<tend-dt/2:
+    t+=dt
+    radhydro.evolve_model(t)
 
+    T=T_from_u(radhydro.rad_particles.xion,radhydro.gas_particles.u)
+    xion=radhydro.rad_particles.xion
+    v=(radhydro.gas_particles.vx**2+radhydro.gas_particles.vz**2+radhydro.gas_particles.vy**2)**0.5
+    print t.in_(units.Myr),
+    print "min T:", T.amin().in_(units.K),
+    print "max T:", T.amax().in_(units.K),
+    print "min x_ion:", xion.min(),
+    print "max x_ion:", xion.max(),
+    print "min v:", v.amin().in_(units.kms),
+    print "max v:", v.amax().in_(units.kms)
+    
+  write_set_to_file(radhydro.radhydro_particles_copy(),'gas_final',"amuse", append_to_file=False)
+    
 if __name__=="__main__":
-    from radhydro2 import main
-    main(rad_code=SPHRay) # rad_code=SimpleXSplitSet
+    main(hydro_code=Fi,rad_code=SPHRay,Tinit=10000. | units.K) # rad_code=SimpleXSplitSet
+  
