@@ -1,7 +1,3 @@
-from amuse.community.fi.interface import Fi
-from amuse.community.gadget2.interface import Gadget2
-from amuse.datamodel import Particles
-
 """
 class for radiative hydrodynamics
 
@@ -80,6 +76,8 @@ class RadiativeHydro(object):
           isothermal_flag=self.hydro.parameters.isothermal_flag
           if isothermal_flag and self.constant_heating is None:
             rad_attributes_to_update.append("du_dt")
+          if not isothermal_flag:
+            rad_attributes_to_update.append("u")  
 
         return rad_attributes_to_update,hydro_attributes_to_update
 
