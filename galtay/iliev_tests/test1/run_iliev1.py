@@ -64,7 +64,7 @@ parser.add_argument( '-movie_dt',
 
 parser.add_argument( '-grid', 
                      type=int, 
-                     default=1,
+                     default=0,
                      help='particles set to ( 1=grid, 0=random )' )
 
 
@@ -180,8 +180,7 @@ def rad_evolve( rad, tend, dt, write_snapshots=True ):
     plot_iliev1.quick_check_data( t, rad.gas_particles.mass,
                                   rad.gas_particles.xion )
 
-    plot_iliev1.profile_plots( rad.gas_particles.mass,
-                               rad.gas_particles.xion )
+
 
     # check if we've reached an output time
     #--------------------------------------------------------
@@ -196,10 +195,9 @@ def rad_evolve( rad, tend, dt, write_snapshots=True ):
 
         if t_diff < OUTPUT_TIME_TOL:
 
-          print fname
-          print
           write_rad_set(fname, rad.gas_particles)
-
+          plot_iliev1.plot_profiles( data=rad.gas_particles, t=t )
+          plot_iliev1.plot_images( data=rad.gas_particles, t=t )
 
 
 
