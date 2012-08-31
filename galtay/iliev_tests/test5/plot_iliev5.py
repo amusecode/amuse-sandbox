@@ -1,4 +1,4 @@
-""" Plot test 1 from http://arxiv.org/abs/astro-ph/0603199.  
+""" Plot test 5 from http://arxiv.org/abs/0905.2920.  
 Note that the box is setup with the origin at the center.  """
 
 import os
@@ -17,24 +17,24 @@ from amuse.support.io import read_set_from_file
 
 
 
-# test1 specific class
+# test5 specific class
 #=================================================================
-class Iliev1Vars():
+class Iliev5Vars():
 
   def __init__( self ):
-    self.Lbox = 13.2 | units.kpc
+    self.Lbox = 15.0 | units.kpc
     self.RC = 2.59e-13 | (units.cm**3/units.s)
     self.nH = 1.0e-3 | (units.cm**(-3))
     self.Np = 5.0e48 | (units.s**(-1))
     self.trec = 1 / (self.RC * self.nH)
-    self.Tinit = 1.0e4 | (units.K)
+    self.Tinit = 1.0e2 | (units.K)
     self.xHII = 1.2e-3
     self.Rs = ( ( 3 * self.Np ) / \
                   ( 4 * numpy.pi * self.RC * self.nH**2 ) )**(1./3)
 
   def show( self ): 
     print
-    print ' Iliev Test 1 parameters '
+    print ' Iliev Test 5 parameters '
     print '--------------------------------------'
     print 'Lbox:      ', self.Lbox.in_(units.kpc)
     print 'Rstr:      ', self.Rs.in_(units.kpc)
@@ -66,7 +66,7 @@ class Iliev1Vars():
 
 # create an instance of test 1 vars
 #=================================================================
-CC = Iliev1Vars()
+CC = Iliev5Vars()
 
 
 
@@ -74,7 +74,7 @@ CC = Iliev1Vars()
 #=================================================================
 def parse_command_line():
 
-  parser = argparse.ArgumentParser(description='Plot test Iliev1.')
+  parser = argparse.ArgumentParser(description='Plot test Iliev5.')
   
   parser.add_argument( 'snap_file',  
                        help='output file to plot' )
@@ -135,7 +135,7 @@ def dplot(fnum, tag, xyc,xlim=None,ylim=None,ylabel=""):
 
 
 #=================================================================
-def frames( label='iliev1'):
+def frames( label='iliev5'):
 
   path = 'output/'
 
@@ -144,7 +144,7 @@ def frames( label='iliev1'):
   dl = 13.6 / ng
   grid = GG.Grid2D( lo, ng, dl )
   
-  for infile in glob.glob( os.path.join(path, 'iliev1*') ):
+  for infile in glob.glob( os.path.join(path, 'iliev5*') ):
     print "current file is: " + infile
 
     outfile = 'frames/' + infile.split('/')[1] + '.png'

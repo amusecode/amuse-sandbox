@@ -1,4 +1,4 @@
-""" Plot test 1 from http://arxiv.org/abs/astro-ph/0603199.  
+""" Plot test 2 from http://arxiv.org/abs/astro-ph/0603199.  
 Note that the box is setup with the origin at the center.  """
 
 import os
@@ -19,7 +19,7 @@ from amuse.support.io import read_set_from_file
 
 # test1 specific class
 #=================================================================
-class Iliev1Vars():
+class Iliev2Vars():
 
   def __init__( self ):
     self.Lbox = 13.2 | units.kpc
@@ -27,14 +27,14 @@ class Iliev1Vars():
     self.nH = 1.0e-3 | (units.cm**(-3))
     self.Np = 5.0e48 | (units.s**(-1))
     self.trec = 1 / (self.RC * self.nH)
-    self.Tinit = 1.0e4 | (units.K)
+    self.Tinit = 1.0e2 | (units.K)
     self.xHII = 1.2e-3
     self.Rs = ( ( 3 * self.Np ) / \
                   ( 4 * numpy.pi * self.RC * self.nH**2 ) )**(1./3)
 
   def show( self ): 
     print
-    print ' Iliev Test 1 parameters '
+    print ' Iliev Test 2 parameters '
     print '--------------------------------------'
     print 'Lbox:      ', self.Lbox.in_(units.kpc)
     print 'Rstr:      ', self.Rs.in_(units.kpc)
@@ -42,7 +42,7 @@ class Iliev1Vars():
     print 'nH:        ', self.nH
     print 'RC:        ', self.RC
     print 'xHII_init: ', self.xHII
-    print 'T_init:    ', self.Tinit
+    print 'T_init:    ', self.T_init
     print
 
 
@@ -66,7 +66,7 @@ class Iliev1Vars():
 
 # create an instance of test 1 vars
 #=================================================================
-CC = Iliev1Vars()
+CC = Iliev2Vars()
 
 
 
@@ -74,7 +74,7 @@ CC = Iliev1Vars()
 #=================================================================
 def parse_command_line():
 
-  parser = argparse.ArgumentParser(description='Plot test Iliev1.')
+  parser = argparse.ArgumentParser(description='Plot test Iliev2.')
   
   parser.add_argument( 'snap_file',  
                        help='output file to plot' )
@@ -135,7 +135,7 @@ def dplot(fnum, tag, xyc,xlim=None,ylim=None,ylabel=""):
 
 
 #=================================================================
-def frames( label='iliev1'):
+def frames( label='iliev2'):
 
   path = 'output/'
 
