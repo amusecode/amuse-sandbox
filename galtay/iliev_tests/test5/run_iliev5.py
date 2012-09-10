@@ -15,14 +15,23 @@ from amuse.community.sphray.interface import SPHRay
 from amuse.community.fi.interface import Fi
 from amuse.community.gadget2.interface import Gadget2
 
-from radhydro_code import RadiativeHydro
+from radiativehydro import RadiativeHydro
 
 from amuse.datamodel import Particles
 from amuse.support.io import write_set_to_file 
 
+from amuse.ext.evrard_test import regular_grid_unit_cube
+from amuse.ext.evrard_test import body_centered_grid_unit_cube
+
+
+import plot_iliev5
+
+
+
 OUTPUT_TIME_TOL = 1.0e-4
 numpy.random.seed(1234567)
 
+CC = plot_iliev5.Iliev5Vars()
 
 parser = argparse.ArgumentParser(description='Run test Iliev5.')
 
@@ -57,6 +66,11 @@ parser.add_argument( '-movie_dt',
                      default=None,
                      help='make output every MOVIE_DT Myr for making movies' )
 
+parser.add_argument( '-grid', 
+                     type=int, 
+                     default=1,
+                     help='particles set to ( 1=grid, 0=random )' )
+
 
 args = parser.parse_args()
 
@@ -86,15 +100,20 @@ suggested_parameter_set[Gadget2] = {}
 suggested_parameter_set[Fi] = {'radiation_flag':False,
                                'self_gravity_flag':False,
 #                               'gamma':1,
-#                               'isothermal_flag':True,
-                               'integrate_entropy_flag':True}
+#                               'isothermal_flag':False,
+                               'integrate_entropy_flag':True,
+                               'periodic_box_size': 2*CC.Lbox}
+
+
 
 # SPHray
 #-------------------------------------------------------------------
 Nray_Myr = args.Nray_Myr | units.Myr**-1
 suggested_parameter_set[SPHRay] = {'default_spectral_type': 1,
                                    'number_of_rays': Nray_Myr,
-                                   'isothermal_flag': 0 }
+                                   'isothermal_flag': 0,
+                                   'box_size': 2*CC.Lbox,
+                                   'boundary_condition': 0}
 
 
 # SimpleXSplitSet
@@ -106,7 +125,7 @@ suggested_parameter_set[SimpleXSplitSet] = {'number_of_freq_bins':5,
 
 
 
-def set_gas_and_src( Ngas, Lbox, Lsrc, nHinit, Tinit ):
+def set_gas_and_src( Ngas, Lbox, Lsrc, rho_init, T_init ):
 
   """ Given the number of particles and box parameters, sets up gas 
   particles and a source particle. """
@@ -114,13 +133,38 @@ def set_gas_and_src( Ngas, Lbox, Lsrc, nHinit, Tinit ):
   gamma = 5./3.
   mu = 1.0 | units.amu
 
-  gas = Particles(Ngas)
-
+ 
 # set particles homogeneously in space from -Lbox/2 to Lbox/2
+# NOTE reset Ngas
 
-  gas.x = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
-  gas.y = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
-  gas.z = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
+  if args.grid == 1:
+
+    x,y,z = regular_grid_unit_cube(Ngas).make_xyz()
+    #x,y,z = body_centered_grid_unit_cube(Ngas).make_xyz()
+
+    Ngas = len(x)
+    gas = Particles(Ngas)
+
+    gas.x = x * Lbox/2
+    gas.y = y * Lbox/2
+    gas.z = z * Lbox/2
+
+
+  elif args.grid == 0:
+
+    gas = Particles(Ngas)
+
+    gas.x = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
+    gas.y = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
+    gas.z = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
+
+  else:
+    
+    print 'args.grid not recognized'
+    print 'args.grid = ', args.grid
+    sys.exit(1)
+
+
 
 # set zero velocities
 
@@ -132,11 +176,11 @@ def set_gas_and_src( Ngas, Lbox, Lsrc, nHinit, Tinit ):
 
   gas.h_smooth = 0.0 * Lbox # will be set in call to hydro code
   
-  gas.u = 1 / (gamma-1) * constants.kB * Tinit / mu
+  gas.u = 1 / (gamma-1) * constants.kB * T_init / mu
 
-  gas.rho = nHinit
+  gas.rho = rho_init
 
-  gas.mass = nHinit*Lbox**3/Ngas
+  gas.mass = rho_init*Lbox**3/Ngas
 
   gas.xion = 1.2e-3
 
@@ -167,10 +211,10 @@ def T_from_u(xe, u):
 def main( Ngas = args.Ngas, 
           tend = args.tend | units.Myr,          
           dt = args.dt | units.Myr,
-          Lbox = 15.0 | units.kpc,    
+          Lbox = 30.0 | units.kpc,    
           Lsrc = 5.e48 | units.s**-1,
-          nHinit = 1.0e-3 | (units.amu / units.cm**3),
-          Tinit = 1.0e2 | units.K,
+          rho_init = 1.0e-3 | (units.amu / units.cm**3),
+          T_init = 1.0e2 | units.K,
           rad_code = SPHRay,
           hydro_code = Fi,
           write_snapshots = True ):
@@ -185,8 +229,8 @@ def main( Ngas = args.Ngas,
   print 'dt: ', dt
   print 'Lbox: ', Lbox
   print 'Lsrc: ', Lsrc
-  print 'nH: ', nHinit
-  print 'Tinit: ', Tinit
+  print 'rho_init: ', rho_init
+  print 'T_init: ', T_init
   print 'rad code: ', rad_code
   print 'hydro code: ', hydro_code
   print 
@@ -194,14 +238,14 @@ def main( Ngas = args.Ngas,
 
   # set up gas and source particles
   #---------------------------------------------------------------------
-  (gas,src) = set_gas_and_src( Ngas, Lbox, Lsrc, nHinit, Tinit )
+  (gas,src) = set_gas_and_src( Ngas, Lbox, Lsrc, rho_init, T_init )
 
 
   # set up a system of units in which G=1.  the function takes any two 
   # fundamental dimensions (in this case mass and length) and calculates
   # the third such that G = 1. 
   #---------------------------------------------------------------------
-  converter = nbody_system.nbody_to_si( Lbox**3 * nHinit, Lbox )
+  converter = nbody_system.nbody_to_si( Lbox**3 * rho_init, Lbox )
 
 
   # initialize the radhydro class
@@ -218,7 +262,6 @@ def main( Ngas = args.Ngas,
   #---------------------------------------------------------------------
   hydro_parameters = suggested_parameter_set[hydro_code]
   hydro_parameters['timestep'] = dt/2  
-  hydro_parameters['periodic_box_size'] = Lbox
 
   for x in hydro_parameters:
     radhydro.hydro_parameters.__setattr__(x,hydro_parameters[x])
@@ -228,13 +271,13 @@ def main( Ngas = args.Ngas,
   # set rad code parameters
   #---------------------------------------------------------------------
   rad_parameters = suggested_parameter_set[rad_code]
-  rad_parameters["box_size"] = Lbox
   rad_parameters["momentum_kicks_flag"] = False
 
   for x in rad_parameters:
     radhydro.rad_parameters.__setattr__(x,rad_parameters[x])
 
   radhydro.rad_particles.add_particles(gas)
+  radhydro.src_particles.add_particles(src)
 
 
   # evolve system
@@ -250,19 +293,40 @@ def main( Ngas = args.Ngas,
          radhydro.gas_particles.vz**2 + 
          radhydro.gas_particles.vy**2 )**0.5
 
-    print t.in_(units.Myr),
-    print "min T:", T.amin().in_(units.K),
-    print "max T:", T.amax().in_(units.K),
-    print "min x_ion:", xion.min(),
-    print "max x_ion:", xion.max(),
-    print "min v:", v.amin().in_(units.kms),
-    print "max v:", v.amax().in_(units.kms)
-    
+    print t.in_(units.Myr)
+    print "min/max T:", T.amin().in_(units.K), T.amax().in_(units.K)
+    print "min/max x_ion:", xion.min(), xion.max()
+    print "min/max v:", v.amin().in_(units.kms), v.amax().in_(units.kms)
+    print
 
-  write_set_to_file( radhydro.radhydro_particles_copy(),
-                     'gas_final',"amuse", append_to_file=False )
+    # check if we've reached an output time
+    #--------------------------------------------------------
+    if write_snapshots:
+
+      t_now = t.value_in(units.Myr)
+      t_lbl = t.value_in(units.Myr)*1000
+      fname = "output/iliev5-%7.7i"%int(t_lbl)
+
+      for t_check in OUT_TIMES:
+        t_diff = numpy.abs( (t_now - t_check) ) 
+
+        if t_diff < OUTPUT_TIME_TOL:
+
+          # function combines data from hydro particles
+          # and radiation particles
+          
+          gas_particles = radhydro.radhydro_particles_copy()
+
+          write_set_to_file( gas_particles,
+                             fname, "amuse", append_to_file=False )
+
+          plot_iliev5.plot_profiles( data=gas_particles, t=t )
+          plot_iliev5.plot_images( data=gas_particles, t=t )
+
+
+
 
 
 if __name__=="__main__":
-    #from run_iliev1 import main
+    #from run_iliev5 import main
     main(hydro_code=Fi, rad_code=SPHRay) # rad_code=SimpleXSplitSet

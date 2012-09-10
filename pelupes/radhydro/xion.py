@@ -10,7 +10,7 @@ from amuse.ext.radial_profile import radial_profile
 from amuse.support.io import read_set_from_file
 
 def aplot(i, tag, xyc,xlim=None,ylim=None,ylabel=""):
-  pyplot.figure(figsize=(8,8))
+  pyplot.figure(figsize=(7,7))
   for x,y,c in xyc:
     xa,ya=radial_profile(x,y,N=100)
     pyplot.semilogy(xa,ya,c)  

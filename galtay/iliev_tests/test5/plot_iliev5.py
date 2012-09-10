@@ -22,7 +22,7 @@ from amuse.support.io import read_set_from_file
 class Iliev5Vars():
 
   def __init__( self ):
-    self.Lbox = 15.0 | units.kpc
+    self.Lbox = 30.0 | units.kpc
     self.RC = 2.59e-13 | (units.cm**3/units.s)
     self.nH = 1.0e-3 | (units.cm**(-3))
     self.Np = 5.0e48 | (units.s**(-1))
@@ -141,7 +141,7 @@ def frames( label='iliev5'):
 
   lo = numpy.array( [-6.6, -6.6] )
   ng = 512
-  dl = 13.6 / ng
+  dl = 30.0 / ng
   grid = GG.Grid2D( lo, ng, dl )
   
   for infile in glob.glob( os.path.join(path, 'iliev5*') ):
@@ -209,10 +209,13 @@ def plot_profiles( fname=None, data=None, t=None ):
     fnum = t.value_in(units.Myr) * 1.0e3
     fnum = "%7.7i"%int(fnum)
 
-  r = ( (g.x**2+g.y**2+g.z**2)**0.5 ).value_in(units.kpc)
+  r = ( (g.x**2 + g.y**2 + g.z**2)**0.5 ).value_in(units.kpc)
   r = r / (boxlen/2)
 
+  v = ( (g.vx**2 + g.vy**2 + g.vz**2)**0.5 ).value_in(units.kpc/units.s)
+
   print
+  print 'boxlen:       ', boxlen
   print 'x min/max:    ', g.x.value_in(units.kpc).min(), \
                           g.x.value_in(units.kpc).max()
   print 'y min/max:    ', g.y.value_in(units.kpc).min(), \
@@ -243,7 +246,10 @@ def plot_profiles( fname=None, data=None, t=None ):
   T = ( (gamma-1)*g.u*mu/(1+g.xion)/constants.kB ).value_in(units.K)
   dens = (g.rho).value_in(units.amu/units.cm**3)
   pres = ( (gamma-1)*g.u*g.rho).value_in(units.g/units.cm/units.s**2 )
+  cs=((gamma*(gamma-1.)*g.u)**0.5).value_in(units.kms)
 
+  x = g.x.value_in(units.kpc)
+  y = g.y.value_in(units.kpc)
 
   dplot(fnum, 'xion',
         ( (r, g.xion,   'r'),
@@ -274,10 +280,17 @@ def plot_profiles( fname=None, data=None, t=None ):
   #dplot(i,'mach',((r/boxlen/2,mach,'r'),),
   #        xlim=(0.,1.),ylim=(1.e-5,10.),ylabel="mach number")
 
-  #dplot(i,'vel',((r/boxlen/2,v,'r'),(r/boxlen/2,cs,'g'),),
-  #        xlim=(0.,1.),ylim=(0.01,100.),ylabel="bulk, sound speed (km/s)")
+  dplot(fnum,'vel',
+        ( (r,v, 'r'),
+          (r,cs,'g') ),
+        xlim=(0.,1.),
+        ylim=(0.01,100.),
+        ylabel="bulk, sound speed (km/s)")
 
-
+  tag='pos'
+  pyplot.figure(figsize=(7,7))
+  pyplot.scatter( x, y, s=1.0, color='r' )
+  pyplot.savefig('plots/' + tag + '-' + fnum + '.png' )
 
 #=================================================================
 def plot_images( fname=None, data=None, t=None ):

@@ -1,5 +1,6 @@
 """ Run test 2 from http://arxiv.org/abs/astro-ph/0603199.  
-Note that the box is setup with the origin at the center.  """
+Note that the box is 13.2 pkpc and setup with the origin at the center.  """
+
 
 
 import numpy
@@ -17,12 +18,15 @@ from amuse.support.io import write_set_to_file
 
 from amuse.ext.evrard_test import regular_grid_unit_cube
 
-
-
 import plot_iliev2
 
 
+# set up global parameters and command line args
+# ===========================================================================
+
 OUTPUT_TIME_TOL = 1.0e-4
+
+CC = plot_iliev2.Iliev2Vars()
 
 parser = argparse.ArgumentParser(description='Run test Iliev2.')
 
@@ -64,7 +68,7 @@ parser.add_argument( '-movie_dt',
 
 parser.add_argument( '-grid', 
                      type=int, 
-                     default=0,
+                     default=1,
                      help='particles set to ( 1=grid, 0=random )' )
 
 
@@ -83,17 +87,21 @@ print OUT_TIMES
 print
 
 
+# A dictionary to hold the suggested parameters for each code.
+# ===========================================================================
 
 suggested_parameter_set = {}
+
 Nray_Myr = args.Nray_Myr | units.Myr**-1
 suggested_parameter_set[SPHRay] = {'default_spectral_type': 1.0,
                                    'number_of_rays': Nray_Myr,
-                                   'isothermal_flag': 0 }
+                                   'isothermal_flag': 0,
+                                   'box_size': CC.Lbox}
 
 
+# ===========================================================================
 
-
-def set_gas_and_src( Ngas, Lbox, Lsrc, nHinit, Tinit ):
+def set_gas_and_src( Ngas, Lbox, Lsrc, rho_init, T_init ):
 
   """ Given the number of particles and box parameters, sets up gas 
   particles and a source particle. """
@@ -101,20 +109,23 @@ def set_gas_and_src( Ngas, Lbox, Lsrc, nHinit, Tinit ):
   gamma = 5./3.
   mu = 1.0 | units.amu
 
-  gas = Particles(Ngas)
-
 # set particles homogeneously in space from -Lbox/2 to Lbox/2
 
   if args.grid == 1:
 
     x,y,z = regular_grid_unit_cube(Ngas).make_xyz()
 
+    Ngas = len(x)
+    print 'Ngas being updated to: ', Ngas
+
+    gas = Particles(Ngas)  
     gas.x = x * Lbox/2
     gas.y = y * Lbox/2
     gas.z = z * Lbox/2
 
   elif args.grid == 0:
 
+    gas = Particles(Ngas)  
     gas.x = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
     gas.y = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
     gas.z = Lbox/2 * numpy.random.uniform(-1.,1.,Ngas)
@@ -133,11 +144,11 @@ def set_gas_and_src( Ngas, Lbox, Lsrc, nHinit, Tinit ):
   Vperpar = Lbox**3 / Ngas * Nngb 
   gas.h_smooth = ( 3 * Vperpar / (4.0 * numpy.pi ) )**(1./3)
   
-  gas.u = 1 / (gamma-1) * constants.kB * Tinit/mu
+  gas.u = 1 / (gamma-1) * constants.kB * T_init/mu
 
-  gas.rho = nHinit
+  gas.rho = rho_init
 
-  gas.mass = nHinit*Lbox**3/Ngas
+  gas.mass = rho_init*Lbox**3/Ngas
 
   gas.xion = 1.2e-3
 
@@ -207,8 +218,8 @@ def main( Ngas = args.Ngas,
           dt = args.dt | units.Myr,
           Lbox = 13.2 | units.kpc,    
           Lsrc = 5.e48 | units.s**-1,
-          nHinit = 1.0e-3 | (units.amu / units.cm**3),
-          Tinit = 1.0e2 | units.K,
+          rho_init = 1.0e-3 | (units.amu / units.cm**3),
+          T_init = 1.0e2 | units.K,
           rad_code = SPHRay,
           write_snapshots = True ):
 
@@ -222,23 +233,21 @@ def main( Ngas = args.Ngas,
   print 'dt: ', dt
   print 'Lbox: ', Lbox
   print 'Lsrc: ', Lsrc
-  print 'nH: ', nHinit
-  print 'Tinit: ', Tinit
+  print 'rho_init: ', rho_init
+  print 'T_init: ', T_init
   print 'rad code: ', rad_code
   print 
 
 
   # set up gas and source particles
   #---------------------------------------------------------------------
-  (gas,src) = set_gas_and_src( Ngas, Lbox, Lsrc, nHinit, Tinit )
+  (gas,src) = set_gas_and_src( Ngas, Lbox, Lsrc, rho_init, T_init )
 
 
   # initialize radiative transfer code class
   #---------------------------------------------------------------------
   rad = rad_code( )
   rad_parameters = suggested_parameter_set[rad_code]
-  rad_parameters["box_size"]=Lbox
-
   for x in rad_parameters:
     rad.parameters.__setattr__(x,rad_parameters[x])
 

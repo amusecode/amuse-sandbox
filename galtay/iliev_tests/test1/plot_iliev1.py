@@ -25,11 +25,11 @@ class Iliev1Vars():
     self.Lbox = 13.2 | units.kpc
     self.RC = 2.59e-13 | (units.cm**3/units.s)
     self.nH = 1.0e-3 | (units.cm**(-3))
-    self.Np = 5.0e48 | (units.s**(-1))
+    self.Lsrc = 5.0e48 | (units.s**(-1))
     self.trec = 1 / (self.RC * self.nH)
     self.Tinit = 1.0e4 | (units.K)
     self.xHII = 1.2e-3
-    self.Rs = ( ( 3 * self.Np ) / \
+    self.Rs = ( ( 3 * self.Lsrc ) / \
                   ( 4 * numpy.pi * self.RC * self.nH**2 ) )**(1./3)
 
   def show( self ): 
@@ -117,7 +117,7 @@ def aplot(i, tag, xyc,xlim=None,ylim=None,ylabel=""):
   if ylim is not None:
     pyplot.ylim(ylim)
   pyplot.savefig(tag+'-%7.7i.png'%i)
-
+  pyplot.close('all')
 
 # plots individual particle radial profiles
 #=================================================================
@@ -132,7 +132,7 @@ def dplot(fnum, tag, xyc,xlim=None,ylim=None,ylabel=""):
   if ylim is not None:
     pyplot.ylim(ylim)
   pyplot.savefig('plots/' + tag + '-' + fnum + '.png' )
-
+  pyplot.close('all')
 
 #=================================================================
 def frames( label='iliev1'):
@@ -380,7 +380,7 @@ def plot_images( fname=None, data=None, t=None ):
   f.clear()
   pyplot.close(f)
 
-
+  grid=0
 
 
 
