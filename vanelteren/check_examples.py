@@ -178,7 +178,7 @@ def get_reference(name, references):
     for refname, dt, figures, digests, error in references:
         if refname == name:
             return refname, dt, figures, digests, error
-    return None, None, None, None
+    return None, None, None, None, None
 
 
 def print_table(rows):
