@@ -298,7 +298,7 @@ class NBodyComputationResult:
         rr.cdto_expdir()
         for i in range(len(self.systemStates)):
             self.systemStates[i] = read_set_from_file_with_close("%s-systemStates-%d.hdf5" % (label, i), "amuse")
-            self.systemStates[i].copy_to_memory()
+            self.systemStates[i].copy()
             #self.systemStates[i].close()
         rr.cdto_prevdir()
 

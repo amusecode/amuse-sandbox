@@ -108,7 +108,7 @@ class grav_gas_sse(object):
             
   def mechanical_feedback(self):
     
-    star_particles=self.star_particles.copy_to_memory()
+    star_particles=self.star_particles.copy()
     
     channel=self.particles.new_channel_to(star_particles)
 
