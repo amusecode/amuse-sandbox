@@ -38,7 +38,7 @@ class PlotGridRho(object):
         if self.norm is None:
             
             self.norm = colors.LogNorm(vmin=rho_values.min(), vmax=rho_values.max())
-            self.cmap = cm.get_cmap('rainbow', 255)
+            self.cmap = cm.get_cmap('jet', 1024)
             
         im = plot.imshow(
             rho_values, 
