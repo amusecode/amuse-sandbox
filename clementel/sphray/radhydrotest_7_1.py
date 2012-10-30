@@ -281,7 +281,7 @@ def average(N,r,dat):
 def aplot(i, tag, xyc,xlim=None,ylim=None,ylabel=""):
   pyplot.figure(figsize=(8,8))
   for x,y,c in xyc:
-    xa,ya=average(100,x,y)
+    xa,ya=average(50,x,y)
     pyplot.semilogy(xa,ya,c)  
   pyplot.xlabel('L/Lbox')  
   pyplot.ylabel(ylabel)  
@@ -293,7 +293,7 @@ def aplot(i, tag, xyc,xlim=None,ylim=None,ylabel=""):
 
 
 def test(evolver, rad_parameters=dict(),dt=1. | units.Myr ):    
-  N=10000
+  N=100000
   Ns=1
   L=6.6 | units.kpc
   tplot=[1.| units.Myr,10.| units.Myr,50.| units.Myr]
