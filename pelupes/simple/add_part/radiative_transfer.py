@@ -5,6 +5,19 @@ from amuse.ext.molecular_cloud import ism_cube
 from amuse.datamodel import Particle
 
 from amuse.ext.evrard_test import body_centered_grid_unit_cube,sobol_unit_cube,regular_grid_unit_cube,uniform_random_unit_cube
+import numpy
+import pickle
+
+use_state_from_file = True
+if use_state_from_file:
+    with open('state.random','r') as stream:
+        state = pickle.load(stream)
+    numpy.random.set_state(state)
+else:
+    state = numpy.random.get_state()
+    with open('state.random','w') as stream:
+        pickle.dump(state, stream)
+
 
 N=1000
 Lstar=100. | units.LSun
@@ -55,22 +68,27 @@ source.u = u
 rad.particles.add_particles(particles)
 rad.evolve_model(0.05 | units.Myr)
 
+#print len(rad.particles)
+#print rad.model_time.in_(units.Myr)
+#print "min Xion:", rad.particles.xion.min()
+#print "average Xion:", rad.particles.xion.mean()
+#print "max Xion:", rad.particles.xion.max()
+#print "max flux:", rad.particles.flux.max()
+
+bla = rad.particles.add_particles(toadd)
+print bla.index_in_code
+rad.recommit_particles()
+#print len(rad.particles)
+#print rad.model_time.in_(units.Myr)
+#print "min Xion:", rad.particles.xion.min()
+#print "average Xion:", rad.particles.xion.mean()
+#print "max Xion:", rad.particles.xion.max()
+#print "max flux:", rad.particles.flux.max()
+
+#print toadd.get_intersecting_subset_in(rad.particles).xion
+print bla.xion
+print bla.index_in_code
 print len(rad.particles)
-print rad.model_time.in_(units.Myr)
-print "min Xion:", rad.particles.xion.min()
-print "average Xion:", rad.particles.xion.mean()
-print "max Xion:", rad.particles.xion.max()
-print "max flux:", rad.particles.flux.max()
 
-rad.particles.add_particles(toadd)
-
-print len(rad.particles)
-print rad.model_time.in_(units.Myr)
-print "min Xion:", rad.particles.xion.min()
-print "average Xion:", rad.particles.xion.mean()
-print "max Xion:", rad.particles.xion.max()
-print "max flux:", rad.particles.flux.max()
-
-print toadd.get_intersecting_subset_in(rad.particles)
 
 rad.stop()
