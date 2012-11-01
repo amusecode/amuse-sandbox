@@ -9,7 +9,7 @@ import numpy
 import pickle
 
 
-N=500
+N=1000
 Lstar=100. | units.LSun
 L=10. | units.parsec
 rho=1. | (units.amu/units.cm**3)
@@ -35,8 +35,8 @@ particles.rho = rho
 particles.flux = 0. | units.s**-1
 particles.xion=xion
 
-toadd=particles[0:100].copy()
-particles=particles[100:].copy()
+toadd=particles[0:200].copy()
+particles=particles[200:].copy()
 
 
 source=particles.add_particle(Particle())
