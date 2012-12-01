@@ -67,7 +67,7 @@ class double_star :
         else :
             secondary = self.p
         return secondary
-    def rochelobe_overflow(self, donor, dt, dmdt) :
+    def rochelobe_overflow(self, donor, dt, dmdt, mcore=-1|units.MSun) :
         accretor = self.companion_star(donor)
         print "Accretor:", accretor
         print "AMT:", dt, dmdt
@@ -79,7 +79,8 @@ class double_star :
         dma = min(AccretionEfficiency*dmd, dMEddington)
         print "Mdot: ", dmd, dma
         Pday = self.orbital_period().value_in(units.day)
-        mcore = donor.degenerate_coremass(Pday)
+        if mcore<0|units.MSun:
+            mcore = donor.degenerate_coremass(Pday)
         print "Donor:", mcore, "Pday=", Pday, donor.m, accretor.m, dma, dmd
         if donor.m-dmd < mcore :
             fm = max(0., (donor.m-mcore)/dmd)

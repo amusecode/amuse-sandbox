@@ -2,7 +2,7 @@ from interface import AarsethZare
 instance = AarsethZare()
 #from numpy import *
 #Enable unit handling by import amuse.legacy
-from amuse.legacy import *
+from amuse.lab import *
 from math import *
 
 import sys 

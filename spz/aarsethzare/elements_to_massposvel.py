@@ -55,6 +55,7 @@ def define_inner_orbit(b) :
     aperi = radians(b.aperi)
     llon = radians(b.llon)
     phi = radians(b.phase)
+    print "AE=", a, e, m1, m2, incl, aperi, llon, phi
 
     q=m2/m1
     m12=m1+m2
@@ -90,12 +91,18 @@ def define_outer_orbit(b) :
 
 # Here in particular the unit conversion turned out to be rather tricky.
 def orbital_elements_to_massposvel(bi, bo) :
+    print "OE=", bi, bo
     rin, vin = define_inner_orbit(bi)
     rout, vout = define_outer_orbit(bo)
-    m = []
+    m = [] | units.MSun
+    m.append(bi.p.m)
+    m.append(bi.s.m)
+    m.append(bo.s.m)
+    """
     m.append(bi.p.m.value_in(units.MSun))
     m.append(bi.s.m.value_in(units.MSun))
     m.append(bo.s.m.value_in(units.MSun))
+    """
     pos, vel = JacobiToCoMCoordinates(m, rin, vin, rout, vout) 
     pos = pos | units.RSun
     vel = vel | units.RSun / units.yr
@@ -148,8 +155,8 @@ if __name__=="__main__":
         print bi, bo
 
     m, pos, vel = orbital_elements_to_massposvel(bi, bo)
-#    for i in range(len(m)) :
-#        print m[i], pos[i], vel[i]
+    for i in range(len(m)) :
+        print m[i], pos[i], vel[i]
 
     # for compatibility with it's sister function masposvel_to_elements 
     # this looks a bit awkward.

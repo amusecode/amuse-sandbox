@@ -33,10 +33,27 @@ def get_inner_binary_elements(m,pos,vel) :
     return e1, e2
 
 def get_outer_binary_elements(mass,pos,vel) :
+    m = [] | nbody_system.mass
+    r = [] | nbody_system.length
+    v = [] | nbody_system.speed
     m12 = mass[0]+mass[1] 
     m123 = m12 + mass[2]
     q123 = m123/m12
-    q123 = q123.value_in(q123.unit)
+    m0 = 0.0  | nbody_system.mass
+    r.append(q123*pos[2])
+    v.append(q123*vel[2])
+    m.append(m12)
+    m.append(mass[2])
+    m.append(m0)
+    e1, e2 = instance.construct_orbital_elements(m,r,v)
+    print "elements:", e1, e2
+    return e1, e2
+"""
+def get_outer_binary_elements(mass,pos,vel) :
+    m12 = mass[0]+mass[1] 
+    m123 = m12 + mass[2]
+    q123 = m123/m12
+    #q123 = q123.value_in(q123.unit)
     m0 = 0.0  | nbody_system.mass
     print "Q=", q123, pos 
     print "Q*pos=", q123*pos[2] 
@@ -58,10 +75,13 @@ def get_outer_binary_elements(mass,pos,vel) :
     m = m | nbody_system.mass
     print "GIBI:", m, r, v
     e1, e2 = instance.construct_orbital_elements(m,r,v)
-#    elements = [m[0], m[1], e1[0], e1[1], e1[2], e2[0], e2[1], e2[2]] 
+    #elements = [m[0], m[1], e1[0], e1[1], e1[2], e2[0], e2[1], e2[2]] 
+    print "ELEMENTS:", elements
     return e1, e2
+"""
 
 def massposvel_to_orbital_elements(m, pos, vel, unit_converter) :
+    print "xxx=", m, pos, vel
     m = unit_converter.to_nbody(m)
     pos = unit_converter.to_nbody(pos)
     vel = unit_converter.to_nbody(vel)

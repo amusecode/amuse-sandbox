@@ -8,7 +8,7 @@ from EulerAngles import EulerAngles
 from JacobiComCordinates import JacobiToCoMCoordinates
 from massposvel_to_elements import *
 from elements_to_massposvel import *
-from amuse.legacy import *
+from amuse.lab import *
 
 def reorganize_units_quantitied(xa, unit) :
     xout = [] 
