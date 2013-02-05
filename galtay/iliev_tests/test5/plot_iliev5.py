@@ -28,7 +28,7 @@ class Iliev5Vars():
     self.Np = 5.0e48 | (units.s**(-1))
     self.trec = 1 / (self.RC * self.nH)
     self.Tinit = 1.0e2 | (units.K)
-    self.xHII = 1.2e-3
+    self.xHII = 1.0e-5
     self.Rs = ( ( 3 * self.Np ) / \
                   ( 4 * numpy.pi * self.RC * self.nH**2 ) )**(1./3)
 
@@ -139,7 +139,7 @@ def frames( label='iliev5'):
 
   path = 'output/'
 
-  lo = numpy.array( [-6.6, -6.6] )
+  lo = numpy.array( [-15.0, -15.0] )
   ng = 512
   dl = 30.0 / ng
   grid = GG.Grid2D( lo, ng, dl )
@@ -212,7 +212,16 @@ def plot_profiles( fname=None, data=None, t=None ):
   r = ( (g.x**2 + g.y**2 + g.z**2)**0.5 ).value_in(units.kpc)
   r = r / (boxlen/2)
 
-  v = ( (g.vx**2 + g.vy**2 + g.vz**2)**0.5 ).value_in(units.kpc/units.s)
+  v = ( (g.vx**2 + g.vy**2 + g.vz**2)**0.5 ).value_in(units.km/units.s)
+
+  T = ( (gamma-1)*g.u*mu/(1+g.xion)/constants.kB ).value_in(units.K)
+  dens = (g.rho).value_in(units.amu/units.cm**3)
+  pres = ( (gamma-1)*g.u*g.rho).value_in(units.g/units.cm/units.s**2 )
+  cs=((gamma*(gamma-1.)*g.u)**0.5).value_in(units.kms)
+
+  mach = v/cs
+
+
 
   print
   print 'boxlen:       ', boxlen
@@ -225,7 +234,17 @@ def plot_profiles( fname=None, data=None, t=None ):
 
   print 'r min/max:    ', r.min(), r.max()
   print
-  
+  print 'vx min/max:    ', g.vx.value_in(units.km/units.s).min(), \
+                          g.vx.value_in(units.km/units.s).max()
+  print 'vy min/max:    ', g.vy.value_in(units.km/units.s).min(), \
+                          g.vy.value_in(units.km/units.s).max()
+  print 'vz min/max:    ', g.vz.value_in(units.km/units.s).min(), \
+                          g.vz.value_in(units.km/units.s).max()
+
+  print 'v min/max:    ', v.min(), v.max()
+  print  
+
+
   print 'u min/max:    ', g.u.value_in((units.km/units.s)**2).min(), \
                           g.u.value_in((units.km/units.s)**2).max()
 
@@ -243,10 +262,6 @@ def plot_profiles( fname=None, data=None, t=None ):
   print
 
 
-  T = ( (gamma-1)*g.u*mu/(1+g.xion)/constants.kB ).value_in(units.K)
-  dens = (g.rho).value_in(units.amu/units.cm**3)
-  pres = ( (gamma-1)*g.u*g.rho).value_in(units.g/units.cm/units.s**2 )
-  cs=((gamma*(gamma-1.)*g.u)**0.5).value_in(units.kms)
 
   x = g.x.value_in(units.kpc)
   y = g.y.value_in(units.kpc)
@@ -282,10 +297,10 @@ def plot_profiles( fname=None, data=None, t=None ):
 
   dplot(fnum,'vel',
         ( (r,v, 'r'),
-          (r,cs,'g') ),
+          (r,mach,'g') ),
         xlim=(0.,1.),
-        ylim=(0.01,100.),
-        ylabel="bulk, sound speed (km/s)")
+        ylim=(1.0e-5,10.),
+        ylabel="bulk (km/s), mach")
 
   tag='pos'
   pyplot.figure(figsize=(7,7))

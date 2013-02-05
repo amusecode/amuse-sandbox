@@ -102,7 +102,7 @@ suggested_parameter_set[Fi] = {'radiation_flag':False,
 #                               'gamma':1,
 #                               'isothermal_flag':False,
                                'integrate_entropy_flag':True,
-                               'periodic_box_size': 2*CC.Lbox}
+                               'periodic_box_size': CC.Lbox}
 
 
 
@@ -112,7 +112,7 @@ Nray_Myr = args.Nray_Myr | units.Myr**-1
 suggested_parameter_set[SPHRay] = {'default_spectral_type': 1,
                                    'number_of_rays': Nray_Myr,
                                    'isothermal_flag': 0,
-                                   'box_size': 2*CC.Lbox,
+                                   'box_size': CC.Lbox,
                                    'boundary_condition': 0}
 
 
@@ -121,7 +121,8 @@ suggested_parameter_set[SPHRay] = {'default_spectral_type': 1,
 suggested_parameter_set[SimpleXSplitSet] = {'number_of_freq_bins':5,
                                             'thermal_evolution_flag':1,
                                             'blackbody_spectrum_flag':1,
-                                            'metal_cooling_flag':0 }
+                                            'metal_cooling_flag':0,
+                                            'box_size': CC.Lbox }
 
 
 
@@ -133,7 +134,6 @@ def set_gas_and_src( Ngas, Lbox, Lsrc, rho_init, T_init ):
   gamma = 5./3.
   mu = 1.0 | units.amu
 
- 
 # set particles homogeneously in space from -Lbox/2 to Lbox/2
 # NOTE reset Ngas
 
@@ -216,6 +216,7 @@ def main( Ngas = args.Ngas,
           rho_init = 1.0e-3 | (units.amu / units.cm**3),
           T_init = 1.0e2 | units.K,
           rad_code = SPHRay,
+          #rad_code = SimpleXSplitSet,
           hydro_code = Fi,
           write_snapshots = True ):
 
@@ -240,6 +241,28 @@ def main( Ngas = args.Ngas,
   #---------------------------------------------------------------------
   (gas,src) = set_gas_and_src( Ngas, Lbox, Lsrc, rho_init, T_init )
 
+  print 'gas x min/max: ', gas.x.min().value_in( units.kpc ), \
+      gas.x.max().value_in( units.kpc )
+
+  print 'gas y min/max: ', gas.y.min().value_in( units.kpc ), \
+      gas.y.max().value_in( units.kpc )
+
+  print 'gas z min/max: ', gas.z.min().value_in( units.kpc ), \
+      gas.z.max().value_in( units.kpc )
+
+  print 'gas vx min/max: ', gas.vx.min().value_in( units.km/units.s ), \
+      gas.vx.max().value_in( units.km/units.s )
+
+  print 'gas vy min/max: ', gas.vy.min().value_in( units.km/units.s ), \
+      gas.vy.max().value_in( units.km/units.s )
+
+  print 'gas vz min/max: ', gas.vz.min().value_in( units.km/units.s ), \
+      gas.vz.max().value_in( units.km/units.s )
+
+
+
+  print
+
 
   # set up a system of units in which G=1.  the function takes any two 
   # fundamental dimensions (in this case mass and length) and calculates
@@ -258,6 +281,7 @@ def main( Ngas = args.Ngas,
 
   radhydro = RadiativeHydro( rad=radcode, hydro=hydrocode )
 
+
   # set hydro code parameters
   #---------------------------------------------------------------------
   hydro_parameters = suggested_parameter_set[hydro_code]
@@ -271,7 +295,8 @@ def main( Ngas = args.Ngas,
   # set rad code parameters
   #---------------------------------------------------------------------
   rad_parameters = suggested_parameter_set[rad_code]
-  rad_parameters["momentum_kicks_flag"] = False
+  if rad_code == SPHRay:
+    rad_parameters["momentum_kicks_flag"] = False
 
   for x in rad_parameters:
     radhydro.rad_parameters.__setattr__(x,rad_parameters[x])
@@ -329,4 +354,9 @@ def main( Ngas = args.Ngas,
 
 if __name__=="__main__":
     #from run_iliev5 import main
-    main(hydro_code=Fi, rad_code=SPHRay) # rad_code=SimpleXSplitSet
+    #main(hydro_code=Fi, rad_code=SPHRay) # rad_code=SimpleXSplitSet
+    main(hydro_code=Fi, rad_code=SimpleXSplitSet) # rad_code=SimpleXSplitSet
+
+
+    # note do not pass uniform grid distribution to Simplex !!!
+    # DO pass the boxsize to Simplex

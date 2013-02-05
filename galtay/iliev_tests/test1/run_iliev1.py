@@ -11,7 +11,7 @@ from amuse.support.units import nbody_system
 from amuse.support.units import constants
 from amuse.community.simplex.interface import SimpleXSplitSet
 from amuse.community.sphray.interface import SPHRay
-from amuse.community.fi.interface import Fi
+from amuse.community.fi.interface import Fi 
 from amuse.datamodel import Particles
 from amuse.support.io import write_set_to_file 
 
