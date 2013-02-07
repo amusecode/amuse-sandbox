@@ -1,0 +1,1434 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+interaction at time 1.1005859375 time
+top-level: r = 0.0312660315014 length  v = 1.30756462457 length * time**-1.0  v.r = -0.0191059594573 length**2 * time**-1
+star1 = 10001 (0.0216791684354 length) star2 = 4 (0.01 length)
+rmax = 0.0625320630029 length
+semi = 0.143341581309  ecc = 0.834397953286  E/mu = -0.104645141089  tperi = 0.0204730028116
+multiples: number_of_stars = 3   [73 58  4]
+multiples: initial energy = -0.00756323450174 mass * length**2 * time**-2
+multiples: evolving to time = 10000 time in steps of 0.204730028116 time
+multiples: ### START ENCOUNTER ###
+multiples: evolving to time 0.204730028116 time
+multiples: ### snapshot at time 0.204730
+multiples: ### id=73, x=0.032853, y=-0.022500, z=0.003045, vx=-0.302841, vy=1.165757, vz=0.012043
+multiples: ### id=58, x=0.032891, y=-0.026352, z=0.002646, vx=0.418247, vy=-1.491825, vz=0.043391
+multiples: ### id=4, x=-0.065744, y=0.048853, z=-0.005691, vx=-0.115405, vy=0.326068, vz=-0.055434
+multiples: evolving to time 0.409460056231 time
+multiples: ### snapshot at time 0.409460
+multiples: ### id=73, x=0.034968, y=-0.044589, z=0.007253, vx=-0.119279, vy=-0.066081, vz=-0.027385
+multiples: ### id=58, x=0.040044, y=-0.057844, z=0.008063, vx=0.117503, vy=-0.142447, vz=0.066862
+multiples: ### id=4, x=-0.075012, y=0.102434, z=-0.015316, vx=0.001776, vy=0.208528, vz=-0.039476
+multiples: evolving to time 0.614190084347 time
+multiples: ### snapshot at time 0.614190
+multiples: ### id=73, x=0.032125, y=-0.064337, z=0.010401, vx=0.148355, vy=-0.618770, vz=0.030788
+multiples: ### id=58, x=0.037207, y=-0.072600, z=0.011734, vx=-0.196962, vy=0.486479, vz=-0.003210
+multiples: ### id=4, x=-0.069333, y=0.136937, z=-0.022136, vx=0.048607, vy=0.132291, vz=-0.027578
+multiples: evolving to time 0.818920112462 time
+multiples: ### snapshot at time 0.818920
+multiples: ### id=73, x=0.026551, y=-0.073070, z=0.013238, vx=-0.253759, vy=0.291472, vz=-0.050735
+multiples: ### id=58, x=0.029859, y=-0.084466, z=0.013478, vx=0.178355, vy=-0.361491, vz=0.067985
+multiples: ### id=4, x=-0.056409, y=0.157535, z=-0.026715, vx=0.075404, vy=0.070019, vz=-0.017249
+multiples: evolving to time 1.02365014058 time
+multiples: ### snapshot at time 1.023650
+multiples: ### id=73, x=0.016615, y=-0.076891, z=0.013980, vx=-0.048651, vy=-0.237241, vz=-0.021832
+multiples: ### id=58, x=0.022457, y=-0.089013, z=0.015242, vx=-0.043976, vy=0.225474, vz=0.029001
+multiples: ### id=4, x=-0.039072, y=0.165904, z=-0.029222, vx=0.092627, vy=0.011768, vz=-0.007169
+multiples: evolving to time 1.22838016869 time
+multiples: ### snapshot at time 1.228380
+multiples: ### id=73, x=0.009419, y=-0.079003, z=0.014999, vx=-0.411762, vy=1.272617, vz=-0.026396
+multiples: ### id=58, x=0.009527, y=-0.083195, z=0.014598, vx=0.308476, vy=-1.223572, vz=0.022651
+multiples: ### id=4, x=-0.018945, y=0.162199, z=-0.029597, vx=0.103287, vy=-0.049045, vz=0.003745
+multiples: evolving to time 1.43311019681 time
+multiples: ### snapshot at time 1.433110
+multiples: ### id=73, x=-0.003907, y=-0.065924, z=0.013349, vx=-0.171498, vy=0.099136, vz=-0.056694
+multiples: ### id=58, x=0.001204, y=-0.079162, z=0.014173, vx=0.064729, vy=0.021902, vz=0.039539
+multiples: ### id=4, x=0.002703, y=0.145086, z=-0.027521, vx=0.106770, vy=-0.121038, vz=0.017155
+multiples: evolving to time 1.63784022492 time
+multiples: ### snapshot at time 1.637840
+multiples: ### id=73, x=-0.014421, y=-0.051215, z=0.010394, vx=0.128320, vy=-0.440762, vz=-0.001269
+multiples: ### id=58, x=-0.009356, y=-0.059475, z=0.011757, vx=-0.223190, vy=0.663774, vz=-0.035781
+multiples: ### id=4, x=0.023777, y=0.110690, z=-0.022151, vx=0.094870, vy=-0.223013, vz=0.037051
+multiples: evolving to time 1.84257025304 time
+multiples: ### snapshot at time 1.842570
+multiples: ### id=73, x=-0.020028, y=-0.017679, z=0.005262, vx=-0.206352, vy=0.547681, vz=-0.103306
+multiples: ### id=58, x=-0.016579, y=-0.029055, z=0.005494, vx=0.213913, vy=-0.107858, vz=0.019820
+multiples: ### id=4, x=0.036607, y=0.046734, z=-0.010757, vx=-0.007561, vy=-0.439822, vz=0.083486
+multiples: evolving to time 2.04730028116 time
+multiples: ### snapshot at time 2.047300
+multiples: ### id=73, x=0.018297, y=-0.004208, z=0.000751, vx=-0.088437, vy=-0.006046, vz=-0.047071
+multiples: ### id=58, x=0.023764, y=-0.016725, z=0.001383, vx=0.250436, vy=-0.443648, vz=0.122941
+multiples: ### id=4, x=-0.042061, y=0.020933, z=-0.002134, vx=-0.161999, vy=0.449694, vz=-0.075870
+multiples: evolving to time 2.25203030927 time
+multiples: ### snapshot at time 2.252030
+multiples: ### id=73, x=0.018931, y=-0.038394, z=0.007066, vx=-0.451052, vy=0.760362, vz=-0.056377
+multiples: ### id=58, x=0.020622, y=-0.044618, z=0.006528, vx=0.352690, vy=-0.948620, vz=0.094741
+multiples: ### id=4, x=-0.039552, y=0.083013, z=-0.013594, vx=0.098361, vy=0.188258, vz=-0.038364
+multiples: evolving to time 2.45676033739 time
+multiples: ### snapshot at time 2.456760
+multiples: ### id=73, x=0.004008, y=-0.048255, z=0.008142, vx=0.198972, vy=-0.599568, vz=0.052479
+multiples: ### id=58, x=0.009208, y=-0.055693, z=0.010331, vx=-0.346336, vy=0.578485, vz=-0.042749
+multiples: ### id=4, x=-0.013216, y=0.103949, z=-0.018474, vx=0.147365, vy=0.021084, vz=-0.009730
+multiples: evolving to time 2.6614903655 time
+multiples: ### snapshot at time 2.661490
+multiples: ### id=73, x=-0.012143, y=-0.039599, z=0.007624, vx=-0.025994, vy=-0.147021, vz=-0.048382
+multiples: ### id=58, x=-0.005199, y=-0.051894, z=0.009789, vx=-0.115883, vy=0.295976, vz=0.026785
+multiples: ### id=4, x=0.017342, y=0.091493, z=-0.017413, vx=0.141878, vy=-0.148956, vz=0.021596
+multiples: evolving to time 2.86622039362 time
+multiples: ### snapshot at time 2.866220
+multiples: ### id=73, x=-0.021653, y=-0.011026, z=0.003214, vx=-0.059896, vy=0.230109, vz=-0.112099
+multiples: ### id=58, x=-0.014906, y=-0.024566, z=0.004738, vx=0.075157, vy=0.207812, vz=0.031375
+multiples: ### id=4, x=0.036558, y=0.035592, z=-0.007952, vx=-0.015261, vy=-0.437921, vz=0.080724
+multiples: evolving to time 3.07095042173 time
+multiples: ### snapshot at time 3.070950
+multiples: ### id=73, x=0.018047, y=-0.010507, z=0.001240, vx=-0.090362, vy=-0.159905, vz=-0.043626
+multiples: ### id=58, x=0.025084, y=-0.022487, z=0.002938, vx=0.207855, vy=-0.295825, vz=0.121446
+multiples: ### id=4, x=-0.043130, y=0.032994, z=-0.004179, vx=-0.117493, vy=0.455729, vz=-0.077820
+multiples: evolving to time 3.27568044985 time
+multiples: ### snapshot at time 3.275680
+multiples: ### id=73, x=0.017963, y=-0.045215, z=0.006870, vx=0.083166, vy=-0.435382, vz=0.018968
+multiples: ### id=58, x=0.025561, y=-0.054912, z=0.009493, vx=-0.138135, vy=0.198861, vz=0.026347
+multiples: ### id=4, x=-0.043523, y=0.100127, z=-0.016362, vx=0.054969, vy=0.236521, vz=-0.045315
+multiples: evolving to time 3.48041047797 time
+multiples: ### snapshot at time 3.480410
+multiples: ### id=73, x=0.013718, y=-0.066528, z=0.012043, vx=-0.650776, vy=1.192555, vz=-0.079220
+multiples: ### id=58, x=0.014449, y=-0.070224, z=0.011626, vx=0.562009, vy=-1.322131, vz=0.106529
+multiples: ### id=4, x=-0.028167, y=0.136751, z=-0.023669, vx=0.088767, vy=0.129576, vz=-0.027310
+multiples: evolving to time 3.68514050608 time
+multiples: ### snapshot at time 3.685141
+multiples: ### id=73, x=0.000938, y=-0.071601, z=0.013092, vx=-0.220968, vy=0.078329, vz=-0.081161
+multiples: ### id=58, x=0.007774, y=-0.083381, z=0.014714, vx=0.122018, vy=-0.129407, vz=0.094633
+multiples: ### id=4, x=-0.008712, y=0.154983, z=-0.027806, vx=0.098950, vy=0.051078, vz=-0.013472
+multiples: evolving to time 3.8898705342 time
+multiples: ### snapshot at time 3.889871
+multiples: ### id=73, x=-0.009691, y=-0.074065, z=0.013317, vx=0.037726, vy=-0.272270, vz=-0.012052
+multiples: ### id=58, x=-0.001955, y=-0.084200, z=0.015948, vx=-0.136021, vy=0.290747, vz=0.012853
+multiples: ### id=4, x=0.011646, y=0.158264, z=-0.029265, vx=0.098296, vy=-0.018477, vz=-0.000802
+multiples: evolving to time 4.09460056231 time
+multiples: ### snapshot at time 4.094601
+multiples: ### id=73, x=-0.015523, y=-0.072564, z=0.014286, vx=-0.730369, vy=1.842969, vz=-0.010930
+multiples: ### id=58, x=-0.015387, y=-0.074789, z=0.013810, vx=0.642105, vy=-1.753784, vz=-0.001545
+multiples: ### id=4, x=0.030910, y=0.147353, z=-0.028097, vx=0.088264, vy=-0.089185, vz=0.012475
+multiples: evolving to time 4.29933059043 time
+multiples: ### snapshot at time 4.299331
+multiples: ### id=73, x=-0.026848, y=-0.054524, z=0.011160, vx=-0.200557, vy=0.191818, vz=-0.102633
+multiples: ### id=58, x=-0.019983, y=-0.066297, z=0.012788, vx=0.137203, vy=-0.018950, vz=0.073892
+multiples: ### id=4, x=0.046831, y=0.120821, z=-0.023948, vx=0.063354, vy=-0.172868, vz=0.028741
+multiples: evolving to time 4.50406061854 time
+multiples: ### snapshot at time 4.504061
+multiples: ### id=73, x=-0.031009, y=-0.031776, z=0.006578, vx=0.066965, vy=-0.097182, vz=-0.048469
+multiples: ### id=58, x=-0.023195, y=-0.042348, z=0.009194, vx=-0.062721, vy=0.393132, vz=-0.005508
+multiples: ### id=4, x=0.054204, y=0.074124, z=-0.015771, vx=-0.004243, vy=-0.295951, vz=0.053977
+multiples: evolving to time 4.70879064666 time
+multiples: ### snapshot at time 4.708791
+multiples: ### id=73, x=-0.009834, y=0.004609, z=-0.000470, vx=4.617604, vy=1.873531, vz=2.443565
+multiples: ### id=58, x=-0.009883, y=0.004964, z=-0.000444, vx=-3.920551, vy=-1.402015, vz=-2.559807
+multiples: ### id=4, x=0.019717, y=-0.009573, z=0.000913, vx=-0.697053, vy=-0.471517, vz=0.116241
+multiples: evolving to time 4.91352067477 time
+multiples: ### snapshot at time 4.913521
+multiples: ### id=73, x=0.014456, y=-0.031256, z=0.004988, vx=-0.301772, vy=0.045074, vz=-0.066785
+multiples: ### id=58, x=0.021233, y=-0.041253, z=0.006686, vx=0.253047, vy=-0.388158, vz=0.133383
+multiples: ### id=4, x=-0.035688, y=0.072509, z=-0.011674, vx=0.048725, vy=0.343084, vz=-0.066598
+multiples: evolving to time 5.11825070289 time
+multiples: ### snapshot at time 5.118251
+multiples: ### id=73, x=0.005094, y=-0.057667, z=0.009719, vx=0.061765, vy=-0.352109, vz=0.031389
+multiples: ### id=58, x=0.013914, y=-0.066868, z=0.012546, vx=-0.160054, vy=0.167283, vz=0.008296
+multiples: ### id=4, x=-0.019008, y=0.124535, z=-0.022265, vx=0.098289, vy=0.184826, vz=-0.039686
+multiples: evolving to time 5.32298073101 time
+multiples: ### snapshot at time 5.322981
+multiples: ### id=73, x=-0.002362, y=-0.073506, z=0.014115, vx=-0.625450, vy=0.682880, vz=-0.149551
+multiples: ### id=58, x=0.000396, y=-0.079208, z=0.014517, vx=0.521126, vy=-0.779609, vz=0.173109
+multiples: ### id=4, x=0.001966, y=0.152714, z=-0.028631, vx=0.104325, vy=0.096729, vz=-0.023557
+multiples: evolving to time 5.52771075912 time
+multiples: ### snapshot at time 5.527711
+multiples: ### id=73, x=-0.015972, y=-0.077294, z=0.014745, vx=-0.120747, vy=-0.066615, vz=-0.039547
+multiples: ### id=58, x=-0.006979, y=-0.088190, z=0.017376, vx=0.021510, vy=0.036591, vz=0.050381
+multiples: ### id=4, x=0.022951, y=0.165484, z=-0.032121, vx=0.099237, vy=0.030024, vz=-0.010834
+multiples: evolving to time 5.73244078724 time
+multiples: ### snapshot at time 5.732441
+multiples: ### id=73, x=-0.024074, y=-0.080365, z=0.015486, vx=0.417154, vy=-0.564592, vz=0.130863
+multiples: ### id=58, x=-0.018096, y=-0.085206, z=0.017664, vx=-0.504873, vy=0.593104, vz=-0.131566
+multiples: ### id=4, x=0.042170, y=0.165571, z=-0.033150, vx=0.087718, vy=-0.028512, vz=0.000703
+multiples: evolving to time 5.93717081535 time
+multiples: ### snapshot at time 5.937171
+multiples: ### id=73, x=-0.032932, y=-0.071726, z=0.014940, vx=-0.266301, vy=0.202432, vz=-0.096067
+multiples: ### id=58, x=-0.025474, y=-0.082115, z=0.016875, vx=0.196899, vy=-0.116100, vz=0.083601
+multiples: ### id=4, x=0.058406, y=0.153841, z=-0.031815, vx=0.069402, vy=-0.086332, vz=0.012466
+multiples: evolving to time 6.14190084347 time
+multiples: ### snapshot at time 6.141901
+multiples: ### id=73, x=-0.039217, y=-0.060528, z=0.012560, vx=0.133789, vy=-0.223172, vz=0.011298
+multiples: ### id=58, x=-0.030680, y=-0.069233, z=0.015363, vx=-0.173955, vy=0.373388, vz=-0.037235
+multiples: ### id=4, x=0.069897, y=0.129760, z=-0.027923, vx=0.040167, vy=-0.150216, vz=0.025936
+multiples: evolving to time 6.34663087158 time
+multiples: ### snapshot at time 6.346631
+multiples: ### id=73, x=-0.038562, y=-0.042139, z=0.010100, vx=-0.475415, vy=0.673602, vz=-0.168424
+multiples: ### id=58, x=-0.034688, y=-0.049093, z=0.010805, vx=0.489423, vy=-0.441779, vz=0.124391
+multiples: ### id=4, x=0.073250, y=0.091232, z=-0.020905, vx=-0.014008, vy=-0.231823, vz=0.044032
+multiples: evolving to time 6.5513608997 time
+multiples: ### snapshot at time 6.551361
+multiples: ### id=73, x=-0.033351, y=-0.010214, z=0.003060, vx=0.065147, vy=0.082894, vz=-0.071587
+multiples: ### id=58, x=-0.024248, y=-0.020925, z=0.005796, vx=0.114353, vy=0.286745, vz=-0.006926
+multiples: ### id=4, x=0.057599, y=0.031139, z=-0.008856, vx=-0.179500, vy=-0.369639, vz=0.078512
+multiples: evolving to time 6.75609092781 time
+multiples: ### snapshot at time 6.756091
+multiples: ### id=73, x=0.016351, y=-0.013884, z=0.001340, vx=1.313538, vy=-1.267578, vz=0.441902
+multiples: ### id=58, x=0.018983, y=-0.014868, z=0.002127, vx=-1.198836, vy=0.726174, vz=-0.342537
+multiples: ### id=4, x=-0.035335, y=0.028752, z=-0.003467, vx=-0.114702, vy=0.541404, vz=-0.099365
+multiples: evolving to time 6.96082095593 time
+multiples: ### snapshot at time 6.960821
+multiples: ### id=73, x=0.011548, y=-0.048091, z=0.007958, vx=-0.015672, vy=-0.303257, vz=0.040714
+multiples: ### id=58, x=0.020796, y=-0.057816, z=0.010908, vx=-0.049796, vy=0.028535, vz=0.017610
+multiples: ### id=4, x=-0.032344, y=0.105907, z=-0.018866, vx=0.065468, vy=0.274721, vz=-0.058324
+multiples: evolving to time 7.16555098405 time
+multiples: ### snapshot at time 7.165551
+multiples: ### id=73, x=0.004819, y=-0.070836, z=0.013287, vx=-0.345880, vy=0.138594, vz=-0.073031
+multiples: ### id=58, x=0.011470, y=-0.080256, z=0.015506, vx=0.260186, vy=-0.314092, vz=0.113068
+multiples: ### id=4, x=-0.016289, y=0.151092, z=-0.028793, vx=0.085694, vy=0.175499, vz=-0.040037
+multiples: evolving to time 7.37028101216 time
+multiples: ### snapshot at time 7.370281
+multiples: ### id=73, x=-0.004158, y=-0.087568, z=0.016817, vx=0.367901, vy=-0.576072, vz=0.148923
+multiples: ### id=58, x=0.002487, y=-0.092692, z=0.018866, vx=-0.456599, vy=0.462593, vz=-0.120930
+multiples: ### id=4, x=0.001671, y=0.180260, z=-0.035683, vx=0.088698, vy=0.113479, vz=-0.027993
+multiples: evolving to time 7.57501104028 time
+multiples: ### snapshot at time 7.575011
+multiples: ### id=73, x=-0.014354, y=-0.094055, z=0.018739, vx=-0.118557, vy=-0.093444, vz=-0.009608
+multiples: ### id=58, x=-0.005265, y=-0.104418, z=0.021672, vx=0.032435, vy=0.027241, vz=0.028112
+multiples: ### id=4, x=0.019619, y=0.198474, z=-0.040410, vx=0.086123, vy=0.066203, vz=-0.018504
+multiples: evolving to time 7.77974106839 time
+multiples: ### snapshot at time 7.779741
+multiples: ### id=73, x=-0.020461, y=-0.100339, z=0.020950, vx=-0.512610, vy=0.478074, vz=-0.145558
+multiples: ### id=58, x=-0.016269, y=-0.107504, z=0.022390, vx=0.432017, vy=-0.504218, vz=0.155808
+multiples: ### id=4, x=0.036731, y=0.207843, z=-0.043340, vx=0.080593, vy=0.026143, vz=-0.010251
+multiples: evolving to time 7.98447109651 time
+multiples: ### snapshot at time 7.984471
+multiples: ### id=73, x=-0.030401, y=-0.100927, z=0.021014, vx=0.168457, vy=-0.339380, vz=0.071399
+multiples: ### id=58, x=-0.022071, y=-0.108494, z=0.023632, vx=-0.241245, vy=0.349742, vz=-0.068844
+multiples: ### id=4, x=0.052472, y=0.209421, z=-0.044646, vx=0.072788, vy=-0.010362, vz=-0.002555
+multiples: evolving to time 8.18920112462 time
+multiples: ### snapshot at time 8.189201
+multiples: ### id=73, x=-0.037516, y=-0.096603, z=0.020793, vx=-0.175471, vy=0.045067, vz=-0.044039
+multiples: ### id=58, x=-0.028897, y=-0.107052, z=0.023597, vx=0.112896, vy=0.000710, vz=0.038961
+multiples: ### id=4, x=0.066413, y=0.203655, z=-0.044389, vx=0.062575, vy=-0.045777, vz=0.005078
+multiples: evolving to time 8.39393115274 time
+multiples: ### snapshot at time 8.393931
+multiples: ### id=73, x=-0.039352, y=-0.093903, z=0.021112, vx=-0.867508, vy=1.403854, vz=-0.292525
+multiples: ### id=58, x=-0.038547, y=-0.096759, z=0.021439, vx=0.818172, vy=-1.322025, vz=0.279497
+multiples: ### id=4, x=0.077899, y=0.190661, z=-0.042552, vx=0.049336, vy=-0.081828, vz=0.013028
+multiples: evolving to time 8.59866118086 time
+multiples: ### snapshot at time 8.598661
+multiples: ### id=73, x=-0.047643, y=-0.080484, z=0.018061, vx=0.081425, vy=-0.180504, vz=0.024782
+multiples: ### id=58, x=-0.038632, y=-0.089418, z=0.020924, vx=-0.112706, vy=0.301778, vz=-0.046734
+multiples: ### id=4, x=0.086275, y=0.169901, z=-0.038985, vx=0.031281, vy=-0.121274, vz=0.021952
+multiples: evolving to time 8.80339120897 time
+multiples: ### snapshot at time 8.803391
+multiples: ### id=73, x=-0.048721, y=-0.065375, z=0.015521, vx=-0.261238, vy=0.254392, vz=-0.095837
+multiples: ### id=58, x=-0.041438, y=-0.075200, z=0.017923, vx=0.256426, vy=-0.086940, vz=0.063101
+multiples: ### id=4, x=0.090160, y=0.140576, z=-0.033444, vx=0.004812, vy=-0.167451, vz=0.032737
+multiples: evolving to time 9.00812123709 time
+multiples: ### snapshot at time 9.008121
+multiples: ### id=73, x=-0.046066, y=-0.048460, z=0.011863, vx=0.633022, vy=-0.550327, vz=0.172928
+multiples: ### id=58, x=-0.040906, y=-0.051948, z=0.013454, vx=-0.592089, vy=0.778897, vz=-0.220617
+multiples: ### id=4, x=0.086972, y=0.100407, z=-0.025316, vx=-0.040933, vy=-0.228570, vz=0.047688
+multiples: evolving to time 9.2128512652 time
+multiples: ### snapshot at time 9.212851
+multiples: ### id=73, x=-0.039157, y=-0.017160, z=0.005076, vx=0.071243, vy=0.032425, vz=-0.035314
+multiples: ### id=58, x=-0.029925, y=-0.027171, z=0.008044, vx=0.085685, vy=0.296531, vz=-0.039526
+multiples: ### id=4, x=0.069081, y=0.044331, z=-0.013120, vx=-0.156928, vy=-0.328957, vz=0.074840
+multiples: evolving to time 9.41758129332 time
+multiples: ### snapshot at time 9.417581
+multiples: ### id=73, x=0.009399, y=0.002060, z=-0.001641, vx=-0.187006, vy=-0.035030, vz=-0.047361
+multiples: ### id=58, x=0.015207, y=-0.005885, z=0.000614, vx=0.595367, vy=-0.668604, vz=0.162999
+multiples: ### id=4, x=-0.024607, y=0.003824, z=0.001027, vx=-0.408361, vy=0.703634, vz=-0.115638
+multiples: evolving to time 9.62231132143 time
+multiples: ### snapshot at time 9.622311
+multiples: ### id=73, x=0.014414, y=-0.046093, z=0.008056, vx=-0.432915, vy=0.143918, vz=-0.063152
+multiples: ### id=58, x=0.020108, y=-0.053950, z=0.010389, vx=0.391267, vy=-0.483082, vz=0.137748
+multiples: ### id=4, x=-0.034523, y=0.100043, z=-0.018445, vx=0.041648, vy=0.339164, vz=-0.074596
+multiples: evolving to time 9.82704134955 time
+multiples: ### snapshot at time 9.827041
+multiples: ### id=73, x=0.008190, y=-0.074935, z=0.014539, vx=-0.387203, vy=0.117231, vz=-0.049811
+multiples: ### id=58, x=0.014725, y=-0.083366, z=0.017062, vx=0.321977, vy=-0.358888, vz=0.105688
+multiples: ### id=4, x=-0.022915, y=0.158301, z=-0.031600, vx=0.065226, vy=0.241657, vz=-0.055877
+multiples: evolving to time 10.0317713777 time
+multiples: ### snapshot at time 10.031771
+multiples: ### id=73, x=0.000996, y=-0.096651, z=0.019630, vx=-0.360886, vy=0.107547, vz=-0.044313
+multiples: ### id=58, x=0.007941, y=-0.105338, z=0.022239, vx=0.290757, vy=-0.296906, vz=0.089552
+multiples: ### id=4, x=-0.008937, y=0.201989, z=-0.041869, vx=0.070129, vy=0.189358, vz=-0.045239
+multiples: evolving to time 10.2365014058 time
+multiples: ### snapshot at time 10.236501
+multiples: ### id=73, x=-0.006418, y=-0.114006, z=0.023822, vx=-0.332437, vy=0.090416, vz=-0.037511
+multiples: ### id=58, x=0.000922, y=-0.122922, z=0.026508, vx=0.261949, vy=-0.244350, vz=0.075318
+multiples: ### id=4, x=0.005496, y=0.236928, z=-0.050331, vx=0.070488, vy=0.153934, vz=-0.037807
+multiples: evolving to time 10.4412314339 time
+multiples: ### snapshot at time 10.441231
+multiples: ### id=73, x=-0.013762, y=-0.128235, z=0.027353, vx=-0.303213, vy=0.069929, vz=-0.030135
+multiples: ### id=58, x=-0.006046, y=-0.137349, z=0.030107, vx=0.234043, vy=-0.197026, vz=0.062189
+multiples: ### id=4, x=0.019808, y=0.265584, z=-0.057460, vx=0.069169, vy=0.127096, vz=-0.032054
+multiples: evolving to time 10.645961462 time
+multiples: ### snapshot at time 10.645961
+multiples: ### id=73, x=-0.020918, y=-0.140017, z=0.030357, vx=-0.273611, vy=0.047759, vz=-0.022491
+multiples: ### id=58, x=-0.012848, y=-0.149293, z=0.033167, vx=0.206526, vy=-0.153110, vz=0.049806
+multiples: ### id=4, x=0.033766, y=0.289311, z=-0.063524, vx=0.067085, vy=0.105351, vz=-0.027315
+multiples: evolving to time 10.8506914901 time
+multiples: ### snapshot at time 10.850691
+multiples: ### id=73, x=-0.027825, y=-0.149776, z=0.032917, vx=-0.243760, vy=0.024715, vz=-0.014725
+multiples: ### id=58, x=-0.019428, y=-0.159174, z=0.035773, vx=0.179163, vy=-0.111631, vz=0.037967
+multiples: ### id=4, x=0.047253, y=0.308950, z=-0.068690, vx=0.064597, vy=0.086916, vz=-0.023242
+multiples: evolving to time 11.0554215182 time
+multiples: ### snapshot at time 11.055422
+multiples: ### id=73, x=-0.034448, y=-0.157794, z=0.035093, vx=-0.213684, vy=0.001230, vz=-0.006916
+multiples: ### id=58, x=-0.025758, y=-0.167269, z=0.037981, vx=0.151820, vy=-0.071994, vz=0.026547
+multiples: ### id=4, x=0.060206, y=0.325063, z=-0.073074, vx=0.061864, vy=0.070764, vz=-0.019631
+multiples: evolving to time 11.2601515464 time
+multiples: ### snapshot at time 11.260152
+multiples: ### id=73, x=-0.040765, y=-0.164269, z=0.036924, vx=-0.183365, vy=-0.022453, vz=0.000896
+multiples: ### id=58, x=-0.031816, y=-0.173777, z=0.039830, vx=0.124405, vy=-0.033796, vz=0.015456
+multiples: ### id=4, x=0.072581, y=0.338046, z=-0.076754, vx=0.058960, vy=0.056249, vz=-0.016352
+multiples: evolving to time 11.4648815745 time
+multiples: ### snapshot at time 11.464882
+multiples: ### id=73, x=-0.046757, y=-0.169347, z=0.038439, vx=-0.152761, vy=-0.046193, vz=0.008689
+multiples: ### id=58, x=-0.037591, y=-0.178840, z=0.041349, vx=0.096844, vy=0.003256, vz=0.004627
+multiples: ### id=4, x=0.084348, y=0.348187, z=-0.079789, vx=0.055917, vy=0.042937, vz=-0.013316
+multiples: evolving to time 11.6696116026 time
+multiples: ### snapshot at time 11.669612
+multiples: ### id=73, x=-0.052410, y=-0.173133, z=0.039661, vx=-0.121817, vy=-0.069910, vz=0.016454
+multiples: ### id=58, x=-0.043070, y=-0.182564, z=0.042560, vx=0.069071, vy=0.039390, vz=-0.005996
+multiples: ### id=4, x=0.095480, y=0.355697, z=-0.082221, vx=0.052745, vy=0.030520, vz=-0.010458
+multiples: evolving to time 11.8743416307 time
+multiples: ### snapshot at time 11.874342
+multiples: ### id=73, x=-0.057624, y=-0.175645, z=0.040588, vx=-0.120128, vy=-0.064012, vz=0.015087
+multiples: ### id=58, x=-0.048285, y=-0.185075, z=0.043488, vx=0.070674, vy=0.045202, vz=-0.007347
+multiples: ### id=4, x=0.105909, y=0.360720, z=-0.084076, vx=0.049454, vy=0.018810, vz=-0.007740
+multiples: evolving to time 12.0790716588 time
+multiples: ### snapshot at time 12.079072
+multiples: ### id=73, x=-0.062578, y=-0.177045, z=0.041257, vx=-0.088707, vy=-0.087904, vz=0.022866
+multiples: ### id=58, x=-0.053110, y=-0.186366, z=0.044132, vx=0.042704, vy=0.080367, vz=-0.017764
+multiples: ### id=4, x=0.115688, y=0.363412, z=-0.085390, vx=0.046004, vy=0.007537, vz=-0.005102
+multiples: evolving to time 12.2838016869 time
+multiples: ### snapshot at time 12.283802
+multiples: ### id=73, x=-0.067146, y=-0.177333, z=0.041667, vx=-0.056794, vy=-0.111629, vz=0.030598
+multiples: ### id=58, x=-0.057598, y=-0.186498, z=0.044503, vx=0.014408, vy=0.115032, vz=-0.028077
+multiples: ### id=4, x=0.124744, y=0.363831, z=-0.086170, vx=0.042386, vy=-0.003403, vz=-0.002521
+multiples: evolving to time 12.4885317151 time
+multiples: ### snapshot at time 12.488532
+multiples: ### id=73, x=-0.071309, y=-0.176533, z=0.041821, vx=-0.024303, vy=-0.135186, vz=0.038290
+multiples: ### id=58, x=-0.061730, y=-0.185499, z=0.044604, vx=-0.014270, vy=0.149324, vz=-0.038321
+multiples: ### id=4, x=0.133039, y=0.362032, z=-0.086425, vx=0.038573, vy=-0.014138, vz=0.000031
+multiples: evolving to time 12.6932617432 time
+multiples: ### snapshot at time 12.693262
+multiples: ### id=73, x=-0.075046, y=-0.174660, z=0.041720, vx=0.008860, vy=-0.158577, vz=0.045945
+multiples: ### id=58, x=-0.065483, y=-0.183385, z=0.044437, vx=-0.043386, vy=0.183363, vz=-0.048528
+multiples: ### id=4, x=0.140529, y=0.358045, z=-0.086157, vx=0.034526, vy=-0.024786, vz=0.002583
+multiples: evolving to time 12.8979917713 time
+multiples: ### snapshot at time 12.897992
+multiples: ### id=73, x=-0.078331, y=-0.171715, z=0.041362, vx=0.042796, vy=-0.181804, vz=0.053569
+multiples: ### id=58, x=-0.068831, y=-0.180163, z=0.044002, vx=-0.072994, vy=0.217265, vz=-0.058731
+multiples: ### id=4, x=0.147162, y=0.351877, z=-0.085365, vx=0.030198, vy=-0.035461, vz=0.005162
+multiples: evolving to time 13.1027217994 time
+multiples: ### snapshot at time 13.102722
+multiples: ### id=73, x=-0.081133, y=-0.167687, z=0.040743, vx=0.077618, vy=-0.204860, vz=0.061165
+multiples: ### id=58, x=-0.071741, y=-0.175825, z=0.043295, vx=-0.103146, vy=0.251140, vz=-0.068963
+multiples: ### id=4, x=0.152874, y=0.343512, z=-0.084039, vx=0.025528, vy=-0.046280, vz=0.007798
+multiples: evolving to time 13.3074518275 time
+multiples: ### snapshot at time 13.307452
+multiples: ### id=73, x=-0.083415, y=-0.162553, z=0.039855, vx=0.113455, vy=-0.227735, vz=0.068733
+multiples: ### id=58, x=-0.074173, y=-0.170353, z=0.042310, vx=-0.133890, vy=0.285105, vz=-0.079256
+multiples: ### id=4, x=0.157587, y=0.332907, z=-0.082165, vx=0.020435, vy=-0.057370, vz=0.010523
+multiples: evolving to time 13.5121818556 time
+multiples: ### snapshot at time 13.512182
+multiples: ### id=73, x=-0.085129, y=-0.156277, z=0.038686, vx=0.150447, vy=-0.250402, vz=0.076271
+multiples: ### id=58, x=-0.076076, y=-0.163716, z=0.041036, vx=-0.165261, vy=0.319278, vz=-0.089647
+multiples: ### id=4, x=0.161206, y=0.319993, z=-0.079721, vx=0.014813, vy=-0.068876, vz=0.013376
+multiples: evolving to time 13.7169118837 time
+multiples: ### snapshot at time 13.716912
+multiples: ### id=73, x=-0.086218, y=-0.148805, z=0.037219, vx=0.188765, vy=-0.272815, vz=0.083768
+multiples: ### id=58, x=-0.077388, y=-0.155864, z=0.039458, vx=-0.197281, vy=0.353793, vz=-0.100174
+multiples: ### id=4, x=0.163606, y=0.304669, z=-0.076677, vx=0.008516, vy=-0.080978, vz=0.016406
+multiples: evolving to time 13.9216419119 time
+multiples: ### snapshot at time 13.921642
+multiples: ### id=73, x=-0.086604, y=-0.140062, z=0.035433, vx=0.228611, vy=-0.294901, vz=0.091208
+multiples: ### id=58, x=-0.078028, y=-0.146729, z=0.037557, vx=-0.229947, vy=0.388804, vz=-0.110885
+multiples: ### id=4, x=0.164631, y=0.286791, z=-0.072990, vx=0.001336, vy=-0.093902, vz=0.019677
+multiples: evolving to time 14.12637194 time
+multiples: ### snapshot at time 14.126372
+multiples: ### id=73, x=-0.086184, y=-0.129948, z=0.033298, vx=0.270241, vy=-0.316543, vz=0.098561
+multiples: ### id=58, x=-0.077888, y=-0.136214, z=0.035303, vx=-0.263211, vy=0.424501, vz=-0.121838
+multiples: ### id=4, x=0.164073, y=0.266162, z=-0.068602, vx=-0.007030, vy=-0.107958, vz=0.023277
+multiples: evolving to time 14.3311019681 time
+multiples: ### snapshot at time 14.331102
+multiples: ### id=73, x=-0.084819, y=-0.118323, z=0.030775, vx=0.313997, vy=-0.337552, vz=0.105775
+multiples: ### id=58, x=-0.076824, y=-0.124186, z=0.032659, vx=-0.296944, vy=0.461139, vz=-0.133110
+multiples: ### id=4, x=0.161643, y=0.242510, z=-0.063434, vx=-0.017053, vy=-0.123587, vz=0.027335
+multiples: evolving to time 14.5358319962 time
+multiples: ### snapshot at time 14.535832
+multiples: ### id=73, x=-0.082132, y=-0.105162, z=0.027858, vx=0.402104, vy=-0.386800, vz=0.122211
+multiples: ### id=58, x=-0.074786, y=-0.110224, z=0.029502, vx=-0.372557, vy=0.528307, vz=-0.154275
+multiples: ### id=4, x=0.156918, y=0.215386, z=-0.057360, vx=-0.029547, vy=-0.141507, vz=0.032064
+multiples: evolving to time 14.7405620243 time
+multiples: ### snapshot at time 14.740562
+multiples: ### id=73, x=-0.078149, y=-0.089840, z=0.024357, vx=0.453614, vy=-0.405612, vz=0.128930
+multiples: ### id=58, x=-0.071142, y=-0.094513, z=0.025883, vx=-0.407740, vy=0.568363, vz=-0.166716
+multiples: ### id=4, x=0.149291, y=0.184353, z=-0.050241, vx=-0.045874, vy=-0.162751, vz=0.037786
+multiples: evolving to time 14.9452920524 time
+multiples: ### snapshot at time 14.945292
+multiples: ### id=73, x=-0.072001, y=-0.072241, z=0.020242, vx=0.557435, vy=-0.451793, vz=0.144781
+multiples: ### id=58, x=-0.065682, y=-0.076170, z=0.021541, vx=-0.488396, vy=0.641255, vz=-0.189963
+multiples: ### id=4, x=0.137683, y=0.148411, z=-0.041783, vx=-0.069039, vy=-0.189462, vz=0.045182
+multiples: evolving to time 15.1500220806 time
+multiples: ### snapshot at time 15.150022
+multiples: ### id=73, x=-0.062862, y=-0.051443, z=0.015222, vx=0.676686, vy=-0.493992, vz=0.159617
+multiples: ### id=58, x=-0.057224, y=-0.054689, z=0.016311, vx=-0.570201, vy=0.720003, vz=-0.215360
+multiples: ### id=4, x=0.120087, y=0.106132, z=-0.031533, vx=-0.106486, vy=-0.226011, vz=0.055743
+multiples: evolving to time 15.3547521087 time
+multiples: ### snapshot at time 15.354752
+multiples: ### id=73, x=-0.048036, y=-0.026049, z=0.008822, vx=0.885966, vy=-0.556648, vz=0.181581
+multiples: ### id=58, x=-0.043361, y=-0.028400, z=0.009632, vx=-0.699345, vy=0.841165, vz=-0.255776
+multiples: ### id=4, x=0.091397, y=0.054449, z=-0.018454, vx=-0.186621, vy=-0.284517, vz=0.074194
+multiples: evolving to time 15.5594821368 time
+multiples: ### snapshot at time 15.559482
+multiples: ### id=73, x=-0.013455, y=0.006985, z=-0.000696, vx=1.347846, vy=-0.606333, vz=0.176799
+multiples: ### id=58, x=-0.009392, y=0.005570, z=-0.000225, vx=-0.607867, vy=0.901180, vz=-0.296584
+multiples: ### id=4, x=0.022847, y=-0.012555, z=0.000921, vx=-0.739979, vy=-0.294847, vz=0.119785
+multiples: evolving to time 15.7642121649 time
+multiples: ### snapshot at time 15.764212
+multiples: ### id=73, x=0.014241, y=-0.037722, z=0.006410, vx=-0.389305, vy=0.017095, vz=-0.002847
+multiples: ### id=58, x=0.020870, y=-0.045573, z=0.009122, vx=0.371509, vy=-0.428131, vz=0.096168
+multiples: ### id=4, x=-0.035111, y=0.083295, z=-0.015532, vx=0.017796, vy=0.411035, vz=-0.093321
+multiples: evolving to time 15.968942193 time
+multiples: ### snapshot at time 15.968942
+multiples: ### id=73, x=0.008605, y=-0.072877, z=0.014828, vx=0.000198, vy=-0.321845, vz=0.113282
+multiples: ### id=58, x=0.018360, y=-0.080838, z=0.017142, vx=-0.051613, vy=0.025346, vz=-0.042565
+multiples: ### id=4, x=-0.026965, y=0.153715, z=-0.031970, vx=0.051416, vy=0.296499, vz=-0.070717
+multiples: evolving to time 16.1736722211 time
+multiples: ### snapshot at time 16.173672
+multiples: ### id=73, x=0.005884, y=-0.103611, z=0.022578, vx=1.021300, vy=-0.862900, vz=0.223788
+multiples: ### id=58, x=0.009772, y=-0.104943, z=0.022630, vx=-1.079104, vy=0.617730, vz=-0.163970
+multiples: ### id=4, x=-0.015655, y=0.208555, z=-0.045207, vx=0.057804, vy=0.245171, vz=-0.059818
+multiples: evolving to time 16.3784022492 time
+multiples: ### snapshot at time 16.378402
+multiples: ### id=73, x=-0.002342, y=-0.123385, z=0.026943, vx=-0.280319, vy=-0.024676, vz=0.024930
+multiples: ### id=58, x=0.005956, y=-0.131991, z=0.029777, vx=0.221113, vy=-0.188842, vz=0.027943
+multiples: ### id=4, x=-0.003614, y=0.255376, z=-0.056719, vx=0.059206, vy=0.213519, vz=-0.052873
+multiples: evolving to time 16.5831322774 time
+multiples: ### snapshot at time 16.583132
+multiples: ### id=73, x=-0.008939, y=-0.144813, z=0.032540, vx=0.109940, vy=-0.356609, vz=0.126610
+multiples: ### id=58, x=0.000454, y=-0.151816, z=0.034453, vx=-0.168981, vy=0.165309, vz=-0.078713
+multiples: ### id=4, x=0.008485, y=0.296630, z=-0.066993, vx=0.059040, vy=0.191300, vz=-0.047897
+multiples: evolving to time 16.7878623055 time
+multiples: ### snapshot at time 16.787862
+multiples: ### id=73, x=-0.011363, y=-0.164864, z=0.037353, vx=-0.778543, vy=0.683777, vz=-0.230990
+multiples: ### id=58, x=-0.009136, y=-0.169121, z=0.039035, vx=0.720267, vy=-0.858128, vz=0.275035
+multiples: ### id=4, x=0.020499, y=0.333984, z=-0.076388, vx=0.058275, vy=0.174351, vz=-0.044045
+multiples: evolving to time 16.9925923336 time
+multiples: ### snapshot at time 16.992592
+multiples: ### id=73, x=-0.020848, y=-0.179794, z=0.041178, vx=-0.163273, vy=-0.112089, vz=0.055592
+multiples: ### id=58, x=-0.011508, y=-0.188527, z=0.043917, vx=0.106014, vy=-0.048663, vz=-0.014673
+multiples: ### id=4, x=0.032356, y=0.368321, z=-0.085096, vx=0.057259, vy=0.160752, vz=-0.040919
+multiples: evolving to time 17.1973223617 time
+multiples: ### snapshot at time 17.197322
+multiples: ### id=73, x=-0.026057, y=-0.197367, z=0.045958, vx=0.297312, vy=-0.464437, vz=0.155037
+multiples: ### id=58, x=-0.017888, y=-0.202628, z=0.047228, vx=-0.353459, vy=0.314916, vz=-0.116723
+multiples: ### id=4, x=0.043946, y=0.399995, z=-0.093185, vx=0.056148, vy=0.149522, vz=-0.038314
+multiples: evolving to time 17.4020523898 time
+multiples: ### snapshot at time 17.402052
+multiples: ### id=73, x=-0.030419, y=-0.211271, z=0.049136, vx=-0.490966, vy=0.257797, vz=-0.067871
+multiples: ### id=58, x=-0.024909, y=-0.218341, z=0.051661, vx=0.435962, vy=-0.397741, vz=0.103946
+multiples: ### id=4, x=0.055328, y=0.429611, z=-0.100797, vx=0.055004, vy=0.139943, vz=-0.036075
+multiples: evolving to time 17.6067824179 time
+multiples: ### snapshot at time 17.606782
+multiples: ### id=73, x=-0.037724, y=-0.233193, z=0.054841, vx=-0.683163, vy=0.542994, vz=-0.172601
+multiples: ### id=58, x=-0.034588, y=-0.238331, z=0.056805, vx=0.629900, vy=-0.670610, vz=0.205771
+multiples: ### id=4, x=0.072312, y=0.471524, z=-0.111646, vx=0.053264, vy=0.127616, vz=-0.033169
+multiples: evolving to time 17.8115124461 time
+multiples: ### snapshot at time 17.811512
+multiples: ### id=73, x=-0.046292, y=-0.253169, z=0.060053, vx=-0.682287, vy=0.548334, vz=-0.173870
+multiples: ### id=58, x=-0.043157, y=-0.258308, z=0.062018, vx=0.630776, vy=-0.665270, vz=0.204501
+multiples: ### id=4, x=0.089449, y=0.511477, z=-0.122071, vx=0.051510, vy=0.116936, vz=-0.030631
+multiples: evolving to time 18.0162424742 time
+multiples: ### snapshot at time 18.016242
+multiples: ### id=73, x=-0.046292, y=-0.253169, z=0.060053, vx=-0.682287, vy=0.548334, vz=-0.173870
+multiples: ### id=58, x=-0.043157, y=-0.258308, z=0.062018, vx=0.630776, vy=-0.665270, vz=0.204501
+multiples: ### id=4, x=0.089449, y=0.511477, z=-0.122071, vx=0.051510, vy=0.116936, vz=-0.030631
+multiples: evolving to time 18.2209725023 time
+multiples: ### snapshot at time 18.220973
+multiples: ### id=73, x=-0.054069, y=-0.270427, z=0.064589, vx=-0.681500, vy=0.552613, vz=-0.174895
+multiples: ### id=58, x=-0.050933, y=-0.275566, z=0.066554, vx=0.631563, vy=-0.660991, vz=0.203477
+multiples: ### id=4, x=0.105002, y=0.545993, z=-0.131143, vx=0.049938, vy=0.108378, vz=-0.028582
+multiples: evolving to time 18.4257025304 time
+multiples: ### snapshot at time 18.425703
+multiples: ### id=73, x=-0.059612, y=-0.282275, z=0.067721, vx=-0.680948, vy=0.555404, vz=-0.175566
+multiples: ### id=58, x=-0.056476, y=-0.287413, z=0.069686, vx=0.632115, vy=-0.658201, vz=0.202805
+multiples: ### id=4, x=0.116088, y=0.569688, z=-0.137407, vx=0.048832, vy=0.102797, vz=-0.027239
+multiples: evolving to time 18.6304325585 time
+multiples: ### snapshot at time 18.630433
+multiples: ### id=73, x=-0.068306, y=-0.300161, z=0.072478, vx=-0.680093, vy=0.559430, vz=-0.176540
+multiples: ### id=58, x=-0.065171, y=-0.305299, z=0.074442, vx=0.632970, vy=-0.654175, vz=0.201831
+multiples: ### id=4, x=0.133477, y=0.605460, z=-0.146920, vx=0.047124, vy=0.094745, vz=-0.025291
+multiples: evolving to time 18.8351625866 time
+multiples: ### snapshot at time 18.835163
+multiples: ### id=73, x=-0.068306, y=-0.300161, z=0.072478, vx=-0.680093, vy=0.559430, vz=-0.176540
+multiples: ### id=58, x=-0.065171, y=-0.305299, z=0.074442, vx=0.632970, vy=-0.654175, vz=0.201831
+multiples: ### id=4, x=0.133477, y=0.605460, z=-0.146920, vx=0.047124, vy=0.094745, vz=-0.025291
+multiples: evolving to time 19.0398926148 time
+multiples: ### snapshot at time 19.039893
+multiples: ### id=73, x=-0.077518, y=-0.318249, z=0.077325, vx=-0.679204, vy=0.563317, vz=-0.177487
+multiples: ### id=58, x=-0.074382, y=-0.323388, z=0.079290, vx=0.633859, vy=-0.650287, vz=0.200885
+multiples: ### id=4, x=0.151900, y=0.641637, z=-0.156615, vx=0.045346, vy=0.086970, vz=-0.023399
+multiples: evolving to time 19.2446226429 time
+multiples: ### snapshot at time 19.244623
+multiples: ### id=73, x=-0.077518, y=-0.318249, z=0.077325, vx=-0.679204, vy=0.563317, vz=-0.177487
+multiples: ### id=58, x=-0.074382, y=-0.323388, z=0.079290, vx=0.633859, vy=-0.650287, vz=0.200885
+multiples: ### id=4, x=0.151900, y=0.641637, z=-0.156615, vx=0.045346, vy=0.086970, vz=-0.023399
+multiples: evolving to time 19.449352671 time
+multiples: ### snapshot at time 19.449353
+multiples: ### id=73, x=-0.087207, y=-0.336385, z=0.082225, vx=-0.678284, vy=0.567076, vz=-0.178407
+multiples: ### id=58, x=-0.084072, y=-0.341523, z=0.084189, vx=0.634779, vy=-0.646528, vz=0.199965
+multiples: ### id=4, x=0.171279, y=0.677908, z=-0.166414, vx=0.043505, vy=0.079452, vz=-0.021558
+multiples: evolving to time 19.6540826991 time
+multiples: ### snapshot at time 19.654083
+multiples: ### id=73, x=-0.087207, y=-0.336385, z=0.082225, vx=-0.678284, vy=0.567076, vz=-0.178407
+multiples: ### id=58, x=-0.084072, y=-0.341523, z=0.084189, vx=0.634779, vy=-0.646528, vz=0.199965
+multiples: ### id=4, x=0.171279, y=0.677908, z=-0.166414, vx=0.043505, vy=0.079452, vz=-0.021558
+multiples: evolving to time 19.8588127272 time
+multiples: ### snapshot at time 19.858813
+multiples: ### id=73, x=-0.097322, y=-0.354390, z=0.087133, vx=-0.677336, vy=0.570715, vz=-0.179302
+multiples: ### id=58, x=-0.094186, y=-0.359529, z=0.089097, vx=0.635727, vy=-0.642889, vz=0.199069
+multiples: ### id=4, x=0.191508, y=0.713919, z=-0.176230, vx=0.041609, vy=0.072174, vz=-0.019767
+multiples: evolving to time 20.0635427553 time
+multiples: ### snapshot at time 20.063543
+multiples: ### id=73, x=-0.097322, y=-0.354390, z=0.087133, vx=-0.677336, vy=0.570715, vz=-0.179302
+multiples: ### id=58, x=-0.094186, y=-0.359529, z=0.089097, vx=0.635727, vy=-0.642889, vz=0.199069
+multiples: ### id=4, x=0.191508, y=0.713919, z=-0.176230, vx=0.041609, vy=0.072174, vz=-0.019767
+multiples: evolving to time 20.2682727834 time
+multiples: ### snapshot at time 20.268273
+multiples: ### id=73, x=-0.098145, y=-0.355816, z=0.087523, vx=-0.677259, vy=0.571001, vz=-0.179373
+multiples: ### id=58, x=-0.095010, y=-0.360954, z=0.089488, vx=0.635804, vy=-0.642603, vz=0.198999
+multiples: ### id=4, x=0.193155, y=0.716770, z=-0.177011, vx=0.041456, vy=0.071602, vz=-0.019626
+multiples: evolving to time 20.4730028116 time
+multiples: ### snapshot at time 20.473003
+multiples: ### id=73, x=-0.108645, y=-0.373462, z=0.092385, vx=-0.676284, vy=0.574521, vz=-0.180245
+multiples: ### id=58, x=-0.105509, y=-0.378600, z=0.094349, vx=0.636779, vy=-0.639083, vz=0.198127
+multiples: ### id=4, x=0.214154, y=0.752061, z=-0.186734, vx=0.039504, vy=0.064562, vz=-0.017882
+multiples: evolving to time 20.6777328397 time
+multiples: ### snapshot at time 20.677733
+multiples: ### id=73, x=-0.108645, y=-0.373462, z=0.092385, vx=-0.676284, vy=0.574521, vz=-0.180245
+multiples: ### id=58, x=-0.105509, y=-0.378600, z=0.094349, vx=0.636779, vy=-0.639083, vz=0.198127
+multiples: ### id=4, x=0.214154, y=0.752061, z=-0.186734, vx=0.039504, vy=0.064562, vz=-0.017882
+multiples: evolving to time 20.8824628678 time
+multiples: ### snapshot at time 20.882463
+multiples: ### id=73, x=-0.119415, y=-0.390552, z=0.097146, vx=-0.675284, vy=0.577940, vz=-0.181096
+multiples: ### id=58, x=-0.116280, y=-0.395690, z=0.099110, vx=0.637779, vy=-0.635664, vz=0.197276
+multiples: ### id=4, x=0.235695, y=0.786242, z=-0.196256, vx=0.037505, vy=0.057724, vz=-0.016180
+multiples: evolving to time 21.0871928959 time
+multiples: ### snapshot at time 21.087193
+multiples: ### id=73, x=-0.119415, y=-0.390552, z=0.097146, vx=-0.675284, vy=0.577940, vz=-0.181096
+multiples: ### id=58, x=-0.116280, y=-0.395690, z=0.099110, vx=0.637779, vy=-0.635664, vz=0.197276
+multiples: ### id=4, x=0.235695, y=0.786242, z=-0.196256, vx=0.037505, vy=0.057724, vz=-0.016180
+multiples: evolving to time 21.291922924 time
+multiples: ### snapshot at time 21.291923
+multiples: ### id=73, x=-0.119415, y=-0.390552, z=0.097146, vx=-0.675284, vy=0.577940, vz=-0.181096
+multiples: ### id=58, x=-0.116280, y=-0.395690, z=0.099110, vx=0.637779, vy=-0.635664, vz=0.197276
+multiples: ### id=4, x=0.235695, y=0.786242, z=-0.196256, vx=0.037505, vy=0.057724, vz=-0.016180
+multiples: evolving to time 21.4966529521 time
+multiples: ### snapshot at time 21.496653
+multiples: ### id=73, x=-0.130361, y=-0.406861, z=0.101748, vx=-0.674262, vy=0.581267, vz=-0.181928
+multiples: ### id=58, x=-0.127226, y=-0.411999, z=0.103713, vx=0.638801, vy=-0.632337, vz=0.196443
+multiples: ### id=4, x=0.257587, y=0.818860, z=-0.205461, vx=0.035461, vy=0.051071, vz=-0.014515
+multiples: evolving to time 21.7013829803 time
+multiples: ### snapshot at time 21.701383
+multiples: ### id=73, x=-0.130361, y=-0.406861, z=0.101748, vx=-0.674262, vy=0.581267, vz=-0.181928
+multiples: ### id=58, x=-0.127226, y=-0.411999, z=0.103713, vx=0.638801, vy=-0.632337, vz=0.196443
+multiples: ### id=4, x=0.257587, y=0.818860, z=-0.205461, vx=0.035461, vy=0.051071, vz=-0.014515
+multiples: evolving to time 21.9061130084 time
+multiples: ### snapshot at time 21.906113
+multiples: ### id=73, x=-0.130361, y=-0.406861, z=0.101748, vx=-0.674262, vy=0.581267, vz=-0.181928
+multiples: ### id=58, x=-0.127226, y=-0.411999, z=0.103713, vx=0.638801, vy=-0.632337, vz=0.196443
+multiples: ### id=4, x=0.257587, y=0.818860, z=-0.205461, vx=0.035461, vy=0.051071, vz=-0.014515
+multiples: evolving to time 22.1108430365 time
+multiples: ### snapshot at time 22.110843
+multiples: ### id=73, x=-0.141375, y=-0.422154, z=0.106129, vx=-0.673218, vy=0.584509, vz=-0.182744
+multiples: ### id=58, x=-0.138240, y=-0.427293, z=0.108094, vx=0.639845, vy=-0.629095, vz=0.195628
+multiples: ### id=4, x=0.279615, y=0.849447, z=-0.214223, vx=0.033374, vy=0.044586, vz=-0.012884
+multiples: evolving to time 22.3155730646 time
+multiples: ### snapshot at time 22.315573
+multiples: ### id=73, x=-0.141375, y=-0.422154, z=0.106129, vx=-0.673218, vy=0.584509, vz=-0.182744
+multiples: ### id=58, x=-0.138240, y=-0.427293, z=0.108094, vx=0.639845, vy=-0.629095, vz=0.195628
+multiples: ### id=4, x=0.279615, y=0.849447, z=-0.214223, vx=0.033374, vy=0.044586, vz=-0.012884
+multiples: evolving to time 22.5203030927 time
+multiples: ### snapshot at time 22.520303
+multiples: ### id=73, x=-0.141375, y=-0.422154, z=0.106129, vx=-0.673218, vy=0.584509, vz=-0.182744
+multiples: ### id=58, x=-0.138240, y=-0.427293, z=0.108094, vx=0.639845, vy=-0.629095, vz=0.195628
+multiples: ### id=4, x=0.279615, y=0.849447, z=-0.214223, vx=0.033374, vy=0.044586, vz=-0.012884
+multiples: evolving to time 22.7250331208 time
+multiples: ### snapshot at time 22.725033
+multiples: ### id=73, x=-0.152337, y=-0.436196, z=0.110226, vx=-0.672153, vy=0.587675, vz=-0.183544
+multiples: ### id=58, x=-0.149201, y=-0.441334, z=0.112191, vx=0.640910, vy=-0.625929, vz=0.194827
+multiples: ### id=4, x=0.301538, y=0.877530, z=-0.222417, vx=0.031244, vy=0.038254, vz=-0.011283
+multiples: evolving to time 22.9297631489 time
+multiples: ### snapshot at time 22.929763
+multiples: ### id=73, x=-0.152337, y=-0.436196, z=0.110226, vx=-0.672153, vy=0.587675, vz=-0.183544
+multiples: ### id=58, x=-0.149201, y=-0.441334, z=0.112191, vx=0.640910, vy=-0.625929, vz=0.194827
+multiples: ### id=4, x=0.301538, y=0.877530, z=-0.222417, vx=0.031244, vy=0.038254, vz=-0.011283
+multiples: evolving to time 23.1344931771 time
+multiples: ### snapshot at time 23.134493
+multiples: ### id=73, x=-0.152337, y=-0.436196, z=0.110226, vx=-0.672153, vy=0.587675, vz=-0.183544
+multiples: ### id=58, x=-0.149201, y=-0.441334, z=0.112191, vx=0.640910, vy=-0.625929, vz=0.194827
+multiples: ### id=4, x=0.301538, y=0.877530, z=-0.222417, vx=0.031244, vy=0.038254, vz=-0.011283
+multiples: evolving to time 23.3392232052 time
+multiples: ### snapshot at time 23.339223
+multiples: ### id=73, x=-0.155541, y=-0.440065, z=0.111371, vx=-0.671835, vy=0.588596, vz=-0.183778
+multiples: ### id=58, x=-0.152406, y=-0.445203, z=0.113336, vx=0.641228, vy=-0.625009, vz=0.194594
+multiples: ### id=4, x=0.307947, y=0.885267, z=-0.224707, vx=0.030607, vy=0.036413, vz=-0.010816
+multiples: evolving to time 23.5439532333 time
+multiples: ### snapshot at time 23.543953
+multiples: ### id=73, x=-0.166243, y=-0.452141, z=0.115007, vx=-0.670742, vy=0.591674, vz=-0.184561
+multiples: ### id=58, x=-0.163108, y=-0.457279, z=0.116971, vx=0.642321, vy=-0.621930, vz=0.193810
+multiples: ### id=4, x=0.329351, y=0.909420, z=-0.231978, vx=0.028421, vy=0.030255, vz=-0.009249
+multiples: evolving to time 23.7486832614 time
+multiples: ### snapshot at time 23.748683
+multiples: ### id=73, x=-0.166243, y=-0.452141, z=0.115007, vx=-0.670742, vy=0.591674, vz=-0.184561
+multiples: ### id=58, x=-0.163108, y=-0.457279, z=0.116971, vx=0.642321, vy=-0.621930, vz=0.193810
+multiples: ### id=4, x=0.329351, y=0.909420, z=-0.231978, vx=0.028421, vy=0.030255, vz=-0.009249
+multiples: evolving to time 23.9534132895 time
+multiples: ### snapshot at time 23.953413
+multiples: ### id=73, x=-0.166243, y=-0.452141, z=0.115007, vx=-0.670742, vy=0.591674, vz=-0.184561
+multiples: ### id=58, x=-0.163108, y=-0.457279, z=0.116971, vx=0.642321, vy=-0.621930, vz=0.193810
+multiples: ### id=4, x=0.329351, y=0.909420, z=-0.231978, vx=0.028421, vy=0.030255, vz=-0.009249
+multiples: evolving to time 24.1581433176 time
+multiples: ### snapshot at time 24.158143
+multiples: ### id=73, x=-0.166243, y=-0.452141, z=0.115007, vx=-0.670742, vy=0.591674, vz=-0.184561
+multiples: ### id=58, x=-0.163108, y=-0.457279, z=0.116971, vx=0.642321, vy=-0.621930, vz=0.193810
+multiples: ### id=4, x=0.329351, y=0.909420, z=-0.231978, vx=0.028421, vy=0.030255, vz=-0.009249
+multiples: evolving to time 24.3628733458 time
+multiples: ### snapshot at time 24.362873
+multiples: ### id=73, x=-0.176588, y=-0.462450, z=0.118216, vx=-0.669627, vy=0.594695, vz=-0.185333
+multiples: ### id=58, x=-0.173453, y=-0.467588, z=0.120181, vx=0.643436, vy=-0.618910, vz=0.193038
+multiples: ### id=4, x=0.350041, y=0.930038, z=-0.238397, vx=0.026190, vy=0.024215, vz=-0.007705
+multiples: evolving to time 24.5676033739 time
+multiples: ### snapshot at time 24.567603
+multiples: ### id=73, x=-0.176588, y=-0.462450, z=0.118216, vx=-0.669627, vy=0.594695, vz=-0.185333
+multiples: ### id=58, x=-0.173453, y=-0.467588, z=0.120181, vx=0.643436, vy=-0.618910, vz=0.193038
+multiples: ### id=4, x=0.350041, y=0.930038, z=-0.238397, vx=0.026190, vy=0.024215, vz=-0.007705
+multiples: evolving to time 24.772333402 time
+multiples: ### snapshot at time 24.772333
+multiples: ### id=73, x=-0.176588, y=-0.462450, z=0.118216, vx=-0.669627, vy=0.594695, vz=-0.185333
+multiples: ### id=58, x=-0.173453, y=-0.467588, z=0.120181, vx=0.643436, vy=-0.618910, vz=0.193038
+multiples: ### id=4, x=0.350041, y=0.930038, z=-0.238397, vx=0.026190, vy=0.024215, vz=-0.007705
+multiples: evolving to time 24.9770634301 time
+multiples: ### snapshot at time 24.977063
+multiples: ### id=73, x=-0.186440, y=-0.470796, z=0.120944, vx=-0.668488, vy=0.597664, vz=-0.186096
+multiples: ### id=58, x=-0.183305, y=-0.475934, z=0.122909, vx=0.644575, vy=-0.615940, vz=0.192275
+multiples: ### id=4, x=0.369745, y=0.946730, z=-0.243853, vx=0.023913, vy=0.018276, vz=-0.006179
+multiples: evolving to time 25.1817934582 time
+multiples: ### snapshot at time 25.181793
+multiples: ### id=73, x=-0.186440, y=-0.470796, z=0.120944, vx=-0.668488, vy=0.597664, vz=-0.186096
+multiples: ### id=58, x=-0.183305, y=-0.475934, z=0.122909, vx=0.644575, vy=-0.615940, vz=0.192275
+multiples: ### id=4, x=0.369745, y=0.946730, z=-0.243853, vx=0.023913, vy=0.018276, vz=-0.006179
+multiples: evolving to time 25.3865234863 time
+multiples: ### snapshot at time 25.386523
+multiples: ### id=73, x=-0.186440, y=-0.470796, z=0.120944, vx=-0.668488, vy=0.597664, vz=-0.186096
+multiples: ### id=58, x=-0.183305, y=-0.475934, z=0.122909, vx=0.644575, vy=-0.615940, vz=0.192275
+multiples: ### id=4, x=0.369745, y=0.946730, z=-0.243853, vx=0.023913, vy=0.018276, vz=-0.006179
+multiples: evolving to time 25.5912535145 time
+multiples: ### snapshot at time 25.591254
+multiples: ### id=73, x=-0.186440, y=-0.470796, z=0.120944, vx=-0.668488, vy=0.597664, vz=-0.186096
+multiples: ### id=58, x=-0.183305, y=-0.475934, z=0.122909, vx=0.644575, vy=-0.615940, vz=0.192275
+multiples: ### id=4, x=0.369745, y=0.946730, z=-0.243853, vx=0.023913, vy=0.018276, vz=-0.006179
+multiples: evolving to time 25.7959835426 time
+multiples: ### snapshot at time 25.795984
+multiples: ### id=73, x=-0.195663, y=-0.477011, z=0.123141, vx=-0.667325, vy=0.600589, vz=-0.186852
+multiples: ### id=58, x=-0.192527, y=-0.482150, z=0.125106, vx=0.645738, vy=-0.613015, vz=0.191520
+multiples: ### id=4, x=0.388190, y=0.959161, z=-0.248247, vx=0.021586, vy=0.012426, vz=-0.004668
+multiples: evolving to time 26.0007135707 time
+multiples: ### snapshot at time 26.000714
+multiples: ### id=73, x=-0.195663, y=-0.477011, z=0.123141, vx=-0.667325, vy=0.600589, vz=-0.186852
+multiples: ### id=58, x=-0.192527, y=-0.482150, z=0.125106, vx=0.645738, vy=-0.613015, vz=0.191520
+multiples: ### id=4, x=0.388190, y=0.959161, z=-0.248247, vx=0.021586, vy=0.012426, vz=-0.004668
+multiples: evolving to time 26.2054435988 time
+multiples: ### snapshot at time 26.205444
+multiples: ### id=73, x=-0.195663, y=-0.477011, z=0.123141, vx=-0.667325, vy=0.600589, vz=-0.186852
+multiples: ### id=58, x=-0.192527, y=-0.482150, z=0.125106, vx=0.645738, vy=-0.613015, vz=0.191520
+multiples: ### id=4, x=0.388190, y=0.959161, z=-0.248247, vx=0.021586, vy=0.012426, vz=-0.004668
+multiples: evolving to time 26.4101736269 time
+multiples: ### snapshot at time 26.410174
+multiples: ### id=73, x=-0.195663, y=-0.477011, z=0.123141, vx=-0.667325, vy=0.600589, vz=-0.186852
+multiples: ### id=58, x=-0.192527, y=-0.482150, z=0.125106, vx=0.645738, vy=-0.613015, vz=0.191520
+multiples: ### id=4, x=0.388190, y=0.959161, z=-0.248247, vx=0.021586, vy=0.012426, vz=-0.004668
+multiples: evolving to time 26.614903655 time
+multiples: ### snapshot at time 26.614904
+multiples: ### id=73, x=-0.204127, y=-0.480963, z=0.124766, vx=-0.666135, vy=0.603478, vz=-0.187601
+multiples: ### id=58, x=-0.200992, y=-0.486101, z=0.126731, vx=0.646928, vy=-0.610127, vz=0.190771
+multiples: ### id=4, x=0.405119, y=0.967064, z=-0.251497, vx=0.019207, vy=0.006649, vz=-0.003169
+multiples: evolving to time 26.8196336831 time
+multiples: ### snapshot at time 26.819634
+multiples: ### id=73, x=-0.204127, y=-0.480963, z=0.124766, vx=-0.666135, vy=0.603478, vz=-0.187601
+multiples: ### id=58, x=-0.200992, y=-0.486101, z=0.126731, vx=0.646928, vy=-0.610127, vz=0.190771
+multiples: ### id=4, x=0.405119, y=0.967064, z=-0.251497, vx=0.019207, vy=0.006649, vz=-0.003169
+multiples: evolving to time 27.0243637113 time
+multiples: ### snapshot at time 27.024364
+multiples: ### id=73, x=-0.204127, y=-0.480963, z=0.124766, vx=-0.666135, vy=0.603478, vz=-0.187601
+multiples: ### id=58, x=-0.200992, y=-0.486101, z=0.126731, vx=0.646928, vy=-0.610127, vz=0.190771
+multiples: ### id=4, x=0.405119, y=0.967064, z=-0.251497, vx=0.019207, vy=0.006649, vz=-0.003169
+multiples: evolving to time 27.2290937394 time
+multiples: ### snapshot at time 27.229094
+multiples: ### id=73, x=-0.204127, y=-0.480963, z=0.124766, vx=-0.666135, vy=0.603478, vz=-0.187601
+multiples: ### id=58, x=-0.200992, y=-0.486101, z=0.126731, vx=0.646928, vy=-0.610127, vz=0.190771
+multiples: ### id=4, x=0.405119, y=0.967064, z=-0.251497, vx=0.019207, vy=0.006649, vz=-0.003169
+multiples: evolving to time 27.4338237675 time
+multiples: ### snapshot at time 27.433824
+multiples: ### id=73, x=-0.211715, y=-0.482557, z=0.125788, vx=-0.664917, vy=0.606336, vz=-0.188346
+multiples: ### id=58, x=-0.208580, y=-0.487695, z=0.127752, vx=0.648146, vy=-0.607268, vz=0.190025
+multiples: ### id=4, x=0.420296, y=0.970252, z=-0.253540, vx=0.016772, vy=0.000932, vz=-0.001679
+multiples: evolving to time 27.6385537956 time
+multiples: ### snapshot at time 27.638554
+multiples: ### id=73, x=-0.211715, y=-0.482557, z=0.125788, vx=-0.664917, vy=0.606336, vz=-0.188346
+multiples: ### id=58, x=-0.208580, y=-0.487695, z=0.127752, vx=0.648146, vy=-0.607268, vz=0.190025
+multiples: ### id=4, x=0.420296, y=0.970252, z=-0.253540, vx=0.016772, vy=0.000932, vz=-0.001679
+multiples: evolving to time 27.8432838237 time
+multiples: ### snapshot at time 27.843284
+multiples: ### id=73, x=-0.211715, y=-0.482557, z=0.125788, vx=-0.664917, vy=0.606336, vz=-0.188346
+multiples: ### id=58, x=-0.208580, y=-0.487695, z=0.127752, vx=0.648146, vy=-0.607268, vz=0.190025
+multiples: ### id=4, x=0.420296, y=0.970252, z=-0.253540, vx=0.016772, vy=0.000932, vz=-0.001679
+multiples: evolving to time 28.0480138518 time
+multiples: ### snapshot at time 28.048014
+multiples: ### id=73, x=-0.211715, y=-0.482557, z=0.125788, vx=-0.664917, vy=0.606336, vz=-0.188346
+multiples: ### id=58, x=-0.208580, y=-0.487695, z=0.127752, vx=0.648146, vy=-0.607268, vz=0.190025
+multiples: ### id=4, x=0.420296, y=0.970252, z=-0.253540, vx=0.016772, vy=0.000932, vz=-0.001679
+multiples: evolving to time 28.25274388 time
+multiples: ### snapshot at time 28.252744
+multiples: ### id=73, x=-0.215203, y=-0.482446, z=0.126069, vx=-0.664287, vy=0.607780, vz=-0.188724
+multiples: ### id=58, x=-0.212068, y=-0.487584, z=0.128033, vx=0.648776, vy=-0.605824, vz=0.189648
+multiples: ### id=4, x=0.427271, y=0.970030, z=-0.254102, vx=0.015510, vy=-0.001956, vz=-0.000924
+multiples: evolving to time 28.4574739081 time
+multiples: ### snapshot at time 28.457474
+multiples: ### id=73, x=-0.215203, y=-0.482446, z=0.126069, vx=-0.664287, vy=0.607780, vz=-0.188724
+multiples: ### id=58, x=-0.212068, y=-0.487584, z=0.128033, vx=0.648776, vy=-0.605824, vz=0.189648
+multiples: ### id=4, x=0.427271, y=0.970030, z=-0.254102, vx=0.015510, vy=-0.001956, vz=-0.000924
+multiples: evolving to time 28.6622039362 time
+multiples: ### snapshot at time 28.662204
+multiples: ### id=73, x=-0.215203, y=-0.482446, z=0.126069, vx=-0.664287, vy=0.607780, vz=-0.188724
+multiples: ### id=58, x=-0.212068, y=-0.487584, z=0.128033, vx=0.648776, vy=-0.605824, vz=0.189648
+multiples: ### id=4, x=0.427271, y=0.970030, z=-0.254102, vx=0.015510, vy=-0.001956, vz=-0.000924
+multiples: evolving to time 28.8669339643 time
+multiples: ### snapshot at time 28.866934
+multiples: ### id=73, x=-0.221279, y=-0.480406, z=0.126146, vx=-0.663022, vy=0.610606, vz=-0.189466
+multiples: ### id=58, x=-0.218144, y=-0.485544, z=0.128111, vx=0.650041, vy=-0.602998, vz=0.188906
+multiples: ### id=4, x=0.439423, y=0.965950, z=-0.254257, vx=0.012980, vy=-0.007607, vz=0.000560
+multiples: evolving to time 29.0716639924 time
+multiples: ### snapshot at time 29.071664
+multiples: ### id=73, x=-0.221279, y=-0.480406, z=0.126146, vx=-0.663022, vy=0.610606, vz=-0.189466
+multiples: ### id=58, x=-0.218144, y=-0.485544, z=0.128111, vx=0.650041, vy=-0.602998, vz=0.188906
+multiples: ### id=4, x=0.439423, y=0.965950, z=-0.254257, vx=0.012980, vy=-0.007607, vz=0.000560
+multiples: evolving to time 29.2763940205 time
+multiples: ### snapshot at time 29.276394
+multiples: ### id=73, x=-0.221279, y=-0.480406, z=0.126146, vx=-0.663022, vy=0.610606, vz=-0.189466
+multiples: ### id=58, x=-0.218144, y=-0.485544, z=0.128111, vx=0.650041, vy=-0.602998, vz=0.188906
+multiples: ### id=4, x=0.439423, y=0.965950, z=-0.254257, vx=0.012980, vy=-0.007607, vz=0.000560
+multiples: evolving to time 29.4811240486 time
+multiples: ### snapshot at time 29.481124
+multiples: ### id=73, x=-0.221279, y=-0.480406, z=0.126146, vx=-0.663022, vy=0.610606, vz=-0.189466
+multiples: ### id=58, x=-0.218144, y=-0.485544, z=0.128111, vx=0.650041, vy=-0.602998, vz=0.188906
+multiples: ### id=4, x=0.439423, y=0.965950, z=-0.254257, vx=0.012980, vy=-0.007607, vz=0.000560
+multiples: evolving to time 29.6858540768 time
+multiples: ### snapshot at time 29.685854
+multiples: ### id=73, x=-0.226253, y=-0.475972, z=0.125592, vx=-0.661722, vy=0.613418, vz=-0.190208
+multiples: ### id=58, x=-0.223118, y=-0.481110, z=0.127557, vx=0.651341, vy=-0.600186, vz=0.188164
+multiples: ### id=4, x=0.449370, y=0.957082, z=-0.253149, vx=0.010380, vy=-0.013232, vz=0.002045
+multiples: evolving to time 29.8905841049 time
+multiples: ### snapshot at time 29.890584
+multiples: ### id=73, x=-0.226253, y=-0.475972, z=0.125592, vx=-0.661722, vy=0.613418, vz=-0.190208
+multiples: ### id=58, x=-0.223118, y=-0.481110, z=0.127557, vx=0.651341, vy=-0.600186, vz=0.188164
+multiples: ### id=4, x=0.449370, y=0.957082, z=-0.253149, vx=0.010380, vy=-0.013232, vz=0.002045
+multiples: evolving to time 30.095314133 time
+multiples: ### snapshot at time 30.095314
+multiples: ### id=73, x=-0.226253, y=-0.475972, z=0.125592, vx=-0.661722, vy=0.613418, vz=-0.190208
+multiples: ### id=58, x=-0.223118, y=-0.481110, z=0.127557, vx=0.651341, vy=-0.600186, vz=0.188164
+multiples: ### id=4, x=0.449370, y=0.957082, z=-0.253149, vx=0.010380, vy=-0.013232, vz=0.002045
+multiples: evolving to time 30.3000441611 time
+multiples: ### snapshot at time 30.300044
+multiples: ### id=73, x=-0.226253, y=-0.475972, z=0.125592, vx=-0.661722, vy=0.613418, vz=-0.190208
+multiples: ### id=58, x=-0.223118, y=-0.481110, z=0.127557, vx=0.651341, vy=-0.600186, vz=0.188164
+multiples: ### id=4, x=0.449370, y=0.957082, z=-0.253149, vx=0.010380, vy=-0.013232, vz=0.002045
+multiples: evolving to time 30.5047741892 time
+multiples: ### snapshot at time 30.504774
+multiples: ### id=73, x=-0.230070, y=-0.469211, z=0.124417, vx=-0.660384, vy=0.616224, vz=-0.190952
+multiples: ### id=58, x=-0.226935, y=-0.474349, z=0.126382, vx=0.652679, vy=-0.597381, vz=0.187420
+multiples: ### id=4, x=0.457005, y=0.943560, z=-0.250799, vx=0.007704, vy=-0.018843, vz=0.003532
+multiples: evolving to time 30.7095042173 time
+multiples: ### snapshot at time 30.709504
+multiples: ### id=73, x=-0.230070, y=-0.469211, z=0.124417, vx=-0.660384, vy=0.616224, vz=-0.190952
+multiples: ### id=58, x=-0.226935, y=-0.474349, z=0.126382, vx=0.652679, vy=-0.597381, vz=0.187420
+multiples: ### id=4, x=0.457005, y=0.943560, z=-0.250799, vx=0.007704, vy=-0.018843, vz=0.003532
+multiples: evolving to time 30.9142342455 time
+multiples: ### snapshot at time 30.914234
+multiples: ### id=73, x=-0.230070, y=-0.469211, z=0.124417, vx=-0.660384, vy=0.616224, vz=-0.190952
+multiples: ### id=58, x=-0.226935, y=-0.474349, z=0.126382, vx=0.652679, vy=-0.597381, vz=0.187420
+multiples: ### id=4, x=0.457005, y=0.943560, z=-0.250799, vx=0.007704, vy=-0.018843, vz=0.003532
+multiples: evolving to time 31.1189642736 time
+multiples: ### snapshot at time 31.118964
+multiples: ### id=73, x=-0.230070, y=-0.469211, z=0.124417, vx=-0.660384, vy=0.616224, vz=-0.190952
+multiples: ### id=58, x=-0.226935, y=-0.474349, z=0.126382, vx=0.652679, vy=-0.597381, vz=0.187420
+multiples: ### id=4, x=0.457005, y=0.943560, z=-0.250799, vx=0.007704, vy=-0.018843, vz=0.003532
+multiples: evolving to time 31.3236943017 time
+multiples: ### snapshot at time 31.323694
+multiples: ### id=73, x=-0.232699, y=-0.460234, z=0.122643, vx=-0.659004, vy=0.619028, vz=-0.191699
+multiples: ### id=58, x=-0.229564, y=-0.465373, z=0.124608, vx=0.654059, vy=-0.594576, vz=0.186672
+multiples: ### id=4, x=0.462263, y=0.925607, z=-0.247251, vx=0.004946, vy=-0.024452, vz=0.005027
+multiples: evolving to time 31.5284243298 time
+multiples: ### snapshot at time 31.528424
+multiples: ### id=73, x=-0.232699, y=-0.460234, z=0.122643, vx=-0.659004, vy=0.619028, vz=-0.191699
+multiples: ### id=58, x=-0.229564, y=-0.465373, z=0.124608, vx=0.654059, vy=-0.594576, vz=0.186672
+multiples: ### id=4, x=0.462263, y=0.925607, z=-0.247251, vx=0.004946, vy=-0.024452, vz=0.005027
+multiples: evolving to time 31.7331543579 time
+multiples: ### snapshot at time 31.733154
+multiples: ### id=73, x=-0.232699, y=-0.460234, z=0.122643, vx=-0.659004, vy=0.619028, vz=-0.191699
+multiples: ### id=58, x=-0.229564, y=-0.465373, z=0.124608, vx=0.654059, vy=-0.594576, vz=0.186672
+multiples: ### id=4, x=0.462263, y=0.925607, z=-0.247251, vx=0.004946, vy=-0.024452, vz=0.005027
+multiples: evolving to time 31.937884386 time
+multiples: ### snapshot at time 31.937884
+multiples: ### id=73, x=-0.232699, y=-0.460234, z=0.122643, vx=-0.659004, vy=0.619028, vz=-0.191699
+multiples: ### id=58, x=-0.229564, y=-0.465373, z=0.124608, vx=0.654059, vy=-0.594576, vz=0.186672
+multiples: ### id=4, x=0.462263, y=0.925607, z=-0.247251, vx=0.004946, vy=-0.024452, vz=0.005027
+multiples: evolving to time 32.1426144141 time
+multiples: ### snapshot at time 32.142614
+multiples: ### id=73, x=-0.234132, y=-0.449192, z=0.120303, vx=-0.657580, vy=0.621838, vz=-0.192452
+multiples: ### id=58, x=-0.230996, y=-0.454330, z=0.122267, vx=0.655483, vy=-0.591767, vz=0.185920
+multiples: ### id=4, x=0.465128, y=0.903522, z=-0.242570, vx=0.002096, vy=-0.030071, vz=0.006531
+multiples: evolving to time 32.3473444423 time
+multiples: ### snapshot at time 32.347344
+multiples: ### id=73, x=-0.234132, y=-0.449192, z=0.120303, vx=-0.657580, vy=0.621838, vz=-0.192452
+multiples: ### id=58, x=-0.230996, y=-0.454330, z=0.122267, vx=0.655483, vy=-0.591767, vz=0.185920
+multiples: ### id=4, x=0.465128, y=0.903522, z=-0.242570, vx=0.002096, vy=-0.030071, vz=0.006531
+multiples: evolving to time 32.5520744704 time
+multiples: ### snapshot at time 32.552074
+multiples: ### id=73, x=-0.234132, y=-0.449192, z=0.120303, vx=-0.657580, vy=0.621838, vz=-0.192452
+multiples: ### id=58, x=-0.230996, y=-0.454330, z=0.122267, vx=0.655483, vy=-0.591767, vz=0.185920
+multiples: ### id=4, x=0.465128, y=0.903522, z=-0.242570, vx=0.002096, vy=-0.030071, vz=0.006531
+multiples: evolving to time 32.7568044985 time
+multiples: ### snapshot at time 32.756804
+multiples: ### id=73, x=-0.234132, y=-0.449192, z=0.120303, vx=-0.657580, vy=0.621838, vz=-0.192452
+multiples: ### id=58, x=-0.230996, y=-0.454330, z=0.122267, vx=0.655483, vy=-0.591767, vz=0.185920
+multiples: ### id=4, x=0.465128, y=0.903522, z=-0.242570, vx=0.002096, vy=-0.030071, vz=0.006531
+multiples: evolving to time 32.9615345266 time
+multiples: ### snapshot at time 32.961535
+multiples: ### id=73, x=-0.234383, y=-0.436269, z=0.117439, vx=-0.656105, vy=0.624658, vz=-0.193211
+multiples: ### id=58, x=-0.231248, y=-0.441407, z=0.119404, vx=0.656957, vy=-0.588946, vz=0.185161
+multiples: ### id=4, x=0.465631, y=0.877676, z=-0.236842, vx=-0.000852, vy=-0.035712, vz=0.008050
+multiples: evolving to time 33.1662645547 time
+multiples: ### snapshot at time 33.166265
+multiples: ### id=73, x=-0.234383, y=-0.436269, z=0.117439, vx=-0.656105, vy=0.624658, vz=-0.193211
+multiples: ### id=58, x=-0.231248, y=-0.441407, z=0.119404, vx=0.656957, vy=-0.588946, vz=0.185161
+multiples: ### id=4, x=0.465631, y=0.877676, z=-0.236842, vx=-0.000852, vy=-0.035712, vz=0.008050
+multiples: evolving to time 33.3709945828 time
+multiples: ### snapshot at time 33.370995
+multiples: ### id=73, x=-0.234383, y=-0.436269, z=0.117439, vx=-0.656105, vy=0.624658, vz=-0.193211
+multiples: ### id=58, x=-0.231248, y=-0.441407, z=0.119404, vx=0.656957, vy=-0.588946, vz=0.185161
+multiples: ### id=4, x=0.465631, y=0.877676, z=-0.236842, vx=-0.000852, vy=-0.035712, vz=0.008050
+multiples: evolving to time 33.575724611 time
+multiples: ### snapshot at time 33.575725
+multiples: ### id=73, x=-0.234383, y=-0.436269, z=0.117439, vx=-0.656105, vy=0.624658, vz=-0.193211
+multiples: ### id=58, x=-0.231248, y=-0.441407, z=0.119404, vx=0.656957, vy=-0.588946, vz=0.185161
+multiples: ### id=4, x=0.465631, y=0.877676, z=-0.236842, vx=-0.000852, vy=-0.035712, vz=0.008050
+multiples: evolving to time 33.7804546391 time
+multiples: ### snapshot at time 33.780455
+multiples: ### id=73, x=-0.233489, y=-0.421678, z=0.114102, vx=-0.654577, vy=0.627496, vz=-0.193978
+multiples: ### id=58, x=-0.230354, y=-0.426816, z=0.116067, vx=0.658486, vy=-0.586108, vz=0.184393
+multiples: ### id=4, x=0.463843, y=0.848494, z=-0.230169, vx=-0.003908, vy=-0.041388, vz=0.009585
+multiples: evolving to time 33.9851846672 time
+multiples: ### snapshot at time 33.985185
+multiples: ### id=73, x=-0.233489, y=-0.421678, z=0.114102, vx=-0.654577, vy=0.627496, vz=-0.193978
+multiples: ### id=58, x=-0.230354, y=-0.426816, z=0.116067, vx=0.658486, vy=-0.586108, vz=0.184393
+multiples: ### id=4, x=0.463843, y=0.848494, z=-0.230169, vx=-0.003908, vy=-0.041388, vz=0.009585
+multiples: evolving to time 34.1899146953 time
+multiples: ### snapshot at time 34.189915
+multiples: ### id=73, x=-0.233489, y=-0.421678, z=0.114102, vx=-0.654577, vy=0.627496, vz=-0.193978
+multiples: ### id=58, x=-0.230354, y=-0.426816, z=0.116067, vx=0.658486, vy=-0.586108, vz=0.184393
+multiples: ### id=4, x=0.463843, y=0.848494, z=-0.230169, vx=-0.003908, vy=-0.041388, vz=0.009585
+multiples: evolving to time 34.3946447234 time
+multiples: ### snapshot at time 34.394645
+multiples: ### id=73, x=-0.233489, y=-0.421678, z=0.114102, vx=-0.654577, vy=0.627496, vz=-0.193978
+multiples: ### id=58, x=-0.230354, y=-0.426816, z=0.116067, vx=0.658486, vy=-0.586108, vz=0.184393
+multiples: ### id=4, x=0.463843, y=0.848494, z=-0.230169, vx=-0.003908, vy=-0.041388, vz=0.009585
+multiples: evolving to time 34.5993747515 time
+multiples: ### snapshot at time 34.599375
+multiples: ### id=73, x=-0.231506, y=-0.405651, z=0.110349, vx=-0.652990, vy=0.630356, vz=-0.194756
+multiples: ### id=58, x=-0.228370, y=-0.410789, z=0.112314, vx=0.660073, vy=-0.583248, vz=0.183615
+multiples: ### id=4, x=0.459876, y=0.816440, z=-0.222662, vx=-0.007083, vy=-0.047108, vz=0.011141
+multiples: evolving to time 34.8041047797 time
+multiples: ### snapshot at time 34.804105
+multiples: ### id=73, x=-0.231506, y=-0.405651, z=0.110349, vx=-0.652990, vy=0.630356, vz=-0.194756
+multiples: ### id=58, x=-0.228370, y=-0.410789, z=0.112314, vx=0.660073, vy=-0.583248, vz=0.183615
+multiples: ### id=4, x=0.459876, y=0.816440, z=-0.222662, vx=-0.007083, vy=-0.047108, vz=0.011141
+multiples: evolving to time 35.0088348078 time
+multiples: ### snapshot at time 35.008835
+multiples: ### id=73, x=-0.231506, y=-0.405651, z=0.110349, vx=-0.652990, vy=0.630356, vz=-0.194756
+multiples: ### id=58, x=-0.228370, y=-0.410789, z=0.112314, vx=0.660073, vy=-0.583248, vz=0.183615
+multiples: ### id=4, x=0.459876, y=0.816440, z=-0.222662, vx=-0.007083, vy=-0.047108, vz=0.011141
+multiples: evolving to time 35.2135648359 time
+multiples: ### snapshot at time 35.213565
+multiples: ### id=73, x=-0.228126, y=-0.386528, z=0.105782, vx=-0.651157, vy=0.633556, vz=-0.195632
+multiples: ### id=58, x=-0.224991, y=-0.391666, z=0.107747, vx=0.661906, vy=-0.580048, vz=0.182740
+multiples: ### id=4, x=0.453117, y=0.778194, z=-0.213529, vx=-0.010748, vy=-0.053508, vz=0.012892
+multiples: evolving to time 35.418294864 time
+multiples: ### snapshot at time 35.418295
+multiples: ### id=73, x=-0.228126, y=-0.386528, z=0.105782, vx=-0.651157, vy=0.633556, vz=-0.195632
+multiples: ### id=58, x=-0.224991, y=-0.391666, z=0.107747, vx=0.661906, vy=-0.580048, vz=0.182740
+multiples: ### id=4, x=0.453117, y=0.778194, z=-0.213529, vx=-0.010748, vy=-0.053508, vz=0.012892
+multiples: evolving to time 35.6230248921 time
+multiples: ### snapshot at time 35.623025
+multiples: ### id=73, x=-0.228126, y=-0.386528, z=0.105782, vx=-0.651157, vy=0.633556, vz=-0.195632
+multiples: ### id=58, x=-0.224991, y=-0.391666, z=0.107747, vx=0.661906, vy=-0.580048, vz=0.182740
+multiples: ### id=4, x=0.453117, y=0.778194, z=-0.213529, vx=-0.010748, vy=-0.053508, vz=0.012892
+multiples: evolving to time 35.8277549202 time
+multiples: ### snapshot at time 35.827755
+multiples: ### id=73, x=-0.228126, y=-0.386528, z=0.105782, vx=-0.651157, vy=0.633556, vz=-0.195632
+multiples: ### id=58, x=-0.224991, y=-0.391666, z=0.107747, vx=0.661906, vy=-0.580048, vz=0.182740
+multiples: ### id=4, x=0.453117, y=0.778194, z=-0.213529, vx=-0.010748, vy=-0.053508, vz=0.012892
+multiples: evolving to time 36.0324849483 time
+multiples: ### snapshot at time 36.032485
+multiples: ### id=73, x=-0.224099, y=-0.368283, z=0.101354, vx=-0.649428, vy=0.636482, vz=-0.196437
+multiples: ### id=58, x=-0.220964, y=-0.373422, z=0.103319, vx=0.663635, vy=-0.577123, vz=0.181935
+multiples: ### id=4, x=0.445064, y=0.741705, z=-0.204674, vx=-0.014207, vy=-0.059359, vz=0.014502
+multiples: evolving to time 36.2372149765 time
+multiples: ### snapshot at time 36.237215
+multiples: ### id=73, x=-0.224099, y=-0.368283, z=0.101354, vx=-0.649428, vy=0.636482, vz=-0.196437
+multiples: ### id=58, x=-0.220964, y=-0.373422, z=0.103319, vx=0.663635, vy=-0.577123, vz=0.181935
+multiples: ### id=4, x=0.445064, y=0.741705, z=-0.204674, vx=-0.014207, vy=-0.059359, vz=0.014502
+multiples: evolving to time 36.4419450046 time
+multiples: ### snapshot at time 36.441945
+multiples: ### id=73, x=-0.224099, y=-0.368283, z=0.101354, vx=-0.649428, vy=0.636482, vz=-0.196437
+multiples: ### id=58, x=-0.220964, y=-0.373422, z=0.103319, vx=0.663635, vy=-0.577123, vz=0.181935
+multiples: ### id=4, x=0.445064, y=0.741705, z=-0.204674, vx=-0.014207, vy=-0.059359, vz=0.014502
+multiples: evolving to time 36.6466750327 time
+multiples: ### snapshot at time 36.646675
+multiples: ### id=73, x=-0.219248, y=-0.349372, z=0.096706, vx=-0.647622, vy=0.639447, vz=-0.197257
+multiples: ### id=58, x=-0.216112, y=-0.354511, z=0.098670, vx=0.665441, vy=-0.574157, vz=0.181114
+multiples: ### id=4, x=0.435360, y=0.703883, z=-0.195376, vx=-0.017820, vy=-0.065289, vz=0.016143
+multiples: evolving to time 36.8514050608 time
+multiples: ### snapshot at time 36.851405
+multiples: ### id=73, x=-0.219248, y=-0.349372, z=0.096706, vx=-0.647622, vy=0.639447, vz=-0.197257
+multiples: ### id=58, x=-0.216112, y=-0.354511, z=0.098670, vx=0.665441, vy=-0.574157, vz=0.181114
+multiples: ### id=4, x=0.435360, y=0.703883, z=-0.195376, vx=-0.017820, vy=-0.065289, vz=0.016143
+multiples: evolving to time 37.0561350889 time
+multiples: ### snapshot at time 37.056135
+multiples: ### id=73, x=-0.219248, y=-0.349372, z=0.096706, vx=-0.647622, vy=0.639447, vz=-0.197257
+multiples: ### id=58, x=-0.216112, y=-0.354511, z=0.098670, vx=0.665441, vy=-0.574157, vz=0.181114
+multiples: ### id=4, x=0.435360, y=0.703883, z=-0.195376, vx=-0.017820, vy=-0.065289, vz=0.016143
+multiples: evolving to time 37.260865117 time
+multiples: ### snapshot at time 37.260865
+multiples: ### id=73, x=-0.213674, y=-0.330033, z=0.091898, vx=-0.645732, vy=0.642456, vz=-0.198095
+multiples: ### id=58, x=-0.210538, y=-0.335172, z=0.093863, vx=0.667331, vy=-0.571148, vz=0.180276
+multiples: ### id=4, x=0.424212, y=0.665205, z=-0.185761, vx=-0.021600, vy=-0.071308, vz=0.017819
+multiples: evolving to time 37.4655951452 time
+multiples: ### snapshot at time 37.465595
+multiples: ### id=73, x=-0.213674, y=-0.330033, z=0.091898, vx=-0.645732, vy=0.642456, vz=-0.198095
+multiples: ### id=58, x=-0.210538, y=-0.335172, z=0.093863, vx=0.667331, vy=-0.571148, vz=0.180276
+multiples: ### id=4, x=0.424212, y=0.665205, z=-0.185761, vx=-0.021600, vy=-0.071308, vz=0.017819
+multiples: evolving to time 37.6703251733 time
+multiples: ### snapshot at time 37.670325
+multiples: ### id=73, x=-0.213674, y=-0.330033, z=0.091898, vx=-0.645732, vy=0.642456, vz=-0.198095
+multiples: ### id=58, x=-0.210538, y=-0.335172, z=0.093863, vx=0.667331, vy=-0.571148, vz=0.180276
+multiples: ### id=4, x=0.424212, y=0.665205, z=-0.185761, vx=-0.021600, vy=-0.071308, vz=0.017819
+multiples: evolving to time 37.8750552014 time
+multiples: ### snapshot at time 37.875055
+multiples: ### id=73, x=-0.207484, y=-0.310490, z=0.086991, vx=-0.643751, vy=0.645515, vz=-0.198952
+multiples: ### id=58, x=-0.204348, y=-0.315629, z=0.088955, vx=0.669312, vy=-0.568090, vz=0.179419
+multiples: ### id=4, x=0.411832, y=0.626119, z=-0.175946, vx=-0.025562, vy=-0.077425, vz=0.019533
+multiples: evolving to time 38.0797852295 time
+multiples: ### snapshot at time 38.079785
+multiples: ### id=73, x=-0.207484, y=-0.310490, z=0.086991, vx=-0.643751, vy=0.645515, vz=-0.198952
+multiples: ### id=58, x=-0.204348, y=-0.315629, z=0.088955, vx=0.669312, vy=-0.568090, vz=0.179419
+multiples: ### id=4, x=0.411832, y=0.626119, z=-0.175946, vx=-0.025562, vy=-0.077425, vz=0.019533
+multiples: evolving to time 38.2845152576 time
+multiples: ### snapshot at time 38.284515
+multiples: ### id=73, x=-0.200784, y=-0.290949, z=0.082039, vx=-0.641671, vy=0.648627, vz=-0.199830
+multiples: ### id=58, x=-0.197648, y=-0.296088, z=0.084004, vx=0.671392, vy=-0.564977, vz=0.178542
+multiples: ### id=4, x=0.398432, y=0.587037, z=-0.166043, vx=-0.029721, vy=-0.083650, vz=0.021287
+multiples: evolving to time 38.4892452857 time
+multiples: ### snapshot at time 38.489245
+multiples: ### id=73, x=-0.200784, y=-0.290949, z=0.082039, vx=-0.641671, vy=0.648627, vz=-0.199830
+multiples: ### id=58, x=-0.197648, y=-0.296088, z=0.084004, vx=0.671392, vy=-0.564977, vz=0.178542
+multiples: ### id=4, x=0.398432, y=0.587037, z=-0.166043, vx=-0.029721, vy=-0.083650, vz=0.021287
+multiples: evolving to time 38.6939753138 time
+multiples: ### snapshot at time 38.693975
+multiples: ### id=73, x=-0.200784, y=-0.290949, z=0.082039, vx=-0.641671, vy=0.648627, vz=-0.199830
+multiples: ### id=58, x=-0.197648, y=-0.296088, z=0.084004, vx=0.671392, vy=-0.564977, vz=0.178542
+multiples: ### id=4, x=0.398432, y=0.587037, z=-0.166043, vx=-0.029721, vy=-0.083650, vz=0.021287
+multiples: evolving to time 38.898705342 time
+multiples: ### snapshot at time 38.898705
+multiples: ### id=73, x=-0.193678, y=-0.271595, z=0.077094, vx=-0.639485, vy=0.651798, vz=-0.200729
+multiples: ### id=58, x=-0.190542, y=-0.276734, z=0.079058, vx=0.673578, vy=-0.561807, vz=0.177642
+multiples: ### id=4, x=0.384220, y=0.548329, z=-0.156152, vx=-0.034094, vy=-0.089991, vz=0.023087
+multiples: evolving to time 39.1034353701 time
+multiples: ### snapshot at time 39.103435
+multiples: ### id=73, x=-0.193678, y=-0.271595, z=0.077094, vx=-0.639485, vy=0.651798, vz=-0.200729
+multiples: ### id=58, x=-0.190542, y=-0.276734, z=0.079058, vx=0.673578, vy=-0.561807, vz=0.177642
+multiples: ### id=4, x=0.384220, y=0.548329, z=-0.156152, vx=-0.034094, vy=-0.089991, vz=0.023087
+multiples: evolving to time 39.3081653982 time
+multiples: ### snapshot at time 39.308165
+multiples: ### id=73, x=-0.186265, y=-0.252591, z=0.072200, vx=-0.637182, vy=0.655030, vz=-0.201653
+multiples: ### id=58, x=-0.183129, y=-0.257729, z=0.074164, vx=0.675881, vy=-0.558574, vz=0.176718
+multiples: ### id=4, x=0.369394, y=0.510320, z=-0.146364, vx=-0.038698, vy=-0.096456, vz=0.024935
+multiples: evolving to time 39.5128954263 time
+multiples: ### snapshot at time 39.512895
+multiples: ### id=73, x=-0.186265, y=-0.252591, z=0.072200, vx=-0.637182, vy=0.655030, vz=-0.201653
+multiples: ### id=58, x=-0.183129, y=-0.257729, z=0.074164, vx=0.675881, vy=-0.558574, vz=0.176718
+multiples: ### id=4, x=0.369394, y=0.510320, z=-0.146364, vx=-0.038698, vy=-0.096456, vz=0.024935
+multiples: evolving to time 39.7176254544 time
+multiples: ### snapshot at time 39.717625
+multiples: ### id=73, x=-0.178637, y=-0.234074, z=0.067395, vx=-0.634755, vy=0.658329, vz=-0.202603
+multiples: ### id=58, x=-0.175502, y=-0.239212, z=0.069360, vx=0.678308, vy=-0.555275, vz=0.175769
+multiples: ### id=4, x=0.354139, y=0.473286, z=-0.136755, vx=-0.043553, vy=-0.103054, vz=0.026834
+multiples: evolving to time 39.9223554825 time
+multiples: ### snapshot at time 39.922355
+multiples: ### id=73, x=-0.178637, y=-0.234074, z=0.067395, vx=-0.634755, vy=0.658329, vz=-0.202603
+multiples: ### id=58, x=-0.175502, y=-0.239212, z=0.069360, vx=0.678308, vy=-0.555275, vz=0.175769
+multiples: ### id=4, x=0.354139, y=0.473286, z=-0.136755, vx=-0.043553, vy=-0.103054, vz=0.026834
+multiples: evolving to time 40.1270855107 time
+multiples: ### snapshot at time 40.127086
+multiples: ### id=73, x=-0.170880, y=-0.216160, z=0.062714, vx=-0.632192, vy=0.661697, vz=-0.203580
+multiples: ### id=58, x=-0.167745, y=-0.221298, z=0.064679, vx=0.680871, vy=-0.551907, vz=0.174792
+multiples: ### id=4, x=0.338625, y=0.437458, z=-0.127393, vx=-0.048680, vy=-0.109790, vz=0.028788
+multiples: evolving to time 40.3318155388 time
+multiples: ### snapshot at time 40.331816
+multiples: ### id=73, x=-0.169475, y=-0.213003, z=0.061886, vx=-0.631714, vy=0.662312, vz=-0.203759
+multiples: ### id=58, x=-0.166339, y=-0.218141, z=0.063851, vx=0.681349, vy=-0.551293, vz=0.174613
+multiples: ### id=4, x=0.335814, y=0.431144, z=-0.125737, vx=-0.049634, vy=-0.111019, vz=0.029146
+multiples: evolving to time 40.5365455669 time
+multiples: ### snapshot at time 40.536546
+multiples: ### id=73, x=-0.161664, y=-0.195916, z=0.057385, vx=-0.628977, vy=0.665765, vz=-0.204770
+multiples: ### id=58, x=-0.158528, y=-0.201054, z=0.059350, vx=0.684086, vy=-0.547839, vz=0.173601
+multiples: ### id=4, x=0.320192, y=0.396971, z=-0.116735, vx=-0.055109, vy=-0.117926, vz=0.031169
+multiples: evolving to time 40.741275595 time
+multiples: ### snapshot at time 40.741276
+multiples: ### id=73, x=-0.157659, y=-0.187439, z=0.055141, vx=-0.627509, vy=0.667568, vz=-0.205302
+multiples: ### id=58, x=-0.154523, y=-0.192577, z=0.057105, vx=0.685554, vy=-0.546036, vz=0.173070
+multiples: ### id=4, x=0.312182, y=0.380017, z=-0.112246, vx=-0.058044, vy=-0.121532, vz=0.032232
+multiples: evolving to time 40.9460056231 time
+multiples: ### snapshot at time 40.946006
+multiples: ### id=73, x=-0.151763, y=-0.175287, z=0.051910, vx=-0.625257, vy=0.670272, vz=-0.206103
+multiples: ### id=58, x=-0.148628, y=-0.180425, z=0.053874, vx=0.687806, vy=-0.543332, vz=0.172269
+multiples: ### id=4, x=0.300391, y=0.355712, z=-0.105784, vx=-0.062549, vy=-0.126940, vz=0.033835
+multiples: evolving to time 41.1507356512 time
+multiples: ### snapshot at time 41.150736
+multiples: ### id=73, x=-0.146220, y=-0.164198, z=0.048947, vx=-0.623025, vy=0.672880, vz=-0.206881
+multiples: ### id=58, x=-0.143085, y=-0.169336, z=0.050912, vx=0.690038, vy=-0.540724, vz=0.171490
+multiples: ### id=4, x=0.289305, y=0.333534, z=-0.099859, vx=-0.067014, vy=-0.132156, vz=0.035391
+multiples: evolving to time 41.3554656794 time
+multiples: ### snapshot at time 41.355466
+multiples: ### id=73, x=-0.141707, y=-0.148812, z=0.044842, vx=-0.221027, vy=0.159351, vz=-0.022746
+multiples: ### id=58, x=-0.133487, y=-0.157390, z=0.047675, vx=0.294096, vy=-0.020336, vz=-0.014708
+multiples: ### id=4, x=0.275194, y=0.306201, z=-0.092518, vx=-0.073069, vy=-0.139015, vz=0.037454
+multiples: evolving to time 41.5601957075 time
+multiples: ### snapshot at time 41.560196
+multiples: ### id=73, x=-0.134364, y=-0.135079, z=0.041393, vx=0.207857, vy=-0.207975, vz=0.088295
+multiples: ### id=58, x=-0.125122, y=-0.141823, z=0.043204, vx=-0.127465, vy=0.354968, vz=-0.128173
+multiples: ### id=4, x=0.259486, y=0.276902, z=-0.084597, vx=-0.080392, vy=-0.146993, vz=0.039878
+multiples: evolving to time 41.7649257356 time
+multiples: ### snapshot at time 41.764926
+multiples: ### id=73, x=-0.122240, y=-0.120816, z=0.037232, vx=-0.697545, vy=0.835449, vz=-0.269015
+multiples: ### id=58, x=-0.119946, y=-0.125139, z=0.038936, vx=0.786860, vy=-0.679166, vz=0.226280
+multiples: ### id=4, x=0.242187, y=0.245955, z=-0.076168, vx=-0.089316, vy=-0.156283, vz=0.042735
+multiples: evolving to time 41.9696557637 time
+multiples: ### snapshot at time 41.969656
+multiples: ### id=73, x=-0.116057, y=-0.102014, z=0.032160, vx=-0.076884, vy=0.045292, vz=0.014133
+multiples: ### id=58, x=-0.106671, y=-0.110737, z=0.034887, vx=0.177580, vy=0.122200, vz=-0.060369
+multiples: ### id=4, x=0.222728, y=0.212750, z=-0.067046, vx=-0.100696, vy=-0.167492, vz=0.046236
+multiples: evolving to time 42.1743857918 time
+multiples: ### snapshot at time 42.174386
+multiples: ### id=73, x=-0.104393, y=-0.085997, z=0.027964, vx=0.393139, vy=-0.305430, vz=0.112122
+multiples: ### id=58, x=-0.096300, y=-0.091171, z=0.029204, vx=-0.277326, vy=0.486804, vz=-0.162784
+multiples: ### id=4, x=0.200692, y=0.177168, z=-0.057167, vx=-0.115813, vy=-0.181374, vz=0.050662
+multiples: evolving to time 42.3791158199 time
+multiples: ### snapshot at time 42.379116
+multiples: ### id=73, x=-0.090165, y=-0.065645, z=0.021859, vx=-0.401739, vy=0.437030, vz=-0.117637
+multiples: ### id=58, x=-0.084757, y=-0.072647, z=0.024366, vx=0.539371, vy=-0.237421, vz=0.060989
+multiples: ### id=4, x=0.174922, y=0.138292, z=-0.046225, vx=-0.137632, vy=-0.199609, vz=0.056648
+multiples: evolving to time 42.583845848 time
+multiples: ### snapshot at time 42.583846
+multiples: ### id=73, x=-0.076573, y=-0.043266, z=0.015628, vx=0.047311, vy=-0.004537, vz=0.028642
+multiples: ### id=58, x=-0.066845, y=-0.051668, z=0.018151, vx=0.126258, vy=0.230181, vz=-0.094257
+multiples: ### id=4, x=0.143418, y=0.094934, z=-0.033780, vx=-0.173569, vy=-0.225644, vz=0.065615
+multiples: evolving to time 42.7885758762 time
+multiples: ### snapshot at time 42.788576
+multiples: ### id=73, x=-0.053479, y=-0.020987, z=0.009202, vx=0.789278, vy=-0.447375, vz=0.135122
+multiples: ### id=58, x=-0.047712, y=-0.023808, z=0.009677, vx=-0.537440, vy=0.715888, vz=-0.217181
+multiples: ### id=4, x=0.101191, y=0.044795, z=-0.018878, vx=-0.251838, vy=-0.268513, vz=0.082059
+multiples: evolving to time 42.9933059043 time
+multiples: ### snapshot at time 42.993306
+multiples: ### id=73, x=-0.012988, y=0.011586, z=-0.002259, vx=0.059584, vy=0.260770, vz=-0.082632
+multiples: ### id=58, x=-0.005856, y=0.003413, z=0.000537, vx=0.765258, vy=-0.065702, vz=-0.034372
+multiples: ### id=4, x=0.018844, y=-0.014999, z=0.001722, vx=-0.824843, vy=-0.195068, vz=0.117004
+multiples: evolving to time 43.1980359324 time
+multiples: ### snapshot at time 43.198036
+multiples: ### id=73, x=0.012835, y=-0.040881, z=0.008034, vx=0.247794, vy=-0.547234, vz=0.185079
+multiples: ### id=58, x=0.021613, y=-0.046536, z=0.009010, vx=-0.265657, vy=0.130506, vz=-0.086243
+multiples: ### id=4, x=-0.034447, y=0.087417, z=-0.017044, vx=0.017863, vy=0.416728, vz=-0.098836
+multiples: evolving to time 43.4027659605 time
+multiples: ### snapshot at time 43.402766
+multiples: ### id=73, x=0.009465, y=-0.075944, z=0.015970, vx=-0.319884, vy=-0.040703, vz=0.053440
+multiples: ### id=58, x=0.017388, y=-0.084083, z=0.018731, vx=0.272613, vy=-0.269832, vz=0.023512
+multiples: ### id=4, x=-0.026854, y=0.160027, z=-0.034701, vx=0.047271, vy=0.310536, vz=-0.076951
+multiples: evolving to time 43.6074959886 time
+multiples: ### snapshot at time 43.607496
+multiples: ### id=73, x=0.004472, y=-0.107003, z=0.024414, vx=0.402373, vy=-0.572568, vz=0.183046
+multiples: ### id=58, x=0.012002, y=-0.111252, z=0.024863, vx=-0.455331, vy=0.309046, vz=-0.116498
+multiples: ### id=4, x=-0.016474, y=0.218255, z=-0.049277, vx=0.052958, vy=0.263522, vz=-0.066548
+multiples: evolving to time 43.8122260167 time
+multiples: ### snapshot at time 43.812226
+multiples: ### id=73, x=-0.001756, y=-0.130382, z=0.029791, vx=-0.225610, vy=-0.098015, vz=0.076101
+multiples: ### id=58, x=0.007193, y=-0.138790, z=0.032423, vx=0.171295, vy=-0.136970, vz=-0.016072
+multiples: ### id=4, x=-0.005437, y=0.269173, z=-0.062214, vx=0.054315, vy=0.234985, vz=-0.060029
+multiples: evolving to time 44.0169560449 time
+multiples: ### snapshot at time 44.016956
+multiples: ### id=73, x=-0.005534, y=-0.156371, z=0.037058, vx=0.723859, vy=-0.708113, vz=0.182795
+multiples: ### id=58, x=-0.000143, y=-0.158694, z=0.036928, vx=-0.778192, vy=0.492864, vz=-0.127364
+multiples: ### id=4, x=0.005676, y=0.315065, z=-0.073986, vx=0.054333, vy=0.215249, vz=-0.055431
+multiples: evolving to time 44.221686073 time
+multiples: ### snapshot at time 44.221686
+multiples: ### id=73, x=-0.013187, y=-0.174677, z=0.041304, vx=-0.131517, vy=-0.165105, vz=0.097389
+multiples: ### id=58, x=-0.003600, y=-0.182987, z=0.043687, vx=0.077669, vy=-0.035261, vz=-0.045474
+multiples: ### id=4, x=0.016787, y=0.357664, z=-0.084991, vx=0.053848, vy=0.200367, vz=-0.051915
+multiples: evolving to time 44.4264161011 time
+multiples: ### snapshot at time 44.426416
+multiples: ### id=73, x=-0.015337, y=-0.196493, z=0.046638, vx=-0.728953, vy=0.544125, vz=-0.168580
+multiples: ### id=58, x=-0.012480, y=-0.201213, z=0.048753, vx=0.675795, vy=-0.732709, vz=0.217683
+multiples: ### id=4, x=0.027817, y=0.397706, z=-0.095392, vx=0.053158, vy=0.188584, vz=-0.049102
+multiples: evolving to time 44.6311461292 time
+multiples: ### snapshot at time 44.631146
+multiples: ### id=73, x=-0.021811, y=-0.218298, z=0.052324, vx=-0.699729, vy=0.503164, vz=-0.149265
+multiples: ### id=58, x=-0.018655, y=-0.223285, z=0.054519, vx=0.647464, vy=-0.680703, vz=0.195706
+multiples: ### id=4, x=0.040466, y=0.441583, z=-0.106843, vx=0.052265, vy=0.177539, vz=-0.046442
+multiples: evolving to time 44.8358761573 time
+multiples: ### snapshot at time 44.835876
+multiples: ### id=73, x=-0.028216, y=-0.239661, z=0.057924, vx=-0.699260, vy=0.507810, vz=-0.150393
+multiples: ### id=58, x=-0.025060, y=-0.244647, z=0.060118, vx=0.647933, vy=-0.676058, vz=0.194578
+multiples: ### id=4, x=0.053276, y=0.484308, z=-0.118042, vx=0.051327, vy=0.168248, vz=-0.044185
+multiples: evolving to time 45.0406061854 time
+multiples: ### snapshot at time 45.040606
+multiples: ### id=73, x=-0.032304, y=-0.252927, z=0.061412, vx=-0.698962, vy=0.510399, vz=-0.151025
+multiples: ### id=58, x=-0.029147, y=-0.257913, z=0.063606, vx=0.648232, vy=-0.673468, vz=0.193946
+multiples: ### id=4, x=0.061451, y=0.510840, z=-0.125018, vx=0.050730, vy=0.163069, vz=-0.042921
+multiples: evolving to time 45.2453362135 time
+multiples: ### snapshot at time 45.245336
+multiples: ### id=73, x=-0.040068, y=-0.277477, z=0.067886, vx=-0.698407, vy=0.514699, vz=-0.152081
+multiples: ### id=58, x=-0.036912, y=-0.282463, z=0.070080, vx=0.648786, vy=-0.669168, vz=0.192890
+multiples: ### id=4, x=0.076980, y=0.559940, z=-0.137966, vx=0.049620, vy=0.154469, vz=-0.040809
+multiples: evolving to time 45.4500662417 time
+multiples: ### snapshot at time 45.450066
+multiples: ### id=73, x=-0.048807, y=-0.304265, z=0.074976, vx=-0.697810, vy=0.518793, vz=-0.153093
+multiples: ### id=58, x=-0.045651, y=-0.309251, z=0.077170, vx=0.649384, vy=-0.665074, vz=0.191878
+multiples: ### id=4, x=0.094458, y=0.613516, z=-0.152146, vx=0.048426, vy=0.146282, vz=-0.038785
+multiples: evolving to time 45.6547962698 time
+multiples: ### snapshot at time 45.654796
+multiples: ### id=73, x=-0.048807, y=-0.304265, z=0.074976, vx=-0.697810, vy=0.518793, vz=-0.153093
+multiples: ### id=58, x=-0.045651, y=-0.309251, z=0.077170, vx=0.649384, vy=-0.665074, vz=0.191878
+multiples: ### id=4, x=0.094458, y=0.613516, z=-0.152146, vx=0.048426, vy=0.146282, vz=-0.038785
+multiples: evolving to time 45.8595262979 time
+multiples: ### snapshot at time 45.859526
+multiples: ### id=73, x=-0.058618, y=-0.333473, z=0.082734, vx=-0.697178, vy=0.522690, vz=-0.154062
+multiples: ### id=58, x=-0.055462, y=-0.338460, z=0.084928, vx=0.650015, vy=-0.661177, vz=0.190909
+multiples: ### id=4, x=0.114080, y=0.671933, z=-0.167662, vx=0.047164, vy=0.138487, vz=-0.036846
+multiples: evolving to time 46.064256326 time
+multiples: ### snapshot at time 46.064256
+multiples: ### id=73, x=-0.058618, y=-0.333473, z=0.082734, vx=-0.697178, vy=0.522690, vz=-0.154062
+multiples: ### id=58, x=-0.055462, y=-0.338460, z=0.084928, vx=0.650015, vy=-0.661177, vz=0.190909
+multiples: ### id=4, x=0.114080, y=0.671933, z=-0.167662, vx=0.047164, vy=0.138487, vz=-0.036846
+multiples: evolving to time 46.2689863541 time
+multiples: ### snapshot at time 46.268986
+multiples: ### id=73, x=-0.072178, y=-0.372630, z=0.093174, vx=-0.696373, vy=0.527189, vz=-0.155189
+multiples: ### id=58, x=-0.069022, y=-0.377616, z=0.095368, vx=0.650821, vy=-0.656678, vz=0.189782
+multiples: ### id=4, x=0.141200, y=0.750246, z=-0.188542, vx=0.045552, vy=0.129489, vz=-0.034593
+multiples: evolving to time 46.4737163822 time
+multiples: ### snapshot at time 46.473716
+multiples: ### id=73, x=-0.072178, y=-0.372630, z=0.093174, vx=-0.696373, vy=0.527189, vz=-0.155189
+multiples: ### id=58, x=-0.069022, y=-0.377616, z=0.095368, vx=0.650821, vy=-0.656678, vz=0.189782
+multiples: ### id=4, x=0.141200, y=0.750246, z=-0.188542, vx=0.045552, vy=0.129489, vz=-0.034593
+multiples: evolving to time 46.6784464104 time
+multiples: ### snapshot at time 46.678446
+multiples: ### id=73, x=-0.072178, y=-0.372630, z=0.093174, vx=-0.696373, vy=0.527189, vz=-0.155189
+multiples: ### id=58, x=-0.069022, y=-0.377616, z=0.095368, vx=0.650821, vy=-0.656678, vz=0.189782
+multiples: ### id=4, x=0.141200, y=0.750246, z=-0.188542, vx=0.045552, vy=0.129489, vz=-0.034593
+multiples: evolving to time 46.8831764385 time
+multiples: ### snapshot at time 46.883176
+multiples: ### id=73, x=-0.084747, y=-0.407904, z=0.102613, vx=-0.695689, vy=0.530684, vz=-0.156069
+multiples: ### id=58, x=-0.081591, y=-0.412890, z=0.104807, vx=0.651504, vy=-0.653183, vz=0.188901
+multiples: ### id=4, x=0.166339, y=0.820794, z=-0.207420, vx=0.044185, vy=0.122499, vz=-0.032832
+multiples: evolving to time 47.0879064666 time
+multiples: ### snapshot at time 47.087906
+multiples: ### id=73, x=-0.084747, y=-0.407904, z=0.102613, vx=-0.695689, vy=0.530684, vz=-0.156069
+multiples: ### id=58, x=-0.081591, y=-0.412890, z=0.104807, vx=0.651504, vy=-0.653183, vz=0.188901
+multiples: ### id=4, x=0.166339, y=0.820794, z=-0.207420, vx=0.044185, vy=0.122499, vz=-0.032832
+multiples: evolving to time 47.2926364947 time
+multiples: ### snapshot at time 47.292636
+multiples: ### id=73, x=-0.084747, y=-0.407904, z=0.102613, vx=-0.695689, vy=0.530684, vz=-0.156069
+multiples: ### id=58, x=-0.081591, y=-0.412890, z=0.104807, vx=0.651504, vy=-0.653183, vz=0.188901
+multiples: ### id=4, x=0.166339, y=0.820794, z=-0.207420, vx=0.044185, vy=0.122499, vz=-0.032832
+multiples: evolving to time 47.4973665228 time
+multiples: ### snapshot at time 47.497367
+multiples: ### id=73, x=-0.098746, y=-0.446243, z=0.112905, vx=-0.694991, vy=0.534012, vz=-0.156913
+multiples: ### id=58, x=-0.095590, y=-0.451229, z=0.115100, vx=0.652202, vy=-0.649855, vz=0.188058
+multiples: ### id=4, x=0.194335, y=0.897473, z=-0.228005, vx=0.042790, vy=0.115843, vz=-0.031146
+multiples: evolving to time 47.7020965509 time
+multiples: ### snapshot at time 47.702097
+multiples: ### id=73, x=-0.098746, y=-0.446243, z=0.112905, vx=-0.694991, vy=0.534012, vz=-0.156913
+multiples: ### id=58, x=-0.095590, y=-0.451229, z=0.115100, vx=0.652202, vy=-0.649855, vz=0.188058
+multiples: ### id=4, x=0.194335, y=0.897473, z=-0.228005, vx=0.042790, vy=0.115843, vz=-0.031146
+multiples: evolving to time 47.9068265791 time
+multiples: ### snapshot at time 47.906827
+multiples: ### id=73, x=-0.098746, y=-0.446243, z=0.112905, vx=-0.694991, vy=0.534012, vz=-0.156913
+multiples: ### id=58, x=-0.095590, y=-0.451229, z=0.115100, vx=0.652202, vy=-0.649855, vz=0.188058
+multiples: ### id=4, x=0.194335, y=0.897473, z=-0.228005, vx=0.042790, vy=0.115843, vz=-0.031146
+multiples: evolving to time 48.1115566072 time
+multiples: ### snapshot at time 48.111557
+multiples: ### id=73, x=-0.114298, y=-0.487862, z=0.124112, vx=-0.694284, vy=0.537182, vz=-0.157720
+multiples: ### id=58, x=-0.111142, y=-0.492849, z=0.126307, vx=0.652910, vy=-0.646685, vz=0.187251
+multiples: ### id=4, x=0.225440, y=0.980711, z=-0.250419, vx=0.041374, vy=0.109503, vz=-0.029531
+multiples: evolving to time 48.3162866353 time
+multiples: ### snapshot at time 48.316287
+multiples: ### id=73, x=-0.114298, y=-0.487862, z=0.124112, vx=-0.694284, vy=0.537182, vz=-0.157720
+multiples: ### id=58, x=-0.111142, y=-0.492849, z=0.126307, vx=0.652910, vy=-0.646685, vz=0.187251
+multiples: ### id=4, x=0.225440, y=0.980711, z=-0.250419, vx=0.041374, vy=0.109503, vz=-0.029531
+multiples: evolving to time 48.5210166634 time
+multiples: ### snapshot at time 48.521017
+multiples: ### id=73, x=-0.114298, y=-0.487862, z=0.124112, vx=-0.694284, vy=0.537182, vz=-0.157720
+multiples: ### id=58, x=-0.111142, y=-0.492849, z=0.126307, vx=0.652910, vy=-0.646685, vz=0.187251
+multiples: ### id=4, x=0.225440, y=0.980711, z=-0.250419, vx=0.041374, vy=0.109503, vz=-0.029531
+multiples: evolving to time 48.7257466915 time
+multiples: ### snapshot at time 48.725747
+multiples: ### id=73, x=-0.121966, y=-0.508055, z=0.129561, vx=-0.693958, vy=0.538582, vz=-0.158078
+multiples: ### id=58, x=-0.118810, y=-0.513041, z=0.131756, vx=0.653236, vy=-0.645286, vz=0.186893
+multiples: ### id=4, x=0.240776, y=1.021096, z=-0.261317, vx=0.040722, vy=0.106704, vz=-0.028815
+multiples: evolving to time 48.9304767196 time
+multiples: ### snapshot at time 48.930477
+multiples: ### id=73, x=-0.121966, y=-0.508055, z=0.129561, vx=-0.693958, vy=0.538582, vz=-0.158078
+multiples: ### id=58, x=-0.118810, y=-0.513041, z=0.131756, vx=0.653236, vy=-0.645286, vz=0.186893
+multiples: ### id=4, x=0.240776, y=1.021096, z=-0.261317, vx=0.040722, vy=0.106704, vz=-0.028815
+multiples: evolving to time 49.1352067477 time
+multiples: ### snapshot at time 49.135207
+multiples: ### id=73, x=-0.140017, y=-0.554844, z=0.142216, vx=-0.693242, vy=0.541536, vz=-0.158835
+multiples: ### id=58, x=-0.136861, y=-0.559830, z=0.144410, vx=0.653951, vy=-0.642332, vz=0.186135
+multiples: ### id=4, x=0.276878, y=1.114674, z=-0.286626, vx=0.039291, vy=0.100796, vz=-0.027300
+multiples: evolving to time 49.3399367759 time
+multiples: ### snapshot at time 49.339937
+multiples: ### id=73, x=-0.140017, y=-0.554844, z=0.142216, vx=-0.693242, vy=0.541536, vz=-0.158835
+multiples: ### id=58, x=-0.136861, y=-0.559830, z=0.144410, vx=0.653951, vy=-0.642332, vz=0.186135
+multiples: ### id=4, x=0.276878, y=1.114674, z=-0.286626, vx=0.039291, vy=0.100796, vz=-0.027300
+multiples: evolving to time 49.544666804 time
+multiples: ### snapshot at time 49.544667
+multiples: ### id=73, x=-0.140017, y=-0.554844, z=0.142216, vx=-0.693242, vy=0.541536, vz=-0.158835
+multiples: ### id=58, x=-0.136861, y=-0.559830, z=0.144410, vx=0.653951, vy=-0.642332, vz=0.186135
+multiples: ### id=4, x=0.276878, y=1.114674, z=-0.286626, vx=0.039291, vy=0.100796, vz=-0.027300
+multiples: evolving to time 49.7493968321 time
+multiples: ### snapshot at time 49.749397
+multiples: ### id=73, x=-0.140017, y=-0.554844, z=0.142216, vx=-0.693242, vy=0.541536, vz=-0.158835
+multiples: ### id=58, x=-0.136861, y=-0.559830, z=0.144410, vx=0.653951, vy=-0.642332, vz=0.186135
+multiples: ### id=4, x=0.276878, y=1.114674, z=-0.286626, vx=0.039291, vy=0.100796, vz=-0.027300
+multiples: evolving to time 49.9541268602 time
+multiples: ### snapshot at time 49.954127
+multiples: ### id=73, x=-0.140017, y=-0.554844, z=0.142216, vx=-0.693242, vy=0.541536, vz=-0.158835
+multiples: ### id=58, x=-0.136861, y=-0.559830, z=0.144410, vx=0.653951, vy=-0.642332, vz=0.186135
+multiples: ### id=4, x=0.276878, y=1.114674, z=-0.286626, vx=0.039291, vy=0.100796, vz=-0.027300
+multiples: evolving to time 50.1588568883 time
+multiples: ### snapshot at time 50.158857
+multiples: ### id=73, x=-0.159948, y=-0.605447, z=0.155941, vx=-0.692526, vy=0.544351, vz=-0.159561
+multiples: ### id=58, x=-0.156792, y=-0.610433, z=0.158136, vx=0.654668, vy=-0.639516, vz=0.185410
+multiples: ### id=4, x=0.316741, y=1.215880, z=-0.314077, vx=0.037858, vy=0.095165, vz=-0.025849
+multiples: evolving to time 50.3635869164 time
+multiples: ### snapshot at time 50.363587
+multiples: ### id=73, x=-0.159948, y=-0.605447, z=0.155941, vx=-0.692526, vy=0.544351, vz=-0.159561
+multiples: ### id=58, x=-0.156792, y=-0.610433, z=0.158136, vx=0.654668, vy=-0.639516, vz=0.185410
+multiples: ### id=4, x=0.316741, y=1.215880, z=-0.314077, vx=0.037858, vy=0.095165, vz=-0.025849
+multiples: evolving to time 50.5683169446 time
+multiples: ### snapshot at time 50.568317
+multiples: ### id=73, x=-0.159948, y=-0.605447, z=0.155941, vx=-0.692526, vy=0.544351, vz=-0.159561
+multiples: ### id=58, x=-0.156792, y=-0.610433, z=0.158136, vx=0.654668, vy=-0.639516, vz=0.185410
+multiples: ### id=4, x=0.316741, y=1.215880, z=-0.314077, vx=0.037858, vy=0.095165, vz=-0.025849
+multiples: evolving to time 50.7730469727 time
+multiples: ### snapshot at time 50.773047
+multiples: ### id=73, x=-0.159948, y=-0.605447, z=0.155941, vx=-0.692526, vy=0.544351, vz=-0.159561
+multiples: ### id=58, x=-0.156792, y=-0.610433, z=0.158136, vx=0.654668, vy=-0.639516, vz=0.185410
+multiples: ### id=4, x=0.316741, y=1.215880, z=-0.314077, vx=0.037858, vy=0.095165, vz=-0.025849
+multiples: evolving to time 50.9777770008 time
+multiples: ### snapshot at time 50.977777
+multiples: ### id=73, x=-0.159948, y=-0.605447, z=0.155941, vx=-0.692526, vy=0.544351, vz=-0.159561
+multiples: ### id=58, x=-0.156792, y=-0.610433, z=0.158136, vx=0.654668, vy=-0.639516, vz=0.185410
+multiples: ### id=4, x=0.316741, y=1.215880, z=-0.314077, vx=0.037858, vy=0.095165, vz=-0.025849
+multiples: evolving to time 51.1825070289 time
+multiples: ### snapshot at time 51.182507
+multiples: ### id=73, x=-0.181899, y=-0.660076, z=0.170800, vx=-0.691810, vy=0.547036, vz=-0.160256
+multiples: ### id=58, x=-0.178742, y=-0.665062, z=0.172995, vx=0.655383, vy=-0.636831, vz=0.184715
+multiples: ### id=4, x=0.360641, y=1.325138, z=-0.343795, vx=0.036428, vy=0.089796, vz=-0.024459
+multiples: evolving to time 51.387237057 time
+multiples: ### snapshot at time 51.387237
+multiples: ### id=73, x=-0.181899, y=-0.660076, z=0.170800, vx=-0.691810, vy=0.547036, vz=-0.160256
+multiples: ### id=58, x=-0.178742, y=-0.665062, z=0.172995, vx=0.655383, vy=-0.636831, vz=0.184715
+multiples: ### id=4, x=0.360641, y=1.325138, z=-0.343795, vx=0.036428, vy=0.089796, vz=-0.024459
+multiples: evolving to time 51.5919670851 time
+multiples: ### snapshot at time 51.591967
+multiples: ### id=73, x=-0.181899, y=-0.660076, z=0.170800, vx=-0.691810, vy=0.547036, vz=-0.160256
+multiples: ### id=58, x=-0.178742, y=-0.665062, z=0.172995, vx=0.655383, vy=-0.636831, vz=0.184715
+multiples: ### id=4, x=0.360641, y=1.325138, z=-0.343795, vx=0.036428, vy=0.089796, vz=-0.024459
+multiples: evolving to time 51.7966971132 time
+multiples: ### snapshot at time 51.796697
+multiples: ### id=73, x=-0.181899, y=-0.660076, z=0.170800, vx=-0.691810, vy=0.547036, vz=-0.160256
+multiples: ### id=58, x=-0.178742, y=-0.665062, z=0.172995, vx=0.655383, vy=-0.636831, vz=0.184715
+multiples: ### id=4, x=0.360641, y=1.325138, z=-0.343795, vx=0.036428, vy=0.089796, vz=-0.024459
+multiples: evolving to time 52.0014271414 time
+multiples: ### snapshot at time 52.001427
+multiples: ### id=73, x=-0.181899, y=-0.660076, z=0.170800, vx=-0.691810, vy=0.547036, vz=-0.160256
+multiples: ### id=58, x=-0.178742, y=-0.665062, z=0.172995, vx=0.655383, vy=-0.636831, vz=0.184715
+multiples: ### id=4, x=0.360641, y=1.325138, z=-0.343795, vx=0.036428, vy=0.089796, vz=-0.024459
+multiples: evolving to time 52.2061571695 time
+multiples: ### snapshot at time 52.206157
+multiples: ### id=73, x=-0.206006, y=-0.718932, z=0.186854, vx=-0.691099, vy=0.549597, vz=-0.160922
+multiples: ### id=58, x=-0.202850, y=-0.723918, z=0.189049, vx=0.656094, vy=-0.634270, vz=0.184049
+multiples: ### id=4, x=0.408856, y=1.442851, z=-0.375903, vx=0.035005, vy=0.084674, vz=-0.023127
+multiples: evolving to time 52.4108871976 time
+multiples: ### snapshot at time 52.410887
+multiples: ### id=73, x=-0.206006, y=-0.718932, z=0.186854, vx=-0.691099, vy=0.549597, vz=-0.160922
+multiples: ### id=58, x=-0.202850, y=-0.723918, z=0.189049, vx=0.656094, vy=-0.634270, vz=0.184049
+multiples: ### id=4, x=0.408856, y=1.442851, z=-0.375903, vx=0.035005, vy=0.084674, vz=-0.023127
+multiples: evolving to time 52.6156172257 time
+multiples: ### snapshot at time 52.615617
+multiples: ### id=73, x=-0.206006, y=-0.718932, z=0.186854, vx=-0.691099, vy=0.549597, vz=-0.160922
+multiples: ### id=58, x=-0.202850, y=-0.723918, z=0.189049, vx=0.656094, vy=-0.634270, vz=0.184049
+multiples: ### id=4, x=0.408856, y=1.442851, z=-0.375903, vx=0.035005, vy=0.084674, vz=-0.023127
+multiples: evolving to time 52.8203472538 time
+multiples: ### snapshot at time 52.820347
+multiples: ### id=73, x=-0.206006, y=-0.718932, z=0.186854, vx=-0.691099, vy=0.549597, vz=-0.160922
+multiples: ### id=58, x=-0.202850, y=-0.723918, z=0.189049, vx=0.656094, vy=-0.634270, vz=0.184049
+multiples: ### id=4, x=0.408856, y=1.442851, z=-0.375903, vx=0.035005, vy=0.084674, vz=-0.023127
+multiples: evolving to time 53.0250772819 time
+multiples: ### snapshot at time 53.025077
+multiples: ### id=73, x=-0.206006, y=-0.718932, z=0.186854, vx=-0.691099, vy=0.549597, vz=-0.160922
+multiples: ### id=58, x=-0.202850, y=-0.723918, z=0.189049, vx=0.656094, vy=-0.634270, vz=0.184049
+multiples: ### id=4, x=0.408856, y=1.442851, z=-0.375903, vx=0.035005, vy=0.084674, vz=-0.023127
+multiples: evolving to time 53.2298073101 time
+multiples: ### snapshot at time 53.229807
+multiples: ### id=73, x=-0.206006, y=-0.718932, z=0.186854, vx=-0.691099, vy=0.549597, vz=-0.160922
+multiples: ### id=58, x=-0.202850, y=-0.723918, z=0.189049, vx=0.656094, vy=-0.634270, vz=0.184049
+multiples: ### id=4, x=0.408856, y=1.442851, z=-0.375903, vx=0.035005, vy=0.084674, vz=-0.023127
+multiples: evolving to time 53.4345373382 time
+multiples: ### snapshot at time 53.434537
+multiples: ### id=73, x=-0.206006, y=-0.718932, z=0.186854, vx=-0.691099, vy=0.549597, vz=-0.160922
+multiples: ### id=58, x=-0.202850, y=-0.723918, z=0.189049, vx=0.656094, vy=-0.634270, vz=0.184049
+multiples: ### id=4, x=0.408856, y=1.442851, z=-0.375903, vx=0.035005, vy=0.084674, vz=-0.023127
+multiples: evolving to time 53.6392673663 time
+multiples: ### snapshot at time 53.639267
+multiples: ### id=73, x=-0.232407, y=-0.782202, z=0.204159, vx=-0.690393, vy=0.552041, vz=-0.161560
+multiples: ### id=58, x=-0.229250, y=-0.787188, z=0.206353, vx=0.656800, vy=-0.631826, vz=0.183411
+multiples: ### id=4, x=0.461657, y=1.569390, z=-0.410512, vx=0.033593, vy=0.079785, vz=-0.021851
+multiples: evolving to time 53.8439973944 time
+multiples: ### snapshot at time 53.843997
+multiples: ### id=73, x=-0.232407, y=-0.782202, z=0.204159, vx=-0.690393, vy=0.552041, vz=-0.161560
+multiples: ### id=58, x=-0.229250, y=-0.787188, z=0.206353, vx=0.656800, vy=-0.631826, vz=0.183411
+multiples: ### id=4, x=0.461657, y=1.569390, z=-0.410512, vx=0.033593, vy=0.079785, vz=-0.021851
+multiples: evolving to time 54.0487274225 time
+multiples: ### snapshot at time 54.048727
+multiples: ### id=73, x=-0.232407, y=-0.782202, z=0.204159, vx=-0.690393, vy=0.552041, vz=-0.161560
+multiples: ### id=58, x=-0.229250, y=-0.787188, z=0.206353, vx=0.656800, vy=-0.631826, vz=0.183411
+multiples: ### id=4, x=0.461657, y=1.569390, z=-0.410512, vx=0.033593, vy=0.079785, vz=-0.021851
+multiples: evolving to time 54.2534574506 time
+multiples: ### snapshot at time 54.253457
+multiples: ### id=73, x=-0.232407, y=-0.782202, z=0.204159, vx=-0.690393, vy=0.552041, vz=-0.161560
+multiples: ### id=58, x=-0.229250, y=-0.787188, z=0.206353, vx=0.656800, vy=-0.631826, vz=0.183411
+multiples: ### id=4, x=0.461657, y=1.569390, z=-0.410512, vx=0.033593, vy=0.079785, vz=-0.021851
+multiples: evolving to time 54.4581874787 time
+multiples: ### snapshot at time 54.458187
+multiples: ### id=73, x=-0.232407, y=-0.782202, z=0.204159, vx=-0.690393, vy=0.552041, vz=-0.161560
+multiples: ### id=58, x=-0.229250, y=-0.787188, z=0.206353, vx=0.656800, vy=-0.631826, vz=0.183411
+multiples: ### id=4, x=0.461657, y=1.569390, z=-0.410512, vx=0.033593, vy=0.079785, vz=-0.021851
+multiples: evolving to time 54.6629175069 time
+multiples: ### snapshot at time 54.662918
+multiples: ### id=73, x=-0.232407, y=-0.782202, z=0.204159, vx=-0.690393, vy=0.552041, vz=-0.161560
+multiples: ### id=58, x=-0.229250, y=-0.787188, z=0.206353, vx=0.656800, vy=-0.631826, vz=0.183411
+multiples: ### id=4, x=0.461657, y=1.569390, z=-0.410512, vx=0.033593, vy=0.079785, vz=-0.021851
+multiples: evolving to time 54.867647535 time
+multiples: ### snapshot at time 54.867648
+multiples: ### id=73, x=-0.232407, y=-0.782202, z=0.204159, vx=-0.690393, vy=0.552041, vz=-0.161560
+multiples: ### id=58, x=-0.229250, y=-0.787188, z=0.206353, vx=0.656800, vy=-0.631826, vz=0.183411
+multiples: ### id=4, x=0.461657, y=1.569390, z=-0.410512, vx=0.033593, vy=0.079785, vz=-0.021851
+multiples: evolving to time 55.0723775631 time
+multiples: ### snapshot at time 55.072378
+multiples: ### id=73, x=-0.240135, y=-0.800511, z=0.209175, vx=-0.690199, vy=0.552698, vz=-0.161732
+multiples: ### id=58, x=-0.236978, y=-0.805497, z=0.211370, vx=0.656995, vy=-0.631170, vz=0.183239
+multiples: ### id=4, x=0.477113, y=1.606008, z=-0.420545, vx=0.033204, vy=0.078472, vz=-0.021507
+multiples: evolving to time 55.2771075912 time
+multiples: ### snapshot at time 55.277108
+multiples: ### id=73, x=-0.240135, y=-0.800511, z=0.209175, vx=-0.690199, vy=0.552698, vz=-0.161732
+multiples: ### id=58, x=-0.236978, y=-0.805497, z=0.211370, vx=0.656995, vy=-0.631170, vz=0.183239
+multiples: ### id=4, x=0.477113, y=1.606008, z=-0.420545, vx=0.033204, vy=0.078472, vz=-0.021507
+multiples: evolving to time 55.4818376193 time
+multiples: ### snapshot at time 55.481838
+multiples: ### id=73, x=-0.240135, y=-0.800511, z=0.209175, vx=-0.690199, vy=0.552698, vz=-0.161732
+multiples: ### id=58, x=-0.236978, y=-0.805497, z=0.211370, vx=0.656995, vy=-0.631170, vz=0.183239
+multiples: ### id=4, x=0.477113, y=1.606008, z=-0.420545, vx=0.033204, vy=0.078472, vz=-0.021507
+multiples: evolving to time 55.6865676474 time
+multiples: ### snapshot at time 55.686568
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 55.8912976756 time
+multiples: ### snapshot at time 55.891298
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 56.0960277037 time
+multiples: ### snapshot at time 56.096028
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 56.3007577318 time
+multiples: ### snapshot at time 56.300758
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 56.5054877599 time
+multiples: ### snapshot at time 56.505488
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 56.710217788 time
+multiples: ### snapshot at time 56.710218
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 56.9149478161 time
+multiples: ### snapshot at time 56.914948
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 57.1196778443 time
+multiples: ### snapshot at time 57.119678
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 57.3244078724 time
+multiples: ### snapshot at time 57.324408
+multiples: ### id=73, x=-0.269653, y=-0.869648, z=0.228150, vx=-0.689502, vy=0.555003, vz=-0.162336
+multiples: ### id=58, x=-0.266497, y=-0.874635, z=0.230344, vx=0.657691, vy=-0.628865, vz=0.182634
+multiples: ### id=4, x=0.536150, y=1.744283, z=-0.458494, vx=0.031811, vy=0.073862, vz=-0.020298
+multiples: evolving to time 57.5291379005 time
+multiples: ### snapshot at time 57.529138
+multiples: ### id=73, x=-0.301751, y=-0.943525, z=0.248479, vx=-0.688814, vy=0.557206, vz=-0.162917
+multiples: ### id=58, x=-0.298595, y=-0.948511, z=0.250673, vx=0.658379, vy=-0.626662, vz=0.182054
+multiples: ### id=4, x=0.600345, y=1.892036, z=-0.499152, vx=0.030434, vy=0.069456, vz=-0.019138
+multiples: interaction is over at time 57.5291379005 time
+multiples: final energy = -0.00756329324589 mass * length**2 * time**-2
+multiples: ### END ENCOUNTER ###
+scale_top_level_list: ls = 0  lm = 1  lt = 1
+scale_top_level_list: binary node
+phi_external_final_before = -0.0527222867254 length**2 * time**-2 * mass
+phi_external_final_after = -0.0528303619579 length**2 * time**-2 * mass
+dphi = -0.000108075232509 length**2 * time**-2 * mass
+multiples: interaction products: singles: [] multiples:  [10002]
+multiples energy correction = 0.00746573610806 length**2 * time**-2 * mass
+dE = -0.00687617975638 mass * length**2 * time**-2
+Multiple 15178320441703883254 id = 10002 mass = 0.03 semi = 5.19009049718 energy = -1.9267486772e-05
+    9979204947216515984 id = 0 mass = 0.02 semi = 0.00662776104897 energy = -0.00754402574724
+        2968985684822277962 id = 73 mass = 0.01
+        10127664768381232555 id = 58 mass = 0.01
+    9495674112048098698 id = 4 mass = 0.01
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
