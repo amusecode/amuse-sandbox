@@ -32,18 +32,18 @@ worker_code.h: interface.py
 src/lib/estars.jar:
 	make -C src
 
-codeinterface.jar: amuse/code/CodeInterface.java
+codeinterface.jar: worker-src/amuse/code/CodeInterface.java
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -d tmp amuse/code/CodeInterface.java
+	$(JAVAC) -d tmp worker-src/amuse/code/CodeInterface.java
 	@echo Building jar file
 	$(JAR) -cf codeinterface.jar -C tmp .
 	$(RM) -r tmp
 
-worker.jar: amuse/code/Worker.java
+worker.jar: worker-src/amuse/code/Worker.java
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -cp "src/external/*:src/lib/*:codeinterface.jar" -d tmp amuse/code/Worker.java
+	$(JAVAC) -cp "src/external/*:src/lib/*:codeinterface.jar" -d tmp worker-src/amuse/code/Worker.java
 	@echo Building jar file
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -r tmp

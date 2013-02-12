@@ -17,9 +17,11 @@ public class Code implements CodeInterface {
 
     @Override
     public int new_particle(IntBuffer index_of_the_particle, IntBuffer type, DoubleBuffer x, DoubleBuffer y,
-            DoubleBuffer z, DoubleBuffer red, DoubleBuffer green, DoubleBuffer blue, int npoints) {
+            DoubleBuffer z, DoubleBuffer radius, DoubleBuffer red, DoubleBuffer green, DoubleBuffer blue, int npoints) {
         System.err.println("new_particle");
-        // TODO Auto-generated method stub
+        for (int i = 0; i < npoints; i++) {
+            System.err.printf("new particle of type %d at position %.4f,%.4f,%.4f and radius %.4f with rgb %.4f,%.4f,%.4f\n", type.get(i), x.get(i), y.get(i),z.get(i), radius.get(i), red.get(i),green.get(i),blue.get(i));
+        }
         return 0;
     }
 
@@ -56,7 +58,13 @@ public class Code implements CodeInterface {
 
     @Override
     public int set_position(IntBuffer index_of_the_particle, DoubleBuffer x, DoubleBuffer y, DoubleBuffer z, int npoints) {
-        // TODO Auto-generated method stub
+        System.err.println("set_position");
+        return 0;
+    }
+    
+    @Override
+    public int set_radius(IntBuffer index_of_the_particle, DoubleBuffer radius, int npoints) {
+        System.err.println("set_radius");
         return 0;
     }
 
@@ -65,5 +73,7 @@ public class Code implements CodeInterface {
         System.err.println("commit particles!");
         return 0;
     }
+
+
 
 }

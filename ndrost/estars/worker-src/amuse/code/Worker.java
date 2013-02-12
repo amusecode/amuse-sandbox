@@ -816,7 +816,7 @@ class Worker {
                     code.new_particle(reply.getIntegersSlice(count, 1), request.getIntegersSlice(count, 0),
                             request.getDoublesSlice(count, 0), request.getDoublesSlice(count, 1),
                             request.getDoublesSlice(count, 2), request.getDoublesSlice(count, 3),
-                            request.getDoublesSlice(count, 4), request.getDoublesSlice(count, 5), count));
+                            request.getDoublesSlice(count, 4), request.getDoublesSlice(count, 5),  request.getDoublesSlice(count, 6), count));
             break;
         case 421115296:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);

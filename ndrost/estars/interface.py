@@ -36,6 +36,7 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         for par in ["x", "y", "z"]:
             function.addParameter(par, dtype='float64', unit=length_unit, direction=function.IN, 
                 description = "The initial position vector of the particle")
+        function.addParameter('radius', dtype='float64', unit=length_unit, direction=function.IN, description = "The radius of the particle")
         for par in ["red", "green", "blue"]:
             function.addParameter(par, dtype='float64', direction=function.IN, 
                 description = "The RGB color of the particle")
@@ -65,6 +66,47 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         """
         return function
 
+
+
+#    @legacy_function
+#    def get_radius():
+#        """
+#        Retrieve the radius of a particle. Radius is a scalar property of a particle,
+#        this function has one OUT argument.
+#        """
+#        function = LegacyFunctionSpecification()
+#        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+#            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
+#        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
+#        function.result_type = 'int32'
+#        function.can_handle_array = True
+#        function.result_doc = """
+#        0 - OK
+#            particle was found in the model and the information was retreived
+#        -1 - ERROR
+#            particle could not be found
+#        """
+#        return function
+
+
+    @legacy_function
+    def set_radius():
+        """
+        Set the radius of a particle. Radius is a scalar property of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle")
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was retreived
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
 
     
 #~    @legacy_function
@@ -182,6 +224,8 @@ class eStars(CommonCode):
         object.add_setter('particles', 'set_position')
 #~        object.add_getter('particles', 'get_color')
         object.add_setter('particles', 'set_color')
+#        object.add_setter('particles', 'set_radius')
+        object.add_setter('particles', 'set_radius')
 
     def define_state(self, object): 
         CommonCode.define_state(self, object)   

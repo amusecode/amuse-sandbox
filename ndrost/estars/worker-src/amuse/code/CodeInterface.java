@@ -7,9 +7,11 @@ public interface CodeInterface {
     int set_color(IntBuffer index_of_the_particle, DoubleBuffer red, DoubleBuffer green, DoubleBuffer blue, int npoints);
    
     //first parameter is output parameter!
-    int new_particle(IntBuffer index_of_the_particle, IntBuffer type, DoubleBuffer x, DoubleBuffer y, DoubleBuffer z, DoubleBuffer red, DoubleBuffer green, DoubleBuffer blue, int npoints);
+    int new_particle(IntBuffer index_of_the_particle, IntBuffer type, DoubleBuffer x, DoubleBuffer y, DoubleBuffer z, DoubleBuffer radius, DoubleBuffer red, DoubleBuffer green, DoubleBuffer blue, int npoints);
 
     int set_type(IntBuffer index_of_the_particle, IntBuffer type, int npoints);
+
+    int set_radius(IntBuffer index_of_the_particle, DoubleBuffer radius, int npoints);
 
     int store_view(double time);
 
