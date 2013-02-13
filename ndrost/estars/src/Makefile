@@ -3,6 +3,10 @@ AMUSE_DIR?=../../../../..
 
 all: lib/estars.jar
 
+RM ?= rm
+JAVAC ?= javac
+JAR ?= jar
+
 lib/estars.jar: src/*/*/*/*.java
 	@echo Compiling Amuse/Ibis lib
 	$(RM) -r lib tmp

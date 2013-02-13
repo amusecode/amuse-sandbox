@@ -13,6 +13,10 @@ OBJS = interface.o
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
+RM ?= rm
+JAVAC ?= javac
+JAR ?= jar
+
 all: estars_worker 
 
 clean:
