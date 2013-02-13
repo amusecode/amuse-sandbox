@@ -37,9 +37,9 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
             function.addParameter(par, dtype='float64', unit=length_unit, direction=function.IN, 
                 description = "The initial position vector of the particle")
         function.addParameter('radius', dtype='float64', unit=length_unit, direction=function.IN, description = "The radius of the particle")
-        for par in ["red", "green", "blue"]:
+        for par in ["alpha", "red", "green", "blue"]:
             function.addParameter(par, dtype='float64', direction=function.IN, 
-                description = "The RGB color of the particle")
+                description = "The ARGB color of the particle")
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -108,6 +108,24 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         """
         return function
 
+    @legacy_function
+    def commit_particles():
+        """
+        Let the code perform initialization actions
+        after all particles have been loaded in the model.
+        Should be called before the first evolve call and
+        after the last new_particle call.
+        """
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Model is initialized and evolution can start
+         -1 - ERROR
+            Error happened during initialization, this error needs to be further specified by every code implemention
+        """
+        return function
+
     
 #~    @legacy_function
 #~    def get_position():
@@ -161,9 +179,9 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         """
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        for par in ["red", "green", "blue"]:
+        for par in ["red", "green", "blue", "alpha"]:
             function.addParameter(par, dtype='float64', direction=function.IN, 
-                description = "The new RGB color vector of the particle")
+                description = "The new RGBA color vector of the particle")
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         function.must_handle_array = True

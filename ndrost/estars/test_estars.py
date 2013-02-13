@@ -5,7 +5,7 @@ from amuse.lab import *
 from .interface import eStarsInterface
 from .interface import eStars
 
-class eStarsInterfaceTests(TestWithMPI):
+class eStarsTests(TestWithMPI):
     
     def test1(self):
         instance = eStars(channel_type='sockets')
@@ -19,6 +19,7 @@ class eStarsInterfaceTests(TestWithMPI):
 	plummer.type = 0
 	instance.particles.add_particles(plummer)
 
+	instance.store_view(1|units.Myr)
         instance.stop()
 	
     

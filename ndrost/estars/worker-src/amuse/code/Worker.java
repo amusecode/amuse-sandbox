@@ -766,9 +766,9 @@ class Worker {
             ensurePrimitiveCapacity();
         }
 
-        public IntBuffer getIntegersSlice(int sliceSize, int sliceIndex) {
-            intBytes.position(sliceSize * sliceIndex * SIZEOF_INT);
-            intBytes.limit(sliceSize * (sliceIndex + 1) * SIZEOF_INT);
+        public IntBuffer getIntegersSlice(int sliceIndex) {
+            intBytes.position(getCallCount() * sliceIndex * SIZEOF_INT);
+            intBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_INT);
             return intBytes.asIntBuffer();
         }
 
@@ -804,51 +804,55 @@ class Worker {
         case 223890289:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
 
-            reply.getIntegersSlice(count, 0).put(
-                    code.set_color(request.getIntegersSlice(count, 0), request.getDoublesSlice(count, 0),
-                            request.getDoublesSlice(count, 1), request.getDoublesSlice(count, 2), count));
+            reply.getIntegersSlice(0).put(
+                    code.set_color(request.getIntegersSlice(0), request.getDoublesSlice(count, 0),
+                            request.getDoublesSlice(count, 1), request.getDoublesSlice(count, 2), request.getDoublesSlice(count, 3), count));
             break;
 
         case 290264013:
             reply.setDataCount(2 * count, 0, 0, 0, 0, 0);
 
-            reply.getIntegersSlice(count, 0).put(
-                    code.new_particle(reply.getIntegersSlice(count, 1), request.getIntegersSlice(count, 0),
+            reply.getIntegersSlice(0).put(
+                    code.new_particle(reply.getIntegersSlice(1), request.getIntegersSlice(0),
                             request.getDoublesSlice(count, 0), request.getDoublesSlice(count, 1),
                             request.getDoublesSlice(count, 2), request.getDoublesSlice(count, 3),
-                            request.getDoublesSlice(count, 4), request.getDoublesSlice(count, 5),  request.getDoublesSlice(count, 6), count));
+                            request.getDoublesSlice(count, 4), request.getDoublesSlice(count, 5),  request.getDoublesSlice(count, 6), request.getDoublesSlice(count, 7), count));
             break;
         case 421115296:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(count, 0).put(
-                    code.set_type(request.getIntegersSlice(count, 0), request.getIntegersSlice(count, 1), count));
+            reply.getIntegersSlice(0).put(
+                    code.set_type(request.getIntegersSlice(0), request.getIntegersSlice(1), count));
             break;
 
         case 474219840:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(count, 0).put(code.store_view(request.getDoublesSlice(count, 0).get(0)));
+            reply.getIntegersSlice(0).put(code.store_view(request.getDoublesSlice(count, 0).get(0)));
             break;
         case 1644113439:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(count, 0).put(code.cleanup_code());
+            reply.getIntegersSlice(0).put(code.cleanup_code());
             break;
         case 1744145122:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(count, 0).put(code.recommit_parameters());
+            reply.getIntegersSlice(0).put(code.recommit_parameters());
             break;
         case 1768994498:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(count, 0).put(code.initialize_code());
+            reply.getIntegersSlice(0).put(code.initialize_code());
             break;
         case 2026192840:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(count, 0).put(
-                    code.set_position(request.getIntegersSlice(count, 0), request.getDoublesSlice(count, 0),
+            reply.getIntegersSlice(0).put(
+                    code.set_position(request.getIntegersSlice(0), request.getDoublesSlice(count, 0),
                             request.getDoublesSlice(count, 1), request.getDoublesSlice(count, 2), count));
             break;
         case 2069478464:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(count, 0).put(code.commit_parameters());
+            reply.getIntegersSlice(0).put(code.commit_parameters());
+            break;
+        case 20920053:
+            reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
+            reply.getIntegersSlice(0).put(code.commit_parameters());
             break;
 
         default:

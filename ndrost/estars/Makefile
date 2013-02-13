@@ -33,7 +33,7 @@ worker_code.h: interface.py
 #estars_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 #	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
-src/lib/estars.jar:
+src/lib/estars.jar: src
 	make -C src
 
 codeinterface.jar: worker-src/amuse/code/CodeInterface.java
