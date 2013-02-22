@@ -22,6 +22,7 @@ all: estars_worker
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ estars_worker worker_code.cc
+	$(RM) -f *.jar
 	make -C src clean
 
 worker_code.cc: interface.py
