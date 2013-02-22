@@ -306,12 +306,14 @@ class Worker {
             }
         }
 
-//        public void addInteger(int value) {
-//            header.put(HEADER_INT_COUNT_INDEX, header.get(HEADER_INT_COUNT_INDEX) + 1);
-//            ensurePrimitiveCapacity();
-//            intBytes.clear();
-//            intBytes.asIntBuffer().put(header.get(HEADER_INT_COUNT_INDEX), value);
-//        }
+        // public void addInteger(int value) {
+        // header.put(HEADER_INT_COUNT_INDEX, header.get(HEADER_INT_COUNT_INDEX)
+        // + 1);
+        // ensurePrimitiveCapacity();
+        // intBytes.clear();
+        // intBytes.asIntBuffer().put(header.get(HEADER_INT_COUNT_INDEX),
+        // value);
+        // }
 
         public boolean isErrorState() {
             return headerBytes.get(HEADER_ERROR_FLAG) == TRUE_BYTE;
@@ -762,20 +764,47 @@ class Worker {
             header.put(HEADER_DOUBLE_COUNT_INDEX, doubles);
             header.put(HEADER_BOOLEAN_COUNT_INDEX, booleans);
             header.put(HEADER_STRING_COUNT_INDEX, strings);
-            
+
             ensurePrimitiveCapacity();
         }
 
-        public IntBuffer getIntegersSlice(int sliceIndex) {
+        public int[] getIntSlice(int sliceIndex) {
+            int[] result = new int[getCallCount()];
+
             intBytes.position(getCallCount() * sliceIndex * SIZEOF_INT);
             intBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_INT);
-            return intBytes.asIntBuffer();
+
+            intBytes.asIntBuffer().get(result);
+
+            return result;
         }
 
-        public DoubleBuffer getDoublesSlice(int sliceSize, int sliceIndex) {
-            doubleBytes.position(sliceSize * sliceIndex * SIZEOF_DOUBLE);
-            doubleBytes.limit(sliceSize * (sliceIndex + 1) * SIZEOF_DOUBLE);
-            return doubleBytes.asDoubleBuffer();        }
+        public double[] getDoubleSlice(int sliceIndex) {
+            double[] result = new double[getCallCount()];
+
+            doubleBytes.position(getCallCount() * sliceIndex * SIZEOF_DOUBLE);
+            doubleBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_DOUBLE);
+
+            doubleBytes.asDoubleBuffer().get(result);
+
+            return result;
+        }
+
+        // sets all elements of a slice
+        public void setIntSlice(int sliceIndex, int[] data) {
+            intBytes.position(getCallCount() * sliceIndex * SIZEOF_INT);
+            intBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_INT);
+
+            intBytes.asIntBuffer().put(data);
+        }
+
+        // sets a single element of a slice
+        public void setIntElement(int sliceIndex, int index, int value) {
+            intBytes.position(getCallCount() * sliceIndex * SIZEOF_INT);
+            intBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_INT);
+
+            intBytes.asIntBuffer().put(index, value);
+        }
     }
 
     private final AmuseMessage request;
@@ -804,55 +833,56 @@ class Worker {
         case 223890289:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
 
-            reply.getIntegersSlice(0).put(
-                    code.set_color(request.getIntegersSlice(0), request.getDoublesSlice(count, 0),
-                            request.getDoublesSlice(count, 1), request.getDoublesSlice(count, 2), request.getDoublesSlice(count, 3), count));
+            reply.setIntElement(0, 0, code.set_color(request.getIntSlice(0), request.getDoubleSlice(0),
+                    request.getDoubleSlice(1), request.getDoubleSlice(2), request.getDoubleSlice(3), count));
             break;
 
         case 290264013:
             reply.setDataCount(2 * count, 0, 0, 0, 0, 0);
 
-            reply.getIntegersSlice(0).put(
-                    code.new_particle(reply.getIntegersSlice(1), request.getIntegersSlice(0),
-                            request.getDoublesSlice(count, 0), request.getDoublesSlice(count, 1),
-                            request.getDoublesSlice(count, 2), request.getDoublesSlice(count, 3),
-                            request.getDoublesSlice(count, 4), request.getDoublesSlice(count, 5),  request.getDoublesSlice(count, 6), request.getDoublesSlice(count, 7), count));
+            int[] output = new int[count];
+            
+            reply.setIntElement(0,0,
+                    code.new_particle(output, request.getIntSlice(0), request.getDoubleSlice(0),
+                            request.getDoubleSlice(1), request.getDoubleSlice(2), request.getDoubleSlice(3),
+                            request.getDoubleSlice(4), request.getDoubleSlice(5), request.getDoubleSlice(6),
+                            request.getDoubleSlice(7), count));
+            reply.setIntSlice(1,  output);
             break;
         case 421115296:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(0).put(
-                    code.set_type(request.getIntegersSlice(0), request.getIntegersSlice(1), count));
+            reply.setIntElement(0,0,code.set_type(request.getIntSlice(0), request.getIntSlice(1), count));
             break;
 
         case 474219840:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(0).put(code.store_view(request.getDoublesSlice(count, 0).get(0)));
+            reply.setIntElement(0,0,code.store_view(request.getDoubleSlice(0)[0]));
             break;
         case 1644113439:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(0).put(code.cleanup_code());
+            reply.setIntElement(0,0,code.cleanup_code());
             break;
         case 1744145122:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(0).put(code.recommit_parameters());
+            reply.setIntElement(0,0,code.recommit_parameters());
             break;
         case 1768994498:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(0).put(code.initialize_code());
+            reply.setIntElement(0,0,code.initialize_code());
             break;
         case 2026192840:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(0).put(
-                    code.set_position(request.getIntegersSlice(0), request.getDoublesSlice(count, 0),
-                            request.getDoublesSlice(count, 1), request.getDoublesSlice(count, 2), count));
+            reply.setIntElement(0,0,
+                    code.set_position(request.getIntSlice(0), request.getDoubleSlice(0),
+                            request.getDoubleSlice( 1), request.getDoubleSlice( 2), count));
             break;
         case 2069478464:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(0).put(code.commit_parameters());
+            reply.setIntElement(0,0,code.commit_parameters());
             break;
         case 20920053:
             reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
-            reply.getIntegersSlice(0).put(code.commit_parameters());
+            reply.setIntElement(0,0,code.commit_parameters());
             break;
 
         default:
@@ -872,11 +902,11 @@ class Worker {
                 System.err.println("got message " + request.toContentString());
 
                 reply.clear();
-                
+
                 reply.setCallID(request.getCallID());
                 reply.setFunctionID(request.getFunctionID());
                 reply.setCallCount(request.getCallCount());
-                
+
                 keepRunning = handleCall();
 
                 System.err.println("sending reply message " + reply.toContentString());
