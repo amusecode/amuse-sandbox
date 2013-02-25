@@ -55,6 +55,8 @@ def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 100 | units.AU)
     
     gravity = Hermite(converter)
     dx = (grid_in_memory.x[1][0][0] - grid_in_memory.x[0][0][0]).as_quantity_in(units.AU)
+    print dx
+    jkldkldjkldj
     gravity.parameters.epsilon_squared = (10 * dx)**2 
     gravity.particles.add_particle(particle)
     
