@@ -16,6 +16,7 @@ class eStarsTests(TestWithMPI):
         plummer.red = 1.0
         plummer.green = 1.0
         plummer.blue = 1.0
+        plummer.alpha = 1.0
 	plummer.type = 0
 	instance.particles.add_particles(plummer)
 
