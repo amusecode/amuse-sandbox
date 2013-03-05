@@ -14,8 +14,8 @@ class eStarsTests(TestWithMPI):
         plummer=new_plummer_model(10, converter)
         plummer.radius = 0.1|units.parsec
         plummer.red = 1.0
-        plummer.green = 0.0
-        plummer.blue = 0.0
+        plummer.green = 1.0
+        plummer.blue = 1.0
         plummer.alpha = 1.0
 	plummer.type = 1
 	instance.particles.add_particles(plummer)

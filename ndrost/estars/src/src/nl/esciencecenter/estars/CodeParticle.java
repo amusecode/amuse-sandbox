@@ -76,7 +76,7 @@ public class CodeParticle {
         float[] coordinates = new float[] { (float) x, (float) y, (float) z };
 
         float[] color = new float[] { (float) red, (float) green, (float) blue, (float) alpha };
-
+        
         return new PointGas(index, coordinates, color);
     }
 
@@ -110,4 +110,12 @@ public class CodeParticle {
     public void setRadius(double radius) {
         this.radius = radius;
     }
+
+    @Override
+    public String toString() {
+        return "CodeParticle [index=" + index + ", type=" + type + ", x=" + x + ", y=" + y + ", z=" + z + ", radius="
+                + radius + ", red=" + red + ", green=" + green + ", blue=" + blue + ", alpha=" + alpha + "]";
+    }
+    
+    
 }
