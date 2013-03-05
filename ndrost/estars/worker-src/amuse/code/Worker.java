@@ -893,7 +893,9 @@ class Worker {
     }
 
     private void runSockets(int port) {
-        try (SocketChannel channel = SocketChannel.open(new InetSocketAddress(port));) {
+        try {
+            SocketChannel channel = SocketChannel.open(new InetSocketAddress(port));
+
             boolean keepRunning = true;
             while (keepRunning) {
                 request.clear();
