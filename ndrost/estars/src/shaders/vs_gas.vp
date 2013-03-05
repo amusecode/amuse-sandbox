@@ -1,6 +1,6 @@
 #version 140
 
-in vec4 MCvertex;
+in vec3 MCvertex;
 in vec4 MCcolor;
 
 out vec4 pColor;
