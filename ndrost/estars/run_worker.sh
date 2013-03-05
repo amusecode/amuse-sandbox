@@ -1,3 +1,4 @@
 #!/bin/sh
-cd ${AMUSE_DIR}/sandbox/ndrost/estars
-java -cp "src/log4j.properties:src:src/lib/*:src/external/*:*" amuse.code.Worker $@
+cd ${AMUSE_DIR}/sandbox/ndrost/estars/src
+echo java -cp "log4j.properties:.:lib/*:external/*:../*:external/jogl/*" amuse.code.Worker $@
+java -cp "log4j.properties:.:lib/*:external/*:../*:external/jogl/*" amuse.code.Worker $@

@@ -37,9 +37,9 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
             function.addParameter(par, dtype='float64', unit=length_unit, direction=function.IN, 
                 description = "The initial position vector of the particle")
         function.addParameter('radius', dtype='float64', unit=length_unit, direction=function.IN, description = "The radius of the particle")
-        for par in ["alpha", "red", "green", "blue"]:
+        for par in ["red", "green", "blue", "alpha"]:
             function.addParameter(par, dtype='float64', direction=function.IN, 
-                description = "The ARGB color of the particle")
+                description = "The RGBA color of the particle")
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function

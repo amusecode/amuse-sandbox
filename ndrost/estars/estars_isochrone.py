@@ -80,7 +80,7 @@ if __name__ in ('__main__', '__plot__'):
 
     
     particles.alpha = 1.0
-    particles.type = 0
+    particles.type = 1
     
 
   
