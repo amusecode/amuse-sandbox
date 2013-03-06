@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
 cd ${AMUSE_DIR}/sandbox/ndrost/estars/src
-echo java -cp "log4j.properties:.:lib/*:external/*:../*:external/jogl/*" amuse.code.Worker $@
-java -cp "log4j.properties:.:lib/*:external/*:../*:external/jogl/*" amuse.code.Worker $@
+source ${AMUSE_DIR}/config.mk
+echo ${JAVA} -cp "log4j.properties:.:lib/*:external/*:../*:external/jogl/*" amuse.code.Worker $@
+${JAVA} -cp "log4j.properties:.:lib/*:external/*:../*:external/jogl/*" amuse.code.Worker $@
