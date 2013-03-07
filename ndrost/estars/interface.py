@@ -3,8 +3,8 @@ from amuse.community.interface.common import CommonCodeInterface
 from amuse.community.interface.common import CommonCode
 from amuse.units import units
 
-length_unit = units.parsec
-time_unit = units.Myr
+length_unit = generic_unit_system.length
+time_unit = generic_unit_system.time
 type_unit = units.none
 
 class eStarsInterface(CodeInterface, CommonCodeInterface):
@@ -245,7 +245,8 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
     
 class eStars(CommonCode):
 
-    def __init__(self, **options):
+    def __init__(self, unit_converter=None, **options):
+        self.unit_converter = unit_converter
         CommonCode.__init__(self,  eStarsInterface(**options), **options)
     
 
@@ -313,3 +314,7 @@ class eStars(CommonCode):
 #~        object.add_method('RUN', 'get_color')
 #~        object.add_method('RUN', 'get_opacity')
         
+    def define_converter(self, object):
+        if not self.unit_converter is None:
+            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            

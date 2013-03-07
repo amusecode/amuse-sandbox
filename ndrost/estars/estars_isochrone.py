@@ -50,7 +50,7 @@ if __name__ in ('__main__', '__plot__'):
     particles.type = 1
     particles.radius = stellar_evolution.particles.radius.sqrt() * (1e4 | units.parsec).sqrt()
     
-    instance = eStars(channel_type='sockets')#, redirection="none")
+    instance = eStars(converter, channel_type='sockets')#, redirection="none")
     instance.initialize_code()
     instance.particles.add_particles(particles)
     from_local_to_viz = particles.new_channel_to(instance.particles)
