@@ -37,9 +37,10 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
             function.addParameter(par, dtype='float64', unit=length_unit, direction=function.IN, 
                 description = "The initial position vector of the particle")
         function.addParameter('radius', dtype='float64', unit=length_unit, direction=function.IN, description = "The radius of the particle")
-        for par in ["red", "green", "blue", "alpha"]:
+        for par in ["red", "green", "blue"]:
             function.addParameter(par, dtype='float64', direction=function.IN, 
-                description = "The RGBA color of the particle")
+                description = "The RGB color of the particle")
+        function.addParameter("alpha", dtype='float64', direction=function.IN, description = "The opacity of the particle", default = 1.0)
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -68,25 +69,19 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
 
 
 
-#    @legacy_function
-#    def get_radius():
-#        """
-#        Retrieve the radius of a particle. Radius is a scalar property of a particle,
-#        this function has one OUT argument.
-#        """
-#        function = LegacyFunctionSpecification()
-#        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-#            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
-#        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
-#        function.result_type = 'int32'
-#        function.can_handle_array = True
-#        function.result_doc = """
-#        0 - OK
-#            particle was found in the model and the information was retreived
-#        -1 - ERROR
-#            particle could not be found
-#        """
-#        return function
+#~    @legacy_function
+#~    def get_radius():
+#~        """
+#~        Retrieve the radius of a particle. Radius is a scalar property of a particle,
+#~        this function has one OUT argument.
+#~        """
+#~        function = LegacyFunctionSpecification()
+#~        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+#~            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
+#~        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
+#~        function.result_type = 'int32'
+#~        function.can_handle_array = True
+#~        return function
 
 
     @legacy_function
@@ -97,15 +92,9 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle")
+        function.addParameter('radius', dtype='float64', unit=length_unit, direction=function.IN, description = "The new radius of the particle")
         function.result_type = 'int32'
         function.can_handle_array = True
-        function.result_doc = """
-        0 - OK
-            particle was found in the model and the information was retreived
-        -1 - ERROR
-            particle could not be found
-        """
         return function
 
     @legacy_function
@@ -179,9 +168,37 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         """
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        for par in ["red", "green", "blue", "alpha"]:
+        for par in ["red", "green", "blue"]:
             function.addParameter(par, dtype='float64', direction=function.IN, 
-                description = "The new RGBA color vector of the particle")
+                description = "The new RGB color vector of the particle")
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+    
+#~    @legacy_function
+#~    def get_opacity():
+#~        """
+#~        Retrieve the alpha (opacity) of a particle.
+#~        """
+#~        function = LegacyFunctionSpecification()
+#~        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+#~        function.addParameter("alpha", dtype='float64', direction=function.OUT, 
+#~            description = "The opacity of the particle")
+#~        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+#~        function.result_type = 'int32'
+#~        function.must_handle_array = True
+#~        return function
+    
+    @legacy_function
+    def set_opacity():
+        """
+        Update the alpha (opacity) of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter("alpha", dtype='float64', direction=function.IN, 
+            description = "The new opacity of the particle")
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         function.must_handle_array = True
@@ -242,7 +259,9 @@ class eStars(CommonCode):
         object.add_setter('particles', 'set_position')
 #~        object.add_getter('particles', 'get_color')
         object.add_setter('particles', 'set_color')
-#        object.add_setter('particles', 'set_radius')
+#~        object.add_getter('particles', 'get_opacity')
+        object.add_setter('particles', 'set_opacity')
+#~        object.add_getter('particles', 'get_radius')
         object.add_setter('particles', 'set_radius')
 
     def define_state(self, object): 
@@ -288,7 +307,9 @@ class eStars(CommonCode):
         object.add_method('RUN', 'set_type')
         object.add_method('RUN', 'set_position')
         object.add_method('RUN', 'set_color')
+        object.add_method('RUN', 'set_opacity')
 #~        object.add_method('RUN', 'get_type')
 #~        object.add_method('RUN', 'get_position')
 #~        object.add_method('RUN', 'get_color')
+#~        object.add_method('RUN', 'get_opacity')
         

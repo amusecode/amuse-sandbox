@@ -837,6 +837,13 @@ class Worker {
                     request.getDoubleSlice(1), request.getDoubleSlice(2), request.getDoubleSlice(3), count));
             break;
 
+        case 1623630901:
+            reply.setDataCount(1 * count, 0, 0, 0, 0, 0);
+
+            reply.setIntElement(0, 0, code.set_radius(request.getIntSlice(0), request.getDoubleSlice(0),
+                    count));
+            break;
+
         case 290264013:
             reply.setDataCount(2 * count, 0, 0, 0, 0, 0);
 
