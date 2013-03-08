@@ -60,7 +60,7 @@ worker.jar: Worker.java
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp
 
-estars_worker: worker_code.h codeinterface.jar src/lib/estars.jar worker_code.cc worker.jar
+estars_worker: codeinterface.jar src/lib/estars.jar worker.jar
 	cp run_worker.sh estars_worker	
 
 .cc.o: $<
