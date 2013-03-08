@@ -12,7 +12,7 @@ lib/estars.jar: src/*/*/*/*.java
 	$(RM) -r lib tmp
 	mkdir tmp
 	mkdir lib
-	$(JAVAC) -classpath "external/*:../codeinterface.jar"  -d tmp src/*/*/*/*.java
+	$(JAVAC) -g -classpath "external/*:../codeinterface.jar"  -d tmp src/*/*/*/*.java
 	#$(JDK)/bin/java -classpath $(CLASSPATH) ibis.compile.Ibisc tmp
 
 	@echo Building jar file

@@ -8,8 +8,8 @@ time_unit = generic_unit_system.time
 type_unit = units.none
 
 class eStarsInterface(CodeInterface, CommonCodeInterface):
-    
-    include_headers = ['worker_code.h']
+
+    imports = ['nl.esciencecenter.estars.Code']
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="estars_worker", **keyword_arguments)
@@ -53,9 +53,12 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         This function is optional.
         """
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
+        #function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to be removed. This index must have been returned by an earlier call to :meth:`new_particle`")
+
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -79,8 +82,10 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
-        function.can_handle_array = True
+        #function.can_handle_array = True
+        function.must_handle_array = True
         return function
 
 
@@ -93,8 +98,10 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('radius', dtype='float64', unit=length_unit, direction=function.IN, description = "The new radius of the particle")
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
-        function.can_handle_array = True
+        #function.can_handle_array = True
+        function.must_handle_array = True
         return function
 
     @legacy_function

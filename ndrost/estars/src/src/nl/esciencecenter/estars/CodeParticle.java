@@ -19,7 +19,7 @@ public class CodeParticle {
     private double red;
     private double green;
     private double blue;
-    private double alpha;
+    private double opacity;
 
     CodeParticle(int index, int type, double x, double y, double z, double radius, double red, double green,
             double blue, double alpha) {
@@ -32,72 +32,111 @@ public class CodeParticle {
         this.red = red;
         this.green = green;
         this.blue = blue;
-        this.alpha = alpha;
+        this.opacity = alpha;
 
+    }
+
+    Planet asPlanet() {
+        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
+
+        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) opacity };
+
+        return new Planet(index, coordinates, (float) radius, color);
+    }
+
+    PointGas asPointGas() {
+        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
+
+        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) opacity };
+        
+        return new PointGas(index, coordinates, color);
+    }
+
+    Sphere asSphere() {
+        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
+
+        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) opacity };
+
+        return new Sphere(index, coordinates, (float) radius, color);
+    }
+
+    SPHGas asSphGas() {
+        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
+
+        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) opacity };
+
+        return new SPHGas(index, coordinates, color);
+    }
+
+    Star asStar() {
+        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
+
+        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) opacity };
+        
+        return new Star(index, coordinates, (float) radius, color);
+    }
+
+    public double getOpacity() {
+        return opacity;
+    }
+
+    public double getBlue() {
+        return blue;
+    }
+
+    public double getGreen() {
+        return green;
     }
 
     public int getIndex() {
         return index;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public double getRadius() {
+        return radius;
+    }
+
+    public double getRed() {
+        return red;
     }
 
     public int getType() {
         return type;
     }
 
-    Sphere asSphere() {
-        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
-
-        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) alpha };
-
-        return new Sphere(index, coordinates, (float) radius, color);
+    public double getX() {
+        return x;
     }
 
-    Star asStar() {
-        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
-
-        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) alpha };
-        
-        return new Star(index, coordinates, (float) radius, color);
+    public double getY() {
+        return y;
     }
 
-    SPHGas asSphGas() {
-        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
-
-        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) alpha };
-
-        return new SPHGas(index, coordinates, color);
+    public double getZ() {
+        return z;
     }
 
-    PointGas asPointGas() {
-        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
-
-        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) alpha };
-        
-        return new PointGas(index, coordinates, color);
+    public void setOpacity(double opacity) {
+        this.opacity = opacity;
     }
 
-    Planet asPlanet() {
-        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
-
-        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) alpha };
-
-        return new Planet(index, coordinates, (float) radius, color);
+    public void setBlue(double blue) {
+        this.blue = blue;
     }
 
-    public void setColor(double red, double green, double blue, double alpha) {
+    public void setColor(double red, double green, double blue) {
         this.red = red;
         this.green = green;
         this.blue = blue;
-        this.alpha = alpha;
+        this.opacity = opacity;
     }
 
-    public void setType(int type) {
-        this.type = type;
-        
+    public void setGreen(double green) {
+        this.green = green;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public void setPosition(double x, double y, double z) {
@@ -111,10 +150,31 @@ public class CodeParticle {
         this.radius = radius;
     }
 
+    public void setRed(double red) {
+        this.red = red;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+        
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
+    }
+
     @Override
     public String toString() {
         return "CodeParticle [index=" + index + ", type=" + type + ", x=" + x + ", y=" + y + ", z=" + z + ", radius="
-                + radius + ", red=" + red + ", green=" + green + ", blue=" + blue + ", alpha=" + alpha + "]";
+                + radius + ", red=" + red + ", green=" + green + ", blue=" + blue + ", opacity=" + opacity + "]";
     }
     
     

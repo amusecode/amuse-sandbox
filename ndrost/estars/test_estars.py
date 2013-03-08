@@ -8,9 +8,9 @@ from .interface import eStars
 class eStarsTests(TestWithMPI):
     
     def test1(self):
-        instance = eStars(channel_type='sockets')
-        instance.initialize_code()
 	converter = nbody.nbody_to_si(1|units.parsec, 1|units.MSun)
+        instance = eStars(converter, channel_type='sockets', redirection='none')
+        instance.initialize_code()
         plummer=new_plummer_model(10, converter)
         plummer.radius = 0.1|units.parsec
         plummer.red = 1.0

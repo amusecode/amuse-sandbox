@@ -17,12 +17,13 @@ RM ?= rm
 JAVAC ?= javac
 JAR ?= jar
 
-all: estars_worker 
+all: estars_worker
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ estars_worker worker_code.cc
-	$(RM) -f *.jar
+	$(RM) -f *.jar *.java
+	$(RM) -rf tmp
 	make -C src clean
 
 worker_code.cc: interface.py
@@ -31,27 +32,33 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py eStarsInterface -o $@
 
+CodeInterface.java: interface.py
+	$(CODE_GENERATOR) --type=java --mode=interface interface.py eStarsInterface -o $@
+
+Worker.java: interface.py
+	$(CODE_GENERATOR) --type=java --mode=class interface.py eStarsInterface -o $@
+
 #estars_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 #	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 src/lib/estars.jar: src
 	make -C src
 
-codeinterface.jar: worker-src/amuse/code/CodeInterface.java
+codeinterface.jar: CodeInterface.java
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -d tmp worker-src/amuse/code/CodeInterface.java
+	$(JAVAC) -g -d tmp CodeInterface.java
 	@echo Building jar file
 	$(JAR) -cf codeinterface.jar -C tmp .
-	$(RM) -r tmp
+	$(RM) -rf tmp
 
-worker.jar: worker-src/amuse/code/Worker.java
+worker.jar: Worker.java
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -cp "src/external/*:src/lib/*:codeinterface.jar" -d tmp worker-src/amuse/code/Worker.java
+	$(JAVAC) -g -cp "src/external/*:src/lib/*:codeinterface.jar" -d tmp Worker.java
 	@echo Building jar file
 	$(JAR) -cf worker.jar -C tmp .
-	$(RM) -r tmp
+	$(RM) -rf tmp
 
 estars_worker: worker_code.h codeinterface.jar src/lib/estars.jar worker_code.cc worker.jar
 	cp run_worker.sh estars_worker	
