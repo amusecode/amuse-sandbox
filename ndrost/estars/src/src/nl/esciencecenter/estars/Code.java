@@ -201,7 +201,7 @@ public class Code implements CodeInterface {
 
         }
 
-        System.err.printf("storing view with %d spheres, %d stars, %d sph_gas and %d pointgas particles. Description = ",
+        System.err.printf("storing view with %d spheres, %d stars, %d sph_gas and %d pointgas particles. Description = \"%s\"\n",
                 spheres.size(), stars.size(), sphGas.size(), pointGas.size(), description);
 
         amuseLib.addScene(new Scene(description, spheres.toArray(new Sphere[spheres.size()]), stars
