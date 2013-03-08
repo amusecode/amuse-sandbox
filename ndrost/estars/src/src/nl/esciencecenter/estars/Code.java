@@ -58,23 +58,38 @@ public class Code implements CodeInterface {
         System.err.println("commit parameters! (does nothing)");
         return 0;
     }
+    
+    private int findEmptyIndex(int start) {
+        for(int i = start; i < particles.size();i++) {
+            if (particles.get(i) == null) {
+                return i;
+            }
+        }
+        //append the list with a new (empty) particle
+        int result = particles.size();
+        particles.add(null);
+        return result;
+    }
 
     @Override
     // first parameter is output parameter!
     public int new_particle(int[] index_of_the_particle, int[] type, double[] x, double[] y, double[] z,
             double[] radius, double[] red, double[] green, double[] blue, double[] alpha, int npoints) {
         System.err.println("new_particle: " + npoints + " new particles being added");
+        int newIndex = 0;
         for (int i = 0; i < npoints; i++) {
+            newIndex = findEmptyIndex(newIndex);
+            
             // System.err
             // .printf("new particle of type %d at position %.4f,%.4f,%.4f and radius %.4f with rgba %.4f,%.4f,%.4f,%.4f\n",
             // type[i], x[i], y[i], z[i], radius[i], red[i], green[i], blue[i],
             // alpha[i]);
 
-            index_of_the_particle[i] = particles.size();
+            index_of_the_particle[i] = newIndex;
             CodeParticle particle = new CodeParticle(index_of_the_particle[i], type[i], x[i], y[i], z[i], radius[i],
                     red[i], green[i], blue[i], alpha[i]);
 
-            particles.add(particle);
+            particles.set(newIndex, particle);
         }
 
         // System.err.println("new particle result = " +
@@ -83,9 +98,17 @@ public class Code implements CodeInterface {
         return 0;
     }
 
+
+
     @Override
     public int commit_particles() {
         System.err.println("commit particles! (does nothing)");
+        return 0;
+    }
+    
+    @Override
+    public int recommit_particles() {
+        System.err.println("recommit particles! (does nothing)");
         return 0;
     }
 
