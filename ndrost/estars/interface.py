@@ -69,19 +69,19 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
 
 
 
-#~    @legacy_function
-#~    def get_radius():
-#~        """
-#~        Retrieve the radius of a particle. Radius is a scalar property of a particle,
-#~        this function has one OUT argument.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-#~            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
-#~        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
-#~        function.result_type = 'int32'
-#~        function.can_handle_array = True
-#~        return function
+    @legacy_function
+    def get_radius():
+        """
+        Retrieve the radius of a particle. Radius is a scalar property of a particle,
+        this function has one OUT argument.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
 
 
     @legacy_function
@@ -116,20 +116,20 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         return function
 
     
-#~    @legacy_function
-#~    def get_position():
-#~        """
-#~        Retrieve the position vector of a particle.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-#~        for par in ["x", "y", "z"]:
-#~            function.addParameter(par, dtype='float64', unit=length_unit, direction=function.OUT, 
-#~                description = "The current position vector of the particle")
-#~        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-#~        function.result_type = 'int32'
-#~        function.must_handle_array = True
-#~        return function
+    @legacy_function
+    def get_position():
+        """
+        Retrieve the position vector of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        for par in ["x", "y", "z"]:
+            function.addParameter(par, dtype='float64', unit=length_unit, direction=function.OUT, 
+                description = "The current position vector of the particle")
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
     
     @legacy_function
     def set_position():
@@ -146,20 +146,20 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function.must_handle_array = True
         return function
     
-#~    @legacy_function
-#~    def get_color():
-#~        """
-#~        Retrieve the RGB color vector of a particle.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-#~        for par in ["red", "green", "blue"]:
-#~            function.addParameter(par, dtype='float64', direction=function.OUT, 
-#~                description = "The current RGB color vector of the particle")
-#~        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-#~        function.result_type = 'int32'
-#~        function.must_handle_array = True
-#~        return function
+    @legacy_function
+    def get_color():
+        """
+        Retrieve the RGB color vector of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        for par in ["red", "green", "blue"]:
+            function.addParameter(par, dtype='float64', direction=function.OUT, 
+                description = "The current RGB color vector of the particle")
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
     
     @legacy_function
     def set_color():
@@ -176,19 +176,19 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function.must_handle_array = True
         return function
     
-#~    @legacy_function
-#~    def get_opacity():
-#~        """
-#~        Retrieve the alpha (opacity) of a particle.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-#~        function.addParameter("alpha", dtype='float64', direction=function.OUT, 
-#~            description = "The opacity of the particle")
-#~        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-#~        function.result_type = 'int32'
-#~        function.must_handle_array = True
-#~        return function
+    @legacy_function
+    def get_opacity():
+        """
+        Retrieve the alpha (opacity) of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter("alpha", dtype='float64', direction=function.OUT, 
+            description = "The opacity of the particle")
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
     
     @legacy_function
     def set_opacity():
@@ -204,19 +204,19 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function.must_handle_array = True
         return function
     
-#~    @legacy_function
-#~    def get_type():
-#~        """
-#~        Retrieve the type of a particle.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-#~        function.addParameter('type', dtype='float64', unit=type_unit, direction=function.OUT, 
-#~            description = "The type (gas, star, etc.) of the particle")
-#~        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-#~        function.result_type = 'int32'
-#~        function.must_handle_array = True
-#~        return function
+    @legacy_function
+    def get_type():
+        """
+        Retrieve the type of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('type', dtype='float64', unit=type_unit, direction=function.OUT, 
+            description = "The type (gas, star, etc.) of the particle")
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
     
     @legacy_function
     def set_type():
@@ -235,11 +235,11 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
     @legacy_function
     def store_view():
         """
-        Store and view the current model, corresponding to the given time.
+        Store and view the current model, corresponding to the given description.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('time', dtype='float64', unit=time_unit, direction=function.IN,
-            description = "The current model time.")
+        function.addParameter('time', dtype='string', direction=function.IN,
+            description = "The description of the scene.")
         function.result_type = 'int32'
         return function
     
@@ -248,21 +248,23 @@ class eStars(CommonCode):
     def __init__(self, unit_converter=None, **options):
         self.unit_converter = unit_converter
         CommonCode.__init__(self,  eStarsInterface(**options), **options)
-    
+        
+    def store_view(self, description=""):
+        self.overridden().store_view(str(description))
 
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_particle')
         object.set_new('particles', 'new_particle')
-#        object.set_delete('particles', 'delete_particle')
-#~        object.add_getter('particles', 'get_type')
+        object.set_delete('particles', 'delete_particle')
+        object.add_getter('particles', 'get_type')
         object.add_setter('particles', 'set_type')
-#~        object.add_getter('particles', 'get_position')
+        object.add_getter('particles', 'get_position')
         object.add_setter('particles', 'set_position')
-#~        object.add_getter('particles', 'get_color')
+        object.add_getter('particles', 'get_color')
         object.add_setter('particles', 'set_color')
-#~        object.add_getter('particles', 'get_opacity')
+        object.add_getter('particles', 'get_opacity')
         object.add_setter('particles', 'set_opacity')
-#~        object.add_getter('particles', 'get_radius')
+        object.add_getter('particles', 'get_radius')
         object.add_setter('particles', 'set_radius')
 
     def define_state(self, object): 
@@ -287,32 +289,25 @@ class eStars(CommonCode):
         object.add_method('RUN', 'before_get_parameter')
         object.add_method('EDIT', 'before_get_parameter')
         object.add_method('UPDATE','before_get_parameter')
-#        object.add_method('EVOLVED','before_get_parameter')
-        
         
         object.add_method('EDIT', 'new_particle')
-#        object.add_method('EDIT', 'delete_particle')
+        object.add_method('EDIT', 'delete_particle')
         object.add_method('UPDATE', 'new_particle')
-#        object.add_method('UPDATE', 'delete_particle')
+        object.add_method('UPDATE', 'delete_particle')
         object.add_transition('EDIT', 'RUN', 'commit_particles')
         object.add_transition('RUN', 'UPDATE', 'new_particle', False)
- #       object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
         
-#        object.add_transition('RUN', 'EVOLVED', 'store_view', False)
-#        object.add_method('EVOLVED', 'store_view')
         object.add_method('RUN', 'store_view')
-#        object.add_transition('EVOLVED','RUN', 'set_type')
-#        object.add_transition('EVOLVED','RUN', 'set_position')
-#        object.add_transition('EVOLVED','RUN', 'set_color')
         object.add_method('RUN', 'set_type')
         object.add_method('RUN', 'set_position')
         object.add_method('RUN', 'set_color')
         object.add_method('RUN', 'set_opacity')
-#~        object.add_method('RUN', 'get_type')
-#~        object.add_method('RUN', 'get_position')
-#~        object.add_method('RUN', 'get_color')
-#~        object.add_method('RUN', 'get_opacity')
+        object.add_method('RUN', 'get_type')
+        object.add_method('RUN', 'get_position')
+        object.add_method('RUN', 'get_color')
+        object.add_method('RUN', 'get_opacity')
         
     def define_converter(self, object):
         if not self.unit_converter is None:
