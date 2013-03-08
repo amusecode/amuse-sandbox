@@ -1,6 +1,7 @@
 package nl.esciencecenter.estars;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseLib;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.*;
@@ -74,6 +75,8 @@ public class Code implements CodeInterface {
 
             particles.add(particle);
         }
+        
+        System.err.println("new particle result = " + Arrays.toString(index_of_the_particle));
 
         return 0;
     }
@@ -167,7 +170,6 @@ public class Code implements CodeInterface {
 
         ArrayList<Sphere> spheres = new ArrayList<Sphere>();
         ArrayList<Star> stars = new ArrayList<Star>();
-        ArrayList<Planet> planets = new ArrayList<Planet>();
         ArrayList<SPHGas> sphGas = new ArrayList<SPHGas>();
         ArrayList<PointGas> pointGas = new ArrayList<PointGas>();
 
@@ -181,10 +183,6 @@ public class Code implements CodeInterface {
                 case CodeParticle.TYPE_STAR:
                     System.err.println("star added: " + particle);
                     stars.add(particle.asStar());
-                    break;
-                case CodeParticle.TYPE_PLANET:
-                    System.err.println("planet added: " + particle);
-                    planets.add(particle.asPlanet());
                     break;
                 case CodeParticle.TYPE_SPH_GAS:
                     sphGas.add(particle.asSphGas());
@@ -203,7 +201,7 @@ public class Code implements CodeInterface {
 
         }
         amuseLib.addScene(new Scene(description, spheres.toArray(new Sphere[spheres.size()]), stars
-                .toArray(new Star[stars.size()]), planets.toArray(new Planet[planets.size()]), sphGas
+                .toArray(new Star[stars.size()]), sphGas
                 .toArray(new SPHGas[sphGas.size()]), pointGas.toArray(new PointGas[pointGas.size()])));
 
         // succes!

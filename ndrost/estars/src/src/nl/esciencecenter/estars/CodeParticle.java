@@ -8,7 +8,6 @@ public class CodeParticle {
     public static final int TYPE_STAR = 1;
     public static final int TYPE_SPH_GAS = 2;
     public static final int TYPE_POINT_GAS = 3;
-    public static final int TYPE_PLANET = 4;
 
     private int index;
     private int type;
@@ -34,14 +33,6 @@ public class CodeParticle {
         this.blue = blue;
         this.opacity = alpha;
 
-    }
-
-    Planet asPlanet() {
-        float[] coordinates = new float[] { (float) x, (float) y, (float) z };
-
-        float[] color = new float[] { (float) red, (float) green, (float) blue, (float) opacity };
-
-        return new Planet(index, coordinates, (float) radius, color);
     }
 
     PointGas asPointGas() {
@@ -128,7 +119,6 @@ public class CodeParticle {
         this.red = red;
         this.green = green;
         this.blue = blue;
-        this.opacity = opacity;
     }
 
     public void setGreen(double green) {
