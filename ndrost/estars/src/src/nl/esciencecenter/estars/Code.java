@@ -200,9 +200,9 @@ public class Code implements CodeInterface {
             }
 
         }
-        amuseLib.addScene(new Scene(description, spheres.toArray(new Sphere[spheres.size()]),
-                stars.toArray(new Star[stars.size()]), planets.toArray(new Planet[planets.size()]), sphGas
-                        .toArray(new SPHGas[sphGas.size()]), pointGas.toArray(new PointGas[pointGas.size()])));
+        amuseLib.addScene(new Scene(description, spheres.toArray(new Sphere[spheres.size()]), stars
+                .toArray(new Star[stars.size()]), planets.toArray(new Planet[planets.size()]), sphGas
+                .toArray(new SPHGas[sphGas.size()]), pointGas.toArray(new PointGas[pointGas.size()])));
 
         // succes!
         return 0;
@@ -210,13 +210,21 @@ public class Code implements CodeInterface {
 
     @Override
     public int cleanup_code() {
-        // TODO Auto-generated method stub
+        System.err.println("cleanup code! (does nothing)");
         return 0;
     }
 
     @Override
     public int delete_particle(int[] index_of_the_particle, int npoints) {
-        // TODO Auto-generated method stub
+        for (int i = 0; i < npoints; i++) {
+            int index = index_of_the_particle[i];
+            if (index >= particles.size() || particles.get(index) == null) {
+                System.err.println("No particle with index " + index + " exists");
+                return 1;
+            }
+
+            particles.set(index, null);
+        }
         return 0;
     }
 
@@ -225,14 +233,33 @@ public class Code implements CodeInterface {
     // parameter "green" is an output parameter!
     // parameter "blue" is an output parameter!
     public int get_color(int[] index_of_the_particle, double[] red, double[] green, double[] blue, int npoints) {
-        // TODO Auto-generated method stub
+        for (int i = 0; i < npoints; i++) {
+            CodeParticle particle = findParticle(index_of_the_particle[i]);
+
+            if (particle == null) {
+                return 1;
+            }
+
+            red[index_of_the_particle[i]] = particle.getRed();
+            green[index_of_the_particle[i]] = particle.getGreen();
+            green[index_of_the_particle[i]] = particle.getBlue();
+
+        }
         return 0;
     }
 
     @Override
     // parameter "alpha" is an output parameter!
-    public int get_opacity(int[] index_of_the_particle, double[] alpha, int npoints) {
-        // TODO Auto-generated method stub
+    public int get_opacity(int[] index_of_the_particle, double[] opacity, int npoints) {
+        for (int i = 0; i < npoints; i++) {
+            CodeParticle particle = findParticle(index_of_the_particle[i]);
+
+            if (particle == null) {
+                return 1;
+            }
+
+            opacity[index_of_the_particle[i]] = particle.getOpacity();
+        }
         return 0;
     }
 
@@ -241,25 +268,52 @@ public class Code implements CodeInterface {
     // parameter "y" is an output parameter!
     // parameter "z" is an output parameter!
     public int get_position(int[] index_of_the_particle, double[] x, double[] y, double[] z, int npoints) {
-        // TODO Auto-generated method stub
+        for (int i = 0; i < npoints; i++) {
+            CodeParticle particle = findParticle(index_of_the_particle[i]);
+
+            if (particle == null) {
+                return 1;
+            }
+
+            x[index_of_the_particle[i]] = particle.getX();
+            y[index_of_the_particle[i]] = particle.getY();
+            z[index_of_the_particle[i]] = particle.getZ();
+
+        }
         return 0;
     }
 
     @Override
     public int get_type(int[] index_of_the_particle, double[] type, int npoints) {
-        // TODO Auto-generated method stub
+        for (int i = 0; i < npoints; i++) {
+            CodeParticle particle = findParticle(index_of_the_particle[i]);
+
+            if (particle == null) {
+                return 1;
+            }
+
+            type[index_of_the_particle[i]] = particle.getType();
+        }
         return 0;
     }
 
     @Override
     public int recommit_parameters() {
-        // TODO Auto-generated method stub
+        System.err.println("recommit_parameters! (does nothing)");
         return 0;
     }
 
     @Override
-    public int set_opacity(int[] index_of_the_particle, double[] alpha, int npoints) {
-        // TODO Auto-generated method stub
+    public int set_opacity(int[] index_of_the_particle, double[] opacity, int npoints) {
+        for (int i = 0; i < npoints; i++) {
+            CodeParticle particle = findParticle(index_of_the_particle[i]);
+
+            if (particle == null) {
+                return 1;
+            }
+
+            particle.setOpacity(opacity[i]);
+        }
         return 0;
     }
 }
