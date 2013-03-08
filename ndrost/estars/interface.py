@@ -122,6 +122,24 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         """
         return function
 
+    @legacy_function
+    def recommit_particles():
+        """
+        Let the code perform initialization actions
+        after all particles have been loaded in the model.
+        Should be called before the first evolve call and
+        after the last new_particle call.
+        """
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Model is initialized and evolution can start
+         -1 - ERROR
+            Error happened during initialization, this error needs to be further specified by every code implemention
+        """
+        return function
+
     
     @legacy_function
     def get_position():
