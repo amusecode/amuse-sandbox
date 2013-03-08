@@ -63,11 +63,12 @@ public class Code implements CodeInterface {
     // first parameter is output parameter!
     public int new_particle(int[] index_of_the_particle, int[] type, double[] x, double[] y, double[] z,
             double[] radius, double[] red, double[] green, double[] blue, double[] alpha, int npoints) {
-        System.err.println("new_particle");
+        System.err.println("new_particle: " + npoints + " new particles being added");
         for (int i = 0; i < npoints; i++) {
-            System.err
-                    .printf("new particle of type %d at position %.4f,%.4f,%.4f and radius %.4f with rgba %.4f,%.4f,%.4f,%.4f\n",
-                            type[i], x[i], y[i], z[i], radius[i], red[i], green[i], blue[i], alpha[i]);
+            // System.err
+            // .printf("new particle of type %d at position %.4f,%.4f,%.4f and radius %.4f with rgba %.4f,%.4f,%.4f,%.4f\n",
+            // type[i], x[i], y[i], z[i], radius[i], red[i], green[i], blue[i],
+            // alpha[i]);
 
             index_of_the_particle[i] = particles.size();
             CodeParticle particle = new CodeParticle(index_of_the_particle[i], type[i], x[i], y[i], z[i], radius[i],
@@ -75,8 +76,9 @@ public class Code implements CodeInterface {
 
             particles.add(particle);
         }
-        
-        System.err.println("new particle result = " + Arrays.toString(index_of_the_particle));
+
+        // System.err.println("new particle result = " +
+        // Arrays.toString(index_of_the_particle));
 
         return 0;
     }
@@ -111,8 +113,7 @@ public class Code implements CodeInterface {
             }
 
             particle.setPosition(x[i], y[i], z[i]);
-            System.err.printf("particle %d position updated to %.4f,%.4f,%.4f\n", index_of_the_particle[i], x[i], y[i],
-                    z[i]);
+            //System.err.printf("particle %d position updated to %.4f,%.4f,%.4f\n", index_of_the_particle[i], x[i], y[i], z[i]);
         }
         return 0;
     }
@@ -163,7 +164,6 @@ public class Code implements CodeInterface {
 
     @Override
     public int store_view(String description) {
-        System.err.println("store view with description " + description);
 
         // Sphere[] spheres, Star[] stars, Planet[] planets, SPHGas[] sphGas,
         // PointGas[] pointGas
@@ -177,20 +177,20 @@ public class Code implements CodeInterface {
             if (particle != null) {
                 switch (particle.getType()) {
                 case CodeParticle.TYPE_SPHERE:
-                    System.err.println("sphere added: " + particle);
+                    // System.err.println("sphere added: " + particle);
                     spheres.add(particle.asSphere());
                     break;
                 case CodeParticle.TYPE_STAR:
-                    System.err.println("star added: " + particle);
+                    // System.err.println("star added: " + particle);
                     stars.add(particle.asStar());
                     break;
                 case CodeParticle.TYPE_SPH_GAS:
                     sphGas.add(particle.asSphGas());
-                    System.err.println("sph gass added: " + particle);
+                    // System.err.println("sph gass added: " + particle);
                     break;
                 case CodeParticle.TYPE_POINT_GAS:
                     pointGas.add(particle.asPointGas());
-                    System.err.println("point gass added: " + particle);
+                    // System.err.println("point gass added: " + particle);
                     break;
                 default:
                     // FIXME:we actually want to throw an error
@@ -200,9 +200,13 @@ public class Code implements CodeInterface {
             }
 
         }
+
+        System.err.printf("storing view with %d spheres, %d stars, %d sph_gas and %d pointgas particles. Description = ",
+                spheres.size(), stars.size(), sphGas.size(), pointGas.size(), description);
+
         amuseLib.addScene(new Scene(description, spheres.toArray(new Sphere[spheres.size()]), stars
-                .toArray(new Star[stars.size()]), sphGas
-                .toArray(new SPHGas[sphGas.size()]), pointGas.toArray(new PointGas[pointGas.size()])));
+                .toArray(new Star[stars.size()]), sphGas.toArray(new SPHGas[sphGas.size()]), pointGas
+                .toArray(new PointGas[pointGas.size()])));
 
         // succes!
         return 0;
