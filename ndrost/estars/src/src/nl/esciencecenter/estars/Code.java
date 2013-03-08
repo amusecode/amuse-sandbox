@@ -108,6 +108,8 @@ public class Code implements CodeInterface {
             }
 
             particle.setPosition(x[i], y[i], z[i]);
+            System.err.printf("particle %d position updated to %.4f,%.4f,%.4f\n", index_of_the_particle[i], x[i], y[i],
+                    z[i]);
         }
         return 0;
     }
