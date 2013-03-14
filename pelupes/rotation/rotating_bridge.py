@@ -3,6 +3,10 @@
   (i.e. in the rotating frame a particle at rest in the inertial frame seems to
   rotate clockwise)
 
+  non-canonical coordinates
+  
+  get_gravity_at_point should return accelerations in rotating frame
+
 """
 
 from amuse.ext.bridge import bridge
@@ -75,7 +79,14 @@ class RotatingBridge(bridge):
             if hasattr(x,"particles"):
                 self.rotating_kick(x,self.partners[x],dt)                  
         return 0
-     
+ 
+    def get_effective_potential_at_point(self,radius,x,y,z):
+        err=0
+        pot=bridge.get_potential_at_point(self,radius,x,y,z)
+        r2=x**2+y**2+z**2
+        pot+=-0.5*self.omega**2*r2
+        return pot
+        
     @property
     def jacobi_potential_energy(self):
         parts=self.particles
