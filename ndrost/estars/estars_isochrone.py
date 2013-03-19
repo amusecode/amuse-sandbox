@@ -27,7 +27,7 @@ def new_gravity(particles, converter):
     return gravity
 
 if __name__ in ('__main__', '__plot__'):
-    number_of_particles = 100
+    number_of_particles = 10000
     
     numpy.random.seed(12345)
     masses = new_scalo_mass_distribution(number_of_particles) * 10

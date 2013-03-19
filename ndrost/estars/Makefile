@@ -61,7 +61,7 @@ worker.jar: Worker.java
 	$(RM) -rf tmp
 
 estars_worker: codeinterface.jar src/lib/estars.jar worker.jar
-	cp run_worker.sh estars_worker	
+	$(CODE_GENERATOR) -x --type=java --mode=script interface.py eStarsInterface -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 

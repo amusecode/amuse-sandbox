@@ -10,6 +10,8 @@ type_unit = units.none
 class eStarsInterface(CodeInterface, CommonCodeInterface):
 
     imports = ['nl.esciencecenter.estars.Code']
+    classpath = '.:log4j.properties:lib/*:external/*:../*:external/jogl/*'
+    cwd = 'src'
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="estars_worker", **keyword_arguments)

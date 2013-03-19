@@ -1,7 +1,6 @@
 package nl.esciencecenter.estars;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import nl.esciencecenter.visualization.amuse.planetformation.AmuseLib;
 import nl.esciencecenter.visualization.amuse.planetformation.glue.*;
@@ -27,7 +26,7 @@ public class Code implements CodeInterface {
     }
 
     public int internal__set_message_polling_interval(int interval) {
-        System.err.println("get_message_polling_interval! (does nothing)");
+        System.err.println("set_message_polling_interval! (does nothing)");
         return 0;
     }
 
@@ -187,10 +186,6 @@ public class Code implements CodeInterface {
 
     @Override
     public int store_view(String description) {
-
-        // Sphere[] spheres, Star[] stars, Planet[] planets, SPHGas[] sphGas,
-        // PointGas[] pointGas
-
         ArrayList<Sphere> spheres = new ArrayList<Sphere>();
         ArrayList<Star> stars = new ArrayList<Star>();
         ArrayList<SPHGas> sphGas = new ArrayList<SPHGas>();
