@@ -9,7 +9,7 @@ class eStarsTests(TestWithMPI):
     
     def test1(self):
 	converter = nbody.nbody_to_si(1|units.parsec, 1|units.MSun)
-        instance = eStars(converter, channel_type='sockets', redirection='none')
+        instance = eStars(converter, redirection='none')
         instance.initialize_code()
         plummer=new_plummer_model(10, converter)
         plummer.radius = 0.1|units.parsec

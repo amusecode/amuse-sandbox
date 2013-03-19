@@ -15,6 +15,10 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="estars_worker", **keyword_arguments)
+
+    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
+    def channel_type(self):
+        return 'sockets'
     
     @legacy_function
     def new_particle():
