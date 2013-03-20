@@ -313,6 +313,34 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         return function
     
     @legacy_function
+    def get_use_star_shader_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter("use_star_shader_flag", dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_use_star_shader_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter("use_star_shader_flag", dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_use_octree_for_gas_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter("use_star_shader_flag", dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_use_octree_for_gas_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter("use_star_shader_flag", dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def store_view():
         """
         Store and view the current model, corresponding to the given description.
@@ -353,8 +381,6 @@ class eStars(CommonCode):
         object.set_delete('marker_particles', 'delete_particle')
         
         for particle_set_name in ['star_particles', 'gas_particles', 'sphere_particles', 'marker_particles']:
-#~            object.add_getter(particle_set_name, 'get_type')
-#~            object.add_setter(particle_set_name, 'set_type')
             object.add_getter(particle_set_name, 'get_position')
             object.add_setter(particle_set_name, 'set_position')
             object.add_getter(particle_set_name, 'get_color')
@@ -406,15 +432,30 @@ class eStars(CommonCode):
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
         
         object.add_method('RUN', 'store_view')
-        object.add_method('RUN', 'set_type')
         object.add_method('RUN', 'set_position')
         object.add_method('RUN', 'set_color')
         object.add_method('RUN', 'set_opacity')
-        object.add_method('RUN', 'get_type')
         object.add_method('RUN', 'get_position')
         object.add_method('RUN', 'get_color')
         object.add_method('RUN', 'get_opacity')
         
+    def define_parameters(self, object):
+        object.add_boolean_parameter(
+            "get_use_star_shader_flag",
+            "set_use_star_shader_flag",
+            "use_star_shader",
+            "Use-star-shader flag. False means: plain spheres.",
+            True
+        )
+        object.add_boolean_parameter(
+            "get_use_octree_for_gas_flag",
+            "set_use_octree_for_gas_flag",
+            "use_octree_for_gas",
+            "Use-octree-for-gas flag. True means: gas particles are divided over "
+                "octree cells, and these cells will be visualized instead.",
+            False
+        )
+    
     def define_converter(self, object):
         if not self.unit_converter is None:
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
