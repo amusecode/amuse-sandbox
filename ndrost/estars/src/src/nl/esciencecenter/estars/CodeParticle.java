@@ -4,10 +4,10 @@ import nl.esciencecenter.visualization.amuse.planetformation.glue.*;
 
 public class CodeParticle {
 
-    public static final int TYPE_SPHERE = 0;
-    public static final int TYPE_STAR = 1;
-    public static final int TYPE_POINT_GAS = 2;
-    public static final int TYPE_OCTREE_GAS = 3;
+    public static final int TYPE_STAR = 0;
+    public static final int TYPE_POINT_GAS = 1;
+    public static final int TYPE_OCTREE_GAS = 2;
+    public static final int TYPE_SPHERE = 3;
     public static final int TYPE_MARKER = 4;
 
     private int index;
