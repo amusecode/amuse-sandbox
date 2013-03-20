@@ -1,20 +1,21 @@
 import os
 import os.path
+
 from matplotlib import pyplot
 from amuse.units import units, nbody_system
 from amuse.datamodel import Particles
 from amuse.io import read_set_from_file
 from amuse.ext.particles_with_color import new_particles_with_blackbody_color
 from amuse.community.seba.interface import SeBa
-from interface import eStars
+from interface import AstroTray
 
 def start_visualisation(gas, stars):
     converter = nbody_system.nbody_to_si(1.0 | units.AU, gas.mass.sum() + stars.mass.sum())
-    visualisation = eStars(converter, channel_type='sockets', redirection="none")
+    visualisation = AstroTray(converter, redirection="none")
     visualisation.initialize_code()
-    gas_in_vis = visualisation.particles.add_particles(gas)
-    stars_in_vis = visualisation.particles.add_particles(stars)
-    return visualisation, gas_in_vis, stars_in_vis
+    visualisation.gas_particles.add_particles(gas)
+    visualisation.star_particles.add_particles(stars)
+    return visualisation
 
 def derive_temperatures_for(particles):
     instance = SeBa()
@@ -47,13 +48,13 @@ def read_snapshot(gas_file, stars_file, directory, temperature_stars=[]):
 def visualize_simulation(directory):
     files = os.listdir(directory)
     files.sort()
-    visualisation, gas_in_vis, stars_in_vis = start_visualisation(*read_snapshot(files[1], files[0], directory))
-    for i in range(len(files[:100])/2):
-        gas, stars = read_snapshot(files[2*i*10+1], files[2*i*10], directory)
-        gas.synchronize_to(gas_in_vis)
-        gas.copy_values_of_attributes_to(["x", "y", "z", "red", "green", "blue"], gas_in_vis)
-        stars.synchronize_to(stars_in_vis)
-        stars.copy_values_of_attributes_to(["x", "y", "z"], stars_in_vis)
+    visualisation = start_visualisation(*read_snapshot(files[1], files[0], directory))
+    for i in range(len(files[:10])/2):
+        gas, stars = read_snapshot(files[2*i+1], files[2*i], directory)
+        gas.synchronize_to(visualisation.gas_particles)
+        gas.copy_values_of_attributes_to(["x", "y", "z", "red", "green", "blue"], visualisation.gas_particles)
+        stars.synchronize_to(visualisation.star_particles)
+        stars.copy_values_of_attributes_to(["x", "y", "z"], visualisation.star_particles)
         print "store_view"
         visualisation.store_view(i*0.4*10|units.day)
         print "done"

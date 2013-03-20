@@ -3,7 +3,12 @@ from amuse.community.interface.common import CommonCodeInterface
 from amuse.community.interface.common import CommonCode
 from amuse.units import units
 
-class eStarsInterface(CodeInterface, CommonCodeInterface):
+class AstroTrayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
+    """
+    AstroTray is a 3D visualization package for AMUSE simulations.
+    
+        .. [#] The AstroTray 3D visualization project is a collaboration between Sterrewacht Leiden and The Netherlands eScience Center.
+    """
 
     imports = ['nl.esciencecenter.estars.Code']
     classpath = '.:log4j.properties:lib/*:external/*:../*:external/jogl/*'
@@ -11,6 +16,7 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="estars_worker", **keyword_arguments)
+        LiteratureReferencesMixIn.__init__(self)
 
     @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
     def channel_type(self):
@@ -351,11 +357,11 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function.result_type = 'int32'
         return function
     
-class eStars(CommonCode):
+class AstroTray(CommonCode):
 
     def __init__(self, unit_converter=None, **options):
         self.unit_converter = unit_converter
-        CommonCode.__init__(self,  eStarsInterface(**options), **options)
+        CommonCode.__init__(self,  AstroTrayInterface(**options), **options)
         
     def store_view(self, description=""):
         self.overridden().store_view(str(description))

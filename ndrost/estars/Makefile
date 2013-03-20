@@ -27,16 +27,16 @@ clean:
 	make -C src clean
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py eStarsInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py AstroTrayInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py eStarsInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py AstroTrayInterface -o $@
 
 CodeInterface.java: interface.py
-	$(CODE_GENERATOR) --type=java --mode=interface interface.py eStarsInterface -o $@
+	$(CODE_GENERATOR) --type=java --mode=interface interface.py AstroTrayInterface -o $@
 
 Worker.java: interface.py
-	$(CODE_GENERATOR) --type=java --mode=class interface.py eStarsInterface -o $@
+	$(CODE_GENERATOR) --type=java --mode=class interface.py AstroTrayInterface -o $@
 
 #estars_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 #	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
@@ -61,7 +61,7 @@ worker.jar: Worker.java
 	$(RM) -rf tmp
 
 estars_worker: codeinterface.jar src/lib/estars.jar worker.jar
-	$(CODE_GENERATOR) -x --type=java --mode=script interface.py eStarsInterface -o $@
+	$(CODE_GENERATOR) -x --type=java --mode=script interface.py AstroTrayInterface -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 
