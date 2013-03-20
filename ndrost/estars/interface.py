@@ -329,14 +329,14 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
     @legacy_function
     def get_use_octree_for_gas_flag():
         function = LegacyFunctionSpecification()
-        function.addParameter("use_star_shader_flag", dtype='int32', direction=function.OUT)
+        function.addParameter("use_octree_for_gas_flag", dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
     @legacy_function
     def set_use_octree_for_gas_flag():
         function = LegacyFunctionSpecification()
-        function.addParameter("use_star_shader_flag", dtype='int32', direction=function.IN)
+        function.addParameter("use_octree_for_gas_flag", dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
     

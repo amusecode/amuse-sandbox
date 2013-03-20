@@ -6,11 +6,11 @@ public class CodeParticle {
 
     public static final int TYPE_SPHERE = 0;
     public static final int TYPE_STAR = 1;
-    public static final int TYPE_SPH_GAS = 2;
-    public static final int TYPE_POINT_GAS = 3;
+    public static final int TYPE_POINT_GAS = 2;
+    public static final int TYPE_OCTREE_GAS = 3;
+    public static final int TYPE_MARKER = 4;
 
     private int index;
-    private int type;
     private double x;
     private double y;
     private double z;
@@ -19,11 +19,11 @@ public class CodeParticle {
     private double green;
     private double blue;
     private double opacity;
+    private int type;
 
-    CodeParticle(int index, int type, double x, double y, double z, double radius, double red, double green,
-            double blue, double alpha) {
+    CodeParticle(int index,  double x, double y, double z, double radius, double red, double green,
+            double blue, double opacity, int type) {
         this.index = index;
-        this.type = type;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -31,8 +31,8 @@ public class CodeParticle {
         this.red = red;
         this.green = green;
         this.blue = blue;
-        this.opacity = alpha;
-
+        this.opacity = opacity;
+        this.type = type;
     }
 
     PointGas asPointGas() {
