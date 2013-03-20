@@ -147,9 +147,9 @@ if __name__ in ('__main__', '__plot__'):
     viz.initialize_code()
     
     tmp=cluster.particles.copy()
-    tmp.red=0.5
-    tmp.green=0.5
-    tmp.blue=0.5
+    tmp.red=1.0
+    tmp.green=0.55
+    tmp.blue=0.35
     tmp.x=tmp.x-Rinit
     
     viz.particles.add_particles(tmp)
