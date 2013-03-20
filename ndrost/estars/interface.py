@@ -3,10 +3,6 @@ from amuse.community.interface.common import CommonCodeInterface
 from amuse.community.interface.common import CommonCode
 from amuse.units import units
 
-length_unit = generic_unit_system.length
-time_unit = generic_unit_system.time
-type_unit = units.none
-
 class eStarsInterface(CodeInterface, CommonCodeInterface):
 
     imports = ['nl.esciencecenter.estars.Code']
@@ -21,10 +17,10 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         return 'sockets'
     
     @legacy_function
-    def new_particle():
+    def new_star_particle():
         """
         Define a new particle in the visualisation code. The particle is initialized with the provided
-        type, position and color. This function returns an index that can be used to refer
+        radius, position and color. This function returns an index that can be used to refer
         to this particle.
         """
         function = LegacyFunctionSpecification()
@@ -36,13 +32,94 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
             (and not valid in other instances of the code or in other codes)
             """
             )
-
-        function.addParameter('type', dtype='int32', unit=type_unit, direction=function.IN, 
-            description = "The type (gas, star, etc.) of the particle")
         for par in ["x", "y", "z"]:
-            function.addParameter(par, dtype='float64', unit=length_unit, direction=function.IN, 
+            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.IN, 
                 description = "The initial position vector of the particle")
-        function.addParameter('radius', dtype='float64', unit=length_unit, direction=function.IN, description = "The radius of the particle")
+        function.addParameter('radius', dtype='float64', unit=generic_unit_system.length, direction=function.IN, description = "The radius of the particle")
+        for par in ["red", "green", "blue"]:
+            function.addParameter(par, dtype='float64', direction=function.IN, 
+                description = "The RGB color of the particle")
+        function.addParameter("alpha", dtype='float64', direction=function.IN, description = "The opacity of the particle", default = 1.0)
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def new_gas_particle():
+        """
+        Define a new particle in the visualisation code. The particle is initialized with the provided
+        radius, position and color. This function returns an index that can be used to refer
+        to this particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT, description =
+            """
+            An index assigned to the newly created particle.
+            This index is supposed to be a local index for the code
+            (and not valid in other instances of the code or in other codes)
+            """
+            )
+        for par in ["x", "y", "z"]:
+            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.IN, 
+                description = "The initial position vector of the particle")
+        function.addParameter('radius', dtype='float64', unit=generic_unit_system.length, direction=function.IN, description = "The radius of the particle")
+        for par in ["red", "green", "blue"]:
+            function.addParameter(par, dtype='float64', direction=function.IN, 
+                description = "The RGB color of the particle")
+        function.addParameter("alpha", dtype='float64', direction=function.IN, description = "The opacity of the particle", default = 1.0)
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def new_sphere_particle():
+        """
+        Define a new particle in the visualisation code. The particle is initialized with the provided
+        radius, position and color. This function returns an index that can be used to refer
+        to this particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT, description =
+            """
+            An index assigned to the newly created particle.
+            This index is supposed to be a local index for the code
+            (and not valid in other instances of the code or in other codes)
+            """
+            )
+        for par in ["x", "y", "z"]:
+            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.IN, 
+                description = "The initial position vector of the particle")
+        function.addParameter('radius', dtype='float64', unit=generic_unit_system.length, direction=function.IN, description = "The radius of the particle")
+        for par in ["red", "green", "blue"]:
+            function.addParameter(par, dtype='float64', direction=function.IN, 
+                description = "The RGB color of the particle")
+        function.addParameter("alpha", dtype='float64', direction=function.IN, description = "The opacity of the particle", default = 1.0)
+        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def new_marker_particle():
+        """
+        Define a new particle in the visualisation code. The particle is initialized with the provided
+        radius, position and color. This function returns an index that can be used to refer
+        to this particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT, description =
+            """
+            An index assigned to the newly created particle.
+            This index is supposed to be a local index for the code
+            (and not valid in other instances of the code or in other codes)
+            """
+            )
+        for par in ["x", "y", "z"]:
+            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.IN, 
+                description = "The initial position vector of the particle")
+        function.addParameter('radius', dtype='float64', unit=generic_unit_system.length, direction=function.IN, description = "The radius of the particle")
         for par in ["red", "green", "blue"]:
             function.addParameter(par, dtype='float64', direction=function.IN, 
                 description = "The RGB color of the particle")
@@ -103,7 +180,7 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('radius', dtype='float64', unit=length_unit, direction=function.IN, description = "The new radius of the particle")
+        function.addParameter('radius', dtype='float64', unit=generic_unit_system.length, direction=function.IN, description = "The new radius of the particle")
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         #function.can_handle_array = True
@@ -155,7 +232,7 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         for par in ["x", "y", "z"]:
-            function.addParameter(par, dtype='float64', unit=length_unit, direction=function.OUT, 
+            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.OUT, 
                 description = "The current position vector of the particle")
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
@@ -170,7 +247,7 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         for par in ["x", "y", "z"]:
-            function.addParameter(par, dtype='float64', unit=length_unit, direction=function.IN, 
+            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.IN, 
                 description = "The new position vector of the particle")
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
@@ -236,34 +313,6 @@ class eStarsInterface(CodeInterface, CommonCodeInterface):
         return function
     
     @legacy_function
-    def get_type():
-        """
-        Retrieve the type of a particle.
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter('type', dtype='float64', unit=type_unit, direction=function.OUT, 
-            description = "The type (gas, star, etc.) of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        function.must_handle_array = True
-        return function
-    
-    @legacy_function
-    def set_type():
-        """
-        Update the type of a particle.
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter('type', dtype='int32', unit=type_unit, direction=function.IN, 
-            description = "The type (gas, star, etc.) of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        function.must_handle_array = True
-        return function
-    
-    @legacy_function
     def store_view():
         """
         Store and view the current model, corresponding to the given description.
@@ -284,19 +333,36 @@ class eStars(CommonCode):
         self.overridden().store_view(str(description))
 
     def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_getter('particles', 'get_type')
-        object.add_setter('particles', 'set_type')
-        object.add_getter('particles', 'get_position')
-        object.add_setter('particles', 'set_position')
-        object.add_getter('particles', 'get_color')
-        object.add_setter('particles', 'set_color')
-        object.add_getter('particles', 'get_opacity')
-        object.add_setter('particles', 'set_opacity')
-        object.add_getter('particles', 'get_radius')
-        object.add_setter('particles', 'set_radius')
+        object.define_super_set('particles', ['star_particles', 'gas_particles', 'sphere_particles', 'marker_particles'], 
+            index_to_default_set = 0)
+        
+        object.define_set('star_particles', 'index_of_the_particle')
+        object.set_new('star_particles', 'new_star_particle')
+        object.set_delete('star_particles', 'delete_particle')
+        
+        object.define_set('gas_particles', 'index_of_the_particle')
+        object.set_new('gas_particles', 'new_gas_particle')
+        object.set_delete('gas_particles', 'delete_particle')
+        
+        object.define_set('sphere_particles', 'index_of_the_particle')
+        object.set_new('sphere_particles', 'new_sphere_particle')
+        object.set_delete('sphere_particles', 'delete_particle')
+        
+        object.define_set('marker_particles', 'index_of_the_particle')
+        object.set_new('marker_particles', 'new_marker_particle')
+        object.set_delete('marker_particles', 'delete_particle')
+        
+        for particle_set_name in ['star_particles', 'gas_particles', 'sphere_particles', 'marker_particles']:
+#~            object.add_getter(particle_set_name, 'get_type')
+#~            object.add_setter(particle_set_name, 'set_type')
+            object.add_getter(particle_set_name, 'get_position')
+            object.add_setter(particle_set_name, 'set_position')
+            object.add_getter(particle_set_name, 'get_color')
+            object.add_setter(particle_set_name, 'set_color')
+            object.add_getter(particle_set_name, 'get_opacity')
+            object.add_setter(particle_set_name, 'set_opacity')
+            object.add_getter(particle_set_name, 'get_radius')
+            object.add_setter(particle_set_name, 'set_radius')
 
     def define_state(self, object): 
         CommonCode.define_state(self, object)   
@@ -321,12 +387,21 @@ class eStars(CommonCode):
         object.add_method('EDIT', 'before_get_parameter')
         object.add_method('UPDATE','before_get_parameter')
         
-        object.add_method('EDIT', 'new_particle')
+        object.add_method('EDIT', 'new_star_particle')
+        object.add_method('EDIT', 'new_gas_particle')
+        object.add_method('EDIT', 'new_sphere_particle')
+        object.add_method('EDIT', 'new_marker_particle')
         object.add_method('EDIT', 'delete_particle')
-        object.add_method('UPDATE', 'new_particle')
+        object.add_method('UPDATE', 'new_star_particle')
+        object.add_method('UPDATE', 'new_gas_particle')
+        object.add_method('UPDATE', 'new_sphere_particle')
+        object.add_method('UPDATE', 'new_marker_particle')
         object.add_method('UPDATE', 'delete_particle')
         object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'new_star_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'new_gas_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'new_sphere_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'new_marker_particle', False)
         object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
         
