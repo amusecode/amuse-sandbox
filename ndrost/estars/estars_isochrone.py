@@ -2,11 +2,8 @@ import numpy.random
 from amuse.community import *
 from amuse.lab import *
 
-#from .interface import eStarsInterface
-#from .interface import eStars
-
-from interface import eStarsInterface
-from interface import eStars
+from interface import AstroTrayInterface
+from interface import AstroTray
 
 from matplotlib import pyplot
 from amuse.units import units
@@ -27,7 +24,7 @@ def new_gravity(particles, converter):
     return gravity
 
 if __name__ in ('__main__', '__plot__'):
-    number_of_particles = 10000
+    number_of_particles = 1000
     
     numpy.random.seed(12345)
     masses = new_scalo_mass_distribution(number_of_particles) * 10
@@ -47,17 +44,17 @@ if __name__ in ('__main__', '__plot__'):
     
     particles = new_particles_with_blackbody_color(particles)
     particles.alpha = 1.0
-    particles.type = 1
     particles.radius = stellar_evolution.particles.radius.sqrt() * (1e4 | units.parsec).sqrt()
     
     converter = nbody.nbody_to_si(10.0 | units.parsec, masses.sum())
-    instance = eStars(converter, channel_type='sockets')#, redirection="none")
+    instance = AstroTray(converter, channel_type='sockets')#, redirection="none")
     instance.initialize_code()
     instance.particles.add_particles(particles)
     from_local_to_viz = particles.new_channel_to(instance.particles)
     instance.store_view(0|units.Myr)
     
     for i in range(1, 100):
+	print 'time = ', (i * 0.1 | units.Myr)
         target_time = i * 0.1 | units.Myr
         gravity.evolve_model(target_time)
         from_gravity_to_local.copy()

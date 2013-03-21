@@ -13,6 +13,9 @@ def start_visualisation(gas, stars):
     converter = nbody_system.nbody_to_si(1.0 | units.AU, gas.mass.sum() + stars.mass.sum())
     visualisation = AstroTray(converter, redirection="none")
     visualisation.initialize_code()
+#    visualisation.parameters.use_octree_for_gas = True
+#    visualisation.parameters.use_star_shader = False
+    
     visualisation.gas_particles.add_particles(gas)
     visualisation.star_particles.add_particles(stars)
     return visualisation
@@ -49,7 +52,7 @@ def visualize_simulation(directory):
     files = os.listdir(directory)
     files.sort()
     visualisation = start_visualisation(*read_snapshot(files[1], files[0], directory))
-    for i in range(len(files[:10])/2):
+    for i in range(len(files[:250])/2):
         gas, stars = read_snapshot(files[2*i+1], files[2*i], directory)
         gas.synchronize_to(visualisation.gas_particles)
         gas.copy_values_of_attributes_to(["x", "y", "z", "red", "green", "blue"], visualisation.gas_particles)
@@ -61,5 +64,6 @@ def visualize_simulation(directory):
     visualisation.stop()
 
 if __name__ in ('__main__', '__plot__'):
-    snapshot_directory = "/data1/vriesn/amuse/trunk/sandbox/nathan/roche_triple/validate/validate_4b/run_014_super_RLOF/snapshots"
+    #snapshot_directory = "/data1/vriesn/amuse/trunk/sandbox/nathan/roche_triple/validate/validate_4b/run_014_super_RLOF/snapshots"
+    snapshot_directory = "/home/niels/Projects/AMUSE/roche_triple"
     visualize_simulation(snapshot_directory)

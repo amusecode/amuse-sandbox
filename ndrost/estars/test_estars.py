@@ -2,14 +2,14 @@ from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 from amuse.lab import *
 
-from .interface import eStarsInterface
-from .interface import eStars
+from .interface import AstroTrayInterface
+from .interface import AstroTray
 
 class eStarsTests(TestWithMPI):
     
     def test1(self):
 	converter = nbody.nbody_to_si(1|units.parsec, 1|units.MSun)
-        instance = eStars(converter, redirection='none')
+        instance = AstroTray(converter, redirection='none')
         instance.initialize_code()
         plummer=new_plummer_model(10, converter)
         plummer.radius = 0.1|units.parsec
