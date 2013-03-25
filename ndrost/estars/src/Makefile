@@ -7,12 +7,12 @@ RM ?= rm
 JAVAC ?= javac
 JAR ?= jar
 
-lib/estars.jar: src/*/*/*/*.java
+lib/estars.jar: $(shell find src)
 	@echo Compiling Amuse/Ibis lib
 	$(RM) -r lib tmp
 	mkdir tmp
 	mkdir lib
-	$(JAVAC) -g -classpath "external/*:../codeinterface.jar"  -d tmp src/*/*/*/*.java
+	$(JAVAC) -g -classpath "external/*:external/jogl/*:../codeinterface.jar"  -d tmp $(shell find src -name *.java)
 	#$(JDK)/bin/java -classpath $(CLASSPATH) ibis.compile.Ibisc tmp
 
 	@echo Building jar file
