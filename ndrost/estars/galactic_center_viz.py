@@ -23,7 +23,7 @@ from matplotlib import pyplot
 
 from amuse.ic.kingmodel import new_king_model
 
-from interface import AstroTray
+from interface import Asterisk
 
 numpy.random.seed(1234567)
 
@@ -143,7 +143,7 @@ if __name__ in ('__main__', '__plot__'):
 # evolve and make plots
     times=Tperiod*numpy.array(range(nstep+1))/(1.*nstep)
 
-    viz=AstroTray(converter,redirection="none",channel_type="sockets")
+    viz=Asterisk(converter,redirection="none",channel_type="sockets")
     viz.initialize_code()
     
     tmp=cluster.particles.copy()
