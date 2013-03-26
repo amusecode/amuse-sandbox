@@ -5,9 +5,9 @@ from amuse.units import units
 
 class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
-    AstroTray is a 3D visualization package for AMUSE simulations.
+	Distributed Amuse Code
     
-        .. [#] The AstroTray 3D visualization project is a collaboration between Sterrewacht Leiden and The Netherlands eScience Center.
+        .. [#] The Distributed Amuse project is a collaboration between Sterrewacht Leiden and The Netherlands eScience Center.
     """
 
     imports = ['nl.esciencecenter.estars.Code']
