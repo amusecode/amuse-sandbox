@@ -1,7 +1,60 @@
+import threading
+import sys
+import logging
+import socket
+
+
 from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface
 from amuse.community.interface.common import CommonCode
 from amuse.units import units
+from amuse.support import options
+
+
+class OutputHandler(threading.Thread):
+    
+    def __init__(self, stream, port):
+        threading.Thread.__init__(self)
+        self.stream = stream
+
+        logging.getLogger("channel").debug("output handler connecting to distributed code")
+        
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        
+        address = ('localhost', port)
+        
+        try:
+            self.socket.connect(address)
+        except:
+            raise exceptions.CodeException("Could not connect to distributed code at " + str(address))
+        
+        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
+        
+        self.socket.sendall('TYPE_OUTPUT'.encode('utf-8'))
+
+        #fetch ID of this connection
+        
+        result = SocketMessage()
+        result.receive(self.socket)
+        
+        self.id = result.strings[0]
+        
+        self.daemon = True
+        self.start()
+        
+    def run(self):
+        
+        while True:
+            logging.getLogger("channel").debug("receiving data for output")
+            data = self.socket.recv(1024)
+            
+            if len(data) == 0:
+                logging.getLogger("channel").debug("end of output", len(data))
+                return
+            
+            logging.getLogger("channel").debug("got %d bytes", len(data))
+            
+            self.stream.write(data)
 
 class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
@@ -10,350 +63,202 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         .. [#] The Distributed Amuse project is a collaboration between Sterrewacht Leiden and The Netherlands eScience Center.
     """
 
-    imports = ['nl.esciencecenter.estars.Code']
-    classpath = '.:log4j.properties:lib/*:external/*:../*:external/jogl/*'
-    cwd = 'src'
+    classpath = 'worker.jar'
+    
     
     def __init__(self, **keyword_arguments):
-        CodeInterface.__init__(self, name_of_the_worker="estars_worker", **keyword_arguments)
+        CodeInterface.__init__(self, name_of_the_worker="distributed_worker", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
+        
+        port = self.get_port()
 
-    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
-    def channel_type(self):
-        return 'sockets'
+        self.stdoutHandler = OutputHandler(sys.stdout, port)
+        self.stderrHandler = OutputHandler(sys.stderr, port)
+
+        options.GlobalOptions.instance().override_value_for_option("channel_type", "ibis")
+        options.GlobalOptions.instance().override_value_for_option("port", port)
+
+
+    channel_type = 'sockets'
+
+#    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
+#    def channel_type(self):
+#        return 'sockets'
+    
+    @legacy_function
+    def get_port():
+        """
+        Returns the server socket port of the code. Used by the distributed channel
+        """
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
     
     @legacy_function
     def new_resource():
         """
-        Define a new resource in the visualisation code. The particle is initialized with the provided
-        radius, position and color. This function returns an index that can be used to refer
-        to this particle.
+        Define a new resource. This function returns an index that can be used to refer
+        to this resource.
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         function.addParameter('index_of_the_resource', dtype='int32', direction=function.OUT)
         function.addParameter("name", dtype='string', direction=function.IN)
-        function.addParameter("uri", dtype='string', direction=function.IN)
-#~        for par in ["x", "y", "z"]:
-#~            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.IN, 
-#~                description = "The initial position vector of the particle")
-#~        function.addParameter('radius', dtype='float64', unit=generic_unit_system.length, direction=function.IN, description = "The radius of the particle")
-#~        for par in ["red", "green", "blue"]:
-#~            function.addParameter(par, dtype='float64', direction=function.IN, 
-#~                description = "The RGB color of the particle")
-#~        function.addParameter("alpha", dtype='float64', direction=function.IN, description = "The opacity of the particle", default = 1.0)
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.addParameter("hostname", dtype='string', direction=function.IN)
+        function.addParameter("username", dtype='string', direction=function.IN)
+        function.addParameter("scheduler", dtype='string', direction=function.IN)
+        function.addParameter("amuse_dir", dtype='string', direction=function.IN)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def delete_resource():
         """
-        Remove the definition of particle from the code. After calling this function the particle is
+        Remove the definition of resource from the code. After calling this function the resource is
         no longer part of the model evolution. It is up to the code if the index will be reused.
         This function is optional.
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        #function.can_handle_array = True
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to be removed. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN,
+            description = "Index of the resource to be removed. This index must have been returned by an earlier call to :meth:`new_resource`")
 
         function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            particle was removed from the model
+            resource was removed from the model
         -1 - ERROR
-            particle could not be removed
+            resource could not be removed
         -2 - ERROR
             not yet implemented
         """
         return function
 
-
-
     @legacy_function
-    def get_radius():
+    def new_reservation():
         """
-        Retrieve the radius of a particle. Radius is a scalar property of a particle,
-        this function has one OUT argument.
+        Reserve a node for later use by the simulation.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        #function.can_handle_array = True
         function.must_handle_array = True
+        function.addParameter('reservation_id', dtype='int32', direction=function.OUT)
+        function.addParameter("resource_name", dtype='string', direction=function.IN)
+        function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
+        function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
+        function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
+        function.result_type = 'int32'
         return function
 
-
+        
     @legacy_function
-    def set_radius():
+    def delete_reservation():
         """
-        Set the radius of a particle. Radius is a scalar property of a particle.
+        Reserve a node for later use by the simulation.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('radius', dtype='float64', unit=generic_unit_system.length, direction=function.IN, description = "The new radius of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        #function.can_handle_array = True
         function.must_handle_array = True
-        return function
-
-    @legacy_function
-    def commit_particles():
-        """
-        Let the code perform initialization actions
-        after all particles have been loaded in the model.
-        Should be called before the first evolve call and
-        after the last new_particle call.
-        """
-        function = LegacyFunctionSpecification()
+        function.addParameter('reservation_id', dtype='int32', direction=function.IN)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Model is initialized and evolution can start
-         -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention
-        """
-        return function
-
-    @legacy_function
-    def recommit_particles():
-        """
-        Let the code perform initialization actions
-        after all particles have been loaded in the model.
-        Should be called before the first evolve call and
-        after the last new_particle call.
-        """
-        function = LegacyFunctionSpecification()
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Model is initialized and evolution can start
-         -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention
-        """
         return function
 
     
     @legacy_function
-    def get_position():
+    def wait_for_reservations():
         """
-        Retrieve the position vector of a particle.
+        Wait until all reservations are done, and all nodes are available to run jobs and/or workers
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        for par in ["x", "y", "z"]:
-            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.OUT, 
-                description = "The current position vector of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
+        return function
+    
+        
+    @legacy_function
+    def submit_pickled_function_job():
+        """
+        Submit a job, specified by a pickle of the function, and a pickle of the arguments.
+        """
+        function = LegacyFunctionSpecification()
         function.must_handle_array = True
+        function.addParameter('job_id', dtype='int32', direction=function.OUT)
+        function.addParameter('function', dtype='string', direction=function.IN)
+        function.addParameter('arguments', dtype='string', direction=function.IN)
+        function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
         return function
     
     @legacy_function
-    def set_position():
+    def get_pickled_function_job_result():
         """
-        Update the position of a particle.
+        Get a result of a picked function job. Will block until the result is available
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        for par in ["x", "y", "z"]:
-            function.addParameter(par, dtype='float64', unit=generic_unit_system.length, direction=function.IN, 
-                description = "The new position vector of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
         function.must_handle_array = True
+        function.addParameter('job_id', dtype='int32', direction=function.IN)
+        function.addParameter('result', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
         return function
     
     @legacy_function
-    def get_color():
+    def submit_script_job():
         """
-        Retrieve the RGB color vector of a particle.
+        Submit a job, specified by a script
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        for par in ["red", "green", "blue"]:
-            function.addParameter(par, dtype='float64', direction=function.OUT, 
-                description = "The current RGB color vector of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
         function.must_handle_array = True
-        return function
-    
-    @legacy_function
-    def set_color():
-        """
-        Update the RGB color of a particle.
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        for par in ["red", "green", "blue"]:
-            function.addParameter(par, dtype='float64', direction=function.IN, 
-                description = "The new RGB color vector of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.addParameter('job_id', dtype='int32', direction=function.OUT)
+        function.addParameter('script', dtype='string', direction=function.IN)
+        function.addParameter('arguments', dtype='string', direction=function.IN)
+        function.addParameter('script_dir', dtype='string', direction=function.IN)
+        function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
+        function.addParameter("re_use_code_files", dtype='int32', direction=function.IN, default = 0)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
-        function.must_handle_array = True
         return function
-    
+
     @legacy_function
-    def get_opacity():
+    def wait_for_jobs():
         """
-        Retrieve the alpha (opacity) of a particle.
+        Wait until all jobs are done.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter("alpha", dtype='float64', direction=function.OUT, 
-            description = "The opacity of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        function.must_handle_array = True
-        return function
-    
-    @legacy_function
-    def set_opacity():
-        """
-        Update the alpha (opacity) of a particle.
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter("alpha", dtype='float64', direction=function.IN, 
-            description = "The new opacity of the particle")
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        function.must_handle_array = True
-        return function
-    
-    @legacy_function
-    def get_use_star_shader_flag():
-        function = LegacyFunctionSpecification()
-        function.addParameter("use_star_shader_flag", dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
-    @legacy_function
-    def set_use_star_shader_flag():
-        function = LegacyFunctionSpecification()
-        function.addParameter("use_star_shader_flag", dtype='int32', direction=function.IN)
-        function.result_type = 'int32'
-        return function
+    def cleanup_code(self):
+        print "cleaning up!"
+        del options.GlobalOptions.instance().overriden_options["channel_type"]
+        return 0
     
-    @legacy_function
-    def get_use_octree_for_gas_flag():
-        function = LegacyFunctionSpecification()
-        function.addParameter("use_octree_for_gas_flag", dtype='int32', direction=function.OUT)
-        function.result_type = 'int32'
-        return function
     
-    @legacy_function
-    def set_use_octree_for_gas_flag():
-        function = LegacyFunctionSpecification()
-        function.addParameter("use_octree_for_gas_flag", dtype='int32', direction=function.IN)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def store_view():
-        """
-        Store and view the current model, corresponding to the given description.
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('time', dtype='string', direction=function.IN,
-            description = "The description of the scene.")
-        function.result_type = 'int32'
-        return function
     
 class DistributedAmuse(CommonCode):
 
     def __init__(self, **options):
         CommonCode.__init__(self,  DistributedAmuseInterface(**options), **options)
+    
         
-    def store_view(self, description=""):
-        self.overridden().store_view(str(description))
-
-    def define_particle_sets(self, object):
-        object.define_set('resources', 'index_of_the_particle')
-        object.set_new('resources', 'new_resource')
-        object.set_delete('resources', 'delete_resource')
-        
-        object.add_getter('resources', 'get_name')
-        object.add_setter('resources', 'set_name')
-        object.add_getter('resources', 'get_color')
-        object.add_setter('resources', 'set_color')
-        object.add_getter('resources', 'get_opacity')
-        object.add_setter('resources', 'set_opacity')
-        object.add_getter('resources', 'get_radius')
-        object.add_setter('resources', 'set_radius')
-
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)   
-        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
-        
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
-        
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
-        
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
-        
-        object.add_method('EDIT', 'new_star_particle')
-        object.add_method('EDIT', 'new_gas_particle')
-        object.add_method('EDIT', 'new_sphere_particle')
-        object.add_method('EDIT', 'new_marker_particle')
-        object.add_method('EDIT', 'delete_particle')
-        object.add_method('UPDATE', 'new_star_particle')
-        object.add_method('UPDATE', 'new_gas_particle')
-        object.add_method('UPDATE', 'new_sphere_particle')
-        object.add_method('UPDATE', 'new_marker_particle')
-        object.add_method('UPDATE', 'delete_particle')
-        object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_star_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'new_gas_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'new_sphere_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'new_marker_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        
-        object.add_method('RUN', 'store_view')
-        object.add_method('RUN', 'set_position')
-        object.add_method('RUN', 'set_color')
-        object.add_method('RUN', 'set_opacity')
-        object.add_method('RUN', 'get_position')
-        object.add_method('RUN', 'get_color')
-        object.add_method('RUN', 'get_opacity')
-        
-    def define_parameters(self, object):
-        object.add_boolean_parameter(
-            "get_use_star_shader_flag",
-            "set_use_star_shader_flag",
-            "use_star_shader",
-            "Use-star-shader flag. False means: plain spheres.",
-            True
-        )
-        object.add_boolean_parameter(
-            "get_use_octree_for_gas_flag",
-            "set_use_octree_for_gas_flag",
-            "use_octree_for_gas",
-            "Use-octree-for-gas flag. True means: gas particles are divided over "
-                "octree cells, and these cells will be visualized instead.",
-            False
-        )
+#    def store_view(self, description=""):
+#        self.overridden().store_view(str(description))
+#        
+#    def define_parameters(self, object):
+#        object.add_boolean_parameter(
+#            "get_use_star_shader_flag",
+#            "set_use_star_shader_flag",
+#            "use_star_shader",
+#            "Use-star-shader flag. False means: plain spheres.",
+#            True
+#        )
+#        object.add_boolean_parameter(
+#            "get_use_octree_for_gas_flag",
+#            "set_use_octree_for_gas_flag",
+#            "use_octree_for_gas",
+#            "Use-octree-for-gas flag. True means: gas resources are divided over "
+#                "octree cells, and these cells will be visualized instead.",
+#            False
+#        )
     
