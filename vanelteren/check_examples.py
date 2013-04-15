@@ -216,6 +216,10 @@ def main(references_directory = 'check', current_directory='currrent', must_make
     current = []
     for x in uc.make_current():
         current.append(x)
+    
+    with open('latest.json', 'w') as stream:
+        json.dump(references,stream, indent = 4)
+        
     rows = []
     has_a_difference = False
     for name, dt, figures, digests, error in current:
