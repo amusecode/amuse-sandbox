@@ -11,7 +11,16 @@ JAR ?= jar
 MV ?= mv
 CP ?= cp
 
-all: distributed_worker
+all: java_check distributed_worker
+
+java_check:
+#Makefile requires these checks to be at the beginning of the line
+ifeq ($(JAVA_ENABLED),no)
+        $(error "Java support not configured in AMUSE")
+endif
+ifeq (,$(findstring $(JAVA_VERSION), 1.7))
+        $(error "Java 1.7 required for the Distributed code, but AMUSE configured with Java $(JAVA_VERSION)")
+endif
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
