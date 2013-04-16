@@ -27,7 +27,6 @@ clean:
 	$(RM) *~ distributed_worker worker_code.cc
 	$(RM) -f *.jar CodeInterface.java Worker.java
 	$(RM) -rf tmp
-	make -C src clean
 
 CodeInterface.java: interface.py
 	$(CODE_GENERATOR) --type=java --mode=interface interface.py DistributedAmuseInterface -o $@
@@ -35,14 +34,19 @@ CodeInterface.java: interface.py
 Worker.java: interface.py
 	$(CODE_GENERATOR) --type=java --mode=class interface.py DistributedAmuseInterface -o $@
 
-#src/lib/distributed.jar: $(shell find src)
-#	@echo Compiling Asterisk Lib
-#	make -C src
-
-worker.jar: Worker.java CodeInterface.java Code.java 
+distributed-lib.jar: $(shell find src -name "*.java")
+	@echo Compiling Distributed Code
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -g -cp "src/lib/*:src/lib/jogl/*:src/dist/*" -d tmp *.java
+	$(JAVAC) -g -cp "lib/*" -d tmp $(shell find src -name "*.java")
+	@echo Building jar file
+	$(JAR) -cf distributed-lib.jar -C tmp .
+	$(RM) -rf tmp
+
+worker.jar: Worker.java CodeInterface.java Code.java distributed-lib.jar
+	$(RM) -r tmp
+	mkdir tmp
+	$(JAVAC) -g -cp "lib/*:distributed-lib.jar" -d tmp Worker.java CodeInterface.java Code.java
 	@echo Building jar file
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp

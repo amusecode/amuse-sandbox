@@ -1,6 +1,9 @@
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+
 public class Code implements CodeInterface {
 
     public Code() {
+        new DistributedAmuse();
 
     }
     
