@@ -14,20 +14,20 @@ class DistributedTests(TestWithMPI):
         instance.new_resource(name='DAS4-VU',
                               hostname="fs0.das4.cs.vu.nl",
                               username="niels",
-                              scheduler="sge", 
+                              scheduler_type="sge", 
                               amuse_dir="/home/niels/amuse-svn",
                               )
         
         instance.new_resource(name='LGM',
                               hostname="fs.lgm.liacs.nl", 
                               amuse_dir='/home/niels/amuse-svn',
-                              scheduler="local", 
+                              scheduler_type="local", 
                               username="niels")
         
         instance.new_resource(name='LGM-4', 
                               hostname="node004", 
                               gateways="fs.lgm.liacs.nl",
-                              scheduler="local", 
+                              scheduler_type="local", 
                               amuse_dir='/var/local/amuse',
                               username="niels")
     
@@ -42,9 +42,9 @@ class DistributedTests(TestWithMPI):
     def test1(self):
        instance = self.start_nodes()
     
-       gadget = Gadget(nr_of_workers=4, node_label='VU')
+       #gadget = Gadget(nr_of_workers=4, node_label='VU')
         
-       gadget2 = Gadget(nr_of_workers=4, nr_of_nodes=2, node_label='VU')
+       #gadget2 = Gadget(nr_of_workers=4, nr_of_nodes=2, node_label='VU')
 
        # some interesting simulation using these workers
 
@@ -92,7 +92,7 @@ class DistributedTests(TestWithMPI):
                 instance.submit_script_job(script="some_script.py",
                                            script_dir = ".",
                                            input_files=input_file,
-                                           re_use_script_files = True,
+                                           re_use_code_files = True,
                                            arguments = "--model " + input_file + " --mass " + str(mass))
                 
         instance.wait_for_jobs()

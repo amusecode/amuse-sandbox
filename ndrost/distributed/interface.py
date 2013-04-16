@@ -63,7 +63,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         .. [#] The Distributed Amuse project is a collaboration between Sterrewacht Leiden and The Netherlands eScience Center.
     """
 
-    classpath = 'worker.jar:distributed.jar:lib/*'
+    classpath = '.:worker.jar:distributed.jar:lib/*'
     
     
     def __init__(self, **keyword_arguments):
@@ -72,18 +72,16 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         
         port = self.get_port()
 
-        self.stdoutHandler = OutputHandler(sys.stdout, port)
-        self.stderrHandler = OutputHandler(sys.stderr, port)
+#        self.stdoutHandler = OutputHandler(sys.stdout, port)
+#        self.stderrHandler = OutputHandler(sys.stderr, port)
 
         options.GlobalOptions.instance().override_value_for_option("channel_type", "ibis")
         options.GlobalOptions.instance().override_value_for_option("port", port)
 
 
-    channel_type = 'sockets'
-
-#    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
-#    def channel_type(self):
-#        return 'sockets'
+    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
+    def channel_type(self):
+        return 'sockets'
     
     @legacy_function
     def get_port():
@@ -105,9 +103,10 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('index_of_the_resource', dtype='int32', direction=function.OUT)
         function.addParameter("name", dtype='string', direction=function.IN)
         function.addParameter("hostname", dtype='string', direction=function.IN)
-        function.addParameter("username", dtype='string', direction=function.IN)
-        function.addParameter("scheduler", dtype='string', direction=function.IN)
         function.addParameter("amuse_dir", dtype='string', direction=function.IN)
+        function.addParameter('port', dtype='int32', direction=function.IN, default="22")
+        function.addParameter("username", dtype='string', direction=function.IN, default="")
+        function.addParameter("scheduler_type", dtype='string', direction=function.IN, default="local")
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -124,7 +123,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN,
             description = "Index of the resource to be removed. This index must have been returned by an earlier call to :meth:`new_resource`")
 
-        function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -145,9 +144,12 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.must_handle_array = True
         function.addParameter('reservation_id', dtype='int32', direction=function.OUT)
         function.addParameter("resource_name", dtype='string', direction=function.IN)
+        function.addParameter("queue_name", dtype='string', direction=function.IN, default="default")
         function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
         function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+
         function.result_type = 'int32'
         return function
 

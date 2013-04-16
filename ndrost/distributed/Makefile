@@ -34,19 +34,19 @@ CodeInterface.java: interface.py
 Worker.java: interface.py
 	$(CODE_GENERATOR) --type=java --mode=class interface.py DistributedAmuseInterface -o $@
 
-distributed-lib.jar: $(shell find src -name "*.java")
+distributed.jar: $(shell find src -name "*.java")
 	@echo Compiling Distributed Code
 	$(RM) -r tmp
 	mkdir tmp
 	$(JAVAC) -g -cp "lib/*" -d tmp $(shell find src -name "*.java")
 	@echo Building jar file
-	$(JAR) -cf distributed-lib.jar -C tmp .
+	$(JAR) -cf distributed.jar -C tmp .
 	$(RM) -rf tmp
 
-worker.jar: Worker.java CodeInterface.java Code.java distributed-lib.jar
+worker.jar: Worker.java CodeInterface.java Code.java distributed.jar
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -g -cp "lib/*:distributed-lib.jar" -d tmp Worker.java CodeInterface.java Code.java
+	$(JAVAC) -g -cp "lib/*:distributed.jar" -d tmp Worker.java CodeInterface.java Code.java
 	@echo Building jar file
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp
