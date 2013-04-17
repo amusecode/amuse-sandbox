@@ -15,6 +15,12 @@
  */
 package nl.esciencecenter.amuse.distributed;
 
+import nl.esciencecenter.amuse.distributed.scheduler.AmuseJobScheduler;
+import nl.esciencecenter.amuse.distributed.scheduler.AmuseWorkerJob;
+import nl.esciencecenter.amuse.distributed.worker.WorkerConnectionHandler;
+
+import java.util.ArrayList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,73 +28,166 @@ public class DistributedAmuse {
 
     private static final Logger logger = LoggerFactory.getLogger(DistributedAmuse.class);
 
-    private final int workerPort = 6644;
-    
+    //resources potentially available for starting reservations on
+    private final ArrayList<Resource> resources;
+
+    //reservations of actual resources to run jobs. May still be in a queue, or already running
+    private final ArrayList<Reservation> reservations;
+
+    //takes care of job queue
+    private final AmuseJobScheduler scheduler;
+
+    private final WorkerConnectionHandler workerConnectionHandler;
+
+    private final Network network;
+
+    public DistributedAmuse() throws DistributedAmuseException {
+        resources = new ArrayList<Resource>();
+        reservations = new ArrayList<Reservation>();
+
+        network = new Network();
+
+        scheduler = new AmuseJobScheduler(this);
+
+        workerConnectionHandler = new WorkerConnectionHandler(this);
+    }
+
+    public Network getNetwork() {
+        return network;
+    }
+
     /**
      * Port used by the IbisChannel to connect to when creating workers and stderr/stdout streams
      * 
      * @return the port used by the IbisChannel to connect to when creating workers and stderr/stdout streams
      */
-    public int getWorkerPort() {
-        logger.debug("returning worker port " + workerPort);
-        return workerPort;
+    public synchronized int getWorkerPort() {
+        logger.debug("returning worker port");
+        return workerConnectionHandler.getPort();
     }
 
-    public int newResource(String name, String hostname, String amuseDir, int port, String username, String schedulerType) {
+    public synchronized Resource newResource(String name, String hostname, String amuseDir, int port, String username,
+            String schedulerType) throws DistributedAmuseException {
         logger.debug("creating new resource: name = " + name + " hostname = " + hostname + " port = " + port + " user name = "
                 + username + " scheduler type = " + schedulerType + " amuse dir = " + amuseDir);
-        return 0;
+
+        for (Resource resource : resources) {
+            if (resource.getName().equals(name)) {
+                throw new DistributedAmuseException("Resource " + name + " already exists");
+            }
+        }
+
+        Resource result = new Resource(name, hostname, amuseDir, port, username, schedulerType);
+
+        resources.add(result);
+
+        return result;
     }
 
-    public void deleteResource(int resourceID) {
-        logger.debug("deleting resource " + resourceID);
-
-        // TODO Auto-generated method stub
-
+    public synchronized Resource getResource(int resourceID) throws DistributedAmuseException {
+        for (Resource resource : resources) {
+            if (resource.getId() == resourceID) {
+                return resource;
+            }
+        }
+        throw new DistributedAmuseException("Resource with ID " + resourceID + " not found");
     }
 
-    public int newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes, String nodeLabel) {
+    public synchronized Resource getResource(String name) throws DistributedAmuseException {
+        for (Resource resource : resources) {
+            if (resource.getName().equals(name)) {
+                return resource;
+            }
+        }
+        throw new DistributedAmuseException("Resource with name " + name + " not found");
+    }
+
+    public synchronized void deleteResource(Resource resource) throws DistributedAmuseException {
+        for (int i = 0; i < resources.size(); i++) {
+            if (resource.getId() == resources.get(i).getId()) {
+                resources.remove(i);
+                return;
+            }
+        }
+        throw new DistributedAmuseException("Resource " + resource.getId() + " not found");
+    }
+
+    public synchronized Reservation newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes,
+            String nodeLabel) throws DistributedAmuseException {
         logger.debug("reserving new nodes: resource name = " + resourceName + " queue name = " + queueName
                 + " number of nodes = " + nodeCount + " time (in minutes) = " + timeMinutes + " node label = " + nodeLabel);
 
-        return 0;
+        Resource resource = getResource(resourceName);
+
+        Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel);
+
+        reservations.add(result);
+
+        return result;
     }
 
-    public void deleteReservation(int reservationID) {
+    public synchronized Reservation getReservation(int reservationID) throws DistributedAmuseException {
+        for (Reservation reservation : reservations) {
+            if (reservation.getID() == reservationID) {
+                return reservation;
+            }
+        }
+        throw new DistributedAmuseException("Reservation with ID " + reservationID + " not found");
+    }
+
+    public synchronized void deleteReservation(int reservationID) throws DistributedAmuseException {
         logger.debug("deleting reservation " + reservationID);
 
+        for (int i = 0; i < reservations.size(); i++) {
+            Reservation reservation = reservations.get(i);
+            if (reservationID == reservation.getID()) {
+                reservations.remove(i);
+                reservation.cancel();
+                return;
+            }
+        }
+        throw new DistributedAmuseException("Reservation " + reservationID + " not found");
     }
 
-    public int submitJob(PickledJobDescription jobDescription) {
-        logger.debug("submitting new job: " + jobDescription);
+    public synchronized int submitPickledJob(String function, String arguments, String nodeLabel)
+            throws DistributedAmuseException {
+        logger.debug("submitting new pickled job");
 
-        return 0;
+        return scheduler.submitPickledJob(function, arguments, nodeLabel);
     }
 
-    public int submitJob(ScriptJobDescription jobDescription) {
-        logger.debug("submitting new job: " + jobDescription);
-        return 0;
+    public synchronized int submitScriptJob(String script, String arguments, String codeDir, String nodeLabel,
+            boolean useCodeCache) throws DistributedAmuseException {
+        return scheduler.submitScriptJob(script, arguments, codeDir, nodeLabel, useCodeCache);
     }
 
-    public String getJobResult(int jobID) {
-        logger.debug("gettig job result for " + jobID);
-
-        // TODO Auto-generated method stub
-        return "hurray job done!";
+    public synchronized String getJobResult(int jobID) throws DistributedAmuseException {
+        return scheduler.getJobResult(jobID);
     }
 
-    public void waitForAllJobs() {
+    public synchronized void waitUntilCompleted(int jobID) {
+        logger.debug("waiting for job " + jobID + " to complete");
+
+        scheduler.waitForJob(jobID);
+    }
+
+    public synchronized void waitForAllJobs() {
         logger.debug("waiting for all jobs to complete");
 
-        // TODO Auto-generated method stub
+        scheduler.waitForAllJobs();
+    }
+
+    public synchronized void waitForAllReservations() {
+        logger.debug("waiting for all reservations to start");
+
+        for (Reservation reservation : reservations) {
+            reservation.waitUntilStarted();
+        }
 
     }
 
-    public void waitForAllReservations() {
-        logger.debug("waiting for all reservations to start");
-
-        // TODO Auto-generated method stub
-
+    public AmuseWorkerJob submitWorkerJob(String nodeLabel, int nrOfNodes, String codeDir, boolean copyWorkerCode) {
+        return scheduler.submitWorkerJob(nodeLabel);
     }
 
 }

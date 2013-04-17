@@ -38,7 +38,7 @@ distributed.jar: $(shell find src -name "*.java")
 	@echo Compiling Distributed Code
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -g -cp "lib/*" -d tmp $(shell find src -name "*.java")
+	$(JAVAC) -g -cp "lib/*:lib/ipl/*" -d tmp $(shell find src -name "*.java")
 	@echo Building jar file
 	$(JAR) -cf distributed.jar -C tmp .
 	$(RM) -rf tmp
@@ -46,7 +46,7 @@ distributed.jar: $(shell find src -name "*.java")
 worker.jar: Worker.java CodeInterface.java Code.java distributed.jar
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -g -cp "lib/*:distributed.jar" -d tmp Worker.java CodeInterface.java Code.java
+	$(JAVAC) -g -cp "lib/*:lib/ipl/*:distributed.jar" -d tmp Worker.java CodeInterface.java Code.java
 	@echo Building jar file
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp

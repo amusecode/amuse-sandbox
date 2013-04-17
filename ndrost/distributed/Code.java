@@ -14,17 +14,34 @@
  * limitations under the License.
  */
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.PickledJobDescription;
+import nl.esciencecenter.amuse.distributed.Reservation;
+import nl.esciencecenter.amuse.distributed.Resource;
 import nl.esciencecenter.amuse.distributed.ScriptJobDescription;
+import nl.esciencecenter.amuse.distributed.scheduler.AmuseWorkerJob;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Interface from generated code interface to the distributed amuse implementation. Simply forwards all calls. Must be in the
+ * "default" package as the CodeInterface and Worker are also generated there.
+ * 
+ * @author Niels Drost
+ * 
+ */
 public class Code implements CodeInterface {
-    
+
+    private static final Logger logger = LoggerFactory.getLogger(Code.class);
+
     private final DistributedAmuse distributedAmuse;
 
-    public Code() {
+    public Code() throws DistributedAmuseException {
         distributedAmuse = new DistributedAmuse();
     }
 
@@ -33,94 +50,139 @@ public class Code implements CodeInterface {
         //IGNORED
         return 0;
     }
-    
+
     @Override
     public int commit_parameters() {
         //IGNORED
         return 0;
     }
-    
+
     @Override
     public int recommit_parameters() {
         //IGNORED
         return 0;
     }
-    
+
     @Override
     public int get_port() {
         return distributedAmuse.getWorkerPort();
     }
 
     @Override
-    public int new_resource(int[] index_of_the_resource, String[] name, String[] hostname, String[] amuse_dir, int[] port, String[] username, String[] scheduler_type, int count) {
-        for (int i = 0; i < count; i++) {
-            index_of_the_resource[i] =
-                    distributedAmuse.newResource(name[i], hostname[i],  amuse_dir[i], port[i], username[i], scheduler_type[i]);
+    public int new_resource(int[] index_of_the_resource, String[] name, String[] hostname, String[] amuse_dir, int[] port,
+            String[] username, String[] scheduler_type, int count) {
+        try {
+            for (int i = 0; i < count; i++) {
+                Resource resource =
+                        distributedAmuse.newResource(name[i], hostname[i], amuse_dir[i], port[i], username[i], scheduler_type[i]);
+                index_of_the_resource[i] = resource.getId();
+            }
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e);
+            return 10;
         }
-        return 0;
     }
 
     @Override
     public int delete_resource(int[] index_of_the_resource, int count) {
-        for (int i = 0; i < count; i++) {
-            distributedAmuse.deleteResource(index_of_the_resource[i]);
+        try {
+            for (int i = 0; i < count; i++) {
+                Resource resource = distributedAmuse.getResource(index_of_the_resource[i]);
+                distributedAmuse.deleteResource(resource);
+            }
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e);
+            return 10;
         }
-        return 0;
     }
 
     @Override
     public int new_reservation(int[] reservation_id, String[] resource_name, String[] queue_name, int[] node_count,
             int[] time_minutes, String[] node_label, int count) {
-        for (int i = 0; i < count; i++) {
-            reservation_id[i] =
-                    distributedAmuse.newReservation(resource_name[i], queue_name[i], node_count[i], time_minutes[i],
-                            node_label[i]);
+        try {
+            for (int i = 0; i < count; i++) {
+                Reservation result =
+                        distributedAmuse.newReservation(resource_name[i], queue_name[i], node_count[i], time_minutes[i],
+                                node_label[i]);
+
+                reservation_id[i] = result.getID();
+            }
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e);
+            return 10;
         }
-        return 0;
+
     }
 
     @Override
     public int delete_reservation(int[] reservation_id, int count) {
-        for (int i = 0; i < count; i++) {
-            distributedAmuse.deleteReservation(reservation_id[i]);
+        try {
+            for (int i = 0; i < count; i++) {
+                distributedAmuse.deleteReservation(reservation_id[i]);
+            }
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e);
+            return 10;
         }
-        return 0;
+
     }
 
     @Override
     public int submit_pickled_function_job(int[] job_id, String[] function, String[] arguments, String[] node_label, int count) {
-        for(int i = 0; i < count; i++) {
-            job_id[i] = distributedAmuse.submitJob(new PickledJobDescription(function[i], arguments[i], node_label[i]));
+        try {
+            for (int i = 0; i < count; i++) {
+                job_id[i] = distributedAmuse.submitPickledJob(function[i], arguments[i], node_label[i]);
+
+            }
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e);
+            return 10;
         }
-        return 0;
+
     }
 
     @Override
     public int submit_script_job(int[] job_id, String[] script, String[] arguments, String[] code_dir, String[] node_label,
             int[] re_use_code_files, int count) {
-        for(int i = 0; i < count; i++) {
-            boolean useCodeCache = re_use_code_files[i] != 0;
-            job_id[i] = distributedAmuse.submitJob(new ScriptJobDescription(script[i], arguments[i], code_dir[i], node_label[i], useCodeCache));
+        try {
+            for (int i = 0; i < count; i++) {
+                boolean useCodeCache = re_use_code_files[i] != 0;
+                job_id[i] =
+                        distributedAmuse.submitScriptJob(script[i], arguments[i], code_dir[i], node_label[i],
+                                useCodeCache);
+
+            }
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e);
+            return 10;
         }
-        return 0;
+
     }
 
     @Override
     public int get_pickled_function_job_result(int[] job_id, String[] result, int count) {
-        // TODO Auto-generated method stub
-        for (int i = 0; i < count; i++) {
-            result[i] = distributedAmuse.getJobResult(job_id[i]);
+        try {
+            for (int i = 0; i < count; i++) {
+                result[i] = distributedAmuse.getJobResult(job_id[i]);
+            }
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e);
+            return 10;
         }
-
-        return 0;
     }
 
     @Override
     public int wait_for_jobs() {
-          distributedAmuse.waitForAllJobs();
-          return 0;
+        distributedAmuse.waitForAllJobs();
+        return 0;
     }
-
 
     @Override
     public int wait_for_reservations() {

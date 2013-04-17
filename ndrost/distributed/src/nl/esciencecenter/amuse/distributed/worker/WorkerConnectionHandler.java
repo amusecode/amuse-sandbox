@@ -1,0 +1,147 @@
+/*
+ * Copyright 2013 Netherlands eScience Center
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package nl.esciencecenter.amuse.distributed.worker;
+
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.Network;
+
+import ibis.ipl.Ibis;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Class that handles incoming "worker" connections. Submits a job to the scheduler to allocate a node and start a worker there,
+ * then forwards all messages to that node.
+ * 
+ * @author Niels Drost
+ * 
+ */
+public class WorkerConnectionHandler {
+
+    public static final String WORKER_TYPE_STRING = "TYPE_WORKER";
+
+    public static final String OUTPUT_TYPE_STRING = "TYPE_OUTPUT";
+
+    public static final int TYPE_STRING_LENGTH = WORKER_TYPE_STRING.length();
+
+    private static final Logger logger = LoggerFactory.getLogger(WorkerConnectionHandler.class);
+
+    private final ServerSocketChannel loopbackServer;
+    
+    private final OutputManager outputManager;
+    
+    private final DistributedAmuse distributedAmuse;
+
+    public WorkerConnectionHandler(DistributedAmuse distributedAmuse) throws DistributedAmuseException {
+        this.distributedAmuse = distributedAmuse;
+        
+        try {
+
+        outputManager = new OutputManager(distributedAmuse);
+
+        loopbackServer = ServerSocketChannel.open();
+        // bind to local host
+        loopbackServer.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
+
+        } catch (IOException e) {
+            throw new DistributedAmuseException("cannot start worker connection handler", e);
+        }
+    }
+
+    public int getPort() {
+        return loopbackServer.socket().getLocalPort();
+    }
+
+    public void close() throws IOException {
+        loopbackServer.close();
+    }
+
+    public void run() {
+        while (true) {
+            SocketChannel socket = null;
+            try {
+                logger.debug("Waiting for connection");
+                socket = loopbackServer.accept();
+                logger.debug("New connection accepted");
+
+                //turn on no-delay
+                socket.socket().setTcpNoDelay(true);
+
+                // read string, to make sure we are talking to amuse, and to get
+                // the type of connection
+                ByteBuffer magic = ByteBuffer.allocate(TYPE_STRING_LENGTH);
+
+                while (magic.hasRemaining()) {
+                    long read = socket.read(magic);
+
+                    if (read == -1) {
+                        throw new IOException("Connection closed on reading magic string");
+                    }
+                }
+
+                String receivedString = new String(magic.array(), "UTF-8");
+                if (receivedString.equalsIgnoreCase(WORKER_TYPE_STRING)) {
+                    new RemoteWorker(socket, distributedAmuse);
+                } else if (receivedString.equalsIgnoreCase(OUTPUT_TYPE_STRING)) {
+                    outputManager.newOutputConnection(socket);
+                } else {
+                    throw new IOException("magic string (" + WORKER_TYPE_STRING + " or " + OUTPUT_TYPE_STRING
+                            + ") not received. Instead got: " + receivedString);
+                }
+
+                logger.debug("New connection handled");
+            } catch (Exception e) {
+                if (socket != null) {
+                    // report error to amuse
+                    AmuseMessage errormessage = new AmuseMessage(0, AmuseMessage.FUNCTION_ID_INIT, 1, e.getMessage());
+                    try {
+                        errormessage.writeTo(socket);
+                    } catch (Exception e2) {
+                        // IGNORE
+                    }
+                    logger.error("error on starting remote code", e);
+
+                    try {
+                        socket.close();
+                    } catch (Exception e2) {
+                        // IGNORE
+                    }
+                }
+
+                if (!loopbackServer.isOpen()) {
+                    return;
+                }
+
+                // wait a bit before handling the next connection
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    // IGNORE
+                }
+            }
+        }
+    }
+
+}

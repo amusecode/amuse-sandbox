@@ -16,14 +16,13 @@
 package nl.esciencecenter.amuse.distributed;
 
 public class ScriptJobDescription {
-    
+
     private final String script;
     private final String arguments;
     private final String codeDir;
     private final String nodeLabel;
     private final boolean useCodeCache;
 
-    
     public ScriptJobDescription(String script, String arguments, String codeDir, String nodeLabel, boolean useCodeCache) {
         this.script = script;
         this.arguments = arguments;
@@ -32,12 +31,10 @@ public class ScriptJobDescription {
         this.useCodeCache = useCodeCache;
     }
 
-
     @Override
     public String toString() {
         return "ScriptJobDescription [script=" + script + ", arguments=" + arguments + ", codeDir=" + codeDir + ", nodeLabel="
                 + nodeLabel + ", useCodeCache=" + useCodeCache + "]";
     }
-
-    
+  
 }
