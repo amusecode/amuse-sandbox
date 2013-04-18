@@ -1,6 +1,6 @@
-package nl.esciencecenter.amuse.distributed.worker;
+package nl.esciencecenter.amuse.distributed.local;
 
-import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.Network;
 
 import java.io.FileOutputStream;

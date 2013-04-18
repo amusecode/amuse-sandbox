@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed;
+package nl.esciencecenter.amuse.distributed.local;
+
 
 /**
  * @author Niels Drost
@@ -22,6 +23,10 @@ package nl.esciencecenter.amuse.distributed;
 public class Reservation {
     
     private static int nextID = 0;
+    
+    private static int getNextID() {
+        return nextID++;
+    }
 
     /**
      * @param resource
@@ -34,9 +39,7 @@ public class Reservation {
         // TODO Auto-generated constructor stub
     }
 
-    private static int getNextID() {
-        return nextID++;
-    }
+    
     
     public int getID() {
         // TODO Auto-generated method stub

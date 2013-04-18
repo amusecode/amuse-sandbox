@@ -21,7 +21,6 @@ import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
-import ibis.ipl.IbisIdentifier;
 import ibis.ipl.PortType;
 import ibis.ipl.RegistryEventHandler;
 
@@ -29,7 +28,7 @@ import ibis.ipl.RegistryEventHandler;
  * @author Niels Drost
  * 
  */
-public class Network implements RegistryEventHandler {
+public class Network {
 
     public static final String PORT_NAME = "amuse";
 
@@ -39,9 +38,7 @@ public class Network implements RegistryEventHandler {
     public static IbisCapabilities IPL_CAPABILITIES = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT,
             IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED, IbisCapabilities.TERMINATION, IbisCapabilities.SIGNALS);
 
-    private final Ibis ibis;
-
-    Network() throws DistributedAmuseException {
+    public static Ibis createIbis(RegistryEventHandler registryEventHandler) throws DistributedAmuseException {
         try {
 
             Properties properties = new Properties();
@@ -51,81 +48,11 @@ public class Network implements RegistryEventHandler {
             properties.put("ibis.managementclient", "true");
             properties.put("ibis.bytescount", "true");
 
-            ibis = IbisFactory.createIbis(IPL_CAPABILITIES, properties, true, this, IPL_PORT_TYPE);
+            return IbisFactory.createIbis(IPL_CAPABILITIES, properties, true, registryEventHandler, IPL_PORT_TYPE);
         } catch (IbisCreationFailedException e) {
             throw new DistributedAmuseException("failed to create ibis", e);
         }
     }
 
-    /* (non-Javadoc)
-     * @see ibis.ipl.RegistryEventHandler#died(ibis.ipl.IbisIdentifier)
-     */
-    @Override
-    public void died(IbisIdentifier arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /* (non-Javadoc)
-     * @see ibis.ipl.RegistryEventHandler#electionResult(java.lang.String, ibis.ipl.IbisIdentifier)
-     */
-    @Override
-    public void electionResult(String arg0, IbisIdentifier arg1) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /* (non-Javadoc)
-     * @see ibis.ipl.RegistryEventHandler#gotSignal(java.lang.String, ibis.ipl.IbisIdentifier)
-     */
-    @Override
-    public void gotSignal(String arg0, IbisIdentifier arg1) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /* (non-Javadoc)
-     * @see ibis.ipl.RegistryEventHandler#joined(ibis.ipl.IbisIdentifier)
-     */
-    @Override
-    public void joined(IbisIdentifier arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /* (non-Javadoc)
-     * @see ibis.ipl.RegistryEventHandler#left(ibis.ipl.IbisIdentifier)
-     */
-    @Override
-    public void left(IbisIdentifier arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /* (non-Javadoc)
-     * @see ibis.ipl.RegistryEventHandler#poolClosed()
-     */
-    @Override
-    public void poolClosed() {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /* (non-Javadoc)
-     * @see ibis.ipl.RegistryEventHandler#poolTerminated(ibis.ipl.IbisIdentifier)
-     */
-    @Override
-    public void poolTerminated(IbisIdentifier arg0) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /**
-     * @return
-     */
-    public Ibis getIbis() {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
 }

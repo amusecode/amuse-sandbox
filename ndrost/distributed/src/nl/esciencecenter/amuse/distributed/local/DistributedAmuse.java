@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed;
+package nl.esciencecenter.amuse.distributed.local;
 
-import nl.esciencecenter.amuse.distributed.scheduler.AmuseJobScheduler;
-import nl.esciencecenter.amuse.distributed.scheduler.AmuseWorkerJob;
-import nl.esciencecenter.amuse.distributed.worker.WorkerConnectionHandler;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.Network;
 
 import java.util.ArrayList;
 
@@ -54,6 +53,10 @@ public class DistributedAmuse {
 
     public Network getNetwork() {
         return network;
+    }
+    
+    public AmuseJobScheduler getScheduler() {
+        return scheduler;
     }
 
     /**
@@ -149,45 +152,12 @@ public class DistributedAmuse {
         throw new DistributedAmuseException("Reservation " + reservationID + " not found");
     }
 
-    public synchronized int submitPickledJob(String function, String arguments, String nodeLabel)
-            throws DistributedAmuseException {
-        logger.debug("submitting new pickled job");
-
-        return scheduler.submitPickledJob(function, arguments, nodeLabel);
-    }
-
-    public synchronized int submitScriptJob(String script, String arguments, String codeDir, String nodeLabel,
-            boolean useCodeCache) throws DistributedAmuseException {
-        return scheduler.submitScriptJob(script, arguments, codeDir, nodeLabel, useCodeCache);
-    }
-
-    public synchronized String getJobResult(int jobID) throws DistributedAmuseException {
-        return scheduler.getJobResult(jobID);
-    }
-
-    public synchronized void waitUntilCompleted(int jobID) {
-        logger.debug("waiting for job " + jobID + " to complete");
-
-        scheduler.waitForJob(jobID);
-    }
-
-    public synchronized void waitForAllJobs() {
-        logger.debug("waiting for all jobs to complete");
-
-        scheduler.waitForAllJobs();
-    }
-
     public synchronized void waitForAllReservations() {
         logger.debug("waiting for all reservations to start");
 
         for (Reservation reservation : reservations) {
             reservation.waitUntilStarted();
         }
-
-    }
-
-    public AmuseWorkerJob submitWorkerJob(String nodeLabel, int nrOfNodes, String codeDir, boolean copyWorkerCode) {
-        return scheduler.submitWorkerJob(nodeLabel);
     }
 
 }

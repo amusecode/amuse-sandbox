@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.scheduler;
+package nl.esciencecenter.amuse.distributed.local;
 
-import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.PickledJobDescription;
-import nl.esciencecenter.amuse.distributed.ScriptJobDescription;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.WorkerDescription;
 
 /**
  * @author Niels Drost
- *
+ * 
  */
 public class AmuseJobScheduler {
 
@@ -35,16 +34,16 @@ public class AmuseJobScheduler {
     /**
      * @param job
      */
-    public void waitForJob(int jobID) {
+    public void waitForJob(int jobID) throws DistributedAmuseException {
         // TODO Auto-generated method stub
-        
+
     }
 
     /**
      * @param jobID
      * @return
      */
-    public String getJobResult(int jobID) {
+    public String getJobResult(int jobID) throws DistributedAmuseException {
         // TODO Auto-generated method stub
         return "result!";
     }
@@ -52,9 +51,9 @@ public class AmuseJobScheduler {
     /**
      * 
      */
-    public void waitForAllJobs() {
+    public void waitForAllJobs() throws DistributedAmuseException {
         // TODO Auto-generated method stub
-        
+
     }
 
     /**
@@ -65,7 +64,8 @@ public class AmuseJobScheduler {
      * @param useCodeCache
      * @return
      */
-    public int submitScriptJob(String script, String arguments, String codeDir, String nodeLabel, boolean useCodeCache) {
+    public int submitScriptJob(String script, String arguments, String codeDir, String nodeLabel, boolean useCodeCache)
+            throws DistributedAmuseException {
         // TODO Auto-generated method stub
         return 0;
     }
@@ -76,16 +76,16 @@ public class AmuseJobScheduler {
      * @param nodeLabel
      * @return
      */
-    public int submitPickledJob(String function, String arguments, String nodeLabel) {
+    public int submitPickledJob(String function, String arguments, String nodeLabel) throws DistributedAmuseException {
         // TODO Auto-generated method stub
         return 0;
     }
 
     /**
-     * @param nodeLabel
+     * @param workerDescription
      * @return
      */
-    public AmuseWorkerJob submitWorkerJob(String nodeLabel) {
+    public AmuseWorkerJob submitWorkerJob(WorkerDescription workerDescription) throws DistributedAmuseException {
         // TODO Auto-generated method stub
         return null;
     }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed;
+package nl.esciencecenter.amuse.distributed.local;
 
 /**
  * @author Niels Drost

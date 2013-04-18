@@ -13,38 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.scheduler;
-
-import ibis.ipl.ReceivePortIdentifier;
+package nl.esciencecenter.amuse.distributed.remote;
 
 /**
+ * Pilot job. Started when a reservations is made.
+ * 
  * @author Niels Drost
  *
  */
-public class AmuseWorkerJob {
+public class Pilot {
 
-    public void waitUntilStarted() {
-        // TODO Auto-generated method stub
-    }
     
-    public boolean hasFinished() {
-        // TODO Auto-generated method stub
-        return true;
-    }
-
-    public ReceivePortIdentifier getWorkerIbisPort() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * 
-     */
-    public void stop() {
-        // TODO Auto-generated method stub
+    public static void Main(String[] arguments) {
         
     }
-
-
-
 }

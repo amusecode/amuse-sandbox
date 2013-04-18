@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.worker;
+package nl.esciencecenter.amuse.distributed.local;
 
-import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.scheduler.AmuseWorkerJob;
+import nl.esciencecenter.amuse.distributed.AmuseMessage;
+import nl.esciencecenter.amuse.distributed.WorkerDescription;
 
 import ibis.amuse.Daemon;
 import ibis.amuse.Worker;
@@ -36,10 +36,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Class responsible for taking method invocation messages from AMUSE, and forwarding them to a remote worker proxy.
  * @author Niels Drost
  * 
  */
-public class RemoteWorker extends Thread {
+public class WorkerConnection extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
@@ -70,7 +71,7 @@ public class RemoteWorker extends Thread {
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    RemoteWorker(SocketChannel socket, DistributedAmuse distributedAmuse) throws Exception {
+    WorkerConnection(SocketChannel socket, DistributedAmuse distributedAmuse) throws Exception {
         this.socket = socket;
         this.ibis = distributedAmuse.getNetwork().getIbis();
 
@@ -89,31 +90,33 @@ public class RemoteWorker extends Thread {
 
         String codeName = initRequest.getString(0);
         String codeDir = initRequest.getString(1);
-        //hostname = initRequest.getString(2);
-        //stdoutFile = initRequest.getString(3);
-        //stderrFile = initRequest.getString(4);
+        //String hostname = initRequest.getString(2);
+        String stdoutFile = initRequest.getString(3);
+        String stderrFile = initRequest.getString(4);
         String nodeLabel = initRequest.getString(5);
 
-        //nrOfWorkers = initRequest.getInteger(0);
+        int nrOfWorkers = initRequest.getInteger(0);
         int nrOfNodes = initRequest.getInteger(1);
-        //nrOfThreads = initRequest.getInteger(2);
+        int nrOfThreads = initRequest.getInteger(2);
 
         boolean copyWorkerCode = initRequest.getBoolean(0);
-
+        
         // get rid of "ugly" parts of id
         String idName = codeName.replace("_worker", "").replace("_sockets", "");
-
+        
         id = idName + "-" + getNextID();
 
+        //description of the worker, used for both the scheduler and the code proxy to start the worker properly
+        WorkerDescription workerDescription = new WorkerDescription(id, codeName, codeDir, stdoutFile, stderrFile, nodeLabel, nrOfWorkers, nrOfNodes, nrOfThreads, copyWorkerCode);
+        
         // initialize ibis ports
-
-        receivePort = ibis.createReceivePort(Daemon.portType, id.toString());
+        receivePort = ibis.createReceivePort(Daemon.portType, id);
         receivePort.enableConnections();
-
+        
         sendPort = ibis.createSendPort(Daemon.portType);
 
         // start deployment of worker (possibly on remote machine)
-        job = distributedAmuse.submitWorkerJob(nodeLabel, nrOfNodes, codeDir, copyWorkerCode);
+        job = distributedAmuse.getScheduler().submitWorkerJob(workerDescription);
 
         logger.info("New worker submitted: " + this);
 
@@ -128,26 +131,31 @@ public class RemoteWorker extends Thread {
 
         // finish initializing worker
         try {
-
+            
             // wait until job is running
             job.waitUntilStarted();
-
-            ReceivePortIdentifier remotePort = job.getWorkerIbisPort();
+            
+            //read initial "hello" message with identifier
+            ReadMessage helloMessage = receivePort.receive(CONNECT_TIMEOUT);
+            
+            ReceivePortIdentifier remotePort = (ReceivePortIdentifier) helloMessage.readObject();
+            
+            helloMessage.finish();
 
             sendPort.connect(remotePort, CONNECT_TIMEOUT, true);
 
             // do init function at remote worker so it can initialize the code
 
             // write init message
-            WriteMessage writeMessage = sendPort.newMessage();
-            initRequest.writeTo(writeMessage);
-            writeMessage.finish();
+            WriteMessage initWriteMessage = sendPort.newMessage();
+            initRequest.writeTo(initWriteMessage);
+            initWriteMessage.finish();
 
             // read reply
             AmuseMessage initReply = new AmuseMessage();
-            ReadMessage readMessage = receivePort.receive();
-            initReply.readFrom(readMessage);
-            readMessage.finish();
+            ReadMessage initReadMessage = receivePort.receive();
+            initReply.readFrom(initReadMessage);
+            initReadMessage.finish();
 
             if (initReply.getError() != null) {
                 throw new IOException(initReply.getError());

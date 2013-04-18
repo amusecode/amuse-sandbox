@@ -13,15 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed;
+package nl.esciencecenter.amuse.distributed.local;
+
+import ibis.ipl.ReceivePortIdentifier;
 
 /**
  * @author Niels Drost
- * 
+ *
  */
-public class PickledJobDescription {
+public class AmuseWorkerJob {
 
-    public PickledJobDescription(String function, String arguments, String nodeLabel) {
+    public void waitUntilStarted() {
+        // TODO Auto-generated method stub
     }
+    
+    public boolean hasFinished() {
+        // TODO Auto-generated method stub
+        return true;
+    }
+
+    public ReceivePortIdentifier getWorkerIbisPort() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /**
+     * 
+     */
+    public void stop() {
+        // TODO Auto-generated method stub
+        
+    }
+
+
 
 }

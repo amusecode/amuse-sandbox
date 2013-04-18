@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.worker;
+package nl.esciencecenter.amuse.distributed;
 
 import ibis.ipl.ReadMessage;
 import ibis.ipl.WriteMessage;
@@ -166,7 +166,7 @@ public class AmuseMessage {
      * @param error
      *            a description of the error that occurred
      */
-    AmuseMessage(int callID, int functionID, int count, String error) {
+    public AmuseMessage(int callID, int functionID, int count, String error) {
         this();
 
         setCallID(callID);
@@ -478,7 +478,7 @@ public class AmuseMessage {
         }
     }
 
-    void writeTo(SocketChannel channel) throws IOException {
+    public void writeTo(SocketChannel channel) throws IOException {
         //System.err.prinln("writing to socket channel: " + this.toContentString());
         //System.err.prinln("writing to socket channel: " + this);
 
@@ -502,7 +502,7 @@ public class AmuseMessage {
         // }
     }
     
-    void writeTo(WriteMessage writeMessage) throws IOException {
+    public void writeTo(WriteMessage writeMessage) throws IOException {
         if (logger.isTraceEnabled()) {
             logger.trace("writing to write message: " + this.toContentString());
         } else if (logger.isDebugEnabled()) {
@@ -623,7 +623,7 @@ public class AmuseMessage {
         return buffersUpdated;
     }
 
-    boolean readFrom(SocketChannel channel) throws IOException {
+    public boolean readFrom(SocketChannel channel) throws IOException {
         boolean updatedBuffers = false;
 
         //System.err.println("receiving header from channel");

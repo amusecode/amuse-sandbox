@@ -13,17 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.PickledJobDescription;
-import nl.esciencecenter.amuse.distributed.Reservation;
-import nl.esciencecenter.amuse.distributed.Resource;
-import nl.esciencecenter.amuse.distributed.ScriptJobDescription;
-import nl.esciencecenter.amuse.distributed.scheduler.AmuseWorkerJob;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import nl.esciencecenter.amuse.distributed.local.DistributedAmuse;
+import nl.esciencecenter.amuse.distributed.local.Reservation;
+import nl.esciencecenter.amuse.distributed.local.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,7 +128,7 @@ public class Code implements CodeInterface {
     public int submit_pickled_function_job(int[] job_id, String[] function, String[] arguments, String[] node_label, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                job_id[i] = distributedAmuse.submitPickledJob(function[i], arguments[i], node_label[i]);
+                job_id[i] = distributedAmuse.getScheduler().submitPickledJob(function[i], arguments[i], node_label[i]);
 
             }
             return 0;
@@ -153,7 +146,7 @@ public class Code implements CodeInterface {
             for (int i = 0; i < count; i++) {
                 boolean useCodeCache = re_use_code_files[i] != 0;
                 job_id[i] =
-                        distributedAmuse.submitScriptJob(script[i], arguments[i], code_dir[i], node_label[i],
+                        distributedAmuse.getScheduler().submitScriptJob(script[i], arguments[i], code_dir[i], node_label[i],
                                 useCodeCache);
 
             }
@@ -169,7 +162,7 @@ public class Code implements CodeInterface {
     public int get_pickled_function_job_result(int[] job_id, String[] result, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                result[i] = distributedAmuse.getJobResult(job_id[i]);
+                result[i] = distributedAmuse.getScheduler().getJobResult(job_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -180,8 +173,14 @@ public class Code implements CodeInterface {
 
     @Override
     public int wait_for_jobs() {
-        distributedAmuse.waitForAllJobs();
-        return 0;
+        try {
+            distributedAmuse.getScheduler().waitForAllJobs();
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e);
+            return 10;
+        }
+
     }
 
     @Override

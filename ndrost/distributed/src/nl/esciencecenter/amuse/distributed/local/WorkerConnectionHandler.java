@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.worker;
+package nl.esciencecenter.amuse.distributed.local;
 
-import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.Network;
-
-import ibis.ipl.Ibis;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -32,8 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class that handles incoming "worker" connections. Submits a job to the scheduler to allocate a node and start a worker there,
- * then forwards all messages to that node.
+ * Class that handles incoming "worker" connections from AMUSe. Submits a job to the scheduler to allocate a node and start a
+ * worker there, then forwards all messages to that node.
  * 
  * @author Niels Drost
  * 
@@ -49,21 +46,19 @@ public class WorkerConnectionHandler {
     private static final Logger logger = LoggerFactory.getLogger(WorkerConnectionHandler.class);
 
     private final ServerSocketChannel loopbackServer;
-    
+
     private final OutputManager outputManager;
-    
+
     private final DistributedAmuse distributedAmuse;
 
     public WorkerConnectionHandler(DistributedAmuse distributedAmuse) throws DistributedAmuseException {
         this.distributedAmuse = distributedAmuse;
-        
+
         try {
-
-        outputManager = new OutputManager(distributedAmuse);
-
-        loopbackServer = ServerSocketChannel.open();
-        // bind to local host
-        loopbackServer.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
+            outputManager = new OutputManager(distributedAmuse);
+            loopbackServer = ServerSocketChannel.open();
+            // bind to a random port on local host
+            loopbackServer.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
 
         } catch (IOException e) {
             throw new DistributedAmuseException("cannot start worker connection handler", e);
@@ -103,7 +98,7 @@ public class WorkerConnectionHandler {
 
                 String receivedString = new String(magic.array(), "UTF-8");
                 if (receivedString.equalsIgnoreCase(WORKER_TYPE_STRING)) {
-                    new RemoteWorker(socket, distributedAmuse);
+                    new WorkerConnection(socket, distributedAmuse);
                 } else if (receivedString.equalsIgnoreCase(OUTPUT_TYPE_STRING)) {
                     outputManager.newOutputConnection(socket);
                 } else {
