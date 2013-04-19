@@ -33,7 +33,7 @@ class DistributedTests(TestWithMPI):
     
         instance.new_reservation(resource_name='DAS4-VU', node_count=5, time= 2|units.hour, node_label='VU')
         
-        instance.new_reservation(resource_name='LGM-4', node_count=1, time=2|units.hour, node_label='LGM')
+#        instance.new_reservation(resource_name='LGM-4', node_count=1, time=2|units.hour, node_label='LGM')
     
         instance.wait_for_reservations()
 
@@ -47,6 +47,10 @@ class DistributedTests(TestWithMPI):
        #gadget2 = Gadget(nr_of_workers=4, nr_of_nodes=2, node_label='VU')
 
        # some interesting simulation using these workers
+
+
+       import time
+       time.sleep(60)
 
        instance.stop()
 

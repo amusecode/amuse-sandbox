@@ -16,10 +16,9 @@
 package nl.esciencecenter.amuse.distributed.local;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
+import nl.esciencecenter.amuse.distributed.Network;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
 
-import ibis.amuse.Daemon;
-import ibis.amuse.Worker;
 import ibis.ipl.ConnectionClosedException;
 import ibis.ipl.Ibis;
 import ibis.ipl.ReadMessage;
@@ -37,26 +36,25 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class responsible for taking method invocation messages from AMUSE, and forwarding them to a remote worker proxy.
+ * 
  * @author Niels Drost
  * 
  */
 public class WorkerConnection extends Thread {
 
-    private static final Logger logger = LoggerFactory.getLogger(Worker.class);
+    private static final Logger logger = LoggerFactory.getLogger(WorkerConnection.class);
 
     public static final int CONNECT_TIMEOUT = 60000;
 
     private static int nextID = 0;
-    
+
     private static int getNextID() {
         return nextID++;
     }
-    
+
     private final SocketChannel socket;
 
     private final String id;
-
-    private final Ibis ibis;
 
     private final ReceivePort receivePort;
 
@@ -64,16 +62,15 @@ public class WorkerConnection extends Thread {
 
     private final AmuseMessage initRequest;
 
-    private final AmuseWorkerJob job;
+    private final WorkerJob job;
 
     /*
      * Initializes worker by reading settings from amuse, deploying the worker
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    WorkerConnection(SocketChannel socket, DistributedAmuse distributedAmuse) throws Exception {
+    WorkerConnection(SocketChannel socket, Ibis ibis, JobManager scheduler) throws Exception {
         this.socket = socket;
-        this.ibis = distributedAmuse.getNetwork().getIbis();
 
         if (logger.isDebugEnabled()) {
             logger.debug("New worker connection from " + socket.socket().getRemoteSocketAddress());
@@ -100,23 +97,25 @@ public class WorkerConnection extends Thread {
         int nrOfThreads = initRequest.getInteger(2);
 
         boolean copyWorkerCode = initRequest.getBoolean(0);
-        
+
         // get rid of "ugly" parts of id
         String idName = codeName.replace("_worker", "").replace("_sockets", "");
-        
+
         id = idName + "-" + getNextID();
 
         //description of the worker, used for both the scheduler and the code proxy to start the worker properly
-        WorkerDescription workerDescription = new WorkerDescription(id, codeName, codeDir, stdoutFile, stderrFile, nodeLabel, nrOfWorkers, nrOfNodes, nrOfThreads, copyWorkerCode);
-        
+        WorkerDescription workerDescription =
+                new WorkerDescription(id, codeName, codeDir, stdoutFile, stderrFile, nodeLabel, nrOfWorkers, nrOfNodes,
+                        nrOfThreads, copyWorkerCode);
+
         // initialize ibis ports
-        receivePort = ibis.createReceivePort(Daemon.portType, id);
+        receivePort = ibis.createReceivePort(Network.IPL_PORT_TYPE, id);
         receivePort.enableConnections();
-        
-        sendPort = ibis.createSendPort(Daemon.portType);
+
+        sendPort = ibis.createSendPort(Network.IPL_PORT_TYPE);
 
         // start deployment of worker (possibly on remote machine)
-        job = distributedAmuse.getScheduler().submitWorkerJob(workerDescription);
+        job = scheduler.submitWorkerJob(workerDescription);
 
         logger.info("New worker submitted: " + this);
 
@@ -131,15 +130,15 @@ public class WorkerConnection extends Thread {
 
         // finish initializing worker
         try {
-            
+
             // wait until job is running
             job.waitUntilStarted();
-            
+
             //read initial "hello" message with identifier
             ReadMessage helloMessage = receivePort.receive(CONNECT_TIMEOUT);
-            
+
             ReceivePortIdentifier remotePort = (ReceivePortIdentifier) helloMessage.readObject();
-            
+
             helloMessage.finish();
 
             sendPort.connect(remotePort, CONNECT_TIMEOUT, true);

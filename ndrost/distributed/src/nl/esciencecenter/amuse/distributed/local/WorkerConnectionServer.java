@@ -18,6 +18,8 @@ package nl.esciencecenter.amuse.distributed.local;
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 
+import ibis.ipl.Ibis;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -35,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class WorkerConnectionHandler {
+public class WorkerConnectionServer {
 
     public static final String WORKER_TYPE_STRING = "TYPE_WORKER";
 
@@ -43,19 +45,22 @@ public class WorkerConnectionHandler {
 
     public static final int TYPE_STRING_LENGTH = WORKER_TYPE_STRING.length();
 
-    private static final Logger logger = LoggerFactory.getLogger(WorkerConnectionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(WorkerConnectionServer.class);
 
     private final ServerSocketChannel loopbackServer;
 
-    private final OutputManager outputManager;
+    private final WorkerOutputManager outputManager;
 
-    private final DistributedAmuse distributedAmuse;
+    private final Ibis ibis;
+    
+    private final JobManager scheduler;
 
-    public WorkerConnectionHandler(DistributedAmuse distributedAmuse) throws DistributedAmuseException {
-        this.distributedAmuse = distributedAmuse;
+    public WorkerConnectionServer(JobManager scheduler) throws DistributedAmuseException {
+        this.scheduler = scheduler;
+        this.ibis = scheduler.getIbis();
 
         try {
-            outputManager = new OutputManager(distributedAmuse);
+            outputManager = new WorkerOutputManager(ibis);
             loopbackServer = ServerSocketChannel.open();
             // bind to a random port on local host
             loopbackServer.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
@@ -98,7 +103,7 @@ public class WorkerConnectionHandler {
 
                 String receivedString = new String(magic.array(), "UTF-8");
                 if (receivedString.equalsIgnoreCase(WORKER_TYPE_STRING)) {
-                    new WorkerConnection(socket, distributedAmuse);
+                    new WorkerConnection(socket, ibis, scheduler);
                 } else if (receivedString.equalsIgnoreCase(OUTPUT_TYPE_STRING)) {
                     outputManager.newOutputConnection(socket);
                 } else {

@@ -28,7 +28,7 @@ public class TestAmuseConfiguration {
 
     @Test
     public void testAmuseConfiguration() throws Exception {
-        File testFile = new File("/home/niels/workspace/amuse/config.mk");
+        File testFile = new File("/home/niels/workspace/amuse");
         AmuseConfiguration config = new AmuseConfiguration(testFile);
 
         assertEquals(config.getConfigOption("JAVA_ENABLED"), "yes");

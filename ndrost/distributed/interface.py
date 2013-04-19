@@ -107,6 +107,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('port', dtype='int32', direction=function.IN, default="22")
         function.addParameter("username", dtype='string', direction=function.IN, default="")
         function.addParameter("scheduler_type", dtype='string', direction=function.IN, default="local")
+        function.addParameter('start_hub', dtype='int32', direction=function.IN, default=-1)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function

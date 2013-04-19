@@ -11,7 +11,7 @@ JAR ?= jar
 MV ?= mv
 CP ?= cp
 
-all: java_check distributed_worker
+all: java_check distributed_worker distributed-server.jar
 
 java_check:
 #Makefile requires these checks to be at the beginning of the line
@@ -33,6 +33,16 @@ CodeInterface.java: interface.py
 
 Worker.java: interface.py
 	$(CODE_GENERATOR) --type=java --mode=class interface.py DistributedAmuseInterface -o $@
+
+distributed-server.jar: $(shell find lib -name "*.jar") distributed.jar worker.jar
+
+	$(RM) -r tmp
+	mkdir tmp
+	unzip -q -o -d tmp "lib/*.jar"
+	unzip -q -o -d tmp "lib/ipl/*.jar"
+	unzip -q -o -d tmp distributed.jar
+	unzip -q -o -d tmp worker.jar
+	jar -cf distributed-server.jar -C tmp/ .
 
 distributed.jar: $(shell find src -name "*.java")
 	@echo Compiling Distributed Code

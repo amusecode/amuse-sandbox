@@ -15,6 +15,13 @@
  */
 package nl.esciencecenter.amuse.distributed.remote;
 
+import ibis.ipl.Ibis;
+import ibis.ipl.IbisFactory;
+
+import java.util.Properties;
+
+import nl.esciencecenter.amuse.distributed.Network;
+
 /**
  * Pilot job. Started when a reservations is made.
  * 
@@ -22,9 +29,21 @@ package nl.esciencecenter.amuse.distributed.remote;
  *
  */
 public class Pilot {
-
     
-    public static void Main(String[] arguments) {
+    public static void main(String[] arguments) throws Throwable {
+        Properties properties = new Properties();
+        properties.put("ibis.server.address", arguments[0]);
+        properties.put("ibis.pool.name", "amuse");
+        properties.put("ibis.location", arguments[1]);
         
+        if (arguments.length == 3) {
+            properties.put("ibis.hub.addresses", arguments[2]);
+        }
+        //properties.put("ibis.managementclient", "true");
+        //properties.put("ibis.bytescount", "true");
+
+        Ibis ibis = IbisFactory.createIbis(Network.IPL_CAPABILITIES, properties, true, null, Network.IPL_PORT_TYPE);
+        
+        Thread.sleep(60000);
     }
 }

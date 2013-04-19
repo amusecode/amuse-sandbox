@@ -15,13 +15,11 @@
  */
 package nl.esciencecenter.amuse.distributed.local;
 
-import ibis.ipl.ReceivePortIdentifier;
-
 /**
  * @author Niels Drost
  *
  */
-public class AmuseWorkerJob {
+public class WorkerJob {
 
     public void waitUntilStarted() {
         // TODO Auto-generated method stub
@@ -30,11 +28,6 @@ public class AmuseWorkerJob {
     public boolean hasFinished() {
         // TODO Auto-generated method stub
         return true;
-    }
-
-    public ReceivePortIdentifier getWorkerIbisPort() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     /**

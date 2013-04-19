@@ -37,22 +37,20 @@ public class Network {
 
     public static IbisCapabilities IPL_CAPABILITIES = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT,
             IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED, IbisCapabilities.TERMINATION, IbisCapabilities.SIGNALS);
-
-    public static Ibis createIbis(RegistryEventHandler registryEventHandler) throws DistributedAmuseException {
+    
+    public static Ibis createIbis(String serverAddress, RegistryEventHandler registryEventHandler) throws DistributedAmuseException {
         try {
 
             Properties properties = new Properties();
-            properties.put("ibis.server.address", "something only we know");
+            properties.put("ibis.server.address", serverAddress);
             properties.put("ibis.pool.name", "amuse");
             properties.put("ibis.location", "daemon@local");
-            properties.put("ibis.managementclient", "true");
-            properties.put("ibis.bytescount", "true");
+            //properties.put("ibis.managementclient", "true");
+            //properties.put("ibis.bytescount", "true");
 
             return IbisFactory.createIbis(IPL_CAPABILITIES, properties, true, registryEventHandler, IPL_PORT_TYPE);
         } catch (IbisCreationFailedException e) {
             throw new DistributedAmuseException("failed to create ibis", e);
         }
     }
-
-
 }

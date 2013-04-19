@@ -35,7 +35,11 @@ public class Resource {
     private final String username;
     private final String schedulerType;
 
-    public Resource(String name, String hostname, String amuseDir, int port, String username, String schedulerType) {
+    //null == auto
+    private final Boolean startHub;
+
+    public Resource(String name, String hostname, String amuseDir, int port, String username, String schedulerType,
+            Boolean startHub) {
         this.id = getNextID();
         this.name = name;
         this.hostname = hostname;
@@ -43,6 +47,7 @@ public class Resource {
         this.port = port;
         this.username = username;
         this.schedulerType = schedulerType;
+        this.startHub = startHub;
     }
 
     public int getId() {
@@ -72,5 +77,30 @@ public class Resource {
     public String getSchedulerType() {
         return schedulerType;
     }
-    
+
+    @Override
+    public int hashCode() {
+        return new Integer(id).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+
+        if (!(other instanceof Resource)) {
+            return false;
+        }
+
+        return id == ((Resource) other).id;
+    }
+
+    public boolean mustStartHub() {
+        if (startHub == null) {
+            return getSchedulerType() != null && (getSchedulerType().toLowerCase() != "local");
+        }
+        return startHub;
+    }
+
 }

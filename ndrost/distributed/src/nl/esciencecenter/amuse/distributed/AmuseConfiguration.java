@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,17 +33,11 @@ import java.util.Map;
 public class AmuseConfiguration {
 
     File amuseHome;
-    
+
     Map<String, String> config;
-
-    public AmuseConfiguration(File amuseHome) throws FileNotFoundException, IOException, DistributedAmuseException {
-        this.amuseHome = amuseHome;
-        
-        config = new HashMap<String, String>();
-        
-        File configFile = new File(amuseHome, "config.mk");
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
+    
+    private void parseConfig(BufferedReader reader) throws DistributedAmuseException {
+        try {
             while (true) {
                 String line = reader.readLine();
 
@@ -60,10 +56,45 @@ public class AmuseConfiguration {
                     String value = elements[1].trim();
 
                     config.put(option, value);
-
                 }
             }
+        } catch (Exception e) {
+            throw new DistributedAmuseException("cannot read configuration", e);
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                //IGNORE
+            }
         }
+
+    }
+
+    public AmuseConfiguration(File amuseHome, InputStream in) throws DistributedAmuseException {
+        this.amuseHome = amuseHome;
+        config = new HashMap<String, String>();
+        
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+        parseConfig(reader);
+        
+    }
+
+    public AmuseConfiguration(File amuseHome) throws DistributedAmuseException {
+        this.amuseHome = amuseHome;
+        config = new HashMap<String, String>();
+        
+        File configFile = new File(amuseHome, "config.mk");
+        
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(configFile));
+            parseConfig(reader);
+
+        } catch (FileNotFoundException e) {
+            throw new DistributedAmuseException("cannot find config file: " + configFile, e);
+        }
+
     }
 
     String getConfigOption(String name) throws DistributedAmuseException {
@@ -80,19 +111,18 @@ public class AmuseConfiguration {
         return amuseHome;
     }
 
-    /**
-     * @return
-     */
-    public boolean isMpiexecEnabled() {
-        // TODO Auto-generated method stub
-        return false;
+    public boolean isMpiexecEnabled() throws DistributedAmuseException {
+        return getConfigOption("MPIEXEC_ENABLED").equals("yes");
     }
 
-    /**
-     * @return
-     */
-    public String getMpiexec() {
-        // TODO Auto-generated method stub
-        return null;
+    public String getMpiexec() throws DistributedAmuseException {
+        return getConfigOption("MPIEXEC");
+    }
+
+    public String getJava() throws DistributedAmuseException {
+        if (!getConfigOption("JAVA_ENABLED").equals("yes")) {
+            throw new DistributedAmuseException("Java not enabled");
+        }
+        return getConfigOption("JAVA");
     }
 }

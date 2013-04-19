@@ -15,20 +15,32 @@
  */
 package nl.esciencecenter.amuse.distributed.local;
 
+import ibis.ipl.Ibis;
+import ibis.ipl.IbisIdentifier;
+import ibis.ipl.RegistryEventHandler;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.Network;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
 
 /**
  * @author Niels Drost
  * 
  */
-public class AmuseJobScheduler {
-
+public class JobManager extends Thread implements RegistryEventHandler {
+    
+    private final Ibis ibis;
+    
     /**
+     * @param string 
      * @param distributedAmuse
+     * @throws DistributedAmuseException 
      */
-    public AmuseJobScheduler(DistributedAmuse distributedAmuse) {
-        // TODO Auto-generated constructor stub
+    public JobManager(String serverAddress) throws DistributedAmuseException {
+            ibis = Network.createIbis(serverAddress, this);
+    }
+    
+    public Ibis getIbis() {
+        return ibis;
     }
 
     /**
@@ -85,9 +97,51 @@ public class AmuseJobScheduler {
      * @param workerDescription
      * @return
      */
-    public AmuseWorkerJob submitWorkerJob(WorkerDescription workerDescription) throws DistributedAmuseException {
+    public WorkerJob submitWorkerJob(WorkerDescription workerDescription) throws DistributedAmuseException {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void died(IbisIdentifier arg0) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void electionResult(String arg0, IbisIdentifier arg1) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void gotSignal(String arg0, IbisIdentifier arg1) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void joined(IbisIdentifier arg0) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void left(IbisIdentifier arg0) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void poolClosed() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void poolTerminated(IbisIdentifier arg0) {
+        // TODO Auto-generated method stub
+        
     }
 
 }
