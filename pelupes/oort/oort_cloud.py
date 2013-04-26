@@ -20,7 +20,7 @@ if __name__ in ('__main__', '__plot__'):
     
 ##### creat particles for oort object
 # comets
-    comets = read_set_from_file('generate_id_6d.txt', 'txt', attribute_names=['x', 'y', 'z','vx', 'vy', 'vz' ],attribute_types=[units.AU, units.AU,  units.AU, units.AU/units.yr, units.AU/units.yr, units.AU/units.yr])
+    comets = read_set_from_file('small_test_set.txt', 'txt', attribute_names=['x', 'y', 'z','vx', 'vy', 'vz' ],attribute_types=[units.AU, units.AU,  units.AU, units.AU/units.yr, units.AU/units.yr, units.AU/units.yr])
     N= len(comets.x)
     masses = numpy.zeros(N) | units.MSun
     comets.mass = masses
@@ -56,11 +56,11 @@ if __name__ in ('__main__', '__plot__'):
         print "time=", ttarget.in_(units.yr)
         x=grav.particles.x.value_in(units.AU)
         y=grav.particles.y.value_in(units.AU)
-        """
+        
         pyplot.plot(x,y,'r .')
         pyplot.plot([0.],[0.],'b +')
         pyplot.xlim(-40000,40000)
         pyplot.ylim(-40000,40000)
-        """
+        
     pyplot.show()        
     grav.stop()
