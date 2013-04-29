@@ -284,11 +284,17 @@ int get_next_radial_crossing_time(int id, double radius, double *tnext)
     map<int, kepler*>::iterator iter = kmap.find(id);
     if (iter != kmap.end()){
        kepler *k=iter->second;
-       double tnow=k->get_time();
-       k->print_all();
-       k->advance_to_radius(radius);
-       *tnext=k->get_time();
-       k->transform_to_time(tnow);
+       if( k->get_energy() < 0) 
+       {
+         if(radius > k->get_apastron() || radius < k->get_periastron() )return -5;
+         *tnext=k->pred_advance_to_radius(radius);
+       } else 
+       {
+         if(radius < k->get_periastron() ) return -6;
+         if(radius > k->get_separation() && k->get_true_anomaly() > 0) return -7;          
+         *tnext=k->pred_advance_to_radius(radius);
+         if(*tnext < k->get_time()) return -8;
+       }
     } else {
       return -3;
     }
