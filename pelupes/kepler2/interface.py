@@ -1,7 +1,7 @@
 from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.community.interface.gd import GravitationalDynamicsInterface
-from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import GravitationalDynamics, GravityFieldCode
 from amuse.support.options import option
 from amuse.units import units
 from amuse.datamodel import Particles
@@ -77,8 +77,23 @@ class Kepler2Interface(CodeInterface,
         function.result_type = 'int32'
         return function
 
-    
-class Kepler2OrbitersOnly(GravitationalDynamics):
+    def get_gravity_at_point(self,radius,x,y,z):
+        mass,err=self.get_central_mass()
+        dr2=(x**2+y**2+z**2+radius**2)
+        dr=dr2**0.5
+        ax=-mass*x/(dr2*dr)
+        ay=-mass*y/(dr2*dr)
+        az=-mass*z/(dr2*dr)
+        return ax,ay,az
+
+    def get_potential_at_point(self,radius,x,y,z):
+        mass,err=self.get_central_mass()
+        dr2=(x**2+y**2+z**2+radius**2)
+        dr=dr2**0.5
+        phi=-mass/dr
+        return phi
+
+class Kepler2OrbitersOnly(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, unit_converter = None,  **options):
         self.unit_converter = unit_converter
@@ -91,9 +106,6 @@ class Kepler2OrbitersOnly(GravitationalDynamics):
         if not self.unit_converter is None:
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
     
-#    def define_methods(self, object):
-#        CommonCode.define_methods(self, object)
-
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_central_mass", 
@@ -103,8 +115,36 @@ class Kepler2OrbitersOnly(GravitationalDynamics):
             default_value = 0 | nbody_system.mass
         )
          
-#    def define_state(self, object):
-#        GravitationalDynamics.define_state(self, object)
+    def define_methods(self, object):
+        GravitationalDynamics.define_methods(self, object)
+        object.add_method(
+            'get_gravity_at_point',
+            (
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+            ),
+            (
+                nbody_system.acceleration,
+                nbody_system.acceleration,
+                nbody_system.acceleration,
+            )
+        )
+        object.add_method(
+            'get_potential_at_point',
+            (
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+            ),
+            (
+                nbody_system.potential,
+            )
+        )
+
+
 
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
@@ -176,3 +216,16 @@ class Kepler2(Kepler2OrbitersOnly):
         
         self.central_particle.position+=self.central_particle.velocity*dt
         self.particles_accessed=False
+
+    def get_gravity_at_point(self,radius,x,y,z):
+        xx=x-self.central_particle.x
+        yy=y-self.central_particle.y
+        zz=z-self.central_particle.z
+        return self.overridden().get_gravity_at_point(radius,xx,yy,zz)
+
+    def get_potential_at_point(self,radius,x,y,z):
+        xx=x-self.central_particle.x
+        yy=y-self.central_particle.y
+        zz=z-self.central_particle.z
+        return self.overridden().get_potential_at_point(radius,xx,yy,zz)
+        
