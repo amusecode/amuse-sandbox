@@ -279,6 +279,19 @@ int get_eccentricity(int id,double * ecc)
     return 0;
 }
 
+int get_specific_orbital_energy(int id,double * ecc)
+{
+    map<int, kepler*>::iterator iter = kmap.find(id);
+    if (iter != kmap.end()){
+       kepler *k=iter->second;
+       *ecc = k->get_energy();
+    } else {
+      return -3;
+    }
+    return 0;
+}
+
+
 int get_next_radial_crossing_time(int id, double radius, double *tnext)
 {
     map<int, kepler*>::iterator iter = kmap.find(id);

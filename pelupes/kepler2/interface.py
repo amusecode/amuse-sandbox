@@ -68,6 +68,17 @@ class Kepler2Interface(CodeInterface,
         return function
 
     @legacy_function
+    def get_specific_orbital_energy():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array=True
+        function.addParameter('index', dtype='i', direction=function.IN)
+        function.addParameter('specific_orbital_energy', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.specific_energy)
+        function.result_type = 'int32'
+        return function
+
+
+    @legacy_function
     def get_next_radial_crossing_time():
         function = LegacyFunctionSpecification()
         function.can_handle_array=True
@@ -150,6 +161,7 @@ class Kepler2OrbitersOnly(GravitationalDynamics, GravityFieldCode):
         GravitationalDynamics.define_particle_sets(self, object)
         object.add_getter('particles', 'get_semi_major_axis')
         object.add_getter('particles', 'get_eccentricity')
+        object.add_getter('particles', 'get_specific_orbital_energy')
         object.add_method('particles', 'get_next_radial_crossing_time')
   
 
@@ -189,7 +201,8 @@ class Kepler2(Kepler2OrbitersOnly):
         
         self.parameters.central_mass=self.central_particle.mass
         
-        orbiters=(self._particles-self.central_particle).copy()
+        orbiters=self._particles.copy()
+        orbiters.remove_particle(self.central_particle)
                 
         orbiters.position=orbiters.position-self.central_particle.position
         orbiters.velocity=orbiters.velocity-self.central_particle.velocity
@@ -218,12 +231,17 @@ class Kepler2(Kepler2OrbitersOnly):
         self.particles_accessed=False
 
     def get_gravity_at_point(self,radius,x,y,z):
+        if self.particles_accessed:
+            self.recommit_particles()
+        print x,self.central_particle
         xx=x-self.central_particle.x
         yy=y-self.central_particle.y
         zz=z-self.central_particle.z
         return self.overridden().get_gravity_at_point(radius,xx,yy,zz)
 
     def get_potential_at_point(self,radius,x,y,z):
+        if self.particles_accessed:
+            self.recommit_particles()
         xx=x-self.central_particle.x
         yy=y-self.central_particle.y
         zz=z-self.central_particle.z
