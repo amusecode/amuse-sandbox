@@ -31,8 +31,10 @@ public class Hub {
             command.append(resource.getUsername());
             command.append("@");
             command.append(resource.getHostname());
-            command.append(" -p ");
-            command.append(resource.getPort());
+            if (resource.getPort() != -1) {
+                command.append(" -p ");
+                command.append(resource.getPort());
+            }
             command.append(" ");
         }
 

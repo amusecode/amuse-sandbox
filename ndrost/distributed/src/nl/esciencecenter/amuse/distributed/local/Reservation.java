@@ -68,7 +68,10 @@ public class Reservation {
         return command.toString();
     }
 
+    private final int id;
+    
     private final Process process;
+    
 
     /**
      * @param resource
@@ -82,6 +85,7 @@ public class Reservation {
      */
     public Reservation(Resource resource, String queueName, int nodeCount, int timeMinutes, String nodeLabel,
             String iplServerAddress, Hub hub, AmuseConfiguration amuseConfiguration) throws DistributedAmuseException {
+        this.id = getNextID();
         try {
             String command = buildCommand(resource, amuseConfiguration, iplServerAddress, hub);
 
@@ -91,29 +95,26 @@ public class Reservation {
 
             new StreamForwarder(process.getErrorStream(), System.err);
         } catch (Exception e) {
-            throw new DistributedAmuseException("cannot start hub on " + resource.getName(), e);
+            throw new DistributedAmuseException("cannot start reservation on " + resource.getName(), e);
         }
     }
 
     public int getID() {
-        // TODO Auto-generated method stub
-        return 0;
+        return id;
     }
 
     /**
      * 
      */
     public void cancel() {
-        // TODO Auto-generated method stub
-
+        process.destroy();
     }
 
     /**
      * 
      */
     public void waitUntilStarted() {
-        // TODO Auto-generated method stub
-
+        //FIXME: actually wait here.
     }
 
 }

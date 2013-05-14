@@ -16,6 +16,9 @@
 package nl.esciencecenter.amuse.distributed.local;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.OctopusFactory;
+import nl.esciencecenter.octopus.exceptions.OctopusException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,10 +45,19 @@ public class DistributedAmuse {
     //talks to AMUSE, handling any worker requests and messages
     private final WorkerConnectionServer workerConnectionHandler;
 
+    //used to copy files, start jobs, etc.
+    private final Octopus octopus;
+    
     public DistributedAmuse() throws DistributedAmuseException {
-        resources = new ResourceManager();
+        try {
+            octopus = OctopusFactory.newOctopus(null);
+        } catch (OctopusException e) {
+            throw new DistributedAmuseException("could not create Octopus library object", e);
+        }
+        
+        resources = new ResourceManager(octopus);
 
-        reservations = new ReservationManager();
+        reservations = new ReservationManager(octopus);
 
         jobs = new JobManager(reservations.getServerAddress());
 

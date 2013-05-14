@@ -15,21 +15,21 @@ class DistributedTests(TestWithMPI):
                               hostname="fs0.das4.cs.vu.nl",
                               username="niels",
                               scheduler_type="sge", 
-                              amuse_dir="/home/niels/amuse-svn",
+                              amuse_dir="/home/niels/amuse",
                               )
         
-        instance.new_resource(name='LGM',
-                              hostname="fs.lgm.liacs.nl", 
-                              amuse_dir='/home/niels/amuse-svn',
-                              scheduler_type="local", 
-                              username="niels")
+#        instance.new_resource(name='LGM',
+#                              hostname="fs.lgm.liacs.nl", 
+#                              amuse_dir='/home/niels/amuse-svn',
+#                              scheduler_type="local", 
+#                              username="niels")
         
-        instance.new_resource(name='LGM-4', 
-                              hostname="node004", 
-                              gateways="fs.lgm.liacs.nl",
-                              scheduler_type="local", 
-                              amuse_dir='/var/local/amuse',
-                              username="niels")
+#        instance.new_resource(name='LGM-4', 
+#                              hostname="node004", 
+#                              gateways="fs.lgm.liacs.nl",
+#                              scheduler_type="local", 
+#                              amuse_dir='/var/local/amuse',
+#                              username="niels")
     
         instance.new_reservation(resource_name='DAS4-VU', node_count=5, time= 2|units.hour, node_label='VU')
         

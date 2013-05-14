@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.octopus.Octopus;
 
 /**
  * Manages resources potentially available for starting reservations on.
@@ -17,10 +18,13 @@ public class ResourceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
-    private ArrayList<Resource> resources;
-
-    ResourceManager() {
+    private final Octopus octopus;
+    
+    private final ArrayList<Resource> resources;
+    
+    ResourceManager(Octopus octopus) {
         resources = new ArrayList<Resource>();
+        this.octopus = octopus;
     }
 
     public synchronized Resource newResource(String name, String hostname, String amuseDir, int port, String username,
@@ -34,7 +38,7 @@ public class ResourceManager {
             }
         }
 
-        Resource result = new Resource(name, hostname, amuseDir, port, username, schedulerType, startHub);
+        Resource result = new Resource(name, hostname, amuseDir, port, username, schedulerType, startHub, octopus);
 
         resources.add(result);
 

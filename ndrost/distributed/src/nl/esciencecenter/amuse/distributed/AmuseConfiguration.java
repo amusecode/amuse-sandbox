@@ -70,8 +70,8 @@ public class AmuseConfiguration {
 
     }
 
-    public AmuseConfiguration(File amuseHome, InputStream in) throws DistributedAmuseException {
-        this.amuseHome = amuseHome;
+    public AmuseConfiguration(String amuseHome, InputStream in) throws DistributedAmuseException {
+        this.amuseHome = new File(amuseHome);
         config = new HashMap<String, String>();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));

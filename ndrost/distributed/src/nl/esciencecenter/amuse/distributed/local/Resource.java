@@ -15,6 +15,17 @@
  */
 package nl.esciencecenter.amuse.distributed.local;
 
+import java.io.InputStream;
+import java.net.URI;
+
+import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.credentials.Credential;
+import nl.esciencecenter.octopus.files.AbsolutePath;
+import nl.esciencecenter.octopus.files.FileSystem;
+import nl.esciencecenter.octopus.files.RelativePath;
+
 /**
  * @author Niels Drost
  * 
@@ -35,11 +46,13 @@ public class Resource {
     private final String username;
     private final String schedulerType;
 
+    private final AmuseConfiguration configuration;
+
     //null == auto
     private final Boolean startHub;
 
     public Resource(String name, String hostname, String amuseDir, int port, String username, String schedulerType,
-            Boolean startHub) {
+            Boolean startHub, Octopus octopus) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
         this.hostname = hostname;
@@ -48,6 +61,31 @@ public class Resource {
         this.username = username;
         this.schedulerType = schedulerType;
         this.startHub = startHub;
+
+        this.configuration = downloadConfiguration(octopus);
+    }
+
+    private AmuseConfiguration downloadConfiguration(Octopus octopus) throws DistributedAmuseException {
+        try {
+            URI uri = new URI("ssh", username, hostname, port, null, null, null);
+
+            //FIXME, replace with octopus.credentials.getDefaultCredential("ssh") once this is implemented
+            String username = System.getProperty("user.name");
+            Credential credential =
+                    octopus.credentials().newCertificateCredential("ssh", null, "/home/" + username + "/.ssh/id_rsa",
+                            "/home/" + username + "/.ssh/id_rsa.pub", username, "");
+
+            FileSystem filesystem = octopus.files().newFileSystem(uri, credential, null);
+            RelativePath amuseConfig = new RelativePath(this.amuseDir + "/config.mk");
+
+            AbsolutePath path = octopus.files().newPath(filesystem, amuseConfig);
+
+            try (InputStream in = octopus.files().newInputStream(path)) {
+                return new AmuseConfiguration(this.amuseDir, in);
+            }
+        } catch (Exception e) {
+            throw new DistributedAmuseException("cannot download configuration file for resource " + this.name, e);
+        }
     }
 
     public int getId() {
@@ -76,6 +114,10 @@ public class Resource {
 
     public String getSchedulerType() {
         return schedulerType;
+    }
+
+    public AmuseConfiguration getConfiguration() {
+        return configuration;
     }
 
     @Override

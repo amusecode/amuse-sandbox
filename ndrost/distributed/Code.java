@@ -83,7 +83,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e);
+            logger.error("Error on running distributed code: " + e, e);
             return 10;
         }
     }
@@ -97,7 +97,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e);
+            logger.error("Error on running distributed code: " + e, e);
             return 10;
         }
     }
@@ -116,7 +116,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e);
+            logger.error("Error on running distributed code: " + e, e);
             return 10;
         }
 
@@ -130,7 +130,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e);
+            logger.error("Error on running distributed code: " + e, e);
             return 10;
         }
     }
@@ -150,7 +150,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e);
+            logger.error("Error on running distributed code: " + e, e);
             return 10;
         }
 
@@ -169,7 +169,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e);
+            logger.error("Error on running distributed code: " + e, e);
             return 10;
         }
 
@@ -183,7 +183,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e);
+            logger.error("Error on running distributed code: " + e, e);
             return 10;
         }
     }
@@ -194,7 +194,7 @@ public class Code implements CodeInterface {
             distributedAmuse.jobs().waitForAllJobs();
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e);
+            logger.error("Error on running distributed code: " + e, e);
             return 10;
         }
 
