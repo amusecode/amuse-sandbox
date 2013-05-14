@@ -13,7 +13,7 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
     classpath = 'src:src/lib/*:src/lib/jogl/*:src/dist/*:*:.'
     
     def __init__(self, **keyword_arguments):
-        CodeInterface.__init__(self, name_of_the_worker="asterisk_worker", **keyword_arguments)
+        CodeInterface.__init__(self, name_of_the_worker="asterisk_worker_java", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
 
     @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))

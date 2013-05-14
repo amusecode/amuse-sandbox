@@ -74,7 +74,6 @@ if __name__ in ('__main__', '__plot__'):
         instance.set_rotation(2, i, 2)
         filename = "screenshot-%05d.png" % i
         instance.screenshot(filename)
-        time.sleep(1.0)
         
     
     instance.stop()

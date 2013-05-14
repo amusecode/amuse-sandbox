@@ -22,15 +22,22 @@ CP ?= cp
 UPDATE_URL = https://github.com/Maartenvm/asterisk/archive/develop.zip
 UPDATE_ARCHIVE_DIR = asterisk-develop
 
-all: java_check asterisk_worker
+#this target intentionally left blank
+ALL = 
+
+all: $(ALL)
+	#done
+
+code: asterisk_worker_java
 
 java_check:
 #Makefile requires these checks to be at the beginning of the line
+#Also: make sure the indentation is TABS, not spaces
 ifeq ($(JAVA_ENABLED),no)
-        $(error "Java support not configured in AMUSE")
+	$(error "Java support not configured in AMUSE")
 endif
 ifeq (,$(findstring $(JAVA_VERSION),1.6 1.7))
-        $(error "Java 1.6 or 1.7 required for Asterisk, but AMUSE configured with Java $(JAVA_VERSION)")
+	$(error "Java 1.6 or 1.7 required for Asterisk, but AMUSE configured with Java $(JAVA_VERSION)")
 endif
 
 update:
@@ -44,7 +51,7 @@ update:
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ asterisk_worker worker_code.cc
+	$(RM) *~ asterisk_worker asterisk_worker_java worker_code.cc
 	$(RM) -f *.jar CodeInterface.java Worker.java
 	$(RM) -rf tmp
 	make -C src clean
@@ -73,8 +80,10 @@ worker.jar: Worker.java CodeInterface.java Code.java CodeParticle.java src/lib/a
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp
 
-asterisk_worker: src/lib/asterisk.jar worker.jar
+asterisk_worker_java: java_check src/lib/asterisk.jar worker.jar
 	$(CODE_GENERATOR) -x --type=java --mode=script interface.py AsteriskInterface -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+
+

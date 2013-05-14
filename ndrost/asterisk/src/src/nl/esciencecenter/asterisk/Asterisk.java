@@ -231,8 +231,11 @@ public class Asterisk {
 
     public void makePNGScreenshot(String fileName) {
         TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
-        ((GlueTimedPlayer) timer).setScreenshotFileName(fileName);
-        ((GlueTimedPlayer) timer).setScreenshotNeeded(true);
+        
+        timer.makeScreenShot(fileName);
+        
+//        ((GlueTimedPlayer) timer).setScreenshotFileName(fileName);
+//        ((GlueTimedPlayer) timer).setScreenshotNeeded(true);
     }
 
     //new
