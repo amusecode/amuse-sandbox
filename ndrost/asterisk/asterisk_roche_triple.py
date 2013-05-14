@@ -52,14 +52,16 @@ def visualize_simulation(directory):
     files = os.listdir(directory)
     files.sort()
     visualisation = start_visualisation(*read_snapshot(files[1], files[0], directory))
-    for i in range(len(files[:100])/2):
-        gas, stars = read_snapshot(files[2*i+1], files[2*i], directory)
+    step = 20
+    for i in range(16):
+        gas, stars = read_snapshot(files[2*i*step+1], files[2*i*step], directory)
+        gas.u /= 10
         gas.synchronize_to(visualisation.gas_particles)
         gas.copy_values_of_attributes_to(["x", "y", "z", "red", "green", "blue"], visualisation.gas_particles)
         stars.synchronize_to(visualisation.star_particles)
         stars.copy_values_of_attributes_to(["x", "y", "z"], visualisation.star_particles)
         print "store_view"
-        visualisation.store_view(i*0.4*10|units.day)
+        visualisation.store_view(i*0.4*10*step|units.day)
         print "done"
     visualisation.stop()
 

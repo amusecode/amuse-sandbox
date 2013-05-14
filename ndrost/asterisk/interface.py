@@ -345,6 +345,56 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         return function
     
     @legacy_function
+    def set_rotation():
+        function = LegacyFunctionSpecification()
+        function.addParameter("x_rotation", dtype='float64', direction=function.IN)
+        function.addParameter("y_rotation", dtype='float64', direction=function.IN)
+        function.addParameter("z_rotation", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_translation():
+        function = LegacyFunctionSpecification()
+        function.addParameter("x_translation", dtype='float64', direction=function.IN)
+        function.addParameter("y_translation", dtype='float64', direction=function.IN)
+        function.addParameter("z_translation", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_camera_distance():
+        function = LegacyFunctionSpecification()
+        function.addParameter("camera_distance", dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_camera_distance():
+        function = LegacyFunctionSpecification()
+        function.addParameter("camera_distance", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_scene_number():
+        """
+        Get the number of the currently displayed scene, which can be used to redisplay it later
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("scene_number", dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_scene():
+        """
+        Display the specified scene
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("scene_number", dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def store_view():
         """
         Store and view the current model, corresponding to the given description.
@@ -458,6 +508,73 @@ class Asterisk(CommonCode):
             "Use-octree-for-gas flag. True means: gas particles are divided over "
                 "octree cells, and these cells will be visualized instead.",
             False
+        )
+        
+        object.add_caching_parameter(
+            "set_rotation", 
+            "x_rotation",
+            "rotation_x", 
+            "Rotation of the scene about the x axis (degrees)",
+            0.0,
+        )
+        object.add_caching_parameter(
+            "set_rotation", 
+            "y_rotation",
+            "rotation_y", 
+            "Rotation of the scene about the y axis (degrees)",
+            0.0,
+        )
+        object.add_caching_parameter(
+            "set_rotation", 
+            "z_rotation",
+            "rotation_z", 
+            "Rotation of the scene about the z axis (degrees)",
+            0.0,
+        )
+        object.add_vector_parameter(
+            "rotation",
+            "Rotation of the scene about the x, y, and z axes (degrees)",
+            ("rotation_x", "rotation_y","rotation_z")
+        )
+        object.add_caching_parameter(
+            "set_translation", 
+            "x_translation",
+            "translation_x", 
+            "Translation of the scene w.r.t. the origin",
+            0.0 | nbody_system.length,
+        )
+        object.add_caching_parameter(
+            "set_translation", 
+            "y_translation",
+            "translation_y", 
+            "Translation of the scene w.r.t. the origin",
+            0.0 | nbody_system.length,
+        )
+        object.add_caching_parameter(
+            "set_translation", 
+            "z_translation",
+            "translation_z", 
+            "Translation of the scene w.r.t. the origin",
+            0.0 | nbody_system.length,
+        )
+        object.add_vector_parameter(
+            "translation",
+            "Translation of the scene w.r.t. the origin",
+            ("translation_x", "translation_y","translation_z")
+        )
+        object.add_method_parameter(
+            "get_camera_distance",
+            "set_camera_distance", 
+            "camera_distance", 
+            "Distance from the view point to the scene", 
+            default_value = 0.0 | nbody_system.length
+        )
+        object.add_method_parameter(
+            "get_scene_number",
+            "set_scene", 
+            "scene", 
+            "set: Set the scene to display; get: Get the current scene number, which can be used to display it later", 
+            default_value = 0
         )
     
     def define_converter(self, object):
