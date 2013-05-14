@@ -7,12 +7,12 @@ RM ?= rm
 JAVAC ?= javac
 JAR ?= jar
 
-dist/asterisk.jar: $(shell find src -name *.java)
+dist/asterisk.jar: $(shell find src -name "*.java")
 	@echo Compiling Asterisk
 	$(RM) -r tmp dist
 	mkdir tmp
 	mkdir dist
-	$(JAVAC) -g -classpath "lib/*:lib/jogl/*"  -d tmp $(shell find src -name *.java)
+	$(JAVAC) -g -classpath "lib/*:lib/jogl/*"  -d tmp $(shell find src -name "*.java")
 
 	@echo Building jar file
 	$(JAR) -cf dist/asterisk.jar -C tmp .

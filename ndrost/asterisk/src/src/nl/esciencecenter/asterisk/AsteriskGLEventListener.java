@@ -1,12 +1,7 @@
 package nl.esciencecenter.asterisk;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 
-import javax.imageio.ImageIO;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
@@ -23,9 +18,7 @@ import nl.esciencecenter.asterisk.interfaces.TimedPlayer;
 import nl.esciencecenter.asterisk.interfaces.VisualScene;
 import nl.esciencecenter.esight.datastructures.FBO;
 import nl.esciencecenter.esight.datastructures.IntPBO;
-import nl.esciencecenter.esight.exceptions.InverseNotAvailableException;
 import nl.esciencecenter.esight.exceptions.UninitializedException;
-import nl.esciencecenter.esight.input.InputHandler;
 import nl.esciencecenter.esight.math.Color4;
 import nl.esciencecenter.esight.math.MatF4;
 import nl.esciencecenter.esight.math.MatrixFMath;
@@ -45,6 +38,25 @@ import nl.esciencecenter.esight.text.jogampExperimental.FontFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/* Copyright [2013] [Netherlands eScience Center]
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * @author Maarten van Meersbergen <m.van.meersbergen@esciencecenter.nl>
+ * 
+ */
 public class AsteriskGLEventListener implements GLEventListener {
     private final static Logger logger = LoggerFactory
             .getLogger(AsteriskGLEventListener.class);
@@ -147,54 +159,7 @@ public class AsteriskGLEventListener implements GLEventListener {
             }
 
             if (timer.isScreenshotNeeded()) {
-                try {
-                    finalPBO.copyToPBO(gl);
-                    ByteBuffer bb = finalPBO.getBuffer();
-                    bb.rewind();
-
-                    int pixels = canvasWidth * canvasHeight;
-                    int[] array = new int[pixels];
-                    IntBuffer ib = IntBuffer.wrap(array);
-
-                    for (int i = 0; i < (pixels * 4); i += 4) {
-                        int b = bb.get(i) & 0xFF;
-                        int g = bb.get(i + 1) & 0xFF;
-                        int r = bb.get(i + 2) & 0xFF;
-                        // int a = bb.get(i + 3) & 0xFF;
-
-                        int argb = (r << 16) | (g << 8) | b;
-                        ib.put(argb);
-                    }
-                    ib.rewind();
-
-                    int[] destArray = new int[pixels];
-                    IntBuffer dest = IntBuffer.wrap(destArray);
-
-                    int[] rowPix = new int[canvasWidth];
-                    for (int row = 0; row < canvasHeight; row++) {
-                        ib.get(rowPix);
-                        dest.position((canvasHeight - row - 1) * canvasWidth);
-                        dest.put(rowPix);
-                    }
-
-                    BufferedImage bufIm = new BufferedImage(canvasWidth,
-                            canvasHeight, BufferedImage.TYPE_INT_RGB);
-                    bufIm.setRGB(0, 0, canvasWidth, canvasHeight, dest.array(),
-                            0, canvasWidth);
-                    try {
-                        String filename = timer.getScreenshotFileName();
-                        new File(filename).mkdirs();
-                        ImageIO.write(bufIm, "png", new File(filename));
-                        System.out.println("Saved screenshot: " + filename);
-                    } catch (IOException e2) {
-                        // TODO Auto-generated catch block
-                        e2.printStackTrace();
-                    }
-
-                    finalPBO.unBind(gl);
-                } catch (UninitializedException e) {
-                    e.printStackTrace();
-                }
+                finalPBO.makeScreenshotPNG(gl, timer.getScreenshotFileName());
 
                 timer.setScreenshotNeeded(false);
             }
@@ -280,6 +245,7 @@ public class AsteriskGLEventListener implements GLEventListener {
             MatF4 mv = MatrixFMath.lookAt(eye, at, up);
             mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler
                     .getViewDist())));
+
             mv = mv.mul(MatrixFMath.translate(inputHandler.getTranslation()));
             mv = mv.mul(MatrixFMath
                     .rotationX(inputHandler.getRotation().get(0)));
@@ -395,8 +361,6 @@ public class AsteriskGLEventListener implements GLEventListener {
 
         offset += .001f;
 
-        animatedTurbulenceShader.setUniform("StarDrawMode", 0);
-
         newScene.drawStars(gl, animatedTurbulenceShader, mv);
 
         starFBO.unBind(gl);
@@ -412,20 +376,6 @@ public class AsteriskGLEventListener implements GLEventListener {
         starHaloShader
                 .setUniformMatrix("SMatrix", MatrixFMath.scale((settings
                         .getParticleSizeMultiplier() * .2f)));
-        starHaloShader.setUniformMatrix("NormalMatrix",
-                MatrixFMath.getNormalMatrix(mv));
-
-        VecF3 cameraPos;
-        try {
-            MatF4 viewModel = MatrixFMath.inverse(mv);
-            cameraPos = new VecF3(viewModel.get(3), viewModel.get(7),
-                    viewModel.get(11));
-        } catch (InverseNotAvailableException e) {
-            cameraPos = new VecF3();
-            e.printStackTrace();
-        }
-
-        starHaloShader.setUniformVector("CameraPos", cameraPos);
 
         newScene.drawStars(gl, starHaloShader, mv);
 
@@ -582,10 +532,6 @@ public class AsteriskGLEventListener implements GLEventListener {
         hudFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE6);
         sphereFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE7);
 
-        finalPBO.delete(gl);
-        finalPBO = new IntPBO(canvasWidth, canvasHeight);
-        finalPBO.init(gl);
-
         starFBO.init(gl);
         starHaloFBO.init(gl);
         pointGasFBO.init(gl);
@@ -593,6 +539,10 @@ public class AsteriskGLEventListener implements GLEventListener {
         axesFBO.init(gl);
         hudFBO.init(gl);
         sphereFBO.init(gl);
+
+        finalPBO.delete(gl);
+        finalPBO = new IntPBO(canvasWidth, canvasHeight);
+        finalPBO.init(gl);
     }
 
     private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes,
@@ -647,6 +597,10 @@ public class AsteriskGLEventListener implements GLEventListener {
         axesFBO.delete(gl);
         hudFBO.delete(gl);
         sphereFBO.delete(gl);
+
+        finalPBO.delete(gl);
+
+        loader.cleanup(gl);
     }
 
     @Override
@@ -780,7 +734,7 @@ public class AsteriskGLEventListener implements GLEventListener {
         finalPBO.init(gl);
     }
 
-    public InputHandler getInputHandler() {
+    public AsteriskInputHandler getInputHandler() {
         return inputHandler;
     }
 
