@@ -52,7 +52,7 @@ update:
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ asterisk_worker asterisk_worker_java worker_code.cc
-	$(RM) -f *.jar CodeInterface.java Worker.java
+	$(RM) -f *.jar CodeInterface.java Worker.java binev.data
 	$(RM) -rf tmp
 	make -C src clean
 
