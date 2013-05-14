@@ -46,8 +46,10 @@ public class Reservation {
             command.append(resource.getUsername());
             command.append("@");
             command.append(resource.getHostname());
-            command.append(" -p ");
-            command.append(resource.getPort());
+            if (resource.getPort() != -1) {
+                command.append(" -p ");
+                command.append(resource.getPort());
+            }
             command.append(" ");
         }
 
@@ -55,6 +57,9 @@ public class Reservation {
         command.append(" -cp ");
         command.append(config.getAmuseHome().getPath());
         command.append("/sandbox/ndrost/distributed/distributed-server.jar");
+        command.append(":");
+        command.append(config.getAmuseHome().getPath());
+        command.append("/sandbox/ndrost/distributed");
         command.append(" nl.esciencecenter.amuse.distributed.remote.Pilot ");
         command.append(serverAddress);
         command.append(" ");
@@ -115,6 +120,11 @@ public class Reservation {
      */
     public void waitUntilStarted() {
         //FIXME: actually wait here.
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            //IGNORE
+        }
     }
 
 }

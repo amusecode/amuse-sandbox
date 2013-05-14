@@ -16,6 +16,7 @@
 package nl.esciencecenter.amuse.distributed.local;
 
 import ibis.ipl.server.Server;
+import ibis.ipl.server.ServerProperties;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ public class ReservationManager {
         
         try {
             Properties properties = new Properties();
+            properties.put(ServerProperties.PORT, "0");
             iplServer = new Server(properties);
         } catch (Exception e) {
             throw new DistributedAmuseException("could not create IPL server", e);

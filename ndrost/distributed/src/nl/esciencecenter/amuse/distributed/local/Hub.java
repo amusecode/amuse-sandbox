@@ -42,6 +42,9 @@ public class Hub {
         command.append(" -cp ");
         command.append(config.getAmuseHome().getPath());
         command.append("/sandbox/ndrost/distributed/distributed-server.jar");
+        command.append(":");
+        command.append(config.getAmuseHome().getPath());
+        command.append("/sandbox/ndrost/distributed");
         command.append(" ibis.ipl.server.Server --remote --hub-only --port 0 --hub-addresses ");
         command.append(serverAddress);
 
