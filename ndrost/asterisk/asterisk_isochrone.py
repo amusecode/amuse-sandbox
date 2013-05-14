@@ -55,7 +55,7 @@ if __name__ in ('__main__', '__plot__'):
     instance.store_view(0|units.Myr)
     
     for i in range(1, 100):
-	print 'starting evolve to time = ', (i * 0.1 | units.Myr)
+        print 'starting evolve to time = ', (i * 0.1 | units.Myr)
         target_time = i * 0.1 | units.Myr
         gravity.evolve_model(target_time)
         from_gravity_to_local.copy()
@@ -64,16 +64,18 @@ if __name__ in ('__main__', '__plot__'):
         from_local_to_viz.copy_attributes(["x", "y", "z", "red", "green", "blue"])
         instance.particles.radius = stellar_evolution.particles.radius.sqrt() * (1e4 | units.parsec).sqrt()
         
-	print 'updating visualization to time = ', (i * 0.1 | units.Myr)
+        print 'updating visualization to time = ', (i * 0.1 | units.Myr)
         instance.store_view(target_time)
-
+    
+    raw_input("\n\nTweak your visualization and press 'Enter' to continue... ")
+    
     for i in range(1, 1000):
-	print "current rotation is", instance.get_current_rotation()
-	instance.set_rotation(2, i, 2)
-	filename = "screenshot-%05d.png" % i
-	instance.screenshot(filename)
-	time.sleep(1.0)
-	
+        print "current rotation is", instance.get_current_rotation()
+        instance.set_rotation(2, i, 2)
+        filename = "screenshot-%05d.png" % i
+        instance.screenshot(filename)
+        time.sleep(1.0)
+        
     
     instance.stop()
     gravity.stop()
