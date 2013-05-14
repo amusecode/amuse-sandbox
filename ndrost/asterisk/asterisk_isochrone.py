@@ -1,3 +1,4 @@
+import time
 import numpy.random
 from amuse.community import *
 from amuse.lab import *
@@ -24,7 +25,7 @@ def new_gravity(particles, converter):
     return gravity
 
 if __name__ in ('__main__', '__plot__'):
-    number_of_particles = 1000
+    number_of_particles = 100
     
     numpy.random.seed(12345)
     masses = new_scalo_mass_distribution(number_of_particles) * 10
@@ -47,7 +48,7 @@ if __name__ in ('__main__', '__plot__'):
     particles.radius = stellar_evolution.particles.radius.sqrt() * (1e4 | units.parsec).sqrt()
     
     converter = nbody.nbody_to_si(10.0 | units.parsec, masses.sum())
-    instance = Asterisk(converter, channel_type='sockets')#, redirection="none")
+    instance = Asterisk(converter, channel_type='sockets', redirection="none")
     instance.initialize_code()
     instance.particles.add_particles(particles)
     from_local_to_viz = particles.new_channel_to(instance.particles)
@@ -65,6 +66,14 @@ if __name__ in ('__main__', '__plot__'):
         
 	print 'updating visualization to time = ', (i * 0.1 | units.Myr)
         instance.store_view(target_time)
+
+    for i in range(1, 1000):
+	print "current rotation is", instance.get_current_rotation()
+	instance.set_rotation(2, i, 2)
+	filename = "screenshot-%05d.png" % i
+	instance.screenshot(filename)
+	time.sleep(1.0)
+	
     
     instance.stop()
     gravity.stop()

@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 import nl.esciencecenter.asterisk.*;
+import nl.esciencecenter.esight.math.VecF3;
 
 public class Code implements CodeInterface {
 
@@ -62,8 +63,8 @@ public class Code implements CodeInterface {
     }
 
     // first parameter is output parameter!
-    private int newParticle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius,
-            double[] red, double[] green, double[] blue, double[] opacity, int npoints, int type) {
+    private int newParticle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius, double[] red,
+            double[] green, double[] blue, double[] opacity, int npoints, int type) {
         //System.err.println("newParticle: " + npoints + " new particles being added");
         int newIndex = 0;
         for (int i = 0; i < npoints; i++) {
@@ -74,8 +75,9 @@ public class Code implements CodeInterface {
             //                x[i], y[i], z[i], radius[i], red[i], green[i], blue[i], opacity[i], type);
 
             index_of_the_particle[i] = newIndex;
-            CodeParticle particle = new CodeParticle(index_of_the_particle[i], x[i], y[i], z[i], radius[i], red[i],
-                    green[i], blue[i], opacity[i], type);
+            CodeParticle particle =
+                    new CodeParticle(index_of_the_particle[i], x[i], y[i], z[i], radius[i], red[i], green[i], blue[i],
+                            opacity[i], type);
 
             particles.set(newIndex, particle);
         }
@@ -87,12 +89,11 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int new_star_particle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius,
-            double[] red, double[] green, double[] blue, double[] opacity, int npoints) {
+    public int new_star_particle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius, double[] red,
+            double[] green, double[] blue, double[] opacity, int npoints) {
         System.err.println("new star particle: " + npoints + " new star particles. use star shader = " + useStarShader);
         if (useStarShader) {
-            return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints,
-                    CodeParticle.TYPE_STAR);
+            return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints, CodeParticle.TYPE_STAR);
         } else {
             return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints,
                     CodeParticle.TYPE_SPHERE);
@@ -100,8 +101,8 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int new_gas_particle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius,
-            double[] red, double[] green, double[] blue, double[] opacity, int npoints) {
+    public int new_gas_particle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius, double[] red,
+            double[] green, double[] blue, double[] opacity, int npoints) {
         System.err.println("new gas particle: " + npoints + " new gas particles. use octree = " + useOctreeForGas);
         if (useOctreeForGas) {
             return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints,
@@ -116,16 +117,14 @@ public class Code implements CodeInterface {
     public int new_sphere_particle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius,
             double[] red, double[] green, double[] blue, double[] opacity, int npoints) {
         System.err.println("new sphere particle: " + npoints + " new sphere particles");
-        return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints,
-                CodeParticle.TYPE_SPHERE);
+        return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints, CodeParticle.TYPE_SPHERE);
     }
 
     @Override
     public int new_marker_particle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius,
             double[] red, double[] green, double[] blue, double[] opacity, int npoints) {
         System.err.println("new marker particle: " + npoints + " new marker particles");
-        return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints,
-                CodeParticle.TYPE_MARKER);
+        return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints, CodeParticle.TYPE_MARKER);
     }
 
     @Override
@@ -172,7 +171,8 @@ public class Code implements CodeInterface {
 
     @Override
     // radius is output parameter!
-    public int get_radius(int[] index_of_the_particle, double[] radius, int npoints) {
+            public
+            int get_radius(int[] index_of_the_particle, double[] radius, int npoints) {
 
         for (int i = 0; i < npoints; i++) {
             CodeParticle particle = findParticle(index_of_the_particle[i]);
@@ -239,13 +239,11 @@ public class Code implements CodeInterface {
 
         }
 
-        System.err.printf(
-                "storing view with %d spheres, %d stars, %d sph_gas and %d pointgas particles. Description = \"%s\"\n",
+        System.err.printf("storing view with %d spheres, %d stars, %d sph_gas and %d pointgas particles. Description = \"%s\"\n",
                 spheres.size(), stars.size(), sphGas.size(), pointGas.size(), description);
 
-        asterisk.addScene(new Snapshot(description, spheres.toArray(new Sphere[spheres.size()]), stars
-                .toArray(new Star[stars.size()]), sphGas.toArray(new SPHGas[sphGas.size()]), pointGas
-                .toArray(new PointGas[pointGas.size()])));
+        asterisk.addScene(new Snapshot(description, spheres.toArray(new Sphere[spheres.size()]), stars.toArray(new Star[stars
+                .size()]), sphGas.toArray(new SPHGas[sphGas.size()]), pointGas.toArray(new PointGas[pointGas.size()])));
 
         // succes!
         return 0;
@@ -275,7 +273,8 @@ public class Code implements CodeInterface {
     // parameter "red" is an output parameter!
     // parameter "green" is an output parameter!
     // parameter "blue" is an output parameter!
-    public int get_color(int[] index_of_the_particle, double[] red, double[] green, double[] blue, int npoints) {
+            public
+            int get_color(int[] index_of_the_particle, double[] red, double[] green, double[] blue, int npoints) {
         for (int i = 0; i < npoints; i++) {
             CodeParticle particle = findParticle(index_of_the_particle[i]);
 
@@ -293,7 +292,8 @@ public class Code implements CodeInterface {
 
     @Override
     // parameter "alpha" is an output parameter!
-    public int get_opacity(int[] index_of_the_particle, double[] opacity, int npoints) {
+            public
+            int get_opacity(int[] index_of_the_particle, double[] opacity, int npoints) {
         for (int i = 0; i < npoints; i++) {
             CodeParticle particle = findParticle(index_of_the_particle[i]);
 
@@ -310,7 +310,8 @@ public class Code implements CodeInterface {
     // parameter "x" is an output parameter!
     // parameter "y" is an output parameter!
     // parameter "z" is an output parameter!
-    public int get_position(int[] index_of_the_particle, double[] x, double[] y, double[] z, int npoints) {
+            public
+            int get_position(int[] index_of_the_particle, double[] x, double[] y, double[] z, int npoints) {
         for (int i = 0; i < npoints; i++) {
             CodeParticle particle = findParticle(index_of_the_particle[i]);
 
@@ -384,6 +385,66 @@ public class Code implements CodeInterface {
         } else {
             use_octree_for_gas_flag[0] = 0;
         }
+        return 0;
+    }
+
+    @Override
+    public int set_rotation(double x_rotation, double y_rotation, double z_rotation) {
+        asterisk.setRotation((float) x_rotation, (float) y_rotation, (float) z_rotation);
+        return 0;
+    }
+
+    @Override
+    public int set_translation(double x_translation, double y_translation, double z_translation) {
+        asterisk.setTranslation((float) x_translation, (float) y_translation, (float) z_translation);
+        return 0;
+    }
+
+    @Override
+    public int get_scene_number(int[] scene_number) {
+        scene_number[0] = asterisk.getSceneNumber();
+        return 0;
+    }
+
+    @Override
+    public int set_scene(int scene_number) {
+        asterisk.setSceneNumber(scene_number);
+        return 0;
+    }
+
+    @Override
+    public int set_camera_distance(double camera_distance) {
+        asterisk.setCameraDistance((float)camera_distance);
+        return 0;
+    }
+
+    @Override
+    public int get_camera_distance(double[] camera_distance) {
+        camera_distance[0] = asterisk.getCameraDistance();
+        return 0;
+    }
+
+    @Override
+    public int get_current_translation(double[] x_translation, double[] y_translation, double[] z_translation) {
+        VecF3 translation = asterisk.getTranslation();
+        x_translation[0] = translation.get(0);
+        y_translation[0] = translation.get(1);
+        z_translation[0] = translation.get(2);
+        return 0;
+    }
+
+    @Override
+    public int screenshot(String screenshot_file_name) {
+        asterisk.makePNGScreenshot(screenshot_file_name);
+        return 0;
+    }
+
+    @Override
+    public int get_current_rotation(double[] x_rotation, double[] y_rotation, double[] z_rotation) {
+        VecF3 rotation = asterisk.getRotation();
+        x_rotation[0] = rotation.get(0);
+        y_rotation[0] = rotation.get(1);
+        z_rotation[0] = rotation.get(2);
         return 0;
     }
 

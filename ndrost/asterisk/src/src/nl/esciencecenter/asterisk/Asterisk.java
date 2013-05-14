@@ -2,6 +2,7 @@ package nl.esciencecenter.asterisk;
 
 import javax.swing.JFrame;
 
+import nl.esciencecenter.asterisk.AsteriskInterfaceWindow;
 import nl.esciencecenter.asterisk.data.GlueTimedPlayer;
 import nl.esciencecenter.asterisk.input.AsteriskInputHandler;
 import nl.esciencecenter.asterisk.interfaces.TimedPlayer;
@@ -9,8 +10,7 @@ import nl.esciencecenter.esight.ESightNewtWindow;
 import nl.esciencecenter.esight.math.VecF3;
 
 public class Asterisk {
-    private final static AsteriskSettings settings = AsteriskSettings
-            .getInstance();
+    private final static AsteriskSettings settings = AsteriskSettings.getInstance();
 
     private static AsteriskInterfaceWindow amusePanel;
     private static AsteriskGLEventListener amuseWindow;
@@ -21,15 +21,12 @@ public class Asterisk {
         amusePanel = new AsteriskInterfaceWindow();
 
         // Create the GLEventListener
-        amuseWindow = new AsteriskGLEventListener(
-                AsteriskInputHandler.getInstance());
+        amuseWindow = new AsteriskGLEventListener(AsteriskInputHandler.getInstance());
 
         amuseInputHandler = amuseWindow.getInputHandler();
 
-        new ESightNewtWindow(true, amuseInputHandler, amuseWindow,
-                settings.getDefaultScreenWidth(),
-                settings.getDefaultScreenHeight(),
-                "Asterisk - Amuse Visualization Tool");
+        new ESightNewtWindow(true, amuseInputHandler, amuseWindow, settings.getDefaultScreenWidth(),
+                settings.getDefaultScreenHeight(), "Asterisk - Amuse Visualization Tool");
 
         // Create the frame
         final JFrame frame = new JFrame("- * -");
@@ -40,8 +37,7 @@ public class Asterisk {
             }
         });
 
-        frame.setSize(settings.getInterfaceWidth(),
-                settings.getInterfaceHeight());
+        frame.setSize(settings.getInterfaceWidth(), settings.getInterfaceHeight());
 
         frame.setResizable(false);
 
@@ -95,135 +91,109 @@ public class Asterisk {
 
         Sphere[] spheres1 = new Sphere[SPHERES];
         for (int i = 0; i < spheres1.length; i++) {
-            float[] coordinates = new float[] { randBound(-1f, 2f),
-                    randBound(-1f, 2f), randBound(-1f, 2f) };
-            float[] color = new float[] { (float) Math.random(),
-                    (float) Math.random(), (float) Math.random(), 1f };
-            spheres1[i] = new Sphere(i, coordinates,
-                    (float) Math.random() * 0.1f, color);
+            float[] coordinates = new float[] { randBound(-1f, 2f), randBound(-1f, 2f), randBound(-1f, 2f) };
+            float[] color = new float[] { (float) Math.random(), (float) Math.random(), (float) Math.random(), 1f };
+            spheres1[i] = new Sphere(i, coordinates, (float) Math.random() * 0.1f, color);
         }
 
         Star[] stars1 = new Star[STARS];
         for (int i = 0; i < stars1.length; i++) {
-            float[] coordinates = new float[] { randBound(-1f, 2f),
-                    randBound(-1f, 2f), randBound(-1f, 2f) };
-            float[] color = new float[] { (float) Math.random(),
-                    (float) Math.random(), (float) Math.random(), 1f };
-            stars1[i] = new Star(i, coordinates, (float) Math.random() * 0.1f,
-                    color);
+            float[] coordinates = new float[] { randBound(-1f, 2f), randBound(-1f, 2f), randBound(-1f, 2f) };
+            float[] color = new float[] { (float) Math.random(), (float) Math.random(), (float) Math.random(), 1f };
+            stars1[i] = new Star(i, coordinates, (float) Math.random() * 0.1f, color);
         }
 
         SPHGas[] sphGas1 = new SPHGas[SPH];
         for (int i = 0; i < sphGas1.length; i++) {
-            float[] coordinates = new float[] { randBound(-1f, 2f),
-                    randBound(-1f, 2f), randBound(-1f, 2f) };
-            float[] color = new float[] { (float) Math.random(),
-                    (float) Math.random(), (float) Math.random(),
-                    (float) Math.random() };
+            float[] coordinates = new float[] { randBound(-1f, 2f), randBound(-1f, 2f), randBound(-1f, 2f) };
+            float[] color =
+                    new float[] { (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random() };
             sphGas1[i] = new SPHGas(i, coordinates, color);
         }
         PointGas[] pGas1 = new PointGas[POINTS];
         for (int i = 0; i < pGas1.length; i++) {
-            float[] coordinates = new float[] { randBound(-1f, 2f),
-                    randBound(-1f, 2f), randBound(-1f, 2f) };
+            float[] coordinates = new float[] { randBound(-1f, 2f), randBound(-1f, 2f), randBound(-1f, 2f) };
             float[] color = new float[] {
                     // 1f, 1f, 1f, 1f
-                    (float) Math.random(), (float) Math.random(),
-                    (float) Math.random(), (float) Math.random() };
+                    (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random() };
             pGas1[i] = new PointGas(i, coordinates, color);
         }
-        Snapshot scene1 = new Snapshot("willekeurig", spheres1, stars1,
-                sphGas1, pGas1);
+        Snapshot scene1 = new Snapshot("willekeurig", spheres1, stars1, sphGas1, pGas1);
         lib.addScene(scene1);
 
         for (int j = 0; j < SCENES; j++) {
             for (int i = 0; i < spheres1.length; i++) {
-                float[] coordinates = new float[] {
-                        shiftBound(spheres1[i].getCoordinates()[0],
-                                COORD_DELTA_MAX),
-                        shiftBound(spheres1[i].getCoordinates()[1],
-                                COORD_DELTA_MAX),
-                        shiftBound(spheres1[i].getCoordinates()[2],
-                                COORD_DELTA_MAX) };
+                float[] coordinates =
+                        new float[] { shiftBound(spheres1[i].getCoordinates()[0], COORD_DELTA_MAX),
+                                shiftBound(spheres1[i].getCoordinates()[1], COORD_DELTA_MAX),
+                                shiftBound(spheres1[i].getCoordinates()[2], COORD_DELTA_MAX) };
 
-                float[] color = new float[] {
-                        shiftBound(spheres1[i].getColor()[0], COLOR_DELTA_MAX),
-                        shiftBound(spheres1[i].getColor()[1], COLOR_DELTA_MAX),
-                        shiftBound(spheres1[i].getColor()[2], COLOR_DELTA_MAX),
-                        1f };
+                float[] color =
+                        new float[] { shiftBound(spheres1[i].getColor()[0], COLOR_DELTA_MAX),
+                                shiftBound(spheres1[i].getColor()[1], COLOR_DELTA_MAX),
+                                shiftBound(spheres1[i].getColor()[2], COLOR_DELTA_MAX), 1f };
 
-                spheres1[i] = new Sphere(i, coordinates, shiftBound(
-                        spheres1[i].getRadius(), RADIUS_DELTA_MAX), color);
+                spheres1[i] = new Sphere(i, coordinates, shiftBound(spheres1[i].getRadius(), RADIUS_DELTA_MAX), color);
             }
 
             for (int i = 0; i < stars1.length; i++) {
-                float[] coordinates = new float[] {
-                        shiftBound(stars1[i].getCoordinates()[0],
-                                COORD_DELTA_MAX),
-                        shiftBound(stars1[i].getCoordinates()[1],
-                                COORD_DELTA_MAX),
-                        shiftBound(stars1[i].getCoordinates()[2],
-                                COORD_DELTA_MAX) };
+                float[] coordinates =
+                        new float[] { shiftBound(stars1[i].getCoordinates()[0], COORD_DELTA_MAX),
+                                shiftBound(stars1[i].getCoordinates()[1], COORD_DELTA_MAX),
+                                shiftBound(stars1[i].getCoordinates()[2], COORD_DELTA_MAX) };
 
-                float[] color = new float[] {
-                        shiftBound(stars1[i].getColor()[0], COLOR_DELTA_MAX),
-                        shiftBound(stars1[i].getColor()[1], COLOR_DELTA_MAX),
-                        shiftBound(stars1[i].getColor()[2], COLOR_DELTA_MAX),
-                        1f };
+                float[] color =
+                        new float[] { shiftBound(stars1[i].getColor()[0], COLOR_DELTA_MAX),
+                                shiftBound(stars1[i].getColor()[1], COLOR_DELTA_MAX),
+                                shiftBound(stars1[i].getColor()[2], COLOR_DELTA_MAX), 1f };
 
-                stars1[i] = new Star(i, coordinates, shiftBound(
-                        stars1[i].getRadius(), RADIUS_DELTA_MAX), color);
+                stars1[i] = new Star(i, coordinates, shiftBound(stars1[i].getRadius(), RADIUS_DELTA_MAX), color);
             }
 
             for (int i = 0; i < sphGas1.length; i++) {
-                float[] coordinates = new float[] {
-                        shiftBound(sphGas1[i].getCoordinates()[0],
-                                COORD_DELTA_MAX),
-                        shiftBound(sphGas1[i].getCoordinates()[1],
-                                COORD_DELTA_MAX),
-                        shiftBound(sphGas1[i].getCoordinates()[2],
-                                COORD_DELTA_MAX) };
+                float[] coordinates =
+                        new float[] { shiftBound(sphGas1[i].getCoordinates()[0], COORD_DELTA_MAX),
+                                shiftBound(sphGas1[i].getCoordinates()[1], COORD_DELTA_MAX),
+                                shiftBound(sphGas1[i].getCoordinates()[2], COORD_DELTA_MAX) };
 
-                float[] color = new float[] {
-                        shiftBound(sphGas1[i].getColor()[0], COLOR_DELTA_MAX),
-                        shiftBound(sphGas1[i].getColor()[1], COLOR_DELTA_MAX),
-                        shiftBound(sphGas1[i].getColor()[2], COLOR_DELTA_MAX),
-                        1f };
+                float[] color =
+                        new float[] { shiftBound(sphGas1[i].getColor()[0], COLOR_DELTA_MAX),
+                                shiftBound(sphGas1[i].getColor()[1], COLOR_DELTA_MAX),
+                                shiftBound(sphGas1[i].getColor()[2], COLOR_DELTA_MAX), 1f };
 
                 sphGas1[i] = new SPHGas(i, coordinates, color);
             }
 
             for (int i = 0; i < pGas1.length; i++) {
-                float[] coordinates = new float[] {
-                        shiftBound(pGas1[i].getCoordinates()[0],
-                                COORD_DELTA_MAX),
-                        shiftBound(pGas1[i].getCoordinates()[1],
-                                COORD_DELTA_MAX),
-                        shiftBound(pGas1[i].getCoordinates()[2],
-                                COORD_DELTA_MAX) };
+                float[] coordinates =
+                        new float[] { shiftBound(pGas1[i].getCoordinates()[0], COORD_DELTA_MAX),
+                                shiftBound(pGas1[i].getCoordinates()[1], COORD_DELTA_MAX),
+                                shiftBound(pGas1[i].getCoordinates()[2], COORD_DELTA_MAX) };
 
-                float[] color = new float[] {
-                        shiftBound(pGas1[i].getColor()[0], COLOR_DELTA_MAX),
-                        shiftBound(pGas1[i].getColor()[1], COLOR_DELTA_MAX),
-                        shiftBound(pGas1[i].getColor()[2], COLOR_DELTA_MAX), 1f };
+                float[] color =
+                        new float[] { shiftBound(pGas1[i].getColor()[0], COLOR_DELTA_MAX),
+                                shiftBound(pGas1[i].getColor()[1], COLOR_DELTA_MAX),
+                                shiftBound(pGas1[i].getColor()[2], COLOR_DELTA_MAX), 1f };
 
                 pGas1[i] = new PointGas(i, coordinates, color);
             }
 
-            Snapshot scene = new Snapshot("random " + j, spheres1, stars1,
-                    null, pGas1);
+            Snapshot scene = new Snapshot("random " + j, spheres1, stars1, null, pGas1);
             lib.addScene(scene);
         }
 
         try {
             Thread.sleep(3000);
-            makePNGScreenshot("before.png");
+            lib.makePNGScreenshot("before.png");
 
             Thread.sleep(10000);
-            setView(3, 30f, 20f, 0f, -5f);
+            
+            lib.setSceneNumber(3);
+            lib.setRotation(30f, 20f, 0f);
+            lib.setCameraDistance(-5f);
             Thread.sleep(3000);
 
-            makePNGScreenshot("after.png");
+            lib.makePNGScreenshot("after.png");
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -242,40 +212,46 @@ public class Asterisk {
 
     }
 
-    public static void setView(int sceneNumber, float xRotation,
-            float yRotation, float zRotation, float cameraDistance) {
-        TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
-        ((GlueTimedPlayer) timer).setFrame(sceneNumber, true);
-
-        amuseInputHandler
-                .setRotation(new VecF3(xRotation, yRotation, zRotation));
-        amuseInputHandler.setViewDist(cameraDistance);
-    }
-
     public int getSceneNumber() {
         TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
         return ((GlueTimedPlayer) timer).getFrameNumber();
     }
 
-    public float getXRotation() {
-        return amuseInputHandler.getRotation().get(0);
+    public VecF3 getRotation() {
+        return amuseInputHandler.getRotation();
     }
 
-    public float getYRotation() {
-        return amuseInputHandler.getRotation().get(1);
-    }
-
-    public float getZRotation() {
-        return amuseInputHandler.getRotation().get(2);
+    public VecF3 getTranslation() {
+        return amuseInputHandler.getTranslation();
     }
 
     public float getCameraDistance() {
         return amuseInputHandler.getViewDist();
     }
 
-    public static void makePNGScreenshot(String fileName) {
+    public void makePNGScreenshot(String fileName) {
         TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
         ((GlueTimedPlayer) timer).setScreenshotFileName(fileName);
         ((GlueTimedPlayer) timer).setScreenshotNeeded(true);
     }
+
+    //new
+
+    public void setSceneNumber(int sceneNumber) {
+        TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
+        ((GlueTimedPlayer) timer).setFrame(sceneNumber, true);
+    }
+
+    public void setRotation(float x, float y, float z) {
+        amuseInputHandler.setRotation(new VecF3(x, y, z));
+    }
+
+    public void setTranslation(float x, float y, float z) {
+        amuseInputHandler.setTranslation(new VecF3(x, y, z));
+    }
+
+    public void setCameraDistance(float cameraDistance) {
+        amuseInputHandler.setViewDist(cameraDistance);
+    }
+
 }
