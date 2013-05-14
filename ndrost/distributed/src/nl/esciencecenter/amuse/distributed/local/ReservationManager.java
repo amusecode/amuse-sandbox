@@ -62,7 +62,7 @@ public class ReservationManager {
     public String getServerAddress() {
         return iplServer.getAddress();
     }
-    
+
     private AmuseConfiguration getConfiguration(Resource resource) throws DistributedAmuseException {
         return new AmuseConfiguration(new File("/home/niels/workspace/amuse"));
     }
@@ -71,24 +71,25 @@ public class ReservationManager {
             String nodeLabel) throws DistributedAmuseException {
         logger.debug("reserving new nodes: resource name = " + resource.getName() + " queue name = " + queueName
                 + " number of nodes = " + nodeCount + " time (in minutes) = " + timeMinutes + " node label = " + nodeLabel);
-        
+
         Hub hub = hubs.get(resource);
-        
+
         AmuseConfiguration amuseConfiguration = getConfiguration(resource);
-        
+
         if (hub == null && resource.mustStartHub()) {
             hub = new Hub(resource, amuseConfiguration, iplServer.getAddress());
             iplServer.addHubs(hub.getAddress());
             hubs.put(resource, hub);
         }
 
-        Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel, iplServer.getAddress(), hub, amuseConfiguration);
+        Reservation result =
+                new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel, iplServer.getAddress(), hub,
+                        amuseConfiguration);
 
         reservations.add(result);
 
         return result;
     }
-
 
     public synchronized Reservation getReservation(int reservationID) throws DistributedAmuseException {
         for (Reservation reservation : reservations) {

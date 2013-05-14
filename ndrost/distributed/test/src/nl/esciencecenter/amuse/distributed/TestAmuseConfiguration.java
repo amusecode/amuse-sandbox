@@ -33,8 +33,7 @@ public class TestAmuseConfiguration {
 
         assertEquals(config.getConfigOption("JAVA_ENABLED"), "yes");
     }
-    
-    
+
     @Test(expected = DistributedAmuseException.class)
     public void testAmuseConfiguration_InvalidOption_DistributedAmuseException() throws Exception {
         File testFile = new File("/home/niels/workspace/amuse/config.mk");

@@ -37,8 +37,9 @@ public class Network {
 
     public static IbisCapabilities IPL_CAPABILITIES = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT,
             IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED, IbisCapabilities.TERMINATION, IbisCapabilities.SIGNALS);
-    
-    public static Ibis createIbis(String serverAddress, RegistryEventHandler registryEventHandler) throws DistributedAmuseException {
+
+    public static Ibis createIbis(String serverAddress, RegistryEventHandler registryEventHandler)
+            throws DistributedAmuseException {
         try {
 
             Properties properties = new Properties();

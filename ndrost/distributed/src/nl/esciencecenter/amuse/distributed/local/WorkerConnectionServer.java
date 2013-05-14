@@ -52,7 +52,7 @@ public class WorkerConnectionServer {
     private final WorkerOutputManager outputManager;
 
     private final Ibis ibis;
-    
+
     private final JobManager scheduler;
 
     public WorkerConnectionServer(JobManager scheduler) throws DistributedAmuseException {

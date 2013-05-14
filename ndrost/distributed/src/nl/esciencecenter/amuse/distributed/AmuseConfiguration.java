@@ -35,7 +35,7 @@ public class AmuseConfiguration {
     File amuseHome;
 
     Map<String, String> config;
-    
+
     private void parseConfig(BufferedReader reader) throws DistributedAmuseException {
         try {
             while (true) {
@@ -73,19 +73,19 @@ public class AmuseConfiguration {
     public AmuseConfiguration(File amuseHome, InputStream in) throws DistributedAmuseException {
         this.amuseHome = amuseHome;
         config = new HashMap<String, String>();
-        
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
         parseConfig(reader);
-        
+
     }
 
     public AmuseConfiguration(File amuseHome) throws DistributedAmuseException {
         this.amuseHome = amuseHome;
         config = new HashMap<String, String>();
-        
+
         File configFile = new File(amuseHome, "config.mk");
-        
+
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(configFile));

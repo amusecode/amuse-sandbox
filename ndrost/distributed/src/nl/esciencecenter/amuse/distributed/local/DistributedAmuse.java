@@ -51,11 +51,11 @@ public class DistributedAmuse {
 
         workerConnectionHandler = new WorkerConnectionServer(jobs);
     }
-    
+
     public ResourceManager resources() {
         return resources;
     }
-    
+
     public ReservationManager reservations() {
         return reservations;
     }
@@ -73,7 +73,5 @@ public class DistributedAmuse {
         logger.debug("returning worker port");
         return workerConnectionHandler.getPort();
     }
-
-  
 
 }

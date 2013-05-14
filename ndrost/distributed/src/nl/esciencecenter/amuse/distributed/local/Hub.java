@@ -21,7 +21,8 @@ public class Hub {
 
     private final String address;
 
-    private static String buildCommand(Resource resource, AmuseConfiguration config, String serverAddress) throws DistributedAmuseException {
+    private static String buildCommand(Resource resource, AmuseConfiguration config, String serverAddress)
+            throws DistributedAmuseException {
         StringBuilder command = new StringBuilder();
 
         //remote host, use ssh
@@ -47,28 +48,28 @@ public class Hub {
 
     public Hub(Resource resource, AmuseConfiguration config, String serverAddress) throws DistributedAmuseException {
         try {
-        String command = buildCommand(resource, config, serverAddress);
+            String command = buildCommand(resource, config, serverAddress);
 
-        logger.debug("running command " + command);
+            logger.debug("running command " + command);
 
-        process = Runtime.getRuntime().exec(command);
-        
-        new StreamForwarder(process.getErrorStream(), System.err);
+            process = Runtime.getRuntime().exec(command);
 
-        serverConnection =
-                new ServerConnection(process.getInputStream(), process.getOutputStream(), System.out, "Hub at "
-                        + resource.getName() + ": ", TIMEOUT, null);
+            new StreamForwarder(process.getErrorStream(), System.err);
 
-        address = serverConnection.getAddress();
+            serverConnection =
+                    new ServerConnection(process.getInputStream(), process.getOutputStream(), System.out, "Hub at "
+                            + resource.getName() + ": ", TIMEOUT, null);
+
+            address = serverConnection.getAddress();
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start hub on " + resource.getName(), e);
         }
     }
-    
+
     String getAddress() {
         return address;
     }
-    
+
     void stop() {
         serverConnection.closeConnection();
     }

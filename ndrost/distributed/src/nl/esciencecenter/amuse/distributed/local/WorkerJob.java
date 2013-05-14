@@ -17,14 +17,14 @@ package nl.esciencecenter.amuse.distributed.local;
 
 /**
  * @author Niels Drost
- *
+ * 
  */
 public class WorkerJob {
 
     public void waitUntilStarted() {
         // TODO Auto-generated method stub
     }
-    
+
     public boolean hasFinished() {
         // TODO Auto-generated method stub
         return true;
@@ -35,9 +35,7 @@ public class WorkerJob {
      */
     public void stop() {
         // TODO Auto-generated method stub
-        
+
     }
-
-
 
 }

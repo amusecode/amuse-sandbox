@@ -67,7 +67,7 @@ public class Code implements CodeInterface {
         try {
             for (int i = 0; i < count; i++) {
                 Boolean startHub;
-                
+
                 if (start_hub[i] == -1) {
                     //default: auto
                     startHub = null;
@@ -77,7 +77,8 @@ public class Code implements CodeInterface {
                     startHub = true;
                 }
                 Resource resource =
-                        distributedAmuse.resources().newResource(name[i], hostname[i], amuse_dir[i], port[i], username[i], scheduler_type[i], startHub);
+                        distributedAmuse.resources().newResource(name[i], hostname[i], amuse_dir[i], port[i], username[i],
+                                scheduler_type[i], startHub);
                 index_of_the_resource[i] = resource.getId();
             }
             return 0;
@@ -108,8 +109,8 @@ public class Code implements CodeInterface {
             for (int i = 0; i < count; i++) {
                 Resource resource = distributedAmuse.resources().getResource(resource_name[i]);
                 Reservation result =
-                        distributedAmuse.reservations().newReservation(resource, queue_name[i], node_count[i],
-                                time_minutes[i], node_label[i]);
+                        distributedAmuse.reservations().newReservation(resource, queue_name[i], node_count[i], time_minutes[i],
+                                node_label[i]);
 
                 reservation_id[i] = result.getID();
             }
@@ -162,8 +163,8 @@ public class Code implements CodeInterface {
             for (int i = 0; i < count; i++) {
                 boolean useCodeCache = re_use_code_files[i] != 0;
                 job_id[i] =
-                        distributedAmuse.jobs().submitScriptJob(script[i], arguments[i], code_dir[i], node_label[i],
-                                useCodeCache);
+                        distributedAmuse.jobs()
+                                .submitScriptJob(script[i], arguments[i], code_dir[i], node_label[i], useCodeCache);
 
             }
             return 0;

@@ -27,18 +27,18 @@ import nl.esciencecenter.amuse.distributed.WorkerDescription;
  * 
  */
 public class JobManager extends Thread implements RegistryEventHandler {
-    
+
     private final Ibis ibis;
-    
+
     /**
-     * @param string 
+     * @param string
      * @param distributedAmuse
-     * @throws DistributedAmuseException 
+     * @throws DistributedAmuseException
      */
     public JobManager(String serverAddress) throws DistributedAmuseException {
-            ibis = Network.createIbis(serverAddress, this);
+        ibis = Network.createIbis(serverAddress, this);
     }
-    
+
     public Ibis getIbis() {
         return ibis;
     }
@@ -105,43 +105,43 @@ public class JobManager extends Thread implements RegistryEventHandler {
     @Override
     public void died(IbisIdentifier arg0) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void electionResult(String arg0, IbisIdentifier arg1) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void gotSignal(String arg0, IbisIdentifier arg1) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void joined(IbisIdentifier arg0) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void left(IbisIdentifier arg0) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void poolClosed() {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
     public void poolTerminated(IbisIdentifier arg0) {
         // TODO Auto-generated method stub
-        
+
     }
 
 }

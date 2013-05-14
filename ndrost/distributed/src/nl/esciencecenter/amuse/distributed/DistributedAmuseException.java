@@ -17,7 +17,7 @@ package nl.esciencecenter.amuse.distributed;
 
 /**
  * @author Niels Drost
- *
+ * 
  */
 public class DistributedAmuseException extends Exception {
 

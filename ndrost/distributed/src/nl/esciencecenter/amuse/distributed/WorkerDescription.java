@@ -32,7 +32,7 @@ public class WorkerDescription {
     private final int nrOfWorkers;
     private final int nrOfNodes;
     private final int nrOfThreads;
-    
+
     private final boolean copyWorkerCode;
 
     public WorkerDescription(String id, String codeName, String codeDir, String stdoutFile, String stderrFile, String nodeLabel,
@@ -84,7 +84,7 @@ public class WorkerDescription {
     public int getNrOfThreads() {
         return nrOfThreads;
     }
-    
+
     public boolean copyWorkerCode() {
         return copyWorkerCode;
     }

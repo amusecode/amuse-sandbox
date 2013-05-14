@@ -34,8 +34,7 @@ import ibis.ipl.ReadMessage;
 import ibis.ipl.ReceivePort;
 
 /**
- * Takes care of getting all output to its final destination. Either a local
- * file, or the AMUSE process.
+ * Takes care of getting all output to its final destination. Either a local file, or the AMUSE process.
  * 
  * @author Niels Drost
  * 

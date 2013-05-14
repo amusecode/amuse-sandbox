@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class AmuseMessage {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(AmuseMessage.class);
 
     public static final int HEADER_SIZE = 10; // integers
@@ -501,7 +501,7 @@ public class AmuseMessage {
         // }
         // }
     }
-    
+
     public void writeTo(WriteMessage writeMessage) throws IOException {
         if (logger.isTraceEnabled()) {
             logger.trace("writing to write message: " + this.toContentString());
@@ -669,7 +669,7 @@ public class AmuseMessage {
 
         return updatedBuffers;
     }
-    
+
     public boolean readFrom(ReadMessage readMessage) throws IOException {
         boolean updatedBuffers = false;
 
