@@ -3,8 +3,8 @@ import numpy.random
 from amuse.community import *
 from amuse.lab import *
 
-from interface import AsteriskInterface
-from interface import Asterisk
+from amuse.community.asterisk.interface import AsteriskInterface
+from amuse.community.asterisk.interface import Asterisk
 
 from matplotlib import pyplot
 from amuse.units import units
