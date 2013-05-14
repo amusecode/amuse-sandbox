@@ -11,20 +11,25 @@ JAR ?= jar
 MV ?= mv
 CP ?= cp
 
-all: java_check distributed_worker distributed-server.jar
+#This target intentionally left blank
+ALL = 
+
+all: $(ALL)
+
+code: distributed_worker_java
 
 java_check:
 #Makefile requires these checks to be at the beginning of the line
 ifeq ($(JAVA_ENABLED),no)
-        $(error "Java support not configured in AMUSE")
+	$(error "Java support not configured in AMUSE")
 endif
 ifeq (,$(findstring $(JAVA_VERSION), 1.7))
-        $(error "Java 1.7 required for the Distributed code, but AMUSE configured with Java $(JAVA_VERSION)")
+	$(error "Java 1.7 required for the Distributed code, but AMUSE configured with Java $(JAVA_VERSION)")
 endif
 
 clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ distributed_worker worker_code.cc
+	$(RM) -f *.pyc 
+	$(RM) *~ distributed_worker distributed_worker_java
 	$(RM) -f *.jar CodeInterface.java Worker.java
 	$(RM) -rf tmp
 
@@ -61,7 +66,7 @@ worker.jar: Worker.java CodeInterface.java Code.java distributed.jar
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp
 
-distributed_worker: worker.jar
+distributed_worker_java: java_check worker.jar distributed-server.jar
 	$(CODE_GENERATOR) -x --type=java --mode=script interface.py DistributedAmuseInterface -o $@
 
 .cc.o: $<

@@ -63,11 +63,10 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         .. [#] The Distributed Amuse project is a collaboration between Sterrewacht Leiden and The Netherlands eScience Center.
     """
 
-    classpath = '.:worker.jar:distributed.jar:lib/*:lib/ipl/*'
-    
+    classpath = ['.', 'worker.jar', 'distributed.jar','lib/*','lib/ipl/*']
     
     def __init__(self, **keyword_arguments):
-        CodeInterface.__init__(self, name_of_the_worker="distributed_worker", **keyword_arguments)
+        CodeInterface.__init__(self, name_of_the_worker="distributed_worker_java", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
         
         port = self.get_port()
