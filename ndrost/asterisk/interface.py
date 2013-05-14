@@ -352,6 +352,14 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         function.addParameter("z_rotation", dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
+    @legacy_function
+    def get_current_rotation():
+        function = LegacyFunctionSpecification()
+        function.addParameter("x_rotation", dtype='float64', direction=function.OUT)
+        function.addParameter("y_rotation", dtype='float64', direction=function.OUT)
+        function.addParameter("z_rotation", dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
     
     @legacy_function
     def set_translation():
@@ -359,6 +367,14 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         function.addParameter("x_translation", dtype='float64', direction=function.IN)
         function.addParameter("y_translation", dtype='float64', direction=function.IN)
         function.addParameter("z_translation", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_current_translation():
+        function = LegacyFunctionSpecification()
+        function.addParameter("x_translation", dtype='float64', direction=function.OUT)
+        function.addParameter("y_translation", dtype='float64', direction=function.OUT)
+        function.addParameter("z_translation", dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
@@ -395,6 +411,14 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         return function
     
     @legacy_function
+    def screenshot():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('screenshot_file_name', dtype='string', direction=function.IN,
+            description = "Name of the file to write the (PNG) screenshot to")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def store_view():
         """
         Store and view the current model, corresponding to the given description.
@@ -414,6 +438,12 @@ class Asterisk(CommonCode):
     def store_view(self, description=""):
         self.overridden().store_view(str(description))
 
+    def define_properties(self, object):
+        object.add_property("get_current_rotation")
+        object.add_property("get_current_translation")
+        object.add_property("get_current_rotation", public_name = "rotation")
+        object.add_property("get_current_translation", public_name = "translation")
+    
     def define_particle_sets(self, object):
         object.define_super_set('particles', ['star_particles', 'gas_particles', 'sphere_particles', 'marker_particles'], 
             index_to_default_set = 0)
@@ -540,26 +570,26 @@ class Asterisk(CommonCode):
             "set_translation", 
             "x_translation",
             "translation_x", 
-            "Translation of the scene w.r.t. the origin",
-            0.0 | nbody_system.length,
+            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
+            0.0,
         )
         object.add_caching_parameter(
             "set_translation", 
             "y_translation",
             "translation_y", 
-            "Translation of the scene w.r.t. the origin",
-            0.0 | nbody_system.length,
+            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
+            0.0,
         )
         object.add_caching_parameter(
             "set_translation", 
             "z_translation",
             "translation_z", 
-            "Translation of the scene w.r.t. the origin",
-            0.0 | nbody_system.length,
+            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
+            0.0,
         )
         object.add_vector_parameter(
             "translation",
-            "Translation of the scene w.r.t. the origin",
+            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
             ("translation_x", "translation_y","translation_z")
         )
         object.add_method_parameter(
