@@ -7,7 +7,7 @@ from amuse.datamodel import Particles
 from amuse.io import read_set_from_file
 from amuse.ext.particles_with_color import new_particles_with_blackbody_color
 from amuse.community.seba.interface import SeBa
-from interface import Asterisk
+from amuse.community.asterisk.interface import Asterisk
 
 def start_visualisation(gas, stars):
     converter = nbody_system.nbody_to_si(1.0 | units.AU, gas.mass.sum() + stars.mass.sum())

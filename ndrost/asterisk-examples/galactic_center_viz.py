@@ -23,7 +23,7 @@ from matplotlib import pyplot
 
 from amuse.ic.kingmodel import new_king_model
 
-from interface import Asterisk
+from amuse.community.asterisk.interface import Asterisk
 
 numpy.random.seed(1234567)
 
