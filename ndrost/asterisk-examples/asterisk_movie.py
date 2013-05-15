@@ -79,7 +79,8 @@ if __name__ in ('__main__', '__plot__'):
 
     #give the user an opportunity to change the visualization settings    
     raw_input("\n\nTweak your visualization settings and press 'Enter' to continue... ")
- 
+
+    #generate screenshots while changing some visual parameters. 
     for i in range(1, 100):
         visualization.parameters.rotation = (15, -i * 10, 0)
         visualization.parameters.camera_distance = (15.0 - (0.1 * i)) | units.parsec

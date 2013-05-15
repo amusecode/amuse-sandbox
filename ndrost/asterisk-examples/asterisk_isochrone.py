@@ -77,24 +77,6 @@ if __name__ in ('__main__', '__plot__'):
         print 'updating visualization to time = ', target_time
         visualization.store_view(target_time)
     
-# #     raw_input("\n\nTweak your visualization and press 'Enter' to continue... ")
-# #     
-# #     for i in range(1, 1000):
-# #         print "current rotation is", visualization.get_current_rotation()
-# #         visualization.set_rotation(2, i, 2)
-# #         filename = "screenshot-%05d.png" % i
-# #         visualization.screenshot(filename)
-# #         
-# #     
-# 
-#     for i in range(1, 1000):
-#         print "current rotation is", visualization.get_current_rotation()
-#         print "current camera distance in parsec is", visualization.parameters.camera_distance
-#         print "current raw camera distance is", visualization.get_camera_distance().as_quantity_in(units.parsec)
-#         visualization.parameters.rotation = (15, -15, -6 * i)
-#         visualization.recommit_parameters()
-#         time.sleep(1)
-
     visualization.stop()
     gravity.stop()
     stellar_evolution.stop()
