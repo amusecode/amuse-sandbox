@@ -1,6 +1,10 @@
 package nl.esciencecenter.amuse.distributed.local;
 
+import ibis.ipl.server.Server;
+import ibis.ipl.server.ServerProperties;
+
 import java.util.ArrayList;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +24,24 @@ public class ResourceManager {
 
     private final Octopus octopus;
     
+    private final Server iplServer;
+    
     private final ArrayList<Resource> resources;
     
-    ResourceManager(Octopus octopus) {
+    ResourceManager(Octopus octopus) throws DistributedAmuseException {
         resources = new ArrayList<Resource>();
         this.octopus = octopus;
+        
+        try {
+            Properties properties = new Properties();
+            //use a random free port.
+            properties.put(ServerProperties.PORT, "0");
+            this.iplServer = new Server(properties);
+        } catch (Exception e) {
+            throw new DistributedAmuseException("could not create IPL server", e);
+        }
+        
+        iplServer.getHubs();
     }
 
     public synchronized Resource newResource(String name, String hostname, String amuseDir, int port, String username,
@@ -38,7 +55,7 @@ public class ResourceManager {
             }
         }
 
-        Resource result = new Resource(name, hostname, amuseDir, port, username, schedulerType, startHub, octopus);
+        Resource result = new Resource(name, hostname, amuseDir, port, username, schedulerType, startHub, octopus, iplServer);
 
         resources.add(result);
 
@@ -66,10 +83,19 @@ public class ResourceManager {
     public synchronized void deleteResource(Resource resource) throws DistributedAmuseException {
         for (int i = 0; i < resources.size(); i++) {
             if (resource.getId() == resources.get(i).getId()) {
+                resource.stop();
                 resources.remove(i);
                 return;
             }
         }
         throw new DistributedAmuseException("Resource " + resource.getId() + " not found");
+    }
+
+    public String getIplServerAddress() {
+        return iplServer.getAddress();
+    }
+
+    public String[] getHubAddresses() {
+        return iplServer.getHubs();
     }
 }

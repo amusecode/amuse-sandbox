@@ -77,7 +77,7 @@ public class Code implements CodeInterface {
                     startHub = true;
                 }
                 Resource resource =
-                        distributedAmuse.resources().newResource(name[i], hostname[i], amuse_dir[i], port[i], username[i],
+                        distributedAmuse.resourceManager().newResource(name[i], hostname[i], amuse_dir[i], port[i], username[i],
                                 scheduler_type[i], startHub);
                 index_of_the_resource[i] = resource.getId();
             }
@@ -92,8 +92,8 @@ public class Code implements CodeInterface {
     public int delete_resource(int[] index_of_the_resource, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                Resource resource = distributedAmuse.resources().getResource(index_of_the_resource[i]);
-                distributedAmuse.resources().deleteResource(resource);
+                Resource resource = distributedAmuse.resourceManager().getResource(index_of_the_resource[i]);
+                distributedAmuse.resourceManager().deleteResource(resource);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -107,9 +107,8 @@ public class Code implements CodeInterface {
             int[] time_minutes, String[] node_label, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                Resource resource = distributedAmuse.resources().getResource(resource_name[i]);
                 Reservation result =
-                        distributedAmuse.reservations().newReservation(resource, queue_name[i], node_count[i], time_minutes[i],
+                        distributedAmuse.reservationManager().newReservation(resource_name[i], queue_name[i], node_count[i], time_minutes[i],
                                 node_label[i]);
 
                 reservation_id[i] = result.getID();
@@ -126,7 +125,7 @@ public class Code implements CodeInterface {
     public int delete_reservation(int[] reservation_id, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                distributedAmuse.reservations().deleteReservation(reservation_id[i]);
+                distributedAmuse.reservationManager().deleteReservation(reservation_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -137,7 +136,7 @@ public class Code implements CodeInterface {
 
     @Override
     public int wait_for_reservations() {
-        distributedAmuse.reservations().waitForAllReservations();
+        distributedAmuse.reservationManager().waitForAllReservations();
         return 0;
     }
 
@@ -145,7 +144,7 @@ public class Code implements CodeInterface {
     public int submit_pickled_function_job(int[] job_id, String[] function, String[] arguments, String[] node_label, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                job_id[i] = distributedAmuse.jobs().submitPickledJob(function[i], arguments[i], node_label[i]);
+                job_id[i] = distributedAmuse.jobManager().submitPickledJob(function[i], arguments[i], node_label[i]);
 
             }
             return 0;
@@ -163,7 +162,7 @@ public class Code implements CodeInterface {
             for (int i = 0; i < count; i++) {
                 boolean useCodeCache = re_use_code_files[i] != 0;
                 job_id[i] =
-                        distributedAmuse.jobs()
+                        distributedAmuse.jobManager()
                                 .submitScriptJob(script[i], arguments[i], code_dir[i], node_label[i], useCodeCache);
 
             }
@@ -179,7 +178,7 @@ public class Code implements CodeInterface {
     public int get_pickled_function_job_result(int[] job_id, String[] result, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                result[i] = distributedAmuse.jobs().getJobResult(job_id[i]);
+                result[i] = distributedAmuse.jobManager().getJobResult(job_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -191,7 +190,7 @@ public class Code implements CodeInterface {
     @Override
     public int wait_for_jobs() {
         try {
-            distributedAmuse.jobs().waitForAllJobs();
+            distributedAmuse.jobManager().waitForAllJobs();
             return 0;
         } catch (DistributedAmuseException e) {
             logger.error("Error on running distributed code: " + e, e);

@@ -15,6 +15,7 @@
  */
 package nl.esciencecenter.amuse.distributed.local;
 
+import ibis.ipl.server.Server;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
@@ -33,47 +34,47 @@ public class DistributedAmuse {
 
     private static final Logger logger = LoggerFactory.getLogger(DistributedAmuse.class);
 
-    //resources potentially available for starting reservations on
-    private final ResourceManager resources;
+    //resources potentially available for starting reservations on. Also starts hub on each resource, if required.
+    private final ResourceManager resourceManager;
 
-    //starts pilots on resources. Also starts IPL server and hub when required
-    private final ReservationManager reservations;
+    //starts pilots on resources. 
+    private final ReservationManager reservationManager;
 
     //takes care of job queue, communicates with remote pilots
-    private final JobManager jobs;
+    private final JobManager jobManager;
 
     //talks to AMUSE, handling any worker requests and messages
     private final WorkerConnectionServer workerConnectionHandler;
 
     //used to copy files, start jobs, etc.
     private final Octopus octopus;
-    
+
     public DistributedAmuse() throws DistributedAmuseException {
         try {
             octopus = OctopusFactory.newOctopus(null);
         } catch (OctopusException e) {
             throw new DistributedAmuseException("could not create Octopus library object", e);
         }
-        
-        resources = new ResourceManager(octopus);
 
-        reservations = new ReservationManager(octopus);
+        resourceManager = new ResourceManager(octopus);
 
-        jobs = new JobManager(reservations.getServerAddress());
+        reservationManager = new ReservationManager(octopus, resourceManager);
 
-        workerConnectionHandler = new WorkerConnectionServer(jobs);
+        jobManager = new JobManager(resourceManager.getIplServerAddress());
+
+        workerConnectionHandler = new WorkerConnectionServer(jobManager);
     }
 
-    public ResourceManager resources() {
-        return resources;
+    public ResourceManager resourceManager() {
+        return resourceManager;
     }
 
-    public ReservationManager reservations() {
-        return reservations;
+    public ReservationManager reservationManager() {
+        return reservationManager;
     }
 
-    public JobManager jobs() {
-        return jobs;
+    public JobManager jobManager() {
+        return jobManager;
     }
 
     /**

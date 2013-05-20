@@ -15,6 +15,9 @@
  */
 package nl.esciencecenter.amuse.distributed.local;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.RegistryEventHandler;
@@ -27,6 +30,9 @@ import nl.esciencecenter.amuse.distributed.WorkerDescription;
  * 
  */
 public class JobManager extends Thread implements RegistryEventHandler {
+    
+    
+    private static final Logger logger = LoggerFactory.getLogger(JobManager.class);
 
     private final Ibis ibis;
 
@@ -37,6 +43,7 @@ public class JobManager extends Thread implements RegistryEventHandler {
      */
     public JobManager(String serverAddress) throws DistributedAmuseException {
         ibis = Network.createIbis(serverAddress, this);
+        ibis.registry().enableEvents();
     }
 
     public Ibis getIbis() {
@@ -121,13 +128,15 @@ public class JobManager extends Thread implements RegistryEventHandler {
     }
 
     @Override
-    public void joined(IbisIdentifier arg0) {
+    public void joined(IbisIdentifier ibis) {
+        logger.debug("new Ibis joined: " + ibis);
         // TODO Auto-generated method stub
 
     }
 
     @Override
     public void left(IbisIdentifier arg0) {
+        logger.debug("Ibis left: " + ibis);
         // TODO Auto-generated method stub
 
     }

@@ -18,7 +18,6 @@ package nl.esciencecenter.amuse.distributed.local;
 import ibis.ipl.server.Server;
 import ibis.ipl.server.ServerProperties;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,8 +29,6 @@ import org.slf4j.LoggerFactory;
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.octopus.Octopus;
-import nl.esciencecenter.octopus.OctopusFactory;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
 
 /**
  * Reservations of actual resources to run jobs. May still be in a queue, or already running.
@@ -43,54 +40,28 @@ public class ReservationManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ReservationManager.class);
 
+    private final ResourceManager resourceManager;
+
     private final ArrayList<Reservation> reservations;
 
-    //Hubs running on frontends of resources, started if required.
-    //key = resource name
-    private final Map<Resource, Hub> hubs;
-
-    private final Server iplServer;
-    
     private final Octopus octopus;
 
-    public ReservationManager(Octopus octopus) throws DistributedAmuseException {
+    public ReservationManager(Octopus octopus, ResourceManager resourceManager) throws DistributedAmuseException {
         this.octopus = octopus;
+        this.resourceManager = resourceManager;
         reservations = new ArrayList<Reservation>();
-        hubs = new HashMap<Resource, Hub>();
-        
-        try {
-            Properties properties = new Properties();
-            properties.put(ServerProperties.PORT, "0");
-            iplServer = new Server(properties);
-        } catch (Exception e) {
-            throw new DistributedAmuseException("could not create IPL server", e);
-        }
-        
-       
     }
 
-    public String getServerAddress() {
-        return iplServer.getAddress();
-    }
-
-    public synchronized Reservation newReservation(Resource resource, String queueName, int nodeCount, int timeMinutes,
+    public synchronized Reservation newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes,
             String nodeLabel) throws DistributedAmuseException {
-        logger.debug("reserving new nodes: resource name = " + resource.getName() + " queue name = " + queueName
+        logger.debug("reserving new nodes: resource name = " + resourceName + " queue name = " + queueName
                 + " number of nodes = " + nodeCount + " time (in minutes) = " + timeMinutes + " node label = " + nodeLabel);
 
-        Hub hub = hubs.get(resource);
-
-        AmuseConfiguration amuseConfiguration = resource.getConfiguration();
-
-        if (hub == null && resource.mustStartHub()) {
-            hub = new Hub(resource, amuseConfiguration, iplServer.getAddress());
-            iplServer.addHubs(hub.getAddress());
-            hubs.put(resource, hub);
-        }
+        Resource resource = resourceManager.getResource(resourceName);
 
         Reservation result =
-                new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel, iplServer.getAddress(), hub,
-                        amuseConfiguration);
+                new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel, resourceManager.getIplServerAddress(),
+                        resourceManager.getHubAddresses(), octopus);
 
         reservations.add(result);
 
@@ -126,6 +97,8 @@ public class ReservationManager {
         for (Reservation reservation : reservations) {
             reservation.waitUntilStarted();
         }
+
+        logger.debug("All reservations started");
     }
 
 }

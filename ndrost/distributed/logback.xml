@@ -12,6 +12,7 @@
 
   <logger name="nl.esciencecenter.octopus" level="info" />
   <logger name="nl.esciencecenter.amuse" level="debug" />
+  <logger name="nl.esciencecenter.ibis.smartsockets" level="debug" />
 
   <!-- sends logs to logback-beagle -->
   <consolePlugin />

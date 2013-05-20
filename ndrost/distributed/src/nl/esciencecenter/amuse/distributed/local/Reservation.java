@@ -15,12 +15,22 @@
  */
 package nl.esciencecenter.amuse.distributed.local;
 
+import java.net.URI;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.octopus.engine.util.StreamForwarder;
+import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.credentials.Credential;
+import nl.esciencecenter.octopus.exceptions.OctopusException;
+import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.octopus.jobs.Job;
+import nl.esciencecenter.octopus.jobs.JobDescription;
+import nl.esciencecenter.octopus.jobs.Scheduler;
+import nl.esciencecenter.octopus.util.JavaJobDescription;
 
 /**
  * @author Niels Drost
@@ -36,47 +46,47 @@ public class Reservation {
         return nextID++;
     }
 
-    private static String buildCommand(Resource resource, AmuseConfiguration config, String serverAddress, Hub hub)
+    private static JavaJobDescription createJobDesciption(Resource resource, String serverAddress, String[] hubAddresses)
             throws DistributedAmuseException {
-        StringBuilder command = new StringBuilder();
+        JavaJobDescription result = new JavaJobDescription();
 
-        //remote host, use ssh
-        if (resource.getHostname() != null && !resource.getHostname().equals("localhost")) {
-            command.append("ssh ");
-            command.append(resource.getUsername());
-            command.append("@");
-            command.append(resource.getHostname());
-            if (resource.getPort() != -1) {
-                command.append(" -p ");
-                command.append(resource.getPort());
+        result.setInteractive(false);
+
+        AmuseConfiguration configuration = resource.getConfiguration();
+
+        result.setExecutable(configuration.getJava());
+
+        List<String> classpath = result.getJavaClasspath();
+        classpath.add(configuration.getAmuseHome().getPath() + "/sandbox/ndrost/distributed/distributed-server.jar");
+        classpath.add(configuration.getAmuseHome().getPath() + "/sandbox/ndrost/distributed");
+
+        result.setJavaMain("nl.esciencecenter.amuse.distributed.remote.Pilot");
+
+        List<String> javaArguments = result.getJavaArguments();
+        javaArguments.add(resource.getName());
+        javaArguments.add(serverAddress);
+
+        String hubs = null;
+        for (String hub : hubAddresses) {
+            if (hubs == null) {
+                hubs = hub;
+            } else {
+                hubs = hubs + "," + hub;
             }
-            command.append(" ");
         }
 
-        command.append(config.getJava());
-        command.append(" -cp ");
-        command.append(config.getAmuseHome().getPath());
-        command.append("/sandbox/ndrost/distributed/distributed-server.jar");
-        command.append(":");
-        command.append(config.getAmuseHome().getPath());
-        command.append("/sandbox/ndrost/distributed");
-        command.append(" nl.esciencecenter.amuse.distributed.remote.Pilot ");
-        command.append(serverAddress);
-        command.append(" ");
-        command.append(resource.getName());
-
-        if (hub != null) {
-            command.append(" ");
-            command.append(hub.getAddress());
+        if (hubs != null) {
+            javaArguments.add(hubs);
         }
 
-        return command.toString();
+        return result;
     }
 
     private final int id;
+
+    private final Job job;
     
-    private final Process process;
-    
+    private final Octopus octopus;
 
     /**
      * @param resource
@@ -84,21 +94,39 @@ public class Reservation {
      * @param nodeCount
      * @param timeMinutes
      * @param nodeLabel
-     * @param iplServerAddress
-     * @param hub
-     * @param amuseConfiguration
      */
     public Reservation(Resource resource, String queueName, int nodeCount, int timeMinutes, String nodeLabel,
-            String iplServerAddress, Hub hub, AmuseConfiguration amuseConfiguration) throws DistributedAmuseException {
+            String serverAddress, String[] hubAddresses, Octopus octopus) throws DistributedAmuseException {
+        this.octopus = octopus;
+        
         this.id = getNextID();
+
         try {
-            String command = buildCommand(resource, amuseConfiguration, iplServerAddress, hub);
+            Scheduler scheduler;
 
-            logger.debug("running command " + command);
+            JobDescription jobDescription = createJobDesciption(resource, serverAddress, hubAddresses);
 
-            process = Runtime.getRuntime().exec(command);
+            if (resource.isLocal()) {
+                scheduler = octopus.jobs().getLocalScheduler();
+            } else {
+                //FIXME, replace with octopus.credentials.getDefaultCredential("ssh") once this is implemented
+                String username = System.getProperty("user.name");
+                Credential credential =
+                        octopus.credentials().newCertificateCredential("ssh", null, "/home/" + username + "/.ssh/id_rsa",
+                                "/home/" + username + "/.ssh/id_rsa.pub", username, "");
 
-            new StreamForwarder(process.getErrorStream(), System.err);
+                URI uri =
+                        new URI(resource.getSchedulerType(), resource.getUsername(), resource.getHostname(), resource.getPort(),
+                                null, null, null);
+                scheduler = octopus.jobs().newScheduler(uri, credential, null);
+
+                logger.debug("starting hub using scheduler " + scheduler);
+            }
+
+            this.job = octopus.jobs().submitJob(scheduler, jobDescription);
+
+            logger.debug("stubmitted job " + job);
+
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start reservation on " + resource.getName(), e);
         }
@@ -108,18 +136,19 @@ public class Reservation {
         return id;
     }
 
-    /**
-     * 
-     */
-    public void cancel() {
-        process.destroy();
+    public void cancel() throws DistributedAmuseException {
+        try {
+            octopus.jobs().cancelJob(job);
+        } catch (OctopusIOException | OctopusException e) {
+            throw new DistributedAmuseException("failed to cancel job " + job, e);
+        }
     }
 
     /**
      * 
      */
     public void waitUntilStarted() {
-        //FIXME: actually wait here.
+        //FIXME: actually wait here, once we can do this in octopus
         try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {

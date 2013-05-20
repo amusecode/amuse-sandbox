@@ -15,6 +15,8 @@
  */
 package nl.esciencecenter.amuse.distributed.local;
 
+import ibis.ipl.server.Server;
+
 import java.io.InputStream;
 import java.net.URI;
 
@@ -51,8 +53,10 @@ public class Resource {
     //null == auto
     private final Boolean startHub;
 
+    private final Hub hub;
+    
     public Resource(String name, String hostname, String amuseDir, int port, String username, String schedulerType,
-            Boolean startHub, Octopus octopus) throws DistributedAmuseException {
+            Boolean startHub, Octopus octopus, Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
         this.hostname = hostname;
@@ -63,6 +67,13 @@ public class Resource {
         this.startHub = startHub;
 
         this.configuration = downloadConfiguration(octopus);
+        
+        if (mustStartHub()) {
+            this.hub = new Hub(this, this.configuration, iplServer.getHubs(), octopus);
+            iplServer.addHubs(this.hub.getAddress());
+        } else {
+            this.hub = null;
+        }
     }
 
     private AmuseConfiguration downloadConfiguration(Octopus octopus) throws DistributedAmuseException {
@@ -143,6 +154,19 @@ public class Resource {
             return getSchedulerType() != null && (getSchedulerType().toLowerCase() != "local");
         }
         return startHub;
+    }
+
+    public void stop() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public Hub getHub() {
+        return hub;
+    }
+
+    public boolean isLocal() {
+        return hostname == null || hostname.equals("localhost") || hostname.equals("local");
     }
 
 }

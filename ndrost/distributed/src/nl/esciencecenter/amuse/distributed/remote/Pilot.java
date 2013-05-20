@@ -32,9 +32,9 @@ public class Pilot {
 
     public static void main(String[] arguments) throws Throwable {
         Properties properties = new Properties();
-        properties.put("ibis.server.address", arguments[0]);
+        properties.put("ibis.location", arguments[0]);
+        properties.put("ibis.server.address", arguments[1]);
         properties.put("ibis.pool.name", "amuse");
-        properties.put("ibis.location", arguments[1]);
 
         if (arguments.length == 3) {
             properties.put("ibis.hub.addresses", arguments[2]);
@@ -44,6 +44,10 @@ public class Pilot {
 
         Ibis ibis = IbisFactory.createIbis(Network.IPL_CAPABILITIES, properties, true, null, Network.IPL_PORT_TYPE);
 
+        System.err.println("running Pilot at location \"" + arguments[0] + "\" for 60 seconds");
+        
         Thread.sleep(60000);
+        
+        ibis.end();
     }
 }
