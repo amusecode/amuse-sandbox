@@ -50,7 +50,7 @@ public class Hub {
         //arguments
         List<String> javaArguments = result.getJavaArguments();
         javaArguments.add("--remote");
-        javaArguments.add("--hub-only");
+        //javaArguments.add("--hub-only");
         javaArguments.add("--port");
         javaArguments.add("0");
 

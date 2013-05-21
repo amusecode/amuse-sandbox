@@ -19,6 +19,10 @@ import ibis.ipl.server.Server;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
@@ -33,6 +37,8 @@ import nl.esciencecenter.octopus.files.RelativePath;
  * 
  */
 public class Resource {
+    
+    private static final Logger logger = LoggerFactory.getLogger(Resource.class);
 
     private static int nextID = 0;
 
@@ -71,6 +77,20 @@ public class Resource {
         if (mustStartHub()) {
             this.hub = new Hub(this, this.configuration, iplServer.getHubs(), octopus);
             iplServer.addHubs(this.hub.getAddress());
+            
+            logger.debug("just added new hub " + this.hub.getAddress());
+            
+            for(int i = 0; i < 10; i++) {
+                logger.debug("ipl hub addresses now " + Arrays.toString(iplServer.getHubs()));
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    //IGNORE
+                }
+            }
+            
+            
+            
         } else {
             this.hub = null;
         }

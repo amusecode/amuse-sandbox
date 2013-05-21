@@ -29,6 +29,7 @@ import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
+import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.JavaJobDescription;
 
@@ -67,11 +68,16 @@ public class Reservation {
         javaArguments.add(serverAddress);
 
         String hubs = null;
-        for (String hub : hubAddresses) {
-            if (hubs == null) {
-                hubs = hub;
-            } else {
-                hubs = hubs + "," + hub;
+
+        if (resource.getHub() != null) {
+            hubs = resource.getHub().getAddress();
+        } else {
+            for (String hub : hubAddresses) {
+                if (hubs == null) {
+                    hubs = hub;
+                } else {
+                    hubs = hubs + "," + hub;
+                }
             }
         }
 
@@ -85,7 +91,7 @@ public class Reservation {
     private final int id;
 
     private final Job job;
-    
+
     private final Octopus octopus;
 
     /**
@@ -98,7 +104,7 @@ public class Reservation {
     public Reservation(Resource resource, String queueName, int nodeCount, int timeMinutes, String nodeLabel,
             String serverAddress, String[] hubAddresses, Octopus octopus) throws DistributedAmuseException {
         this.octopus = octopus;
-        
+
         this.id = getNextID();
 
         try {
@@ -120,12 +126,12 @@ public class Reservation {
                                 null, null, null);
                 scheduler = octopus.jobs().newScheduler(uri, credential, null);
 
-                logger.debug("starting hub using scheduler " + scheduler);
             }
+            logger.debug("starting job using scheduler " + scheduler);
 
             this.job = octopus.jobs().submitJob(scheduler, jobDescription);
 
-            logger.debug("stubmitted job " + job);
+            logger.debug("stubmitted job " + job + "with arguments" + jobDescription.getArguments());
 
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start reservation on " + resource.getName(), e);
@@ -148,12 +154,21 @@ public class Reservation {
      * 
      */
     public void waitUntilStarted() {
-        //FIXME: actually wait here, once we can do this in octopus
         try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            //IGNORE
+            JobStatus status = octopus.jobs().getJobStatus(job);
+            while (!status.isRunning() && !status.isDone()) {
+                logger.debug("job status now " + status.getState());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    //IGNORE
+                }
+                status = octopus.jobs().getJobStatus(job);
+            }
+        } catch (OctopusIOException | OctopusException e) {
+            logger.error("Failed to get job status for job " + job, e);
         }
+
     }
 
 }
