@@ -83,7 +83,7 @@ tend=5. | units.Myr
 gas = new_ism_cube(5000, 1 | units.kpc, 0.01 | (units.amu / units.cm**3))
 gas.h_smooth = 0.1 | units.kpc
 gas.xion = 0.00
-sources = Particles(1,position = [0,0,0] | units.parsec, luminosity = 1 | 1.e50 / units.s, SpcType=0)
+sources = Particle(1,position = [0,0,0] | units.parsec, luminosity = 1 | 1.e50 / units.s, SpcType=0).as_set()
 
 rad = SPHRay()
 rad.parameters.box_size = 2.0 | units.kpc

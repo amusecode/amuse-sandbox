@@ -87,7 +87,7 @@ pass
 # <codecell>
 
 def energy_flux(T,lowfreq=0.|units.s**-1,N=10000):
-  nu=(numpy.arange(1,N+1))/N*(kB*T)/h*25.+ lowfreq
+  nu=(numpy.arange(1.,N+1))/N*(kB*T)/h*25.+ lowfreq
   b=pi*B_nu(nu,T)
   return numpy.trapz(b.number,x=nu.number)| (b.unit*nu.unit)
 
