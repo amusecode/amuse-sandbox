@@ -233,7 +233,6 @@ class Kepler2(Kepler2OrbitersOnly):
     def get_gravity_at_point(self,radius,x,y,z):
         if self.particles_accessed:
             self.recommit_particles()
-        print x,self.central_particle
         xx=x-self.central_particle.x
         yy=y-self.central_particle.y
         zz=z-self.central_particle.z
@@ -247,3 +246,94 @@ class Kepler2(Kepler2OrbitersOnly):
         zz=z-self.central_particle.z
         return self.overridden().get_potential_at_point(radius,xx,yy,zz)
         
+        
+from amuse.couple.parallel_stellar_evolution import ParallelStellarEvolution
+        
+class ParallelKepler2(object):
+    def __init__(self, **kargs):
+        n=kargs.pop("number_of_workers")
+        self.worker=ParallelStellarEvolution( Kepler2OrbitersOnly, n, **kargs)        
+        self._particles=Particles()
+        self.particles_accessed=True
+        self.central_particle=None
+
+    @property
+    def parameters(self):
+        return self.worker.parameters
+
+    @property
+    def model_time(self):
+        return self.worker.model_time
+
+    @property
+    def orbiters_astro_centric(self):
+        if self.particles_accessed:
+            self.commit_particles()
+        return self.worker.particles
+
+    @property
+    def particles(self):
+        if not self.particles_accessed:
+            channel=self.orbiters_astro_centric.new_channel_to(self._particles)
+            channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])        
+            orbiters=self.orbiters_astro_centric.get_intersecting_subset_in(self._particles)
+            orbiters.position+=self.central_particle.position
+            orbiters.velocity+=self.central_particle.velocity        
+            self.particles_accessed=True
+        return self._particles
+        
+    def commit_particles(self):
+        self.particles_accessed=False
+
+        N=len(self._particles)
+        if N<1:
+          raise Exception("too few particles")
+
+        ic=numpy.argmax(self._particles.mass)        
+        self.central_particle=self._particles[ic]
+        
+        self.parameters.central_mass=self.central_particle.mass
+        
+        orbiters=self._particles.copy()
+        orbiters.remove_particle(self.central_particle)
+                
+        orbiters.position=orbiters.position-self.central_particle.position
+        orbiters.velocity=orbiters.velocity-self.central_particle.velocity
+
+        if (orbiters.mass.sum()/self.central_particle.mass) > 1.e-7:
+          raise Exception("too heavy orbiters")
+        
+        orbiters.synchronize_to(self.orbiters_astro_centric)        
+        channel=orbiters.new_channel_to(self.orbiters_astro_centric)
+        channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
+
+    def recommit_particles(self):
+        self.commit_particles()
+                        
+    def evolve_model(self, tend):
+        if self.particles_accessed:
+            self.recommit_particles()
+
+        dt=tend-self.model_time
+        
+        self.worker.evolve_model(tend)
+        
+        self.central_particle.position+=self.central_particle.velocity*dt
+        self.particles_accessed=False
+
+    def get_gravity_at_point(self,radius,x,y,z):
+        if self.particles_accessed:
+            self.recommit_particles()
+        xx=x-self.central_particle.x
+        yy=y-self.central_particle.y
+        zz=z-self.central_particle.z
+        return self.worker.get_gravity_at_point(radius,xx,yy,zz)
+
+    def get_potential_at_point(self,radius,x,y,z):
+        if self.particles_accessed:
+            self.recommit_particles()
+        xx=x-self.central_particle.x
+        yy=y-self.central_particle.y
+        zz=z-self.central_particle.z
+        return self.worker.get_potential_at_point(radius,xx,yy,zz)
+
