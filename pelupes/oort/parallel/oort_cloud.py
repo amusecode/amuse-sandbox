@@ -8,21 +8,27 @@ from amuse.community.gadget2.interface import Gadget2
 from amuse.datamodel import ParticlesSuperset
 from matplotlib import pyplot
 
-from amuse.community.kepler2.interface import Kepler2
-
+from amuse.community.kepler2.interface import ParallelKepler2, Kepler2
+        
 if __name__ in ('__main__', '__plot__'):
     t_end = 10**9 | units.yr
 
 ##### construct a system (an object in amuse/python)
 # convert N-body system to Oort-cloud system
     converter= nbody_system.nbody_to_si(1.0|units.MSun, 10000. |units.AU)
-    grav=Kepler2(converter,redirection="none",channel_type="mpi")
+
+#    grav=ParallelKepler2(number_of_workers=4,unit_converter=converter,
+#       redirection="none",channel_type="mpi")
+
+    grav=Kepler2(unit_converter=converter,redirection="none",channel_type="mpi")
+
+    
+
 ##### creat particles for oort object
 # comets
     comets = read_set_from_file('large_test_set.txt', 'txt', attribute_names=['x', 'y', 'z','vx', 'vy', 'vz' ],attribute_types=[units.AU, units.AU,  units.AU, units.AU/units.yr, units.AU/units.yr, units.AU/units.yr])
-    N= len(comets.x)
-    print N
-    raise
+    N= len(comets)
+
     masses = numpy.zeros(N) | units.MSun
     comets.mass = masses
 # sun
@@ -37,6 +43,8 @@ if __name__ in ('__main__', '__plot__'):
 # combine all particles
     sun.add_particles(comets)
     grav.particles.add_particles(sun)
+
+    grav.commit_particles()
 
     rmin=(1-grav.orbiters_astro_centric.eccentricity)*grav.orbiters_astro_centric.semi_major_axis
     
@@ -67,5 +75,5 @@ if __name__ in ('__main__', '__plot__'):
         pyplot.xlim(-40000,40000)
         pyplot.ylim(-40000,40000)
         
-    pyplot.show()        
+#    pyplot.show()        
     grav.stop()
