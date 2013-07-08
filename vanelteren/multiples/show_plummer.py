@@ -60,10 +60,10 @@ if  __name__ == '__main__':
     background.start()
     
     scale =  1 | nbody_system.length
-    figure = pyplot.figure()
+    figure = pyplot.figure(figsize=(5,5))
     plot = figure.add_subplot(111)
-    plot.set_xlim(-1,1)
-    plot.set_ylim(-1,1)
+    plot.set_xlim(-2,2)
+    plot.set_ylim(-2,2)
     x0, y0 = queue.get()
     scatter = plot.scatter(
         x0 / scale,
