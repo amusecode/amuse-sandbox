@@ -199,10 +199,23 @@ int set_velocity(int id,double vx, double vy, double vz)
 int evolve_model(double tend)
 {
    map<int, kepler*>::iterator iter;
+//   for(iter=kmap.begin(); iter!=kmap.end(); iter++)
+//   {
+//      iter->second->transform_to_time(tend);       
+//   }
+   int keys[kmap.size()];
+   int i=0;
    for(iter=kmap.begin(); iter!=kmap.end(); iter++)
    {
-      iter->second->transform_to_time(tend);       
+      keys[i]=iter->first;
+      i++;
    }
+#pragma omp parallel for   
+   for(i=0;i<kmap.size();i++)
+   {
+      kmap[keys[i]]->transform_to_time(tend);       
+   }
+
    simtime=tend;
    return 0;
 }
