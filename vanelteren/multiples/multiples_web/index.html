@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Chatter</title>
+   <style type="text/css">
+#messages {
+    width: 300px;
+    height: 300px;
+    min-height: 300px;
+    font-size: 14px;
+    line-height: 1.2em;
+    background-color:white;
+}
+
+.encounter-view {
+    width: 200px;
+    height: 200px;
+    min-height: 100px;
+    font-size: 14px;
+    line-height: 1.2em;
+    background-color:white;
+}
+    </style>
+    
+    <script type="text/javascript" src="javascript/jquery.js"></script>
+    <script type="text/javascript" src="javascript/jquery.flot.js"></script>
+    <script type="text/javascript" src="javascript/jquery.flot.direction.js"></script>
+    <script type="text/javascript" src="javascript/json2.js"></script>
+    <script type="text/javascript" src="javascript/stomp.js"></script>
+    <script type="text/javascript" src="javascript/plot_multiples.js"></script>
+    
+</head>
+<body>
+<pre id="debug"></pre>
+<h2 id="title"></h2>
+<div id="messages"></div>
+<table id="encounters"></table>
+</body>
+
+</html>
