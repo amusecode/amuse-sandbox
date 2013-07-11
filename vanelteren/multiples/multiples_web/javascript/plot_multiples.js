@@ -149,7 +149,6 @@ $(document).ready(function(){
             return;
         }
         var message = queue.shift();
-        
         if(message.type == 'particles') {
             
             $('#title').text(message['time-str']);
@@ -180,7 +179,7 @@ $(document).ready(function(){
             table.prepend(row);
             plot_encounter(message.before, message.after, before);
             
-            if(table.children('tbody').children().size() > 10) {
+            if(table.children('tbody').children().size() > 20) {
                 table.children('tbody').children().last().remove();
             }
         }
@@ -201,14 +200,17 @@ $(document).ready(function(){
             function(message) {
                 var message = JSON.parse(message.body);
                 queue.push(message);
+            /*if(message['time-value'] > 6.5 && message['time-value'] < 7.35) {
+                
+            }*/
             }
             ,
-            {/*
+            {
                 'browser':true,
                 'browser-end':false,
                 'include-seq':'seq',
                 'from-seq':0
-            */}
+            }
         );
     };
     client.connect(login, passcode, onconnect);

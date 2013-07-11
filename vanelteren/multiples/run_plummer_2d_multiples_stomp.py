@@ -133,10 +133,16 @@ def run_hermite(client, queue, seed):
             
             
             particles = code.all_singles
-            multiples = {
-                'x' : list(code.multiples.x / scale),
-                'y' : list(code.multiples.y / scale),
-            }
+            if len(code.multiples):
+                multiples = {
+                    'x' : list(code.multiples.x / scale),
+                    'y' : list(code.multiples.y / scale),
+                }
+            else:
+                multiples = {
+                    'x' : [],
+                    'y' : [],
+                }
             message = {
                 'type' : 'particles',
                 'time-str' : str(code.model_time),
