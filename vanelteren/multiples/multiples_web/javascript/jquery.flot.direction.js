@@ -147,18 +147,15 @@ License: GPL(any version) or Perl Artistic License
                 x = points[i][0];
                 y = points[i][1];
                 
-                var ex = 0.001 * points[i][2];
-                var ey = 0.001 * points[i][3];
+                var ex = points[i][2];
+                var ey = points[i][3];
                 
-                console.log(x+ex, y+ey, x, y);
                 
                 var offset = plot.pointOffset({ x: x, y: y, xaxis: series.xaxis, yaxis: series.yaxis});                
                 var offset2 = plot.pointOffset({ x: x+ex, y: y+ey, xaxis: series.xaxis, yaxis: series.yaxis});
                 
                 x = offset.left;
                 y = offset.top;
-                console.log(offset2.left, offset2.top);
-                console.log(offset.left, offset.top);
                 dx = offset2.left - x;
                 dy = offset2.top - y;
                 
@@ -180,19 +177,19 @@ License: GPL(any version) or Perl Artistic License
                 
                 var tail_percent = 0.5;
                 var t_x = x + dx;
-                var t_y = y - dy;
+                var t_y = y + dy;
                 
                 var r = Math.sqrt(dy * dy + dx * dx)
                 dx = 3 * (dx / r);
                 dy = 3 * (dy / r);
                 
                 var f_x = t_x - dx;
-                var f_y = t_y + dy;
+                var f_y = t_y - dy;
                 
-                var r_x = f_x - dy;
+                var r_x = f_x + dy;
                 var r_y = f_y - dx;
                 
-                var l_x = f_x + dy;
+                var l_x = f_x - dy;
                 var l_y = f_y + dx;
                 
                 

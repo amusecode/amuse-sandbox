@@ -46,6 +46,102 @@ $(document).ready(function(){
                 }
         }
     );
+    
+    function plot_encounter(data1, data2, jqElement) {
+        var points = [];
+        var points2 = [];
+        var maxX = -1e20;
+        var minX = 1e20;
+        var maxY = -1e20;
+        var minY = 1e20;
+        for (var i = 0; i < data1.length; ++i) {
+            var element = data1[i];
+            
+            var x = element.x;
+            var y = element.y;
+            var vx = 0.001 * element.vx;
+            var vy = 0.001 * element.vy;
+            
+            meanX += x;
+            meanY += y;
+            
+            points.push([x,y,vx,vy]);
+            
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+            
+            minX = Math.min(minX, x + vx);
+            maxX = Math.max(maxX, x + vx);
+            
+            minY = Math.min(minY, y + vy);
+            maxY = Math.max(maxY, y + vy);
+            
+        }
+        
+        for (var i = 0; i < data2.length; ++i) {
+            var element = data2[i];
+            
+            var x = element.x;
+            var y = element.y;
+            var vx = 0.001 * element.vx;
+            var vy = 0.001 * element.vy;
+            
+            meanX += x;
+            meanY += y;
+            
+            points2.push([x,y,vx,vy]);
+            
+            minX = Math.min(minX, x);
+            maxX = Math.max(maxX, x);
+            
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+            
+            minX = Math.min(minX, x + vx);
+            maxX = Math.max(maxX, x + vx);
+            
+            minY = Math.min(minY, y + vy);
+            maxY = Math.max(maxY, y + vy);
+            
+        }
+        
+        var meanX = (maxX - minX) / 2.0;
+        var meanY = (maxY - minY) / 2.0;
+        
+        $.plot(
+            jqElement, 
+            [ 
+                {
+                    data: points,
+                    points: { show: true }
+                } ,
+                {
+                    data: points2,
+                    points: { show: true }
+                } 
+            ], 
+            {
+                series: {
+                    shadowSize: 0	// Drawing is faster without shadows
+                    ,
+                    direction: {
+                        show: true
+                    }
+                },
+                xaxis: {
+                    min: minX,
+                    max: maxX
+                },
+                yaxis: {
+                    min: minY,
+                    max: maxY
+                }
+            }   
+        );
+    }
 
     var queue = [];
     setInterval(function() {
@@ -71,52 +167,8 @@ $(document).ready(function(){
             after.addClass('encounter-view');
             row.append(before);
             row.append(after);
-            table.append(row);
-            var before_data = [];
-            for (var i = 0; i < message.before.length; ++i) {
-                before_data.push([message.before[i].x,message.before[i].y,message.before[i].vx,message.before[i].vy]);
-            }
-            var p = $.plot(
-                before, 
-                [ 
-                    {
-                        data: before_data,
-                        points: { show: true }
-                    } 
-                ], 
-                {
-                    series: {
-                        shadowSize: 0	// Drawing is faster without shadows
-                        ,
-                        direction: {
-                            show: true
-                        }
-                    }
-                }   
-            );
-            var after_data = [];
-            for (var i = 0; i < message.after.length; ++i) {
-                after_data.push([message.after[i].x,message.after[i].y,message.after[i].vx,message.after[i].vy]);
-            }
-            var p2 = $.plot(
-                after, 
-                [ 
-                    {
-                        data: after_data,
-                        points: { show: true }
-                    } 
-                ], 
-                {
-                     series: {
-                        shadowSize: 0	// Drawing is faster without shadows
-                        ,
-                        direction: {
-                            show: true
-                        }
-                    }
-                }   
-            );
-            
+            table.prepend(row);
+            plot_encounter(message.before, message.after, before);
         }
     }, 50);
     
@@ -125,7 +177,7 @@ $(document).ready(function(){
     // this allows to display debug logs directly on the web page
     client.debug = function(str) {
       //$("#debug").append(document.createTextNode(str + "\n"));
-      console.log(str);
+      //console.log(str);
     };
     // the client is notified when it is connected to the server.
     var onconnect = function(frame) {

@@ -53,17 +53,44 @@ def run_hermite(client, queue, seed):
     code.commit_particles()
     stopping_condition = code.stopping_conditions.encounter_detection
     stopping_condition.enable()
+    stopping_condition2= code.stopping_conditions.multiples_change_detection
+    stopping_condition2.enable()
     
     try:
         t = 0.0 * end_time
         dt = end_time / 1000.0
         while t < end_time:
             code.evolve_model(t)
+            if stopping_condition2.is_set():
+                pass
             if stopping_condition.is_set():
                 before = []
                 after = []
                 model = stopping_condition.particles(0)[0]
-                for p in model.particles_before_evolve:
+                if len(model.particles_before_encounter) == 2 and len(model.particles_after_encounter) == 2:
+                    dr1 = (model.particles_before_encounter[0].position - model.particles_before_encounter[1].position).length()
+                    dr2 = (model.particles_after_encounter[0].position - model.particles_after_encounter[1].position).length()
+                    print dr2, dr1
+                    if(dr2 > 10 * dr1):
+                        for i in range(3):
+                            print '%.18f' % model.particles_before_encounter[0].position[i].value_in(nbody_system.length)
+                        for i in range(3):
+                            print '%.18f' % model.particles_before_encounter[1].position[i].value_in(nbody_system.length)
+                            
+                        for i in range(3):
+                            print '%.18f' % model.particles_before_encounter[0].velocity[i].value_in(nbody_system.speed)
+                        for i in range(3):
+                            print '%.18f' % model.particles_before_encounter[1].velocity[i].value_in(nbody_system.speed)
+                        
+                        print model.particles_before_encounter[0].velocity
+                        print model.particles_before_encounter[1].velocity
+                        
+                        
+                        print model.particles_after_encounter[0].position
+                        print model.particles_after_encounter[1].position
+                        
+                        dkljdkljd
+                for p in model.particles_before_encounter:
                     before.append(
                         {
                             'key': str(p.key),
@@ -73,7 +100,7 @@ def run_hermite(client, queue, seed):
                             'vy' : p.vy / scalev
                         }
                     ) 
-                for p in model.particles_after_evolve:
+                for p in model.particles_after_encounter:
                     after.append(
                         {
                             'key':str(p.key),
