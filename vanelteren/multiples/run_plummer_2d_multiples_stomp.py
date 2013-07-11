@@ -28,7 +28,7 @@ def run_hermite(client, queue, seed):
     scalev = 1 | nbody_system.speed
     model = plummer2d.new_plummer_model_2D(20)
     
-    kepler = Kepler()
+    kepler = Kepler(redirection="none")
     kepler.initialize_code()
     
     smalln = SmallN()
@@ -47,7 +47,7 @@ def run_hermite(client, queue, seed):
         gravity_code = gravity_code,
         handle_encounter_code = encounter_code
     )
-    model.radius = 0.007 | nbody_system.length
+    model.radius = 0.001 | nbody_system.length
     code.particles.add_particles(model)
     end_time = 10 | nbody_system.time
     code.commit_particles()
@@ -72,19 +72,25 @@ def run_hermite(client, queue, seed):
                     dr2 = (model.particles_after_encounter[0].position - model.particles_after_encounter[1].position).length()
                     print dr2, dr1
                     if(dr2 > 10 * dr1):
-                        for i in range(3):
-                            print '%.18f' % model.particles_before_encounter[0].position[i].value_in(nbody_system.length)
-                        for i in range(3):
-                            print '%.18f' % model.particles_before_encounter[1].position[i].value_in(nbody_system.length)
-                            
-                        for i in range(3):
-                            print '%.18f' % model.particles_before_encounter[0].velocity[i].value_in(nbody_system.speed)
-                        for i in range(3):
-                            print '%.18f' % model.particles_before_encounter[1].velocity[i].value_in(nbody_system.speed)
+                        if 0:
+                            for i in range(3):
+                                print '%.18f' % model.particles_before_encounter[0].position[i].value_in(nbody_system.length)
+                            for i in range(3):
+                                print '%.18f' % model.particles_before_encounter[1].position[i].value_in(nbody_system.length)
+                                
+                            for i in range(3):
+                                print '%.18f' % model.particles_before_encounter[0].velocity[i].value_in(nbody_system.speed)
+                            for i in range(3):
+                                print '%.18f' % model.particles_before_encounter[1].velocity[i].value_in(nbody_system.speed)
+                        
+                        print model.particles_before_encounter[0].position
+                        print model.particles_before_encounter[1].position
                         
                         print model.particles_before_encounter[0].velocity
                         print model.particles_before_encounter[1].velocity
                         
+                        print model.particles_before_encounter.radius
+                        print model.particles_before_encounter.mass
                         
                         print model.particles_after_encounter[0].position
                         print model.particles_after_encounter[1].position

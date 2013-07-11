@@ -163,10 +163,13 @@ $(document).ready(function(){
             var row = $('<tr></tr>');
             var before = $('<td></td>');
             before.addClass('encounter-view');
-            var after = $('<td></td>');
-            after.addClass('encounter-view');
             row.append(before);
-            row.append(after);
+            //var after = $('<td></td>');
+            //after.addClass('encounter-view');
+            //row.append(after);
+            var time = $('<td></td>');
+            time.text(message['time-str']);
+            row.append(time);
             table.prepend(row);
             plot_encounter(message.before, message.after, before);
         }
@@ -189,12 +192,12 @@ $(document).ready(function(){
                 queue.push(message);
             }
             ,
-            {
+            {/*
                 'browser':true,
                 'browser-end':false,
                 'include-seq':'seq',
                 'from-seq':0
-            }
+            */}
         );
     };
     client.connect(login, passcode, onconnect);
