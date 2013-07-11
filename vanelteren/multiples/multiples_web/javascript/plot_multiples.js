@@ -125,7 +125,7 @@ $(document).ready(function(){
     // this allows to display debug logs directly on the web page
     client.debug = function(str) {
       //$("#debug").append(document.createTextNode(str + "\n"));
-      //console.log(str);
+      console.log(str);
     };
     // the client is notified when it is connected to the server.
     var onconnect = function(frame) {
