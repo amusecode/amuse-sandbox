@@ -18,7 +18,7 @@ import json
 from optparse import OptionParser
 
     
-def run_hermite(client, queue, seed):
+def run_hermite(client, queue, seed, number_of_particles):
     print "starting... 1"
     
     if seed > 0:
@@ -26,7 +26,7 @@ def run_hermite(client, queue, seed):
     
     scale =  1 | nbody_system.length
     scalev = 1 | nbody_system.speed
-    model = plummer2d.new_plummer_model_2D(20)
+    model = plummer2d.new_plummer_model_2D(number_of_particles)
     
     kepler = Kepler(redirection="none")
     kepler.initialize_code()
@@ -70,7 +70,7 @@ def run_hermite(client, queue, seed):
                 if len(model.particles_before_encounter) == 2 and len(model.particles_after_encounter) == 2:
                     dr1 = (model.particles_before_encounter[0].position - model.particles_before_encounter[1].position).length()
                     dr2 = (model.particles_after_encounter[0].position - model.particles_after_encounter[1].position).length()
-                    print dr2, dr1
+                    print "distance after, before:", dr2, dr1
                     if(dr2 > 10 * dr1):
                         if 0:
                             for i in range(3):
@@ -95,7 +95,7 @@ def run_hermite(client, queue, seed):
                         print model.particles_after_encounter[0].position
                         print model.particles_after_encounter[1].position
                         
-                        dkljdkljd
+                        
                 for p in model.particles_before_encounter:
                     before.append(
                         {
@@ -177,6 +177,13 @@ def new_option_parser():
         help="random seed to use",
         type="int"
     )
+    result.add_option(
+        "-n", "--number_of_particles", 
+        default = 20,
+        dest="number_of_particles",
+        help="number of particles in the model",
+        type="int"
+    )
     return result
 if  __name__ == '__main__':
     
@@ -188,6 +195,6 @@ if  __name__ == '__main__':
     client = Stomp(stomp_config)
     client.connect()
     
-    run_hermite(client, stomp_queue, options.seed)
+    run_hermite(client, stomp_queue, options.seed, options.number_of_particles)
 
     client.disconnect()

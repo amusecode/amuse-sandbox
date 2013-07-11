@@ -205,12 +205,12 @@ $(document).ready(function(){
             }*/
             }
             ,
-            {
+            {/*
                 'browser':true,
                 'browser-end':false,
                 'include-seq':'seq',
                 'from-seq':0
-            }
+            */}
         );
     };
     client.connect(login, passcode, onconnect);
