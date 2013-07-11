@@ -133,12 +133,18 @@ def run_hermite(client, queue, seed):
             
             
             particles = code.all_singles
+            multiples = {
+                'x' : list(code.multiples.x / scale),
+                'y' : list(code.multiples.y / scale),
+            }
             message = {
                 'type' : 'particles',
                 'time-str' : str(code.model_time),
                 'time-value' : code.model_time.value_in(nbody_system.time),
                 'x' : list(particles.x / scale),
-                'y' : list(particles.y / scale)
+                'y' : list(particles.y / scale),
+                'n-multiples' : len(code.multiples),
+                'multiples' : multiples
             }
             client.send(queue, json.dumps(message))
                 

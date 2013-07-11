@@ -151,13 +151,20 @@ $(document).ready(function(){
         var message = queue.shift();
         
         if(message.type == 'particles') {
+            
+            $('#title').text(message['time-str']);
+            $('#nmultiples').text(message['n-multiples']);
+            
             var points = [];
             for (var i = 0; i < message.x.length; ++i) {
                 points.push([message.x[i],message.y[i]]);
             }
-            plot.setData([{data:points, points:{show:true}}]);
+            var points2 = [];
+            for (var i = 0; i < message.multiples.x.length; ++i) {
+                points2.push([message.multiples.x[i],message.multiples.y[i]]);
+            }
+            plot.setData([{data:points, points:{show:true}}, {data:points2, points:{show:true}}]);
             plot.draw()
-            $('#title').text(message['time-str']);
         } else if (message.type == 'encounter'){
             var table = $('#encounters');
             var row = $('<tr></tr>');
@@ -172,6 +179,10 @@ $(document).ready(function(){
             row.append(time);
             table.prepend(row);
             plot_encounter(message.before, message.after, before);
+            
+            if(table.children('tbody').children().size() > 10) {
+                table.children('tbody').children().last().remove();
+            }
         }
     }, 50);
     
