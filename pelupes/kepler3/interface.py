@@ -29,7 +29,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def get_central_mass():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
         function.addParameter('mass', dtype='float64', direction=function.OUT,
                               unit = nbody_system.mass)
         function.result_type = 'int32'
@@ -38,7 +38,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def set_central_mass():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='float64', direction=function.IN,
                               unit = nbody_system.mass)
         function.result_type = 'int32'
@@ -47,7 +47,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def get_central_pos():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
         function.addParameter('x', dtype='float64', direction=function.OUT,
                               unit = nbody_system.length)
         function.addParameter('y', dtype='float64', direction=function.OUT,
@@ -60,7 +60,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def set_central_pos():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
         function.addParameter('x', dtype='float64', direction=function.IN,
                               unit = nbody_system.length)
         function.addParameter('y', dtype='float64', direction=function.IN,
@@ -73,7 +73,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def get_central_vel():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
         function.addParameter('vx', dtype='float64', direction=function.OUT,
                               unit = nbody_system.speed)
         function.addParameter('vy', dtype='float64', direction=function.OUT,
@@ -86,7 +86,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def set_central_vel():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
         function.addParameter('vx', dtype='float64', direction=function.IN,
                               unit = nbody_system.speed)
         function.addParameter('vy', dtype='float64', direction=function.IN,
@@ -99,7 +99,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def new_central_particle():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', dtype='i', direction=function.OUT)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.OUT)        
         function.addParameter('mass', dtype='float64', direction=function.IN,
                               unit = nbody_system.mass)
         function.addParameter('x', dtype='float64', direction=function.IN,
@@ -122,7 +122,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def delete_central_particle():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
         function.result_type = 'int32'
         return function
 

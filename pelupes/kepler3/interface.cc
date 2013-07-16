@@ -358,8 +358,8 @@ int get_position(int id,double * x, double * y, double * z)
     if (iter != kmap.end()){
        dynamics_state *k=iter->second;
        *x = k->x;
-       *y = k->x;
-       *z = k->x;
+       *y = k->y;
+       *z = k->z;
     } else {
       return -3;
     }
@@ -372,8 +372,8 @@ int get_velocity(int id, double * vx, double * vy, double * vz)
     if (iter != kmap.end()){
        dynamics_state *k=iter->second;
        *vx = k->vx;
-       *vy = k->vx;
-       *vz = k->vx;
+       *vy = k->vy;
+       *vz = k->vz;
     } else {
       return -3;
     }
