@@ -13,22 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.local;
-
-import ibis.ipl.server.Server;
-import ibis.ipl.server.ServerProperties;
+package nl.esciencecenter.amuse.distributed.reservations;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.resources.Resource;
+import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
+import nl.esciencecenter.octopus.Octopus;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
-import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.octopus.Octopus;
 
 /**
  * Reservations of actual resources to run jobs. May still be in a queue, or already running.
@@ -57,7 +52,7 @@ public class ReservationManager {
         logger.debug("reserving new nodes: resource name = " + resourceName + " queue name = " + queueName
                 + " number of nodes = " + nodeCount + " time (in minutes) = " + timeMinutes + " node label = " + nodeLabel);
 
-        Resource resource = resourceManager.getResource(resourceName);
+    Resource resource = resourceManager.getResource(resourceName);
 
         Reservation result =
                 new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel, resourceManager.getIplServerAddress(),
@@ -91,7 +86,7 @@ public class ReservationManager {
         throw new DistributedAmuseException("Reservation " + reservationID + " not found");
     }
 
-    public synchronized void waitForAllReservations() {
+    public synchronized void waitForAllReservations() throws DistributedAmuseException {
         logger.debug("waiting for all reservations to start");
 
         for (Reservation reservation : reservations) {

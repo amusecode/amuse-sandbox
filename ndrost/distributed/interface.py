@@ -10,6 +10,7 @@ from amuse.community.interface.common import CommonCode
 from amuse.units import units
 from amuse.support import options
 
+logger = logging.getLogger(__name__)
 
 class OutputHandler(threading.Thread):
     
@@ -69,7 +70,11 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         CodeInterface.__init__(self, name_of_the_worker="distributed_worker_java", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
         
-        port = self.get_port()
+        port = self.get_worker_port()
+        
+        logging.basicConfig(level=logging.DEBUG)
+        
+        logger.debug("running on port %d", port)
 
 #        self.stdoutHandler = OutputHandler(sys.stdout, port)
 #        self.stderrHandler = OutputHandler(sys.stderr, port)
@@ -83,7 +88,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return 'sockets'
     
     @legacy_function
-    def get_port():
+    def get_worker_port():
         """
         Returns the server socket port of the code. Used by the distributed channel
         """
@@ -138,13 +143,13 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     @legacy_function
     def new_reservation():
         """
-        Reserve a node for later use by the simulation.
+        Reserve one or more nodes for later use by the simulation.
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         function.addParameter('reservation_id', dtype='int32', direction=function.OUT)
         function.addParameter("resource_name", dtype='string', direction=function.IN)
-        function.addParameter("queue_name", dtype='string', direction=function.IN, default="default")
+        function.addParameter("queue_name", dtype='string', direction=function.IN, default="")
         function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
         function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
@@ -157,7 +162,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     @legacy_function
     def delete_reservation():
         """
-        Reserve a node for later use by the simulation.
+        Delete a reservation.
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
@@ -170,7 +175,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     @legacy_function
     def wait_for_reservations():
         """
-        Wait until all reservations are done, and all nodes are available to run jobs and/or workers
+        Wait until all reservations are started, and all nodes are available to run jobs and/or workers
         """
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'

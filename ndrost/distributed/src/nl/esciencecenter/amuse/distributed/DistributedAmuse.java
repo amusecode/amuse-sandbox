@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.local;
+package nl.esciencecenter.amuse.distributed;
 
-import ibis.ipl.server.Server;
-import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.jobs.JobManager;
+import nl.esciencecenter.amuse.distributed.reservations.ReservationManager;
+import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
+import nl.esciencecenter.amuse.distributed.workers.WorkerConnectionServer;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
@@ -31,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class DistributedAmuse {
-
+    
     private static final Logger logger = LoggerFactory.getLogger(DistributedAmuse.class);
 
     //resources potentially available for starting reservations on. Also starts hub on each resource, if required.
@@ -44,7 +46,7 @@ public class DistributedAmuse {
     private final JobManager jobManager;
 
     //talks to AMUSE, handling any worker requests and messages
-    private final WorkerConnectionServer workerConnectionHandler;
+    private final WorkerConnectionServer workerConnectionServer;
 
     //used to copy files, start jobs, etc.
     private final Octopus octopus;
@@ -62,7 +64,7 @@ public class DistributedAmuse {
 
         jobManager = new JobManager(resourceManager.getIplServerAddress());
 
-        workerConnectionHandler = new WorkerConnectionServer(jobManager);
+        workerConnectionServer = new WorkerConnectionServer(jobManager);
     }
 
     public ResourceManager resourceManager() {
@@ -84,7 +86,7 @@ public class DistributedAmuse {
      */
     public int getWorkerPort() {
         logger.debug("returning worker port");
-        return workerConnectionHandler.getPort();
+        return workerConnectionServer.getPort();
     }
 
 }

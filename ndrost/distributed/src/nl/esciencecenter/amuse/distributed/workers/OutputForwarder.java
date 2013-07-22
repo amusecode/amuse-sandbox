@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.remote;
+package nl.esciencecenter.amuse.distributed.workers;
 
 import nl.esciencecenter.amuse.distributed.Network;
-import nl.esciencecenter.amuse.distributed.local.WorkerOutputManager;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
@@ -66,7 +65,7 @@ public class OutputForwarder extends Thread {
                 logger.info("Discarding code output");
             } else {
                 logger.debug("Creating sendport");
-                sendPort = ibis.createSendPort(Network.IPL_PORT_TYPE);
+                sendPort = ibis.createSendPort(Network.ONE_TO_ONE_PORT_TYPE);
                 logger.debug("getting daemon IbisIdentifier");
                 IbisIdentifier daemon = ibis.registry().getElectionResult("amuse");
                 logger.debug("Connecting to output manager port");

@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.local;
+package nl.esciencecenter.amuse.distributed.reservations;
 
 import java.net.URI;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.resources.Resource;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.credentials.Credential;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
-import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.JavaJobDescription;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Niels Drost
@@ -47,11 +47,18 @@ public class Reservation {
         return nextID++;
     }
 
-    private static JavaJobDescription createJobDesciption(Resource resource, String serverAddress, String[] hubAddresses)
-            throws DistributedAmuseException {
+    private static JavaJobDescription createJobDesciption(Resource resource, String queueName, int nodeCount, int timeMinutes,
+            String nodeLabel, String serverAddress, String[] hubAddresses) throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
 
         result.setInteractive(false);
+        
+        if (queueName != null && !queueName.isEmpty()) {
+            result.setQueueName(queueName);
+        }
+        
+        result.setNodeCount(nodeCount);
+        result.setMaxTime(timeMinutes);
 
         AmuseConfiguration configuration = resource.getConfiguration();
 
@@ -64,7 +71,14 @@ public class Reservation {
         result.setJavaMain("nl.esciencecenter.amuse.distributed.remote.Pilot");
 
         List<String> javaArguments = result.getJavaArguments();
+
+        javaArguments.add("--node-label");
+        javaArguments.add(nodeLabel);
+
+        javaArguments.add("--resource-name");
         javaArguments.add(resource.getName());
+
+        javaArguments.add("--server-address");
         javaArguments.add(serverAddress);
 
         String hubs = null;
@@ -82,6 +96,7 @@ public class Reservation {
         }
 
         if (hubs != null) {
+            javaArguments.add("--hub-addresses");
             javaArguments.add(hubs);
         }
 
@@ -110,16 +125,10 @@ public class Reservation {
         try {
             Scheduler scheduler;
 
-            JobDescription jobDescription = createJobDesciption(resource, serverAddress, hubAddresses);
-
             if (resource.isLocal()) {
                 scheduler = octopus.jobs().getLocalScheduler();
             } else {
-                //FIXME, replace with octopus.credentials.getDefaultCredential("ssh") once this is implemented
-                String username = System.getProperty("user.name");
-                Credential credential =
-                        octopus.credentials().newCertificateCredential("ssh", null, "/home/" + username + "/.ssh/id_rsa",
-                                "/home/" + username + "/.ssh/id_rsa.pub", username, "");
+                Credential credential = octopus.credentials().getDefaultCredential("ssh");
 
                 URI uri =
                         new URI(resource.getSchedulerType(), resource.getUsername(), resource.getHostname(), resource.getPort(),
@@ -127,11 +136,15 @@ public class Reservation {
                 scheduler = octopus.jobs().newScheduler(uri, credential, null);
 
             }
+
+            JobDescription jobDescription =
+                    createJobDesciption(resource, queueName, nodeCount, timeMinutes, nodeLabel, serverAddress, hubAddresses);
+            
             logger.debug("starting job using scheduler " + scheduler);
 
             this.job = octopus.jobs().submitJob(scheduler, jobDescription);
 
-            logger.debug("stubmitted job " + job + "with arguments" + jobDescription.getArguments());
+            logger.debug("submitted job {} with arguments {}", job ,jobDescription.getArguments());
 
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start reservation on " + resource.getName(), e);
@@ -153,22 +166,12 @@ public class Reservation {
     /**
      * 
      */
-    public void waitUntilStarted() {
+    public void waitUntilStarted() throws DistributedAmuseException {
         try {
-            JobStatus status = octopus.jobs().getJobStatus(job);
-            while (!status.isRunning() && !status.isDone()) {
-                logger.debug("job status now " + status.getState());
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    //IGNORE
-                }
-                status = octopus.jobs().getJobStatus(job);
-            }
+            octopus.jobs().waitUntilRunning(job, 0);
         } catch (OctopusIOException | OctopusException e) {
-            logger.error("Failed to get job status for job " + job, e);
+            throw new DistributedAmuseException("failed to get job status " + job, e);
         }
-
     }
 
 }

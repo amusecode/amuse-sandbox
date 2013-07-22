@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.remote;
+package nl.esciencecenter.amuse.distributed.workers;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
@@ -246,8 +246,6 @@ public class WorkerProxy extends Thread {
 
         logger.info("connection with local worker process established");
 
-        //create a connection back to the amuse process via the ibis there.
-
         //start a thread to start handling amuse requests
         setName("Worker Proxy for " + description.getID());
         setDaemon(true);
@@ -299,8 +297,8 @@ public class WorkerProxy extends Thread {
         ReceivePort receivePort = null;
 
         try {
-            sendPort = ibis.createSendPort(Network.IPL_PORT_TYPE);
-            receivePort = ibis.createReceivePort(Network.IPL_PORT_TYPE, description.getID());
+            sendPort = ibis.createSendPort(Network.ONE_TO_ONE_PORT_TYPE);
+            receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, description.getID());
 
             receivePort.enableConnections();
 
@@ -308,6 +306,7 @@ public class WorkerProxy extends Thread {
             logger.debug("waiting for result of amuse election");
             IbisIdentifier amuse = ibis.registry().getElectionResult("amuse");
 
+            //create a connection back to the amuse process via the ibis there.
             logger.debug("connecting to receive port of worker at amuse node");
             sendPort.connect(amuse, description.getID());
             logger.debug("connected, saying hello");

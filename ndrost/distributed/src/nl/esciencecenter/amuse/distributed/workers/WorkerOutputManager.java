@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.local;
+package nl.esciencecenter.amuse.distributed.workers;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.Network;
@@ -55,7 +55,7 @@ public class WorkerOutputManager extends Thread {
 
         outputConnections = new HashMap<UUID, SocketChannel>();
 
-        this.receivePort = ibis.createReceivePort(Network.IPL_PORT_TYPE, "output");
+        this.receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, "output");
         this.receivePort.enableConnections();
 
         setDaemon(true);

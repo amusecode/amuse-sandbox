@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.local.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.local.Reservation;
-import nl.esciencecenter.amuse.distributed.local.Resource;
+import nl.esciencecenter.amuse.distributed.reservations.Reservation;
+import nl.esciencecenter.amuse.distributed.resources.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_port() {
+    public int get_worker_port() {
         return distributedAmuse.getWorkerPort();
     }
 
@@ -108,8 +108,8 @@ public class Code implements CodeInterface {
         try {
             for (int i = 0; i < count; i++) {
                 Reservation result =
-                        distributedAmuse.reservationManager().newReservation(resource_name[i], queue_name[i], node_count[i], time_minutes[i],
-                                node_label[i]);
+                        distributedAmuse.reservationManager().newReservation(resource_name[i], queue_name[i], node_count[i],
+                                time_minutes[i], node_label[i]);
 
                 reservation_id[i] = result.getID();
             }
@@ -136,8 +136,13 @@ public class Code implements CodeInterface {
 
     @Override
     public int wait_for_reservations() {
-        distributedAmuse.reservationManager().waitForAllReservations();
-        return 0;
+        try {
+            distributedAmuse.reservationManager().waitForAllReservations();
+            return 0;
+        } catch (DistributedAmuseException e) {
+            logger.error("Error on running distributed code: " + e, e);
+            return 10;
+        }
     }
 
     @Override
@@ -162,8 +167,8 @@ public class Code implements CodeInterface {
             for (int i = 0; i < count; i++) {
                 boolean useCodeCache = re_use_code_files[i] != 0;
                 job_id[i] =
-                        distributedAmuse.jobManager()
-                                .submitScriptJob(script[i], arguments[i], code_dir[i], node_label[i], useCodeCache);
+                        distributedAmuse.jobManager().submitScriptJob(script[i], arguments[i], code_dir[i], node_label[i],
+                                useCodeCache);
 
             }
             return 0;
@@ -190,7 +195,7 @@ public class Code implements CodeInterface {
     @Override
     public int wait_for_jobs() {
         try {
-            distributedAmuse.jobManager().waitForAllJobs();
+            distributedAmuse.jobManager().waitForAllBatchJobs();
             return 0;
         } catch (DistributedAmuseException e) {
             logger.error("Error on running distributed code: " + e, e);

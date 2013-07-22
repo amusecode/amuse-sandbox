@@ -1,4 +1,6 @@
-package nl.esciencecenter.amuse.distributed.local;
+package nl.esciencecenter.amuse.distributed.resources;
+
+import ibis.ipl.server.ServerConnection;
 
 import java.net.URI;
 import java.util.List;
@@ -11,12 +13,11 @@ import nl.esciencecenter.octopus.engine.util.StreamForwarder;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
 import nl.esciencecenter.octopus.jobs.Scheduler;
+import nl.esciencecenter.octopus.jobs.Streams;
 import nl.esciencecenter.octopus.util.JavaJobDescription;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ibis.ipl.server.ServerConnection;
 
 public class Hub {
 
@@ -37,7 +38,7 @@ public class Hub {
         result.setInteractive(true);
 
         AmuseConfiguration configuration = resource.getConfiguration();
-        
+
         result.setExecutable(configuration.getJava());
 
         //classpath
@@ -75,50 +76,43 @@ public class Hub {
         try {
             JobDescription jobDescription = createJobDesciption(resource, hubs);
 
-            logger.debug("starting hub with job description " + jobDescription + " with arguments " + jobDescription.getArguments());
+            logger.debug("starting hub with job description " + jobDescription + " with arguments "
+                    + jobDescription.getArguments());
 
             Scheduler scheduler;
 
             if (resource.isLocal()) {
                 scheduler = octopus.jobs().getLocalScheduler();
             } else {
-                //FIXME, replace with octopus.credentials.getDefaultCredential("ssh") once this is implemented
-                String username = System.getProperty("user.name");
-                Credential credential =
-                        octopus.credentials().newCertificateCredential("ssh", null, "/home/" + username + "/.ssh/id_rsa",
-                                "/home/" + username + "/.ssh/id_rsa.pub", username, "");
+                Credential credential = octopus.credentials().getDefaultCredential("ssh");
 
                 URI uri = new URI("ssh", resource.getUsername(), resource.getHostname(), resource.getPort(), null, null, null);
                 scheduler = octopus.jobs().newScheduler(uri, credential, null);
-                
+
                 logger.debug("starting hub using scheduler " + scheduler);
             }
 
             job = octopus.jobs().submitJob(scheduler, jobDescription);
-            
-            logger.debug("started job "  + job);
-            
-            while(job.getStdout() == null) {
-                //FIXME: workaround for interactive jobs that do not start immediately
-                logger.warn("waiting until interactive job has started (workaround)");
-                Thread.sleep(100);
-            }
 
-            new StreamForwarder(job.getStderr(), System.err);
+            logger.debug("started job " + job);
+
+            Streams streams = octopus.jobs().getStreams(job);
+
+            new StreamForwarder(streams.getStderr(), System.err);
 
             serverConnection =
-                    new ServerConnection(job.getStdout(), job.getStdin(), System.out, "Hub at " + resource.getName() + ": ",
-                            TIMEOUT, null);
+                    new ServerConnection(streams.getStdout(), streams.getStdin(), System.out, "Hub at " + resource.getName()
+                            + ": ", TIMEOUT, null);
 
             address = serverConnection.getAddress();
-            
+
             logger.debug("hub on " + resource.getName() + " has address " + address);
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start hub on " + resource.getName(), e);
         }
     }
 
-    String getAddress() {
+    public String getAddress() {
         return address;
     }
 

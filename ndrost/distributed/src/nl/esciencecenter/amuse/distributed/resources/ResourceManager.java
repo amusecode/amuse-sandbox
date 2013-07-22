@@ -1,4 +1,4 @@
-package nl.esciencecenter.amuse.distributed.local;
+package nl.esciencecenter.amuse.distributed.resources;
 
 import ibis.ipl.server.Server;
 import ibis.ipl.server.ServerProperties;
@@ -28,7 +28,7 @@ public class ResourceManager {
     
     private final ArrayList<Resource> resources;
     
-    ResourceManager(Octopus octopus) throws DistributedAmuseException {
+    public ResourceManager(Octopus octopus) throws DistributedAmuseException {
         resources = new ArrayList<Resource>();
         this.octopus = octopus;
         
@@ -40,8 +40,12 @@ public class ResourceManager {
         } catch (Exception e) {
             throw new DistributedAmuseException("could not create IPL server", e);
         }
-        
-        iplServer.getHubs();
+
+        //add local resource by default
+
+        String amuseDir = System.getProperty("amuse.root.dir");
+        logger.debug("local amuse dir = " + amuseDir);
+        newResource("local", null, amuseDir, -1, null, "local", false);
     }
 
     public synchronized Resource newResource(String name, String hostname, String amuseDir, int port, String username,

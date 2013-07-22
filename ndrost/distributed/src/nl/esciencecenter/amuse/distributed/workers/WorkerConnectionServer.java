@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.local;
+package nl.esciencecenter.amuse.distributed.workers;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 
 import ibis.ipl.Ibis;
 
@@ -31,13 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class that handles incoming "worker" connections from AMUSe. Submits a job to the scheduler to allocate a node and start a
+ * Class that handles incoming "worker" connections from AMUSE. Submits a job to the scheduler to allocate a node and start a
  * worker there, then forwards all messages to that node.
  * 
  * @author Niels Drost
  * 
  */
-public class WorkerConnectionServer {
+public class WorkerConnectionServer extends Thread {
 
     public static final String WORKER_TYPE_STRING = "TYPE_WORKER";
 
@@ -65,8 +66,11 @@ public class WorkerConnectionServer {
             // bind to a random port on local host
             loopbackServer.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
 
+            this.setName("worker connection server");
+            this.setDaemon(true);
+            this.start();
         } catch (IOException e) {
-            throw new DistributedAmuseException("cannot start worker connection handler", e);
+            throw new DistributedAmuseException("cannot start worker connection server", e);
         }
     }
 

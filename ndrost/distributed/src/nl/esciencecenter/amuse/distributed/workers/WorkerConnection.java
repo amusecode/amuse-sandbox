@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.local;
+package nl.esciencecenter.amuse.distributed.workers;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.Network;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.Job;
+import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 
 import ibis.ipl.ConnectionClosedException;
 import ibis.ipl.Ibis;
@@ -51,8 +54,10 @@ public class WorkerConnection extends Thread {
     private static int getNextID() {
         return nextID++;
     }
-
+    
     private final SocketChannel socket;
+    
+    private final JobManager jobManager;
 
     private final String id;
 
@@ -62,15 +67,17 @@ public class WorkerConnection extends Thread {
 
     private final AmuseMessage initRequest;
 
-    private final WorkerJob job;
+    private final Job job;
+    
 
     /*
      * Initializes worker by reading settings from amuse, deploying the worker
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    WorkerConnection(SocketChannel socket, Ibis ibis, JobManager scheduler) throws Exception {
+    WorkerConnection(SocketChannel socket, Ibis ibis, JobManager jobManager) throws Exception {
         this.socket = socket;
+        this.jobManager = jobManager;
 
         if (logger.isDebugEnabled()) {
             logger.debug("New worker connection from " + socket.socket().getRemoteSocketAddress());
@@ -109,13 +116,13 @@ public class WorkerConnection extends Thread {
                         nrOfThreads, copyWorkerCode);
 
         // initialize ibis ports
-        receivePort = ibis.createReceivePort(Network.IPL_PORT_TYPE, id);
+        receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, id);
         receivePort.enableConnections();
 
-        sendPort = ibis.createSendPort(Network.IPL_PORT_TYPE);
+        sendPort = ibis.createSendPort(Network.ONE_TO_ONE_PORT_TYPE);
 
         // start deployment of worker (possibly on remote machine)
-        job = scheduler.submitWorkerJob(workerDescription);
+        job = jobManager.submitWorkerJob(workerDescription);
 
         logger.info("New worker submitted: " + this);
 
@@ -132,7 +139,7 @@ public class WorkerConnection extends Thread {
         try {
 
             // wait until job is running
-            job.waitUntilStarted();
+            job.waitUntilRunning();
 
             //read initial "hello" message with identifier
             ReadMessage helloMessage = receivePort.receive(CONNECT_TIMEOUT);
@@ -201,7 +208,7 @@ public class WorkerConnection extends Thread {
                     running = false;
                 }
 
-                if (job.hasFinished()) {
+                if (job.isDone()) {
                     throw new IOException("Remote Code Proxy no longer running");
                 }
 
@@ -220,7 +227,7 @@ public class WorkerConnection extends Thread {
                         // IGNORE
                     }
 
-                    if (receivePort.connectedTo().length == 0 || job.hasFinished()) {
+                    if (receivePort.connectedTo().length == 0 || job.isDone()) {
                         throw new IOException("receiveport no longer connected to remote proxy, or proxy no longer running");
                     }
                 }
@@ -276,7 +283,7 @@ public class WorkerConnection extends Thread {
         }
 
         try {
-            job.stop();
+            jobManager.cancelJob(job.getJobID());
         } catch (Exception e) {
             logger.error("Error waiting on job to finish", e);
         }

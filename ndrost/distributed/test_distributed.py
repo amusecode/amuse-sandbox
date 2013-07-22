@@ -5,9 +5,12 @@ from amuse.lab import *
 from interface import DistributedAmuseInterface
 from interface import DistributedAmuse
 
+from amuse.community.hermite0.interface import Hermite
+
 class DistributedTests(TestWithMPI):
     
     def start_nodes(self):
+	
         instance = DistributedAmuse(redirection='none')
         instance.initialize_code()
 
@@ -18,7 +21,14 @@ class DistributedTests(TestWithMPI):
                               amuse_dir="/home/niels/amuse",
                               )
         
-#        instance.new_resource(name='LGM',
+#        instance.new_resource(name='DAS4-Leiden',
+#                              hostname="fs1.das4.liacs.nl",
+#                              username="niels",
+#                              scheduler_type="sge", 
+#                              amuse_dir="/home/niels/amuse",
+#                              )
+
+ #        instance.new_resource(name='LGM',
 #                              hostname="fs.lgm.liacs.nl", 
 #                              amuse_dir='/home/niels/amuse-svn',
 #                              scheduler_type="local", 
@@ -31,7 +41,9 @@ class DistributedTests(TestWithMPI):
 #                              amuse_dir='/var/local/amuse',
 #                              username="niels")
     
-        instance.new_reservation(resource_name='DAS4-VU', node_count=5, time= 2|units.hour, node_label='VU')
+#        instance.new_reservation(resource_name='DAS4-VU', node_count=5, time= 2|units.hour, node_label='VU')
+#        instance.new_reservation(resource_name='DAS4-Leiden', node_count=5, time= 2|units.hour, node_label='Leiden')
+        instance.new_reservation(resource_name='local', node_count=1, time= 2|units.hour, node_label='local')
         
 #        instance.new_reservation(resource_name='LGM-4', node_count=1, time=2|units.hour, node_label='LGM')
     
@@ -39,19 +51,34 @@ class DistributedTests(TestWithMPI):
 
         return instance
 
-    def test1(self):
+    def test0(self):
+       print "starting"
        instance = self.start_nodes()
-    
-       #gadget = Gadget(nr_of_workers=4, node_label='VU')
+
+       print "taking a nap"
+       import time
+       time.sleep(60)
+
+       print "stopping instance"
+       instance.stop()
+
+    def test1(self):
+       print "starting"
+       instance = self.start_nodes()
+
+       print "starting codes"
+       gravity = Hermite(number_of_workers = 1)
         
        #gadget2 = Gadget(nr_of_workers=4, nr_of_nodes=2, node_label='VU')
 
        # some interesting simulation using these workers
 
 
+       print "taking a nap"
        import time
        time.sleep(60)
 
+       print "stopping instance"
        instance.stop()
 
     def do_something(x, y):

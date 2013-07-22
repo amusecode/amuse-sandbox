@@ -32,8 +32,11 @@ public class Network {
 
     public static final String PORT_NAME = "amuse";
 
-    public static PortType IPL_PORT_TYPE = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
-            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT, PortType.CONNECTION_MANY_TO_ONE);
+    public static PortType MANY_TO_ONE_PORT_TYPE = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
+             PortType.RECEIVE_AUTO_UPCALLS, PortType.CONNECTION_MANY_TO_ONE);
+    
+    public static PortType ONE_TO_ONE_PORT_TYPE = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
+            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT, PortType.CONNECTION_ONE_TO_ONE);
 
     public static IbisCapabilities IPL_CAPABILITIES = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT,
             IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED, IbisCapabilities.TERMINATION, IbisCapabilities.SIGNALS);
@@ -49,7 +52,7 @@ public class Network {
             //properties.put("ibis.managementclient", "true");
             //properties.put("ibis.bytescount", "true");
 
-            return IbisFactory.createIbis(IPL_CAPABILITIES, properties, true, registryEventHandler, IPL_PORT_TYPE);
+            return IbisFactory.createIbis(IPL_CAPABILITIES, properties, true, registryEventHandler, ONE_TO_ONE_PORT_TYPE);
         } catch (IbisCreationFailedException e) {
             throw new DistributedAmuseException("failed to create ibis", e);
         }
