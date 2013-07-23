@@ -17,6 +17,7 @@ package nl.esciencecenter.amuse.distributed.jobs;
 
 import ibis.ipl.Ibis;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,18 +39,19 @@ public class JobManager extends Thread {
 
     private final Ibis ibis;
 
-    private final Nodes nodes;
+    private final PilotNodes nodes;
 
     //all pending, running, completed, and failed jobs.
     LinkedList<Job> jobs;
 
     /**
+     * @param tmpDir 
      * @param string
      * @param distributedAmuse
      * @throws DistributedAmuseException
      */
-    public JobManager(String serverAddress) throws DistributedAmuseException {
-        nodes = new Nodes();
+    public JobManager(String serverAddress, File tmpDir) throws DistributedAmuseException {
+        nodes = new PilotNodes();
 
         ibis = Network.createIbis(serverAddress, nodes);
         ibis.registry().enableEvents();
@@ -167,7 +169,7 @@ public class JobManager extends Thread {
                     PilotNode[] target = nodes.getSuitableNodes(job);
 
                     //If suitable nodes are found
-                    if (nodes != null) {
+                    if (target != null) {
                         job.start(target);
                     }
                 } else if (job.isObsolete()) {

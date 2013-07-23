@@ -3,6 +3,7 @@ package nl.esciencecenter.amuse.distributed.resources;
 import ibis.ipl.server.Server;
 import ibis.ipl.server.ServerProperties;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -28,7 +29,7 @@ public class ResourceManager {
     
     private final ArrayList<Resource> resources;
     
-    public ResourceManager(Octopus octopus) throws DistributedAmuseException {
+    public ResourceManager(Octopus octopus, File tmpDir) throws DistributedAmuseException {
         resources = new ArrayList<Resource>();
         this.octopus = octopus;
         

@@ -15,6 +15,7 @@
  */
 package nl.esciencecenter.amuse.distributed.reservations;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
@@ -40,10 +41,13 @@ public class ReservationManager {
     private final ArrayList<Reservation> reservations;
 
     private final Octopus octopus;
+    
+    private final File tmpDir;
 
-    public ReservationManager(Octopus octopus, ResourceManager resourceManager) throws DistributedAmuseException {
+    public ReservationManager(Octopus octopus, ResourceManager resourceManager, File tmpDir) throws DistributedAmuseException {
         this.octopus = octopus;
         this.resourceManager = resourceManager;
+        this.tmpDir = tmpDir;
         reservations = new ArrayList<Reservation>();
     }
 
@@ -56,7 +60,7 @@ public class ReservationManager {
 
         Reservation result =
                 new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel, resourceManager.getIplServerAddress(),
-                        resourceManager.getHubAddresses(), octopus);
+                        resourceManager.getHubAddresses(), octopus, tmpDir);
 
         reservations.add(result);
 

@@ -18,6 +18,7 @@ package nl.esciencecenter.amuse.distributed.pilot;
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
+import ibis.ipl.IbisIdentifier;
 import ibis.ipl.IbisProperties;
 import ibis.ipl.MessageUpcall;
 import ibis.ipl.ReadMessage;
@@ -69,9 +70,9 @@ public class Pilot implements MessageUpcall {
         //label, slots, hostname
         String tag = nodeLabel + "," + slots + "," + InetAddress.getLocalHost().getHostAddress();
 
-        ibis = IbisFactory.createIbis(Network.IPL_CAPABILITIES, properties, true, null, null, tag,
-
-        Network.ONE_TO_ONE_PORT_TYPE);
+        ibis =
+                IbisFactory.createIbis(Network.IPL_CAPABILITIES, properties, true, null, null, tag, Network.ONE_TO_ONE_PORT_TYPE,
+                        Network.MANY_TO_ONE_PORT_TYPE);
 
         receivePort = ibis.createReceivePort(Network.MANY_TO_ONE_PORT_TYPE, "pilot", this);
     }
@@ -181,13 +182,13 @@ public class Pilot implements MessageUpcall {
             //details of job
             int jobID = readMessage.readInt();
             WorkerDescription description = (WorkerDescription) readMessage.readObject();
-            PilotNode[] target = (PilotNode[]) readMessage.readObject();
+            IbisIdentifier[] nodes = (IbisIdentifier[]) readMessage.readObject();
             readMessage.finish();
 
             //FIXME: transfer files etc
 
             try {
-                JobRunner jobRunner = new JobRunner(jobID, description, configuration, target, ibis);
+                JobRunner jobRunner = new JobRunner(jobID, description, configuration, nodes, ibis);
 
                 addJobRunner(jobID, jobRunner);
 

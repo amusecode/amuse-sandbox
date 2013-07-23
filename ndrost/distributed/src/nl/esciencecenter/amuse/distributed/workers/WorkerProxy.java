@@ -79,7 +79,7 @@ public class WorkerProxy extends Thread {
     /**
      * List of all hosts used, to give to MPI. Contains duplicates for all machines running multiple worker processes
      */
-    private static String[] createHostnameList(WorkerDescription description, PilotNode[] nodes)
+    private static String[] createHostnameList(WorkerDescription description, IbisIdentifier[] nodes)
             throws DistributedAmuseException {
         String[] hostnames = new String[description.getNrOfWorkers()];
         int next = 0;
@@ -101,11 +101,15 @@ public class WorkerProxy extends Thread {
             }
         } else {
             for (int i = 0; i < nodes.length; i++) {
-                String hostname = nodes[i].getHostname();
+                String tags[] = nodes[i].tagAsString().split(",");
+                if (tags.length != 3) {
+                    throw new DistributedAmuseException("Cannot get tag from node identifier: " + nodes[i].tagAsString());
+                }
+                String hostname = tags[2];
 
                 // number of processes per node
                 int ppn = nrOfProcesses / nrOfNodes;
-                // nrOfWorkers not divideble by nrOfNodes. see if this is
+                // nrOfWorkers not dividable by nrOfNodes. see if this is
                 // a "remainder" node with an extra worker
                 if (i < nrOfProcesses % nrOfNodes) {
                     ppn++;
@@ -219,7 +223,7 @@ public class WorkerProxy extends Thread {
     /**
      * Starts a worker proxy. Make take a while.
      */
-    public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, PilotNode[] nodes, Ibis ibis,
+    public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, IbisIdentifier[] nodes, Ibis ibis,
             File workingDirectory) throws Exception {
         this.description = description;
         this.amuseConfiguration = amuseConfiguration;

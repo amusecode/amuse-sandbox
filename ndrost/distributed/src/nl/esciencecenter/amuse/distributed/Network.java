@@ -52,7 +52,7 @@ public class Network {
             //properties.put("ibis.managementclient", "true");
             //properties.put("ibis.bytescount", "true");
 
-            return IbisFactory.createIbis(IPL_CAPABILITIES, properties, true, registryEventHandler, ONE_TO_ONE_PORT_TYPE);
+            return IbisFactory.createIbis(IPL_CAPABILITIES, properties, true, registryEventHandler, ONE_TO_ONE_PORT_TYPE, MANY_TO_ONE_PORT_TYPE);
         } catch (IbisCreationFailedException e) {
             throw new DistributedAmuseException("failed to create ibis", e);
         }

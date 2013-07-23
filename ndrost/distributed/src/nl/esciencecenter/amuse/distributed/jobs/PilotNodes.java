@@ -31,16 +31,16 @@ import ibis.ipl.RegistryEventHandler;
  * @author Niels Drost
  *
  */
-public class Nodes implements RegistryEventHandler {
+public class PilotNodes implements RegistryEventHandler {
     
-    private static final Logger logger = LoggerFactory.getLogger(Nodes.class);
+    private static final Logger logger = LoggerFactory.getLogger(PilotNodes.class);
     
     private final ArrayList<PilotNode> nodes;
     
     /**
      * @param jobManager
      */
-    public Nodes() {
+    public PilotNodes() {
         nodes = new ArrayList<PilotNode>();
     }
     
@@ -56,8 +56,25 @@ public class Nodes implements RegistryEventHandler {
      * @return
      */
     public synchronized PilotNode[] getSuitableNodes(Job job) {
-        // TODO Auto-generated method stub
-        return null;
+        logger.debug("looking for suitable node for job {} in {}", job, nodes);
+        
+        String label = job.getLabel();
+        
+        PilotNode[] result = new PilotNode[job.getNumberOfNodes()];
+        int found = 0;
+        
+        for(int i = 0; i < nodes.size() && found < result.length; i++) {
+            PilotNode node = nodes.get(i);
+            
+            if((job.isWorkerJob() || node.isAvailableForBatchJobs()) && (label == null || label.equals(node.getLabel()))) {
+                result[found] = node;
+                found++;
+            }
+        }
+        if (found != result.length) {
+            return null;
+        }
+        return result;
     }
 
     @Override

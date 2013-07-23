@@ -113,4 +113,9 @@ public class PilotNode {
     public String getHostname() {
         return hostname;
     }
+
+    @Override
+    public String toString() {
+        return "PilotNode [label=" + label + ", slots=" + slots + ", hostname=" + hostname + "]";
+    }
 }

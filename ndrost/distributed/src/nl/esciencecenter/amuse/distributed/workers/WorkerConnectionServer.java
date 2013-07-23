@@ -21,6 +21,7 @@ import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 
 import ibis.ipl.Ibis;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -56,7 +57,7 @@ public class WorkerConnectionServer extends Thread {
 
     private final JobManager scheduler;
 
-    public WorkerConnectionServer(JobManager scheduler) throws DistributedAmuseException {
+    public WorkerConnectionServer(JobManager scheduler, File tmpDir) throws DistributedAmuseException {
         this.scheduler = scheduler;
         this.ibis = scheduler.getIbis();
 

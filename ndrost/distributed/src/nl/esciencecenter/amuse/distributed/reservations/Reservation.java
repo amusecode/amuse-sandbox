@@ -15,6 +15,7 @@
  */
 package nl.esciencecenter.amuse.distributed.reservations;
 
+import java.io.File;
 import java.net.URI;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import nl.esciencecenter.octopus.exceptions.OctopusException;
 import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobDescription;
+import nl.esciencecenter.octopus.jobs.JobStatus;
 import nl.esciencecenter.octopus.jobs.Scheduler;
 import nl.esciencecenter.octopus.util.JavaJobDescription;
 
@@ -48,19 +50,20 @@ public class Reservation {
         return nextID++;
     }
 
-    private static JavaJobDescription createJobDesciption(int id, Resource resource, String queueName, int nodeCount, int timeMinutes,
-            String nodeLabel, String serverAddress, String[] hubAddresses) throws DistributedAmuseException {
+    private static JavaJobDescription createJobDesciption(int id, Resource resource, String queueName, int nodeCount,
+            int timeMinutes, String nodeLabel, String serverAddress, String[] hubAddresses, File tmpDir)
+            throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
-        
-        result.setStdout("reservation-" + id + ".out");
-        result.setStderr("reservation-" + id + ".err");
+
+        result.setStdout(new File(tmpDir, "reservation-" + id + ".out").getAbsolutePath());
+        result.setStderr(new File(tmpDir, "reservation-" + id + ".err").getAbsolutePath());
 
         result.setInteractive(false);
-        
+
         if (queueName != null && !queueName.isEmpty()) {
             result.setQueueName(queueName);
         }
-        
+
         result.setNodeCount(nodeCount);
         result.setMaxTime(timeMinutes);
 
@@ -84,7 +87,7 @@ public class Reservation {
 
         javaArguments.add("--server-address");
         javaArguments.add(serverAddress);
-        
+
         javaArguments.add("--amuse-home");
         javaArguments.add(configuration.getAmuseHome().getAbsolutePath());
 
@@ -124,7 +127,7 @@ public class Reservation {
      * @param nodeLabel
      */
     public Reservation(Resource resource, String queueName, int nodeCount, int timeMinutes, String nodeLabel,
-            String serverAddress, String[] hubAddresses, Octopus octopus) throws DistributedAmuseException {
+            String serverAddress, String[] hubAddresses, Octopus octopus, File tmpDir) throws DistributedAmuseException {
         this.octopus = octopus;
 
         this.id = getNextID();
@@ -145,13 +148,14 @@ public class Reservation {
             }
 
             JobDescription jobDescription =
-                    createJobDesciption(id, resource, queueName, nodeCount, timeMinutes, nodeLabel, serverAddress, hubAddresses);
-            
+                    createJobDesciption(id, resource, queueName, nodeCount, timeMinutes, nodeLabel, serverAddress, hubAddresses,
+                            tmpDir);
+
             logger.debug("starting job using scheduler " + scheduler);
 
             this.job = octopus.jobs().submitJob(scheduler, jobDescription);
 
-            logger.debug("submitted job {} with arguments {}", job ,jobDescription.getArguments());
+            logger.debug("submitted job {} with arguments {}", job, jobDescription.getArguments());
 
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start reservation on " + resource.getName(), e);
@@ -175,7 +179,11 @@ public class Reservation {
      */
     public void waitUntilStarted() throws DistributedAmuseException {
         try {
-            octopus.jobs().waitUntilRunning(job, 0);
+            JobStatus status = octopus.jobs().waitUntilRunning(job, 0);
+
+            if (status.hasException()) {
+                throw new DistributedAmuseException("error in reservation job: " + job, status.getException());
+            }
         } catch (OctopusIOException | OctopusException e) {
             throw new DistributedAmuseException("failed to get job status " + job, e);
         }

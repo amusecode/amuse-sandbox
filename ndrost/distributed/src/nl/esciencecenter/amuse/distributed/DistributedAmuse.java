@@ -15,6 +15,9 @@
  */
 package nl.esciencecenter.amuse.distributed;
 
+import java.io.File;
+import java.util.UUID;
+
 import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 import nl.esciencecenter.amuse.distributed.reservations.ReservationManager;
 import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
@@ -50,21 +53,38 @@ public class DistributedAmuse {
 
     //used to copy files, start jobs, etc.
     private final Octopus octopus;
-
+    
+    private File tmpDir;
+    
+    private static File createTmpDir() throws DistributedAmuseException {
+        File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
+        
+        if (!systemTmpDir.exists()) {
+            throw new DistributedAmuseException("Java tmpdir does not exist " + systemTmpDir);
+        }
+        
+        File result = new File(systemTmpDir, "distributed-amuse-" + UUID.randomUUID().toString());
+        result.mkdirs();
+        
+        return result;
+    }
+    
     public DistributedAmuse() throws DistributedAmuseException {
         try {
             octopus = OctopusFactory.newOctopus(null);
         } catch (OctopusException e) {
             throw new DistributedAmuseException("could not create Octopus library object", e);
         }
+        
+        tmpDir = createTmpDir();
 
-        resourceManager = new ResourceManager(octopus);
+        resourceManager = new ResourceManager(octopus, tmpDir);
 
-        reservationManager = new ReservationManager(octopus, resourceManager);
+        reservationManager = new ReservationManager(octopus, resourceManager, tmpDir);
 
-        jobManager = new JobManager(resourceManager.getIplServerAddress());
+        jobManager = new JobManager(resourceManager.getIplServerAddress(), tmpDir);
 
-        workerConnectionServer = new WorkerConnectionServer(jobManager);
+        workerConnectionServer = new WorkerConnectionServer(jobManager, tmpDir);
     }
 
     public ResourceManager resourceManager() {

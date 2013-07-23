@@ -16,8 +16,10 @@
 package nl.esciencecenter.amuse.distributed.jobs;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import ibis.ipl.Ibis;
+import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReadMessage;
 import ibis.ipl.ReceivePort;
 import ibis.ipl.SendPort;
@@ -78,6 +80,18 @@ public class Job extends Thread {
 
     public WorkerDescription getWorkerDescription() {
         return workerDescription;
+    }
+    
+    public int getNumberOfNodes() {
+        if (!isWorkerJob()) {
+            return 1;
+        }
+        return workerDescription.getNrOfNodes();
+    }
+    
+    public String getLabel() {
+        //FIXME: support non-worker jobs
+        return workerDescription.getNodeLabel();
     }
 
     public boolean isWorkerJob() {
@@ -202,6 +216,23 @@ public class Job extends Thread {
     }
 
     /**
+     * @return
+     */
+    private synchronized IbisIdentifier[] getIbisIdentifiers() {
+        if (target == null) {
+            return null;
+        }
+
+        IbisIdentifier[] result = new IbisIdentifier[target.length];
+
+        for (int i = 0; i < result.length; i++) {
+            result[i] = target[i].getIbisIdentifier();
+        }
+
+        return result;
+    }
+
+    /**
      * Function that starts the job. Only communicates with first node used.
      */
     @Override
@@ -213,7 +244,7 @@ public class Job extends Thread {
             ReceivePort receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
 
-            sendPort.connect(master.getIbisIdentifier(), "jobs");
+            sendPort.connect(master.getIbisIdentifier(), "pilot");
 
             WriteMessage writeMessage = sendPort.newMessage();
 
@@ -226,7 +257,8 @@ public class Job extends Thread {
             //details of job
             writeMessage.writeInt(jobID);
             writeMessage.writeObject(workerDescription);
-            writeMessage.writeObject(target);
+
+            writeMessage.writeObject(getIbisIdentifiers());
 
             //FIXME: transfer files etc
 
@@ -286,10 +318,9 @@ public class Job extends Thread {
             ReadMessage readMessage = receivePort.receive(60000);
 
             String statusMessage = readMessage.readString();
-            
+
             readMessage.finish();
             receivePort.close();
-
 
             if (!statusMessage.equals("ok")) {
                 setState(State.DONE);
@@ -315,7 +346,7 @@ public class Job extends Thread {
             this.error = (Exception) message.readObject();
 
             //FIXME: read result files
-            
+
             setState(State.DONE);
             logger.debug("Job {} done on node {}", this, message.origin());
         } catch (IOException | ClassNotFoundException e) {
@@ -323,8 +354,13 @@ public class Job extends Thread {
         }
     }
 
+    @Override
     public String toString() {
-        return "job [jobID = " + jobID + "]";
+        return "Job [jobID=" + jobID + ", state=" + state + ", target=" + Arrays.toString(target) + ", result=" + result
+                + ", error=" + error + ", timeout=" + timeout + "]";
     }
+
+    
+
 
 }

@@ -18,6 +18,7 @@ package nl.esciencecenter.amuse.distributed.pilot;
 import java.io.File;
 
 import ibis.ipl.Ibis;
+import ibis.ipl.IbisIdentifier;
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
 import nl.esciencecenter.amuse.distributed.jobs.PilotNode;
@@ -40,7 +41,7 @@ public class JobRunner extends Thread {
      * @param configuration
      * @throws Exception
      */
-    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, PilotNode[] nodes, Ibis ibis)
+    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, IbisIdentifier[] nodes, Ibis ibis)
             throws Exception {
 
         File workingDirectory =
