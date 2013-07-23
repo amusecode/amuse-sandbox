@@ -56,7 +56,6 @@ public class PilotNodes implements RegistryEventHandler {
      * @return
      */
     public synchronized PilotNode[] getSuitableNodes(Job job) {
-        logger.debug("looking for suitable node for job {} in {}", job, nodes);
         
         String label = job.getLabel();
         
@@ -72,8 +71,12 @@ public class PilotNodes implements RegistryEventHandler {
             }
         }
         if (found != result.length) {
+            logger.debug("no suitable nodes found for job {} in {}", new Object[] {job, nodes, result});
             return null;
         }
+        
+        logger.debug("looking for suitable node for job {} in {} resulted in {}", new Object[] {job, nodes, result});
+        
         return result;
     }
 
