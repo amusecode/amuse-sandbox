@@ -102,4 +102,10 @@ public class ResourceManager {
     public String[] getHubAddresses() {
         return iplServer.getHubs();
     }
+    
+    public synchronized void end() {
+        for(Resource resource: resources) {
+            resource.stop();
+        }
+    }
 }

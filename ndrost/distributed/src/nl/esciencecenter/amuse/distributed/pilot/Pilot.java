@@ -16,13 +16,32 @@
 package nl.esciencecenter.amuse.distributed.pilot;
 
 import ibis.ipl.Ibis;
+import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisProperties;
+import ibis.ipl.MessageUpcall;
+import ibis.ipl.ReadMessage;
+import ibis.ipl.ReceivePort;
+import ibis.ipl.ReceivePortIdentifier;
+import ibis.ipl.SendPort;
+import ibis.ipl.WriteMessage;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.Network;
+import nl.esciencecenter.amuse.distributed.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.PilotNode;
 
 /**
  * Pilot job. Started when a reservations is made.
@@ -30,19 +49,63 @@ import nl.esciencecenter.amuse.distributed.Network;
  * @author Niels Drost
  * 
  */
-public class Pilot {
+public class Pilot implements MessageUpcall {
 
-    public static void main(String[] arguments) throws Throwable {
+    private static final Logger logger = LoggerFactory.getLogger(Pilot.class);
+
+    private final Ibis ibis;
+
+    private final ReceivePort receivePort;
+
+    private final HashMap<Integer, JobRunner> jobs;
+
+    private final AmuseConfiguration configuration;
+
+    Pilot(AmuseConfiguration configuration, Properties properties, String nodeLabel, int slots)
+            throws IbisCreationFailedException, IOException {
+        this.configuration = configuration;
+        jobs = new HashMap<Integer, JobRunner>();
+
+        //label, slots, hostname
+        String tag = nodeLabel + "," + slots + "," + InetAddress.getLocalHost().getHostAddress();
+
+        ibis = IbisFactory.createIbis(Network.IPL_CAPABILITIES, properties, true, null, null, tag,
+
+        Network.ONE_TO_ONE_PORT_TYPE);
+
+        receivePort = ibis.createReceivePort(Network.MANY_TO_ONE_PORT_TYPE, "pilot", this);
+    }
+
+    /**
+     * Small run function. Waits until the "main" distributed amuse node declares it is time to go.
+     * 
+     * @throws IOException
+     */
+    private void run() throws IOException {
+        receivePort.enableConnections();
+        receivePort.enableMessageUpcalls();
+
+        //Wait until the pool is terminated by the DistributedAmuse master node
+        //FIXME: no way to interrupt this wait.
+        ibis.registry().waitUntilTerminated();
+
+        logger.debug("Pool terminated");
+
+        ibis.end();
+    }
+
+    public static void main(String[] arguments) throws Exception {
+        File amuseHome = null;
         String nodeLabel = "default";
         int slots = 1;
-        
+
         Properties properties = new Properties();
         properties.put(IbisProperties.POOL_NAME, "amuse");
         properties.put(IbisProperties.SERVER_IS_HUB, "false");
         //properties.put("ibis.managementclient", "true");
         //properties.put("ibis.bytescount", "true");
 
-        for(int i = 0; i < arguments.length;i++) {
+        for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equalsIgnoreCase("--node-label")) {
                 i++;
                 nodeLabel = arguments[i];
@@ -52,6 +115,9 @@ public class Pilot {
             } else if (arguments[i].equalsIgnoreCase("--server-address")) {
                 i++;
                 properties.put(IbisProperties.SERVER_ADDRESS, arguments[i]);
+            } else if (arguments[i].equalsIgnoreCase("--amuse-home")) {
+                i++;
+                amuseHome = new File(arguments[i]);
             } else if (arguments[i].equalsIgnoreCase("--hub-addresses")) {
                 i++;
                 properties.put(IbisProperties.HUB_ADDRESSES, arguments[i]);
@@ -63,16 +129,102 @@ public class Pilot {
                 System.exit(1);
             }
         }
-        
-        Ibis ibis = IbisFactory.createIbis(Network.IPL_CAPABILITIES, properties, true, null, null, nodeLabel + "," + slots, Network.ONE_TO_ONE_PORT_TYPE);
 
-        System.err.println("running Pilot at location \"" + arguments[0] + "\" for 60 seconds, using properties:");
-        for(Entry<Object, Object> entry: properties.entrySet()) {
+        AmuseConfiguration configuration = new AmuseConfiguration(amuseHome);
+
+        System.err.println("running Pilot using properties:");
+        for (Entry<Object, Object> entry : properties.entrySet()) {
             System.err.println(entry.getKey() + " = " + entry.getValue());
         }
-        
-        Thread.sleep(60000);
-        
-        ibis.end();
+
+        Pilot pilot = new Pilot(configuration, properties, nodeLabel, slots);
+
+        pilot.run();
+
     }
+
+    private synchronized void addJobRunner(int jobID, JobRunner jobRunner) {
+        jobs.put(jobID, jobRunner);
+    }
+
+    private synchronized JobRunner getJobRunner(int jobID) {
+        return jobs.get(jobID);
+    }
+
+    private synchronized void removeFinishedJobs() {
+        Iterator<Map.Entry<Integer, JobRunner>> iterator = jobs.entrySet().iterator();
+        //remove all finished jobs
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, JobRunner> entry = iterator.next();
+            if (!entry.getValue().isAlive()) {
+                iterator.remove();
+            }
+        }
+
+    }
+
+    /**
+     * Handle incoming message from the amuse node
+     */
+    @Override
+    public void upcall(ReadMessage readMessage) throws IOException, ClassNotFoundException {
+        String replyMessage = "ok";
+
+        //run cleanup
+        removeFinishedJobs();
+
+        ReceivePortIdentifier replyPort = (ReceivePortIdentifier) readMessage.readObject();
+
+        String command = readMessage.readString();
+
+        if (command.equals("start")) {
+            //details of job
+            int jobID = readMessage.readInt();
+            WorkerDescription description = (WorkerDescription) readMessage.readObject();
+            PilotNode[] target = (PilotNode[]) readMessage.readObject();
+            readMessage.finish();
+
+            //FIXME: transfer files etc
+
+            try {
+                JobRunner jobRunner = new JobRunner(jobID, description, configuration, target, ibis);
+
+                addJobRunner(jobID, jobRunner);
+
+                //start a thread to run job.
+                jobRunner.start();
+            } catch (Exception e) {
+                logger.error("Error starting job", e);
+                replyMessage = "Error starting job: " + e;
+            }
+        } else if (command.equals("cancel")) {
+            int jobID = readMessage.readInt();
+            readMessage.finish();
+
+            JobRunner jobRunner = getJobRunner(jobID);
+
+            if (jobRunner != null) {
+                //signal the thread it is time to cancel the job
+                jobRunner.interrupt();
+            }
+        } else {
+            logger.error("Failed to handle message, unknown command: " + command);
+            replyMessage = "unknown command: " + command;
+        }
+
+        //send reply
+        SendPort sendPort = ibis.createSendPort(Network.MANY_TO_ONE_PORT_TYPE);
+
+        sendPort.connect(replyPort);
+
+        WriteMessage reply = sendPort.newMessage();
+
+        reply.writeString(replyMessage);
+
+        reply.finish();
+
+        sendPort.close();
+
+    }
+
 }

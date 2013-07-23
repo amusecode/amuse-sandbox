@@ -78,8 +78,12 @@ public class WorkerConnectionServer extends Thread {
         return loopbackServer.socket().getLocalPort();
     }
 
-    public void close() throws IOException {
-        loopbackServer.close();
+    public void end() {
+        try {
+            loopbackServer.close();
+        } catch (IOException e) {
+            logger.error("Failed to close loopback server", e);
+        }
     }
 
     public void run() {

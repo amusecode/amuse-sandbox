@@ -30,28 +30,30 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class Node {
+public class PilotNode {
 
-    private static final Logger logger = LoggerFactory.getLogger(Node.class);
-
-    private int slots;
+    private static final Logger logger = LoggerFactory.getLogger(PilotNode.class);
 
     private final String label;
 
+    private int slots;
+
+    private String hostname;
+    
     //address of this node
     private final IbisIdentifier ibisIdentifier;
 
     //list of all jobs running on this node
     private List<Job> jobs;
 
-    public Node(IbisIdentifier ibisIdentifier) {
+    public PilotNode(IbisIdentifier ibisIdentifier) {
         this.ibisIdentifier = ibisIdentifier;
 
         jobs = new LinkedList<Job>();
 
         String[] tags = ibisIdentifier.tagAsString().split(",");
 
-        if (tags.length != 2) {
+        if (tags.length != 3) {
             logger.error("Cannot parse ibis tag: " + ibisIdentifier.tagAsString());
             label = "unknown";
             slots = 1;
@@ -65,6 +67,8 @@ public class Node {
                 logger.error("Cannot parse ibis tag: " + ibisIdentifier.tagAsString(), e);
                 slots = 1;
             }
+            
+            hostname = tags[2];
         }
 
     }
@@ -104,5 +108,9 @@ public class Node {
 
     public IbisIdentifier getIbisIdentifier() {
         return ibisIdentifier;
+    }
+
+    public String getHostname() {
+        return hostname;
     }
 }

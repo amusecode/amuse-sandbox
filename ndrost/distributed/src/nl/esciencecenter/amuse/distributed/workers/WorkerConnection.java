@@ -15,13 +15,6 @@
  */
 package nl.esciencecenter.amuse.distributed.workers;
 
-import nl.esciencecenter.amuse.distributed.AmuseMessage;
-import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.Network;
-import nl.esciencecenter.amuse.distributed.WorkerDescription;
-import nl.esciencecenter.amuse.distributed.jobs.Job;
-import nl.esciencecenter.amuse.distributed.jobs.JobManager;
-
 import ibis.ipl.ConnectionClosedException;
 import ibis.ipl.Ibis;
 import ibis.ipl.ReadMessage;
@@ -33,6 +26,12 @@ import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+
+import nl.esciencecenter.amuse.distributed.AmuseMessage;
+import nl.esciencecenter.amuse.distributed.Network;
+import nl.esciencecenter.amuse.distributed.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.Job;
+import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

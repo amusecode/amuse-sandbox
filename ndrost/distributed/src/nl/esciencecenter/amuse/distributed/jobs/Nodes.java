@@ -35,13 +35,13 @@ public class Nodes implements RegistryEventHandler {
     
     private static final Logger logger = LoggerFactory.getLogger(Nodes.class);
     
-    private final ArrayList<Node> nodes;
+    private final ArrayList<PilotNode> nodes;
     
     /**
      * @param jobManager
      */
     public Nodes() {
-        nodes = new ArrayList<Node>();
+        nodes = new ArrayList<PilotNode>();
     }
     
     /**
@@ -55,7 +55,7 @@ public class Nodes implements RegistryEventHandler {
      * @param job
      * @return
      */
-    public synchronized Node[] getSuitableNodes(Job job) {
+    public synchronized PilotNode[] getSuitableNodes(Job job) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -70,14 +70,17 @@ public class Nodes implements RegistryEventHandler {
     public void joined(IbisIdentifier ibis) {
         logger.debug("new Ibis joined: " + ibis);
         
-        nodes.add(new Node(ibis));
+        //ignore local daemon node,
+        if (!ibis.location().toString().equals("daemon@local")) {
+            nodes.add(new PilotNode(ibis));
+        }
     }
 
     @Override
     public void left(IbisIdentifier ibis) {
         logger.debug("Ibis left: " + ibis);
         
-        Iterator<Node> iterator = nodes.iterator();
+        Iterator<PilotNode> iterator = nodes.iterator();
         
         while(iterator.hasNext()) {
             if (iterator.next().getIbisIdentifier().equals(ibis)) {

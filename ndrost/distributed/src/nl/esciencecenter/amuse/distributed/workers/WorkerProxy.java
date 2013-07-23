@@ -20,6 +20,7 @@ import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.Network;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.PilotNode;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
@@ -78,7 +79,7 @@ public class WorkerProxy extends Thread {
     /**
      * List of all hosts used, to give to MPI. Contains duplicates for all machines running multiple worker processes
      */
-    private static String[] createHostnameList(WorkerDescription description, IbisIdentifier[] nodes)
+    private static String[] createHostnameList(WorkerDescription description, PilotNode[] nodes)
             throws DistributedAmuseException {
         String[] hostnames = new String[description.getNrOfWorkers()];
         int next = 0;
@@ -100,7 +101,7 @@ public class WorkerProxy extends Thread {
             }
         } else {
             for (int i = 0; i < nodes.length; i++) {
-                String hostname = nodes[i].tagAsString();
+                String hostname = nodes[i].getHostname();
 
                 // number of processes per node
                 int ppn = nrOfProcesses / nrOfNodes;
@@ -218,7 +219,7 @@ public class WorkerProxy extends Thread {
     /**
      * Starts a worker proxy. Make take a while.
      */
-    WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, IbisIdentifier[] nodes, Ibis ibis,
+    public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, PilotNode[] nodes, Ibis ibis,
             File workingDirectory) throws Exception {
         this.description = description;
         this.amuseConfiguration = amuseConfiguration;

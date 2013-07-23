@@ -20,6 +20,7 @@ import java.util.List;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.pilot.Pilot;
 import nl.esciencecenter.amuse.distributed.resources.Resource;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.credentials.Credential;
@@ -47,9 +48,12 @@ public class Reservation {
         return nextID++;
     }
 
-    private static JavaJobDescription createJobDesciption(Resource resource, String queueName, int nodeCount, int timeMinutes,
+    private static JavaJobDescription createJobDesciption(int id, Resource resource, String queueName, int nodeCount, int timeMinutes,
             String nodeLabel, String serverAddress, String[] hubAddresses) throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
+        
+        result.setStdout("reservation-" + id + ".out");
+        result.setStderr("reservation-" + id + ".err");
 
         result.setInteractive(false);
         
@@ -68,7 +72,7 @@ public class Reservation {
         classpath.add(configuration.getAmuseHome().getPath() + "/sandbox/ndrost/distributed/distributed-server.jar");
         classpath.add(configuration.getAmuseHome().getPath() + "/sandbox/ndrost/distributed");
 
-        result.setJavaMain("nl.esciencecenter.amuse.distributed.remote.Pilot");
+        result.setJavaMain(Pilot.class.getCanonicalName());
 
         List<String> javaArguments = result.getJavaArguments();
 
@@ -80,6 +84,9 @@ public class Reservation {
 
         javaArguments.add("--server-address");
         javaArguments.add(serverAddress);
+        
+        javaArguments.add("--amuse-home");
+        javaArguments.add(configuration.getAmuseHome().getAbsolutePath());
 
         String hubs = null;
 
@@ -138,7 +145,7 @@ public class Reservation {
             }
 
             JobDescription jobDescription =
-                    createJobDesciption(resource, queueName, nodeCount, timeMinutes, nodeLabel, serverAddress, hubAddresses);
+                    createJobDesciption(id, resource, queueName, nodeCount, timeMinutes, nodeLabel, serverAddress, hubAddresses);
             
             logger.debug("starting job using scheduler " + scheduler);
 

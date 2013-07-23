@@ -58,7 +58,7 @@ public class Job extends Thread {
 
     private State state;
 
-    private Node[] target = null;
+    private PilotNode[] target = null;
 
     //only for pickled jobs
     private String result = null;
@@ -180,7 +180,7 @@ public class Job extends Thread {
      * @param target
      *            the nodes to run this job on.
      */
-    public synchronized void start(Node[] target) {
+    public synchronized void start(PilotNode[] target) {
         if (!isPending()) {
             logger.error("Tried to run job {} that was not pending. Ignoring", this);
             return;
@@ -191,7 +191,7 @@ public class Job extends Thread {
         this.target = target;
 
         //report that this job will be run on the target nodes
-        for (Node node : target) {
+        for (PilotNode node : target) {
             node.addJob(this);
         }
 
@@ -207,7 +207,7 @@ public class Job extends Thread {
     @Override
     public void run() {
         try {
-            Node master = target[0];
+            PilotNode master = target[0];
 
             SendPort sendPort = ibis.createSendPort(Network.MANY_TO_ONE_PORT_TYPE);
             ReceivePort receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, null);
@@ -217,6 +217,9 @@ public class Job extends Thread {
 
             WriteMessage writeMessage = sendPort.newMessage();
 
+            //where to send the reply
+            writeMessage.writeObject(receivePort.identifier());
+
             //command
             writeMessage.writeString("start");
 
@@ -225,7 +228,7 @@ public class Job extends Thread {
             writeMessage.writeObject(workerDescription);
             writeMessage.writeObject(target);
 
-            //files etc
+            //FIXME: transfer files etc
 
             writeMessage.finish();
 
@@ -235,6 +238,9 @@ public class Job extends Thread {
             ReadMessage readMessage = receivePort.receive(60000);
 
             String statusMessage = readMessage.readString();
+
+            readMessage.finish();
+            receivePort.close();
 
             if (!statusMessage.equals("ok")) {
                 setState(State.DONE);
@@ -253,7 +259,7 @@ public class Job extends Thread {
      * 
      */
     public void cancel() throws DistributedAmuseException {
-        Node master = target[0];
+        PilotNode master = target[0];
 
         try {
             SendPort sendPort = ibis.createSendPort(Network.MANY_TO_ONE_PORT_TYPE);
@@ -263,6 +269,9 @@ public class Job extends Thread {
             sendPort.connect(master.getIbisIdentifier(), "jobs");
 
             WriteMessage writeMessage = sendPort.newMessage();
+
+            //where to send the reply
+            writeMessage.writeObject(receivePort.identifier());
 
             //command
             writeMessage.writeString("cancel");
@@ -277,6 +286,10 @@ public class Job extends Thread {
             ReadMessage readMessage = receivePort.receive(60000);
 
             String statusMessage = readMessage.readString();
+            
+            readMessage.finish();
+            receivePort.close();
+
 
             if (!statusMessage.equals("ok")) {
                 setState(State.DONE);
@@ -294,14 +307,15 @@ public class Job extends Thread {
     void handleResultMessage(ReadMessage message) throws DistributedAmuseException {
         try {
             String statusMessage = message.readString();
-            
+
             if (!statusMessage.equals("ok")) {
                 logger.warn("Job ended in error: " + statusMessage);
             }
-            
-            this.error = (Exception) message.readObject();
-            //read result files
 
+            this.error = (Exception) message.readObject();
+
+            //FIXME: read result files
+            
             setState(State.DONE);
             logger.debug("Job {} done on node {}", this, message.origin());
         } catch (IOException | ClassNotFoundException e) {

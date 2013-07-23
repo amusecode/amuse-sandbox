@@ -52,7 +52,7 @@ public class ReservationManager {
         logger.debug("reserving new nodes: resource name = " + resourceName + " queue name = " + queueName
                 + " number of nodes = " + nodeCount + " time (in minutes) = " + timeMinutes + " node label = " + nodeLabel);
 
-    Resource resource = resourceManager.getResource(resourceName);
+        Resource resource = resourceManager.getResource(resourceName);
 
         Reservation result =
                 new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel, resourceManager.getIplServerAddress(),
@@ -96,4 +96,13 @@ public class ReservationManager {
         logger.debug("All reservations started");
     }
 
+    public synchronized void end() {
+        for (Reservation reservation : reservations) {
+            try {
+                reservation.cancel();
+            } catch (DistributedAmuseException e) {
+                logger.error("Failed to cancel reservation: " + reservation, e);
+            }
+        }
+    }
 }

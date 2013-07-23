@@ -17,6 +17,7 @@ package nl.esciencecenter.amuse.distributed.jobs;
 
 import ibis.ipl.Ibis;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -71,16 +72,16 @@ public class JobManager extends Thread {
         //run scheduler thread now
         notifyAll();
     }
-    
+
     /**
      * @param workerDescription
      * @return
      */
     public Job submitWorkerJob(WorkerDescription workerDescription) throws DistributedAmuseException {
         Job result = new Job(workerDescription, ibis);
-        
+
         addJob(result);
-        
+
         return result;
     }
 
@@ -163,13 +164,13 @@ public class JobManager extends Thread {
 
                 if (job.isPending()) {
                     //find nodes to run this job on. Usually only a single node, but worker jobs may require multiple nodes.
-                    Node[] target = nodes.getSuitableNodes(job);
+                    PilotNode[] target = nodes.getSuitableNodes(job);
 
                     //If suitable nodes are found
                     if (nodes != null) {
                         job.start(target);
                     }
-                } else if(job.isObsolete()) {
+                } else if (job.isObsolete()) {
                     //remove this job
                     iterator.remove();
                 }
@@ -181,6 +182,26 @@ public class JobManager extends Thread {
                 logger.debug("Scheduler thread interrupted, time to quit");
                 return;
             }
+        }
+    }
+
+    public void end() {
+        for (Job job : jobs) {
+            try {
+                job.cancel();
+            } catch (DistributedAmuseException e) {
+                logger.error("Failed to cancel job: " + job, e);
+            }
+        }
+        try {
+            ibis.registry().terminate();
+        } catch (IOException e) {
+            logger.error("Failed to terminate ibis pool", e);
+        }
+        try {
+            ibis.end();
+        } catch (IOException e) {
+            logger.error("Failed to end ibis", e);
         }
     }
 

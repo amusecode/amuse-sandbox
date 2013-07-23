@@ -89,4 +89,14 @@ public class DistributedAmuse {
         return workerConnectionServer.getPort();
     }
 
+    /**
+     * 
+     */
+    public void end() {
+        jobManager.end();
+        reservationManager.end();
+        resourceManager.end();
+        workerConnectionServer.end();
+    }
+
 }

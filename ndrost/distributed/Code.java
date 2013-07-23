@@ -204,4 +204,12 @@ public class Code implements CodeInterface {
 
     }
 
+    /**
+     * 
+     */
+    @Override
+    public void end() {
+        distributedAmuse.end();
+    }
+
 }
