@@ -72,7 +72,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         
         port = self.get_worker_port()
         
-        logging.basicConfig(level=logging.DEBUG)
+        #logging.basicConfig(level=logging.DEBUG)
         
         logger.debug("running on port %d", port)
 
@@ -237,7 +237,6 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     def cleanup_code(self):
-        print "cleaning up!"
         del options.GlobalOptions.instance().overriden_options["channel_type"]
         return 0
     

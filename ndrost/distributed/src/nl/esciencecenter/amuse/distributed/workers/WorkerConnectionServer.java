@@ -88,12 +88,11 @@ public class WorkerConnectionServer extends Thread {
     }
 
     public void run() {
+        logger.debug("worker connection server started");
         while (true) {
             SocketChannel socket = null;
             try {
-                logger.debug("Waiting for connection");
                 socket = loopbackServer.accept();
-                logger.debug("New connection accepted");
 
                 //turn on no-delay
                 socket.socket().setTcpNoDelay(true);
@@ -112,8 +111,10 @@ public class WorkerConnectionServer extends Thread {
 
                 String receivedString = new String(magic.array(), "UTF-8");
                 if (receivedString.equalsIgnoreCase(WORKER_TYPE_STRING)) {
+                    logger.debug("handling new worker connection");
                     new WorkerConnection(socket, ibis, scheduler);
                 } else if (receivedString.equalsIgnoreCase(OUTPUT_TYPE_STRING)) {
+                    logger.debug("handling new output connection");
                     outputManager.newOutputConnection(socket);
                 } else {
                     throw new IOException("magic string (" + WORKER_TYPE_STRING + " or " + OUTPUT_TYPE_STRING

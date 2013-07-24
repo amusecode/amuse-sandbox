@@ -148,7 +148,7 @@ public class AmuseMessage {
         stringHeader = stringHeaderBytes.asIntBuffer();
     }
 
-    AmuseMessage(int callID, int functionID, int count) {
+    public AmuseMessage(int callID, int functionID, int count) {
         this();
 
         setCallID(callID);

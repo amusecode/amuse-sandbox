@@ -153,24 +153,29 @@ public class WorkerConnection extends Thread {
 
             sendPort.connect(remotePort, CONNECT_TIMEOUT, true);
 
-            // do init function at remote worker so it can initialize the code
+//            // do init function at remote worker so it can initialize the code
+//
+//            // write init message
+//            WriteMessage initWriteMessage = sendPort.newMessage();
+//            initRequest.writeTo(initWriteMessage);
+//            initWriteMessage.finish();
+//
+//            // read reply
+//            AmuseMessage initReply = new AmuseMessage();
+//            ReadMessage initReadMessage = receivePort.receive();
+//            initReply.readFrom(initReadMessage);
+//            initReadMessage.finish();
+//
+//            if (initReply.getError() != null) {
+//                throw new IOException(initReply.getError());
+//            }
+//
+            
 
-            // write init message
-            WriteMessage initWriteMessage = sendPort.newMessage();
-            initRequest.writeTo(initWriteMessage);
-            initWriteMessage.finish();
-
-            // read reply
-            AmuseMessage initReply = new AmuseMessage();
-            ReadMessage initReadMessage = receivePort.receive();
-            initReply.readFrom(initReadMessage);
-            initReadMessage.finish();
-
-            if (initReply.getError() != null) {
-                throw new IOException(initReply.getError());
-            }
-
-            // send reply to amuse
+            //send a reply
+            AmuseMessage initReply =
+                    new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(), initRequest.getCallCount()
+                           );
             initReply.writeTo(socket);
 
         } catch (Exception e) {

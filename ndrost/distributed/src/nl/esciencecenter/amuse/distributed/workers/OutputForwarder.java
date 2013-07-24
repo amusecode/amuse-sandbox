@@ -65,7 +65,7 @@ public class OutputForwarder extends Thread {
                 logger.info("Discarding code output");
             } else {
                 logger.debug("Creating sendport");
-                sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
+                sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
                 logger.debug("getting daemon IbisIdentifier");
                 IbisIdentifier daemon = ibis.registry().getElectionResult("amuse");
                 logger.debug("Connecting to output manager port");

@@ -55,7 +55,7 @@ public class WorkerOutputManager extends Thread {
 
         outputConnections = new HashMap<UUID, SocketChannel>();
 
-        this.receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, "output");
+        this.receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, "output");
         this.receivePort.enableConnections();
 
         setDaemon(true);
@@ -115,14 +115,14 @@ public class WorkerOutputManager extends Thread {
                 buffer.flip();
 
                 if (fileID == null) {
-                    logger.debug("Got " + count + " bytes for file " + file);
+                    logger.trace("Got {} bytes for file {}", count, file);
                     // not a UUID, just write it to a file
                     FileOutputStream out = new FileOutputStream(file, true);
                     out.getChannel().write(buffer);
                     out.flush();
                     out.close();
                 } else {
-                    logger.debug("Got " + count + " bytes for stream " + fileID);
+                    logger.trace("Got {} bytes for stream {}" , count, fileID);
                     // This file is specified using a UUID
                     // There should be an output connection to write it to
                     SocketChannel out = getOutputConnection(fileID);
