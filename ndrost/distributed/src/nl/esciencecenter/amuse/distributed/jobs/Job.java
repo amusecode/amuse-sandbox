@@ -28,6 +28,7 @@ import java.util.Arrays;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.pilot.Pilot;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,9 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Job extends Thread {
+    
+    //how long we keep jobs which have finished.
+    public static int TIMEOUT = 60000; //ms
 
     private static final Logger logger = LoggerFactory.getLogger(Job.class);
 
@@ -117,6 +121,10 @@ public class Job extends Thread {
     private synchronized void setState(State newState) {
         state = newState;
         notifyAll();
+        
+        if (isDone()) {
+            timeout = System.currentTimeMillis() + TIMEOUT;
+        }
     }
 
     public synchronized boolean isPending() {
@@ -195,7 +203,7 @@ public class Job extends Thread {
      *            the nodes to run this job on.
      */
     public synchronized void start(PilotNode[] target) {
-        logger.debug("Running job on target nodes {}", new Object[] {target});
+        logger.debug("Running job on target nodes {}", (Object) target);
         if (!isPending()) {
             logger.error("Tried to run job {} that was not pending. Ignoring", this);
             return;
@@ -280,6 +288,8 @@ public class Job extends Thread {
             //FIXME: we should use some kind of rpc mechanism
             ReadMessage readMessage = receivePort.receive(60000);
 
+            logger.debug("reading status message from reply");
+            
             String statusMessage = readMessage.readString();
 
             readMessage.finish();
@@ -305,12 +315,14 @@ public class Job extends Thread {
     public void cancel() throws DistributedAmuseException {
         PilotNode master = target[0];
 
+        logger.debug("Cancelling job {}", this);
+        
         try {
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
             ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
 
-            sendPort.connect(master.getIbisIdentifier(), "jobs");
+            sendPort.connect(master.getIbisIdentifier(), Pilot.PORT_NAME);
 
             WriteMessage writeMessage = sendPort.newMessage();
 
@@ -347,8 +359,7 @@ public class Job extends Thread {
         }
     }
 
-    void handleResultMessage(ReadMessage message) throws DistributedAmuseException {
-        try {
+    void handleResult(ReadMessage message) throws IOException, ClassNotFoundException {
             String statusMessage = message.readString();
 
             if (!statusMessage.equals("ok")) {
@@ -361,9 +372,6 @@ public class Job extends Thread {
 
             setState(State.DONE);
             logger.debug("Job {} done on node {}", this, message.origin());
-        } catch (IOException | ClassNotFoundException e) {
-            throw new DistributedAmuseException("Failed to handle job result " + this, e);
-        }
     }
 
     @Override

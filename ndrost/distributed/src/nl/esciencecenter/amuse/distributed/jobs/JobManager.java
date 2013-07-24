@@ -18,6 +18,9 @@ package nl.esciencecenter.amuse.distributed.jobs;
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
+import ibis.ipl.MessageUpcall;
+import ibis.ipl.ReadMessage;
+import ibis.ipl.ReceivePort;
 import ibis.ipl.RegistryEventHandler;
 
 import java.io.File;
@@ -37,41 +40,20 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class JobManager extends Thread {
+public class JobManager extends Thread implements MessageUpcall {
 
     private static final Logger logger = LoggerFactory.getLogger(JobManager.class);
 
+    public static final String PORT_NAME = "job.manager";
+
     private final Ibis ibis;
+
+    private final ReceivePort receivePort;
 
     private final PilotNodes nodes;
 
     //all pending, running, completed, and failed jobs.
     LinkedList<Job> jobs;
-
-    private static Ibis createIbis(String serverAddress, RegistryEventHandler registryEventHandler)
-            throws DistributedAmuseException {
-        try {
-
-            Properties properties = new Properties();
-            properties.put("ibis.server.address", serverAddress);
-            properties.put("ibis.pool.name", "amuse");
-            properties.put("ibis.location", "daemon@local");
-            //properties.put("ibis.managementclient", "true");
-            //properties.put("ibis.bytescount", "true");
-
-            Ibis result =
-                    IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, registryEventHandler,
-                            DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
-
-            result.registry().enableEvents();
-            //label this ibis as the master node by running an election with us as the only 
-            result.registry().elect("amuse");
-            
-            return result;
-        } catch (IbisCreationFailedException | IOException e) {
-            throw new DistributedAmuseException("failed to create ibis", e);
-        }
-    }
 
     /**
      * @param tmpDir
@@ -80,9 +62,32 @@ public class JobManager extends Thread {
      * @throws DistributedAmuseException
      */
     public JobManager(String serverAddress, File tmpDir) throws DistributedAmuseException {
-        nodes = new PilotNodes();
+        nodes = new PilotNodes(this);
 
-        ibis = createIbis(serverAddress, nodes);
+        try {
+            Properties properties = new Properties();
+            properties.put("ibis.server.address", serverAddress);
+            properties.put("ibis.pool.name", "amuse");
+            properties.put("ibis.location", "daemon@local");
+            //properties.put("ibis.managementclient", "true");
+            //properties.put("ibis.bytescount", "true");
+
+            ibis =
+                    IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, nodes,
+                            DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
+
+            //label this ibis as the master node by running an election with us as the only 
+            ibis.registry().elect("amuse");
+
+            ibis.registry().enableEvents();
+
+            receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, PORT_NAME, this);
+            receivePort.enableConnections();
+            receivePort.enableMessageUpcalls();
+
+        } catch (IOException | IbisCreationFailedException e) {
+            throw new DistributedAmuseException("failed to create ibis", e);
+        }
 
         jobs = new LinkedList<Job>();
 
@@ -101,6 +106,13 @@ public class JobManager extends Thread {
 
         //run scheduler thread now
         notifyAll();
+    }
+
+    /**
+     * @return
+     */
+    private synchronized Job[] getJobs() {
+        return jobs.toArray(new Job[jobs.size()]);
     }
 
     /**
@@ -158,12 +170,23 @@ public class JobManager extends Thread {
             }
         }
     }
+    
+
+    private synchronized Job getJob(int jobID) {
+        for (Job job : jobs) {
+            if (job.getJobID() == jobID) {
+                //will block until the job is finished, then send the result or throw an exception if the job failed, 
+                return job;
+            }
+        }
+        return null;
+    }
 
     /**
      * @param jobID
      * @return
      */
-    public String getJobResult(int jobID) throws DistributedAmuseException {
+    public synchronized String getJobResult(int jobID) throws DistributedAmuseException {
         for (Job job : jobs) {
             if (job.getJobID() == jobID) {
                 //will block until the job is finished, then send the result or throw an exception if the job failed, 
@@ -174,7 +197,7 @@ public class JobManager extends Thread {
     }
 
     //currently only called by worker connection
-    public void cancelJob(int jobID) throws DistributedAmuseException {
+    public synchronized void cancelJob(int jobID) throws DistributedAmuseException {
         for (Job job : jobs) {
             if (job.getJobID() == jobID) {
                 //blocks while sending a "cancel" message
@@ -216,7 +239,9 @@ public class JobManager extends Thread {
     }
 
     public void end() {
-        for (Job job : jobs) {
+        this.interrupt();
+
+        for (Job job : getJobs()) {
             try {
                 job.cancel();
             } catch (DistributedAmuseException e) {
@@ -224,6 +249,7 @@ public class JobManager extends Thread {
             }
         }
         try {
+            logger.debug("Terminating ibis pool");
             ibis.registry().terminate();
         } catch (IOException e) {
             logger.error("Failed to terminate ibis pool", e);
@@ -233,6 +259,30 @@ public class JobManager extends Thread {
         } catch (IOException e) {
             logger.error("Failed to end ibis", e);
         }
+    }
+
+    /**
+     * Handles incoming job messages from Pilots
+     */
+    @Override
+    public void upcall(ReadMessage message) throws IOException, ClassNotFoundException {
+        int jobID = message.readInt();
+        
+        Job job = getJob(jobID);
+        
+        if (job == null) {
+            logger.error("Error handling result for unknown job" + jobID);
+            throw new IOException("Error handling result for unknown job" + jobID);
+        }
+        
+        job.handleResult(message);
+    }
+
+    /**
+     * 
+     */
+    public synchronized void nudge() {
+        notifyAll();
     }
 
 }

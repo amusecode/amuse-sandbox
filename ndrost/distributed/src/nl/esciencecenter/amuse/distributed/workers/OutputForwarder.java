@@ -83,7 +83,7 @@ public class OutputForwarder extends Thread {
                 }
 
                 if (sendPort != null) {
-                    logger.debug("Sending message with " + count + " bytes");
+                    logger.trace("Sending message with {} bytes", count);
                     WriteMessage message = sendPort.newMessage();
                     message.writeString(file);
                     message.writeInt(count);

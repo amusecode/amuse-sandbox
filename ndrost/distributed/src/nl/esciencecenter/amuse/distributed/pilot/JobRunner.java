@@ -17,11 +17,19 @@ package nl.esciencecenter.amuse.distributed.pilot;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.SendPort;
+import ibis.ipl.WriteMessage;
 
 import java.io.File;
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 import nl.esciencecenter.amuse.distributed.workers.WorkerProxy;
 
 /**
@@ -32,7 +40,11 @@ import nl.esciencecenter.amuse.distributed.workers.WorkerProxy;
  */
 public class JobRunner extends Thread {
 
+    private static final Logger logger = LoggerFactory.getLogger(JobRunner.class);
+
+    private final int jobID;
     private final WorkerProxy workerProxy;
+    private final Ibis ibis;
 
     /**
      * @param jobID
@@ -43,6 +55,8 @@ public class JobRunner extends Thread {
      */
     public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, IbisIdentifier[] nodes, Ibis ibis)
             throws Exception {
+        this.jobID = jobID;
+        this.ibis = ibis;
 
         File workingDirectory =
                 new File(System.getProperty("java.io.tmpdir") + File.separator + "distributed-amuse-worker" + jobID);
@@ -58,6 +72,28 @@ public class JobRunner extends Thread {
             workerProxy.join();
         } catch (InterruptedException e) {
             workerProxy.end();
+        }
+
+        //send result message to main node (handled by JobManager, passed to Job)
+        try {
+            SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
+
+            IbisIdentifier mainNode = ibis.registry().getElectionResult("amuse");
+
+            sendPort.connect(mainNode, JobManager.PORT_NAME);
+
+            WriteMessage message = sendPort.newMessage();
+            
+            message.writeInt(jobID);
+            
+            message.writeString(workerProxy.getResult());
+
+            message.finish();
+
+            sendPort.close();
+
+        } catch (IOException e) {
+            logger.error("Failed to report status to main node", e);
         }
 
     }

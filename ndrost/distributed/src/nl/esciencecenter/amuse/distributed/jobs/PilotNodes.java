@@ -15,7 +15,6 @@
  */
 package nl.esciencecenter.amuse.distributed.jobs;
 
-
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.RegistryEventHandler;
 
@@ -30,21 +29,24 @@ import org.slf4j.LoggerFactory;
  * Set of nodes available to run jobs on
  * 
  * @author Niels Drost
- *
+ * 
  */
 public class PilotNodes implements RegistryEventHandler {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(PilotNodes.class);
-    
+
     private final ArrayList<PilotNode> nodes;
-    
+
+    private final JobManager jobManager;
+
     /**
      * @param jobManager
      */
-    public PilotNodes() {
+    public PilotNodes(JobManager jobManager) {
+        this.jobManager = jobManager;
         nodes = new ArrayList<PilotNode>();
     }
-    
+
     /**
      * @return
      */
@@ -57,16 +59,16 @@ public class PilotNodes implements RegistryEventHandler {
      * @return
      */
     public synchronized PilotNode[] getSuitableNodes(Job job) {
-        
+
         String label = job.getLabel();
-        
+
         PilotNode[] result = new PilotNode[job.getNumberOfNodes()];
         int found = 0;
-        
-        for(int i = 0; i < nodes.size() && found < result.length; i++) {
+
+        for (int i = 0; i < nodes.size() && found < result.length; i++) {
             PilotNode node = nodes.get(i);
-            
-            if((job.isWorkerJob() || node.isAvailableForBatchJobs()) && (label == null || label.equals(node.getLabel()))) {
+
+            if ((job.isWorkerJob() || node.isAvailableForBatchJobs()) && (label == null || label.equals(node.getLabel()))) {
                 result[found] = node;
                 found++;
             }
@@ -75,11 +77,11 @@ public class PilotNodes implements RegistryEventHandler {
             logger.debug("no suitable nodes found for job {} in {}", job, nodes);
             return null;
         }
-        
+
         if (logger.isDebugEnabled()) {
             logger.debug("looking for suitable node for job {} in {} resulted in {}", job, this, Arrays.toString(result));
         }
-        
+
         return result;
     }
 
@@ -92,27 +94,33 @@ public class PilotNodes implements RegistryEventHandler {
     @Override
     public void joined(IbisIdentifier ibis) {
         logger.debug("new Ibis joined: " + ibis);
-        
-        //ignore local daemon node,
-        if (!ibis.location().toString().equals("daemon@local")) {
-            nodes.add(new PilotNode(ibis));
+
+        synchronized (this) {
+            //ignore local daemon node,
+            if (!ibis.location().toString().equals("daemon@local")) {
+                nodes.add(new PilotNode(ibis));
+            }
         }
+
+        jobManager.nudge();
     }
 
     @Override
     public void left(IbisIdentifier ibis) {
         logger.debug("Ibis left: " + ibis);
-        
+
         Iterator<PilotNode> iterator = nodes.iterator();
-        
-        while(iterator.hasNext()) {
-            if (iterator.next().getIbisIdentifier().equals(ibis)) {
-                iterator.remove();
-                //TODO: do something with the jobs still running on this node, if any...
+
+        synchronized (this) {
+            while (iterator.hasNext()) {
+                if (iterator.next().getIbisIdentifier().equals(ibis)) {
+                    iterator.remove();
+                    //TODO: do something with the jobs still running on this node, if any...
+                }
             }
         }
     }
-    
+
     @Override
     public void electionResult(String name, IbisIdentifier winner) {
         //IGNORED
@@ -132,7 +140,5 @@ public class PilotNodes implements RegistryEventHandler {
     public void poolTerminated(IbisIdentifier arg0) {
         //IGNORED
     }
-
-  
 
 }

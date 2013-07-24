@@ -52,6 +52,8 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
+    
+    public static final String PORT_NAME = "pilot";
 
     private static final Logger logger = LoggerFactory.getLogger(Pilot.class);
 
@@ -75,7 +77,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
                 IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, null, null, tag, DistributedAmuse.ONE_TO_ONE_PORT_TYPE,
                         DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
-        receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, "pilot", this, this, null);
+        receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, PORT_NAME, this, this, null);
     }
 
     /**
@@ -142,7 +144,8 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         Pilot pilot = new Pilot(configuration, properties, nodeLabel, slots);
 
         pilot.run();
-
+        
+        logger.debug("Main pilot thread ended");
     }
 
     private synchronized void addJobRunner(int jobID, JobRunner jobRunner) {

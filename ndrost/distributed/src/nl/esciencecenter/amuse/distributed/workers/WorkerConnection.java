@@ -53,9 +53,9 @@ public class WorkerConnection extends Thread {
     private static int getNextID() {
         return nextID++;
     }
-    
+
     private final SocketChannel socket;
-    
+
     private final JobManager jobManager;
 
     private final String id;
@@ -67,7 +67,6 @@ public class WorkerConnection extends Thread {
     private final AmuseMessage initRequest;
 
     private final Job job;
-    
 
     /*
      * Initializes worker by reading settings from amuse, deploying the worker
@@ -97,7 +96,7 @@ public class WorkerConnection extends Thread {
         String stdoutFile = initRequest.getString(3);
         String stderrFile = initRequest.getString(4);
         String nodeLabel = initRequest.getString(5);
-        
+
         if (nodeLabel.isEmpty()) {
             nodeLabel = null;
         }
@@ -153,29 +152,27 @@ public class WorkerConnection extends Thread {
 
             sendPort.connect(remotePort, CONNECT_TIMEOUT, true);
 
-//            // do init function at remote worker so it can initialize the code
-//
-//            // write init message
-//            WriteMessage initWriteMessage = sendPort.newMessage();
-//            initRequest.writeTo(initWriteMessage);
-//            initWriteMessage.finish();
-//
-//            // read reply
-//            AmuseMessage initReply = new AmuseMessage();
-//            ReadMessage initReadMessage = receivePort.receive();
-//            initReply.readFrom(initReadMessage);
-//            initReadMessage.finish();
-//
-//            if (initReply.getError() != null) {
-//                throw new IOException(initReply.getError());
-//            }
-//
-            
+            //            // do init function at remote worker so it can initialize the code
+            //
+            //            // write init message
+            //            WriteMessage initWriteMessage = sendPort.newMessage();
+            //            initRequest.writeTo(initWriteMessage);
+            //            initWriteMessage.finish();
+            //
+            //            // read reply
+            //            AmuseMessage initReply = new AmuseMessage();
+            //            ReadMessage initReadMessage = receivePort.receive();
+            //            initReply.readFrom(initReadMessage);
+            //            initReadMessage.finish();
+            //
+            //            if (initReply.getError() != null) {
+            //                throw new IOException(initReply.getError());
+            //            }
+            //
 
             //send a reply
             AmuseMessage initReply =
-                    new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(), initRequest.getCallCount()
-                           );
+                    new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(), initRequest.getCallCount());
             initReply.writeTo(socket);
 
         } catch (Exception e) {
@@ -273,6 +270,12 @@ public class WorkerConnection extends Thread {
                     } catch (IOException e1) {
                         logger.error("Error while returning error message to amuse", e1);
                     }
+
+                    try {
+                        jobManager.cancelJob(job.getJobID());
+                    } catch (Exception e2) {
+                        logger.error("Error cancelling job", e);
+                    }
                 } else {
                     logger.error("Error on handling call, lost connection to AMUSE", e);
                 }
@@ -291,17 +294,10 @@ public class WorkerConnection extends Thread {
         }
 
         try {
-            jobManager.cancelJob(job.getJobID());
-        } catch (Exception e) {
-            logger.error("Error waiting on job to finish", e);
-        }
-
-        try {
             receivePort.close(1000);
         } catch (IOException e) {
             logger.error("Error closing receiveport", e);
         }
-
     }
 
     public String toString() {

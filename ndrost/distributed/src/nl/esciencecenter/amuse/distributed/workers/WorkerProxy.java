@@ -27,6 +27,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketOption;
+import java.net.SocketOptions;
+import java.net.StandardSocketOptions;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
@@ -50,8 +53,8 @@ public class WorkerProxy extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkerProxy.class);
 
-    private static final int ACCEPT_TRIES = 20;
-    private static final int ACCEPT_TIMEOUT = 1000; // ms
+    //how long until we give up on a worker initializing?
+    private static final int ACCEPT_TIMEOUT = 10000; // ms
 
     private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_", "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_" };
 
@@ -60,7 +63,7 @@ public class WorkerProxy extends Thread {
     private final SocketChannel socket;
 
     private final Process process;
-    private int result = 0;
+    private int exitcode = 0;
 
     private final OutputForwarder out;
     private final OutputForwarder err;
@@ -73,6 +76,8 @@ public class WorkerProxy extends Thread {
     private final Ibis ibis;
 
     private final File workingDirectory;
+
+    private String result = "ok";
 
     /**
      * List of all hosts used, to give to MPI. Contains duplicates for all machines running multiple worker processes
@@ -201,21 +206,14 @@ public class WorkerProxy extends Thread {
     }
 
     private static SocketChannel acceptConnection(ServerSocketChannel serverSocket) throws IOException {
-        serverSocket.configureBlocking(false);
-        for (int i = 0; i < ACCEPT_TRIES; i++) {
-            SocketChannel result = serverSocket.accept();
+        serverSocket.configureBlocking(true);
+        serverSocket.socket().setSoTimeout(ACCEPT_TIMEOUT);
 
-            if (result != null) {
-                result.socket().setTcpNoDelay(true);
-                return result;
-            }
-            try {
-                Thread.sleep(ACCEPT_TIMEOUT);
-            } catch (InterruptedException e) {
-                // IGNORE
-            }
-        }
-        throw new IOException("worker not started, socket connection failed to initialize");
+        //will timeout if this takes too long
+        SocketChannel result = serverSocket.accept();
+
+        result.socket().setTcpNoDelay(true);
+        return result;
     }
 
     /**
@@ -255,13 +253,21 @@ public class WorkerProxy extends Thread {
         start();
     }
 
+    public synchronized String getResult() {
+        return result;
+    }
+
+    synchronized void setResult(String result) {
+        this.result = result;
+    }
+
     public synchronized void end() {
         if (process != null) {
             process.destroy();
 
             try {
-                result = process.exitValue();
-                logger.info("Process ended with result " + result);
+                exitcode = process.exitValue();
+                logger.info("Process ended with result " + exitcode);
             } catch (IllegalThreadStateException e) {
                 logger.error("Process not ended after process.destroy()!");
             }
@@ -384,7 +390,7 @@ public class WorkerProxy extends Thread {
                 //IGNORE
             }
         }
-
+        logger.debug("Worker proxy done");
     }
 
 }
