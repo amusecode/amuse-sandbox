@@ -15,6 +15,9 @@
  */
 package nl.esciencecenter.amuse.distributed;
 
+import ibis.ipl.IbisCapabilities;
+import ibis.ipl.PortType;
+
 import java.io.File;
 import java.util.UUID;
 
@@ -36,7 +39,16 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class DistributedAmuse {
-    
+
+    public static PortType MANY_TO_ONE_PORT_TYPE = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
+            PortType.RECEIVE_AUTO_UPCALLS, PortType.CONNECTION_MANY_TO_ONE, PortType.CONNECTION_UPCALLS);
+
+    public static PortType ONE_TO_ONE_PORT_TYPE = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
+            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT, PortType.CONNECTION_ONE_TO_ONE);
+
+    public static IbisCapabilities IPL_CAPABILITIES = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT,
+            IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED, IbisCapabilities.TERMINATION, IbisCapabilities.SIGNALS);
+
     private static final Logger logger = LoggerFactory.getLogger(DistributedAmuse.class);
 
     //resources potentially available for starting reservations on. Also starts hub on each resource, if required.
@@ -53,29 +65,29 @@ public class DistributedAmuse {
 
     //used to copy files, start jobs, etc.
     private final Octopus octopus;
-    
+
     private File tmpDir;
-    
+
     private static File createTmpDir() throws DistributedAmuseException {
         File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
-        
+
         if (!systemTmpDir.exists()) {
             throw new DistributedAmuseException("Java tmpdir does not exist " + systemTmpDir);
         }
-        
+
         File result = new File(systemTmpDir, "distributed-amuse-" + UUID.randomUUID().toString());
         result.mkdirs();
-        
+
         return result;
     }
-    
+
     public DistributedAmuse() throws DistributedAmuseException {
         try {
             octopus = OctopusFactory.newOctopus(null);
         } catch (OctopusException e) {
             throw new DistributedAmuseException("could not create Octopus library object", e);
         }
-        
+
         tmpDir = createTmpDir();
 
         resourceManager = new ResourceManager(octopus, tmpDir);
@@ -105,7 +117,7 @@ public class DistributedAmuse {
      * @return the port used by the IbisChannel to connect to when creating workers and stderr/stdout streams
      */
     public int getWorkerPort() {
-        logger.debug("returning worker port");
+        logger.debug("Returning worker port.");
         return workerConnectionServer.getPort();
     }
 
@@ -113,10 +125,12 @@ public class DistributedAmuse {
      * 
      */
     public void end() {
+        logger.debug("Ending distributed Amuse.");
         jobManager.end();
         reservationManager.end();
         resourceManager.end();
         workerConnectionServer.end();
+        logger.debug("Distributed Amuse ended.");
     }
 
 }

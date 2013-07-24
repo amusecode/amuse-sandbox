@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
-import nl.esciencecenter.amuse.distributed.Network;
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
 import nl.esciencecenter.amuse.distributed.jobs.Job;
 import nl.esciencecenter.amuse.distributed.jobs.JobManager;
@@ -97,6 +97,10 @@ public class WorkerConnection extends Thread {
         String stdoutFile = initRequest.getString(3);
         String stderrFile = initRequest.getString(4);
         String nodeLabel = initRequest.getString(5);
+        
+        if (nodeLabel.isEmpty()) {
+            nodeLabel = null;
+        }
 
         int nrOfWorkers = initRequest.getInteger(0);
         int nrOfNodes = initRequest.getInteger(1);
@@ -115,15 +119,15 @@ public class WorkerConnection extends Thread {
                         nrOfThreads, copyWorkerCode);
 
         // initialize ibis ports
-        receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, id);
+        receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, id);
         receivePort.enableConnections();
 
-        sendPort = ibis.createSendPort(Network.ONE_TO_ONE_PORT_TYPE);
+        sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
 
         // start deployment of worker (possibly on remote machine)
         job = jobManager.submitWorkerJob(workerDescription);
 
-        logger.info("New worker submitted: " + this);
+        logger.info("New worker submitted {} with description {}", this, workerDescription);
 
         setDaemon(true);
         start();
@@ -296,6 +300,6 @@ public class WorkerConnection extends Thread {
     }
 
     public String toString() {
-        return "Worker \"" + id;
+        return "Worker \"" + id + "\"";
     }
 }

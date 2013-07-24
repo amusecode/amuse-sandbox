@@ -15,13 +15,17 @@
  */
 package nl.esciencecenter.amuse.distributed;
 
+import java.io.Serializable;
+
 /**
  * Description of a worker
  * 
  * @author Niels Drost
  */
-public class WorkerDescription {
+public class WorkerDescription implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+    
     private final String id;
     private final String codeName;
     private final String codeDir;
@@ -87,5 +91,12 @@ public class WorkerDescription {
 
     public boolean copyWorkerCode() {
         return copyWorkerCode;
+    }
+
+    @Override
+    public String toString() {
+        return "WorkerDescription [id=" + id + ", codeName=" + codeName + ", codeDir=" + codeDir + ", stdoutFile=" + stdoutFile
+                + ", stderrFile=" + stderrFile + ", nodeLabel=" + nodeLabel + ", nrOfWorkers=" + nrOfWorkers + ", nrOfNodes="
+                + nrOfNodes + ", nrOfThreads=" + nrOfThreads + ", copyWorkerCode=" + copyWorkerCode + "]";
     }
 }

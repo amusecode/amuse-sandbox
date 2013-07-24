@@ -16,14 +16,18 @@
 package nl.esciencecenter.amuse.distributed.jobs;
 
 import ibis.ipl.Ibis;
+import ibis.ipl.IbisCreationFailedException;
+import ibis.ipl.IbisFactory;
+import ibis.ipl.RegistryEventHandler;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Properties;
 
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.Network;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
 
 import org.slf4j.Logger;
@@ -44,8 +48,33 @@ public class JobManager extends Thread {
     //all pending, running, completed, and failed jobs.
     LinkedList<Job> jobs;
 
+    private static Ibis createIbis(String serverAddress, RegistryEventHandler registryEventHandler)
+            throws DistributedAmuseException {
+        try {
+
+            Properties properties = new Properties();
+            properties.put("ibis.server.address", serverAddress);
+            properties.put("ibis.pool.name", "amuse");
+            properties.put("ibis.location", "daemon@local");
+            //properties.put("ibis.managementclient", "true");
+            //properties.put("ibis.bytescount", "true");
+
+            Ibis result =
+                    IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, registryEventHandler,
+                            DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
+
+            result.registry().enableEvents();
+            //label this ibis as the master node by running an election with us as the only 
+            result.registry().elect("amuse");
+            
+            return result;
+        } catch (IbisCreationFailedException | IOException e) {
+            throw new DistributedAmuseException("failed to create ibis", e);
+        }
+    }
+
     /**
-     * @param tmpDir 
+     * @param tmpDir
      * @param string
      * @param distributedAmuse
      * @throws DistributedAmuseException
@@ -53,8 +82,7 @@ public class JobManager extends Thread {
     public JobManager(String serverAddress, File tmpDir) throws DistributedAmuseException {
         nodes = new PilotNodes();
 
-        ibis = Network.createIbis(serverAddress, nodes);
-        ibis.registry().enableEvents();
+        ibis = createIbis(serverAddress, nodes);
 
         jobs = new LinkedList<Job>();
 

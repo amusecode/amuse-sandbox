@@ -23,8 +23,10 @@ import ibis.ipl.IbisProperties;
 import ibis.ipl.MessageUpcall;
 import ibis.ipl.ReadMessage;
 import ibis.ipl.ReceivePort;
+import ibis.ipl.ReceivePortConnectUpcall;
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.SendPort;
+import ibis.ipl.SendPortIdentifier;
 import ibis.ipl.WriteMessage;
 
 import java.io.File;
@@ -36,13 +38,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+import nl.esciencecenter.amuse.distributed.WorkerDescription;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
-import nl.esciencecenter.amuse.distributed.Network;
-import nl.esciencecenter.amuse.distributed.WorkerDescription;
-import nl.esciencecenter.amuse.distributed.jobs.PilotNode;
 
 /**
  * Pilot job. Started when a reservations is made.
@@ -50,7 +51,7 @@ import nl.esciencecenter.amuse.distributed.jobs.PilotNode;
  * @author Niels Drost
  * 
  */
-public class Pilot implements MessageUpcall {
+public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
     private static final Logger logger = LoggerFactory.getLogger(Pilot.class);
 
@@ -71,10 +72,10 @@ public class Pilot implements MessageUpcall {
         String tag = nodeLabel + "," + slots + "," + InetAddress.getLocalHost().getHostAddress();
 
         ibis =
-                IbisFactory.createIbis(Network.IPL_CAPABILITIES, properties, true, null, null, tag, Network.ONE_TO_ONE_PORT_TYPE,
-                        Network.MANY_TO_ONE_PORT_TYPE);
+                IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, null, null, tag, DistributedAmuse.ONE_TO_ONE_PORT_TYPE,
+                        DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
-        receivePort = ibis.createReceivePort(Network.MANY_TO_ONE_PORT_TYPE, "pilot", this);
+        receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, "pilot", this, this, null);
     }
 
     /**
@@ -169,6 +170,8 @@ public class Pilot implements MessageUpcall {
      */
     @Override
     public void upcall(ReadMessage readMessage) throws IOException, ClassNotFoundException {
+        logger.debug("Received message upcall");
+
         String replyMessage = "ok";
 
         //run cleanup
@@ -214,7 +217,7 @@ public class Pilot implements MessageUpcall {
         }
 
         //send reply
-        SendPort sendPort = ibis.createSendPort(Network.MANY_TO_ONE_PORT_TYPE);
+        SendPort sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
 
         sendPort.connect(replyPort);
 
@@ -225,6 +228,28 @@ public class Pilot implements MessageUpcall {
         reply.finish();
 
         sendPort.close();
+
+    }
+
+    /**
+     * @param receiver
+     * @param applicant
+     * @return
+     */
+    @Override
+    public boolean gotConnection(ReceivePort receiver, SendPortIdentifier applicant) {
+        logger.debug("Got connection from {}", applicant);
+        return true;
+    }
+
+    /**
+     * @param receiver
+     * @param origin
+     * @param cause
+     */
+    @Override
+    public void lostConnection(ReceivePort receiver, SendPortIdentifier origin, Throwable cause) {
+        logger.debug("Lost connection to {}", origin);
 
     }
 

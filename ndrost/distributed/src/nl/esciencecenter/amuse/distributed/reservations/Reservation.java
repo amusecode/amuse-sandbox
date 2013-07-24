@@ -151,11 +151,11 @@ public class Reservation {
                     createJobDesciption(id, resource, queueName, nodeCount, timeMinutes, nodeLabel, serverAddress, hubAddresses,
                             tmpDir);
 
-            logger.debug("starting job using scheduler " + scheduler);
+            logger.debug("starting reservation using scheduler {}", scheduler);
 
             this.job = octopus.jobs().submitJob(scheduler, jobDescription);
 
-            logger.debug("submitted job {} with arguments {}", job, jobDescription.getArguments());
+            logger.debug("submitted reservation: {}", job);
 
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start reservation on " + resource.getName(), e);
@@ -167,6 +167,7 @@ public class Reservation {
     }
 
     public void cancel() throws DistributedAmuseException {
+        logger.debug("cancelling reservation: {}", this);
         try {
             octopus.jobs().cancelJob(job);
         } catch (OctopusIOException | OctopusException e) {
@@ -187,6 +188,11 @@ public class Reservation {
         } catch (OctopusIOException | OctopusException e) {
             throw new DistributedAmuseException("failed to get job status " + job, e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Reservation [id=" + id + "]";
     }
 
 }

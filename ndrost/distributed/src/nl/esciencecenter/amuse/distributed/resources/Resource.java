@@ -21,9 +21,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.octopus.Octopus;
@@ -31,6 +28,9 @@ import nl.esciencecenter.octopus.credentials.Credential;
 import nl.esciencecenter.octopus.files.AbsolutePath;
 import nl.esciencecenter.octopus.files.FileSystem;
 import nl.esciencecenter.octopus.files.RelativePath;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Niels Drost
@@ -104,6 +104,7 @@ public class Resource {
         } else {
             this.hub = null;
         }
+        logger.debug("Created new resource {}", this);
     }
 
     private AmuseConfiguration downloadConfiguration(Octopus octopus) throws DistributedAmuseException {
@@ -189,6 +190,7 @@ public class Resource {
     }
 
     public void stop() {
+        logger.debug("Stopping resource {}", this);
         if (hub != null) {
             hub.stop();
         }
@@ -202,4 +204,10 @@ public class Resource {
         return hostname == null || hostname.equals("localhost") || hostname.equals("local");
     }
 
+    @Override
+    public String toString() {
+        return "Resource [id=" + id + ", name=" + name + ", hostname=" + hostname + ", amuseDir=" + amuseDir + ", port=" + port
+                + ", username=" + username + ", schedulerType=" + schedulerType + ", configuration=" + configuration
+                + ", startHub=" + startHub + ", hub=" + hub + "]";
+    }
 }

@@ -15,9 +15,6 @@
  */
 package nl.esciencecenter.amuse.distributed.jobs;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReadMessage;
@@ -25,12 +22,15 @@ import ibis.ipl.ReceivePort;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
+import java.io.IOException;
+import java.util.Arrays;
+
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.WorkerDescription;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.Network;
-import nl.esciencecenter.amuse.distributed.WorkerDescription;
 
 /**
  * A job run by the Distributed Amuse system. Contains description and status info, communicates with nodes that actually run job.
@@ -40,7 +40,7 @@ import nl.esciencecenter.amuse.distributed.WorkerDescription;
  */
 public class Job extends Thread {
 
-    private static final Logger logger = LoggerFactory.getLogger(Job.State.class);
+    private static final Logger logger = LoggerFactory.getLogger(Job.class);
 
     private enum State {
         PENDING, INITIALIZING, RUNNING, DONE, REPORTED;
@@ -147,7 +147,7 @@ public class Job extends Thread {
     }
 
     public synchronized void waitUntilRunning() {
-        while (isPending()) {
+        while (!isRunning()) {
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -195,6 +195,7 @@ public class Job extends Thread {
      *            the nodes to run this job on.
      */
     public synchronized void start(PilotNode[] target) {
+        logger.debug("Running job on target nodes {}", new Object[] {target});
         if (!isPending()) {
             logger.error("Tried to run job {} that was not pending. Ignoring", this);
             return;
@@ -210,7 +211,7 @@ public class Job extends Thread {
         }
 
         //send out messages to the nodes in a separate thread (see run function below)
-        setName(this.toString());
+        setName("Job " + jobID + " starting thread");
         setDaemon(true);
         start();
     }
@@ -240,13 +241,19 @@ public class Job extends Thread {
         try {
             PilotNode master = target[0];
 
-            SendPort sendPort = ibis.createSendPort(Network.MANY_TO_ONE_PORT_TYPE);
-            ReceivePort receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, null);
+            SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
+            ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
 
+            logger.debug("connecting to pilot");
+            
             sendPort.connect(master.getIbisIdentifier(), "pilot");
+            
+            logger.debug("sending message to pilot");
 
             WriteMessage writeMessage = sendPort.newMessage();
+            
+            logger.debug("writing content");
 
             //where to send the reply
             writeMessage.writeObject(receivePort.identifier());
@@ -264,7 +271,11 @@ public class Job extends Thread {
 
             writeMessage.finish();
 
+            logger.debug("closing sendport");
+            
             sendPort.close();
+            
+            logger.debug("receiving reply from pilot");
 
             //FIXME: we should use some kind of rpc mechanism
             ReadMessage readMessage = receivePort.receive(60000);
@@ -282,6 +293,7 @@ public class Job extends Thread {
             setState(State.RUNNING);
             logger.debug("Job {} started on node {}", this, master);
         } catch (IOException e) {
+            logger.error("Job failed!", e);
             setState(State.DONE);
             error = e;
         }
@@ -294,8 +306,8 @@ public class Job extends Thread {
         PilotNode master = target[0];
 
         try {
-            SendPort sendPort = ibis.createSendPort(Network.MANY_TO_ONE_PORT_TYPE);
-            ReceivePort receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, null);
+            SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
+            ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
 
             sendPort.connect(master.getIbisIdentifier(), "jobs");
@@ -356,7 +368,7 @@ public class Job extends Thread {
 
     @Override
     public String toString() {
-        return "Job [jobID=" + jobID + ", state=" + state + ", target=" + Arrays.toString(target) + ", result=" + result
+        return "Job [jobID=" + jobID + ", label=" + getLabel() + ", state=" + state + ", target=" + Arrays.toString(target) + ", result=" + result
                 + ", error=" + error + ", timeout=" + timeout + "]";
     }
 

@@ -15,13 +15,13 @@
  */
 package nl.esciencecenter.amuse.distributed.pilot;
 
-import java.io.File;
-
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
+
+import java.io.File;
+
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.WorkerDescription;
-import nl.esciencecenter.amuse.distributed.jobs.PilotNode;
 import nl.esciencecenter.amuse.distributed.workers.WorkerProxy;
 
 /**

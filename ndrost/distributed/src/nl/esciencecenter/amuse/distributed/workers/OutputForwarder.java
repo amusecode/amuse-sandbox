@@ -15,8 +15,6 @@
  */
 package nl.esciencecenter.amuse.distributed.workers;
 
-import nl.esciencecenter.amuse.distributed.Network;
-
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.SendPort;
@@ -25,6 +23,8 @@ import ibis.ipl.WriteMessage;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class OutputForwarder extends Thread {
                 logger.info("Discarding code output");
             } else {
                 logger.debug("Creating sendport");
-                sendPort = ibis.createSendPort(Network.ONE_TO_ONE_PORT_TYPE);
+                sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
                 logger.debug("getting daemon IbisIdentifier");
                 IbisIdentifier daemon = ibis.registry().getElectionResult("amuse");
                 logger.debug("Connecting to output manager port");

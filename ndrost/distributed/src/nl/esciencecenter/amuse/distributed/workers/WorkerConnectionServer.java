@@ -15,10 +15,6 @@
  */
 package nl.esciencecenter.amuse.distributed.workers;
 
-import nl.esciencecenter.amuse.distributed.AmuseMessage;
-import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.jobs.JobManager;
-
 import ibis.ipl.Ibis;
 
 import java.io.File;
@@ -28,6 +24,10 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+
+import nl.esciencecenter.amuse.distributed.AmuseMessage;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

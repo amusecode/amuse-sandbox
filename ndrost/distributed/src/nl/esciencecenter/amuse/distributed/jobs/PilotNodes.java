@@ -16,14 +16,15 @@
 package nl.esciencecenter.amuse.distributed.jobs;
 
 
+import ibis.ipl.IbisIdentifier;
+import ibis.ipl.RegistryEventHandler;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ibis.ipl.IbisIdentifier;
-import ibis.ipl.RegistryEventHandler;
 
 /**
  * Set of nodes available to run jobs on
@@ -71,11 +72,13 @@ public class PilotNodes implements RegistryEventHandler {
             }
         }
         if (found != result.length) {
-            logger.debug("no suitable nodes found for job {} in {}", new Object[] {job, nodes, result});
+            logger.debug("no suitable nodes found for job {} in {}", job, nodes);
             return null;
         }
         
-        logger.debug("looking for suitable node for job {} in {} resulted in {}", new Object[] {job, nodes, result});
+        if (logger.isDebugEnabled()) {
+            logger.debug("looking for suitable node for job {} in {} resulted in {}", job, this, Arrays.toString(result));
+        }
         
         return result;
     }

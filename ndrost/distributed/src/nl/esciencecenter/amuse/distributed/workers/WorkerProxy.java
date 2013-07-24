@@ -15,13 +15,6 @@
  */
 package nl.esciencecenter.amuse.distributed.workers;
 
-import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
-import nl.esciencecenter.amuse.distributed.AmuseMessage;
-import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.Network;
-import nl.esciencecenter.amuse.distributed.WorkerDescription;
-import nl.esciencecenter.amuse.distributed.jobs.PilotNode;
-
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReadMessage;
@@ -32,11 +25,16 @@ import ibis.ipl.WriteMessage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+
+import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
+import nl.esciencecenter.amuse.distributed.AmuseMessage;
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.WorkerDescription;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -302,8 +300,8 @@ public class WorkerProxy extends Thread {
         ReceivePort receivePort = null;
 
         try {
-            sendPort = ibis.createSendPort(Network.ONE_TO_ONE_PORT_TYPE);
-            receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, description.getID());
+            sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
+            receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, description.getID());
 
             receivePort.enableConnections();
 

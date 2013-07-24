@@ -15,8 +15,9 @@
  */
 package nl.esciencecenter.amuse.distributed.workers;
 
-import nl.esciencecenter.amuse.distributed.AmuseMessage;
-import nl.esciencecenter.amuse.distributed.Network;
+import ibis.ipl.Ibis;
+import ibis.ipl.ReadMessage;
+import ibis.ipl.ReceivePort;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,12 +27,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import nl.esciencecenter.amuse.distributed.AmuseMessage;
+import nl.esciencecenter.amuse.distributed.DistributedAmuse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ibis.ipl.Ibis;
-import ibis.ipl.ReadMessage;
-import ibis.ipl.ReceivePort;
 
 /**
  * Takes care of getting all output to its final destination. Either a local file, or the AMUSE process.
@@ -55,7 +55,7 @@ public class WorkerOutputManager extends Thread {
 
         outputConnections = new HashMap<UUID, SocketChannel>();
 
-        this.receivePort = ibis.createReceivePort(Network.ONE_TO_ONE_PORT_TYPE, "output");
+        this.receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, "output");
         this.receivePort.enableConnections();
 
         setDaemon(true);
