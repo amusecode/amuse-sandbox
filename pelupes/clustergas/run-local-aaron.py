@@ -1,6 +1,9 @@
 """
  run script for clustergas runs
 
+aaron: make sure makefile_options from this directory is put in community/gadget2/src/ 
+and gadget recompiled
+
 """
 
 import numpy
