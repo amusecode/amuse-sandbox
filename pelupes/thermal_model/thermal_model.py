@@ -66,11 +66,12 @@ class SimplifiedThermalModel(object):
 # rad<0 -> heating
 
 class SPH_with_Thermal_Model(object):
-    def __init__(self,sph_code,thermal_model,timestep, calc_net_luminosity=True):
+    def __init__(self,sph_code,thermal_model,timestep, calc_net_luminosity=True,verbose=False):
         self.sph_code=sph_code()
         self.thermal_model=thermal_model()
         self.timestep=timestep
         self.calc_net_luminosity=calc_net_luminosity
+        self.verbose=verbose
         self._gas_particles=ParticlesOverlay(self.sph_code.gas_particles)
         if self.calc_net_luminosity:
           self.radiated_energy=zero
@@ -122,13 +123,12 @@ class SPH_with_Thermal_Model(object):
           dt=tend-self.model_time
           if self.timestep<dt:
             dt=self.timestep
-          print "1st evolve_u",
+          if self.verbose: print "1st evolve_u"
           self.evolve_u(dt/2)
-          print "evolve sph",
+          if self.verbose: print "evolve sph"
           self.sph_code.evolve_model(tnow+dt)
-          print "2nd evolve_u",
+          if self.verbose: print "2nd evolve_u"
           self.evolve_u(dt/2)
-          print
           tnow=self.model_time
 
 
@@ -138,6 +138,7 @@ def attach_thermal_model(baseclass):
           self.thermal_model=kwargs.pop("thermal_model")()
           self.timestep=kwargs.pop("timestep")
           self.calc_net_luminosity=kwargs.pop("calc_net_luminosity")
+          self.verbose=kwargs.get("verbose", False)
           baseclass.__init__(self, *args, **kwargs)
           self._gas_particles=ParticlesOverlay(self.overridden().gas_particles)
           if self.calc_net_luminosity:
@@ -165,22 +166,23 @@ def attach_thermal_model(baseclass):
             self.gas_particles.u=self.thermal_model.evolve_u(dt,density,u0,dudt=dudt)
 
       def evolve_model(self,tend):
+          if self.verbose: print "thermal sph start"                      
           tnow=self.model_time
           while tnow < (tend - self.timestep/2):
             dt=tend-self.model_time
             if self.timestep<dt:
               dt=self.timestep
-            print "1st evolve_u",
+            if self.verbose: print "1st evolve_u"
             self.evolve_u(dt/2)
-            print "evolve sph",
+            if self.verbose: print "evolve sph"
             try:
               baseclass.evolve_model(self,tnow+dt)
             except AttributeError:
               self.overridden().evolve_model(tnow+dt)  
-            print "2nd evolve_u",
+            if self.verbose: print "2nd evolve_u"
             self.evolve_u(dt/2)
-            print
             tnow=self.model_time
+          if self.verbose: print "thermal sph evolve done"            
     return newclass
 
 if __name__=="__main__":
