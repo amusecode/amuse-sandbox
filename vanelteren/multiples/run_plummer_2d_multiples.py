@@ -14,7 +14,7 @@ from amuse.community.kepler.interface import Kepler
 from amuse.community.smalln.interface import SmallN
 from amuse.couple import encounters
 
-
+import logging
 
 from optparse import OptionParser
 class QueueManager(BaseManager):
@@ -99,6 +99,8 @@ if  __name__ == '__main__':
     
     options, arguments = new_option_parser().parse_args()
     
+    logging.basicConfig(level=logging.ERROR)
+    encounters.LOG_ENERGY.setLevel(logging.DEBUG)
     manager= QueueManager(address=('localhost', options.server_port), authkey='plotter')
     manager.connect()
     queue = manager.get_data_queue()
