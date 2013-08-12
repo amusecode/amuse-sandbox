@@ -81,6 +81,20 @@ int get_central_mass(int id, double *m)
   return 0;
 }
 
+int set_central_radius(int id, double m)
+{
+  if(id!=0) return -1;
+  central_radius=m;
+  return 0;
+}
+int get_central_radius(int id, double *m)
+{ 
+  if(id!=0) return -1;
+  *m=central_radius;
+  return 0;
+}
+
+
 int set_central_pos(int id,double x,double y,double z)
 { 
   if(id!=0) return -1;

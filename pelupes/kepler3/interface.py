@@ -29,6 +29,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def get_central_mass():
         function = LegacyFunctionSpecification()
+        function.can_handle_array=True
         function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
         function.addParameter('mass', dtype='float64', direction=function.OUT,
                               unit = nbody_system.mass)
@@ -38,6 +39,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def set_central_mass():
         function = LegacyFunctionSpecification()
+        function.can_handle_array=True
         function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='float64', direction=function.IN,
                               unit = nbody_system.mass)
@@ -45,8 +47,30 @@ class KeplerInterface(CodeInterface,
         return function
 
     @legacy_function
+    def get_central_radius():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array=True
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('radius', dtype='float64', direction=function.OUT,
+                              unit = nbody_system.length)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_central_radius():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array=True
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
+        function.addParameter('radius', dtype='float64', direction=function.IN,
+                              unit = nbody_system.length)
+        function.result_type = 'int32'
+        return function
+
+
+    @legacy_function
     def get_central_pos():
         function = LegacyFunctionSpecification()
+        function.can_handle_array=True
         function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
         function.addParameter('x', dtype='float64', direction=function.OUT,
                               unit = nbody_system.length)
@@ -60,6 +84,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def set_central_pos():
         function = LegacyFunctionSpecification()
+        function.can_handle_array=True
         function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
         function.addParameter('x', dtype='float64', direction=function.IN,
                               unit = nbody_system.length)
@@ -73,6 +98,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def get_central_vel():
         function = LegacyFunctionSpecification()
+        function.can_handle_array=True
         function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
         function.addParameter('vx', dtype='float64', direction=function.OUT,
                               unit = nbody_system.speed)
@@ -86,6 +112,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def set_central_vel():
         function = LegacyFunctionSpecification()
+        function.can_handle_array=True
         function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
         function.addParameter('vx', dtype='float64', direction=function.IN,
                               unit = nbody_system.speed)
@@ -99,6 +126,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def new_central_particle():
         function = LegacyFunctionSpecification()
+        function.can_handle_array=True
         function.addParameter('index_of_the_particle', dtype='i', direction=function.OUT)        
         function.addParameter('mass', dtype='float64', direction=function.IN,
                               unit = nbody_system.mass)
@@ -122,6 +150,7 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def delete_central_particle():
         function = LegacyFunctionSpecification()
+        function.can_handle_array=True
         function.addParameter('index_of_the_particle', dtype='i', direction=function.IN)
         function.result_type = 'int32'
         return function
@@ -243,6 +272,8 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
         object.set_delete('central_particle', 'delete_central_particle')
         object.add_setter('central_particle', 'set_central_mass')
         object.add_getter('central_particle', 'get_central_mass')
+        object.add_setter('central_particle', 'set_central_radius')
+        object.add_getter('central_particle', 'get_central_radius')
         object.add_setter('central_particle', 'set_central_pos')
         object.add_getter('central_particle', 'get_central_pos')
         object.add_setter('central_particle', 'set_central_vel')
@@ -266,16 +297,12 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
   
 
     def get_gravity_at_point(self,radius,x,y,z):
-        if self.particles_accessed:
-            self.recommit_particles()
         xx=x-self.central_particle.x
         yy=y-self.central_particle.y
         zz=z-self.central_particle.z
         return self.overridden().get_gravity_at_point(radius,xx,yy,zz)
 
     def get_potential_at_point(self,radius,x,y,z):
-        if self.particles_accessed:
-            self.recommit_particles()
         xx=x-self.central_particle.x
         yy=y-self.central_particle.y
         zz=z-self.central_particle.z
