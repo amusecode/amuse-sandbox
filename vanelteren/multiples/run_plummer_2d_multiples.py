@@ -39,9 +39,16 @@ def new_option_parser():
         help="random seed to use",
         type="int"
     )
+    result.add_option(
+        "-t", "--time", 
+        default = 10,
+        dest="end_time",
+        help="nbody time to run to",
+        type="int"
+    )
     return result
     
-def run_hermite(queue, seed):
+def run_hermite(queue, seed, end_time_nbody):
     print "starting... 1"
     
     if seed > 0:
@@ -72,7 +79,7 @@ def run_hermite(queue, seed):
     )
     model.radius = 0.01 | nbody_system.length
     code.particles.add_particles(model)
-    end_time = 10 | nbody_system.time
+    end_time = end_time_nbody | nbody_system.time
     code.commit_particles()
     def plot_func(particles):
         queue.put(
@@ -105,4 +112,4 @@ if  __name__ == '__main__':
     manager.connect()
     queue = manager.get_data_queue()
     
-    run_hermite(queue, options.seed)
+    run_hermite(queue, options.seed, options.end_time)
