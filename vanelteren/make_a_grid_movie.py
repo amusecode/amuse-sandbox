@@ -46,7 +46,7 @@ class PlotGridRho(object):
             cmap=self.cmap, 
             norm=self.norm
         )
-        #colorbar.Colorbar(plot, im)
+        colorbar.Colorbar(plot, im)
         
 
         
