@@ -81,6 +81,8 @@ def run_hermite(queue, seed, end_time_nbody):
     code.particles.add_particles(model)
     end_time = end_time_nbody | nbody_system.time
     code.commit_particles()
+    e0 = code.get_total_energy()
+    
     def plot_func(particles):
         queue.put(
                 [particles.x / scale , particles.y / scale, 'r']
@@ -90,7 +92,7 @@ def run_hermite(queue, seed, end_time_nbody):
         for t in quantities.linspace(0 * end_time, end_time, 1000):
             code.plot_func = plot_func
             code.evolve_model(t)
-            print t, code.get_total_energy()
+            print t, code.get_total_energy(), (code.get_total_energy() - e0) / e0
             particles = code.all_singles
             queue.put(
                 [particles.x / scale , particles.y / scale, 'b']
