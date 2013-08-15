@@ -90,7 +90,7 @@ def run_hermite(queue, seed, end_time_nbody):
         for t in quantities.linspace(0 * end_time, end_time, 1000):
             code.plot_func = plot_func
             code.evolve_model(t)
-            print t
+            print t, code.get_total_energy()
             particles = code.all_singles
             queue.put(
                 [particles.x / scale , particles.y / scale, 'b']
