@@ -1,15 +1,12 @@
-import collections
-import getopt
 import numpy
 import os
 import random
 import sys
-import unittest
 import pickle
 from optparse import OptionParser
 from time import clock
 
-from amuse.community.ph4.interface import ph4 as grav
+from amuse.community.ph4.interface import ph4 as GravityModule
 from amuse.community.smalln.interface import SmallN
 from amuse.community.kepler.interface import Kepler
 from amuse.couple import multiples
@@ -50,7 +47,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     comv = pa.center_of_mass_velocity(gravity.particles)
     dcen,rcore,rhocore = pa.densitycentre_coreradius_coredens(gravity.particles)
     cmx,cmy,cmz = dcen
-    lagr,mf = pa.LagrangianRadii(gravity.particles, dcen)  # no units!
+    lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
 
     print ''
     print pre+"time=", time.number
@@ -76,17 +73,17 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     print pre+"Rcore=", rcore.number
     print pre+"Mcore=", (rhocore*rcore**3).number	# fake...
     print pre+"Mlagr[9]=",
-    for m in mf: print "%.4f" % (m),
+    for m in mf: print "%.4f" % m,
     print ''
     print pre+"Rlagr[9]=",
-    for r in lagr.number: print "%.8f" % (r),
+    for r in lagr.number: print "%.8f" % r,
     print ''
     kT = T/N
     Nmul,Nbin,Emul = gravity.pretty_print_multiples(pre, kT, dcen)
     print pre+"Nmul=", Nmul
     print pre+"Nbin=", Nbin
-    print pre+"Emul= %.5f" % (Emul.number)
-    print pre+"Emul2= %.5f" % (Emul2.number)
+    print pre+"Emul= %.5f" % Emul.number
+    print pre+"Emul2= %.5f" % Emul2.number
     print pre+"Emul/kT= %.5f" % (Emul/kT)
     print pre+"Emul/E= %.5f" % (Emul/Etot)
     print ''
@@ -119,7 +116,7 @@ def init_kepler(star1, star2):
 
     return kep
         
-def run_ph4(options):
+def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True):
     infile = options.infile
     outfile = options.outfile
     restart_file = options.restart_file
@@ -136,15 +133,16 @@ def run_ph4(options):
     manage_encounters = options.manage_encounters
     random_seed = options.random_seed 
 
-    if random_seed <= 0:
-        numpy.random.seed()
-        random_seed = numpy.random.randint(1, pow(2,31)-1)
-    numpy.random.seed(random_seed)
-    print "random seed =", random_seed
+    if randomize:
+        if random_seed <= 0:
+            numpy.random.seed()
+            random_seed = numpy.random.randint(1, pow(2,31)-1)
+        numpy.random.seed(random_seed)
+        print "random seed =", random_seed
 
-    if infile != None: print "input file =", infile
-    if restart_file != None: print "restart file =", restart_file
-    if restart_file != None and infile != None: print "restart file overrides input file"
+    if infile is not None: print "input file =", infile
+    if restart_file is not None: print "restart file =", restart_file
+    if restart_file is not None and infile is not None: print "restart file overrides input file"
     print "end_time =", end_time.number
     print "delta_t =", delta_t.number
     print "n_workers =", n_workers
@@ -163,13 +161,13 @@ def run_ph4(options):
 
     if gpu_worker == 1:
         try:
-            gravity = grav(number_of_workers = n_workers,
+            gravity = GravityModule(number_of_workers = n_workers,
                            redirection = "none", mode = "gpu")
         except Exception as ex:
-            gravity = grav(number_of_workers = n_workers,
+            gravity = GravityModule(number_of_workers = n_workers,
                            redirection = "none")
     else:
-        gravity = grav(number_of_workers = n_workers,
+        gravity = GravityModule(number_of_workers = n_workers,
                        redirection = "none")
 
     gravity.initialize_code()
@@ -177,7 +175,7 @@ def run_ph4(options):
 
     #-----------------------------------------------------------------
 
-    if infile == None:# and restart_file == None:
+    if infile is None and stars is None:
 
         print "making a Plummer model"
         stars = new_plummer_model(number_of_stars)
@@ -200,12 +198,9 @@ def run_ph4(options):
         print "scaling stars to virial equilibrium"
         stars.scale_to_standard(smoothing_length_squared
                                     = gravity.parameters.epsilon_squared)
-
-    #elif restart_file != None:
-        # TODO: read
-        #pass
-        #stars = io.read_set_from_file(restart_file, 'hdf5')
-        # time = stars.collection_attributes.time
+        time = 0.0 | nbody_system.time
+    elif restart_file is not None:
+        pass
     else:
 
         # Read the input data.  Units are dynamical (sorry).
@@ -333,7 +328,6 @@ def run_ph4(options):
 
     stars.radius = stars.mass.number | nbody_system.length
 
-    time = 0.0 | nbody_system.time
     # print "IDs:", stars.id.number
 
     print "recentering stars"
@@ -382,13 +376,36 @@ def run_ph4(options):
     # Create the coupled code and integrate the system to the desired
     # time, managing interactions internally.
 
-    pre = "%%% "
     kep = init_kepler(stars[0], stars[1])
     multiples_code = multiples.Multiples(gravity, new_smalln, kep)
-    E0,cpu0 = print_log(pre, time, multiples_code)
 
-    ### Alf
-    #multiples_code.debug_encounters = True
+    multiples_code.neighbor_distance_factor = 1.0
+    multiples_code.neighbor_veto = False
+    #multiples_code.neighbor_distance_factor = 2.0
+    #multiples_code.neighbor_veto = True
+
+    print ''
+    print 'multiples_code.initial_scale_factor =', \
+        multiples_code.initial_scale_factor
+    print 'multiples_code.neighbor_distance_factor =', \
+        multiples_code.neighbor_distance_factor
+    print 'multiples_code.neighbor_veto =', \
+        multiples_code.neighbor_veto
+    print 'multiples_code.final_scale_factor =', \
+        multiples_code.final_scale_factor
+    print 'multiples_code.initial_scatter_factor =', \
+        multiples_code.initial_scatter_factor
+    print 'multiples_code.final_scatter_factor =', \
+        multiples_code.final_scatter_factor
+    print 'multiples_code.retain_binary_apocenter =', \
+        multiples_code.retain_binary_apocenter
+
+    if mc_root_to_tree is not None:
+        multiples_code.root_to_tree = mc_root_to_tree
+        print 'multiples code re-loaded with binary trees snapshot'
+
+    pre = "%%% "
+    E0,cpu0 = print_log(pre, time, multiples_code)
 
     while time < end_time:
 
@@ -413,7 +430,7 @@ def run_ph4(options):
 
     #-----------------------------------------------------------------
 
-    if not outfile == None:
+    if not outfile is None:
 
         # Write data to a file.
 
@@ -423,6 +440,7 @@ def run_ph4(options):
         # Need to save top-level stellar data and parameters.
         # Need to save multiple data and parameters.
 
+        f.write('%.15g\n'% time.number)
         for s in multiples_code.stars: write_star(s, f)
 
         #--------------------------------------------------
@@ -434,22 +452,42 @@ def run_ph4(options):
     gravity.stop()
 
 def write_state_to_file(time, stars, multiples_code, options):
-    if options.restart_file != None:
-        print "py_seed =", random.getstate()
-        print "numpy_seed =", numpy.random.get_state()
-
-        extra = {'time' : time,
-                 'py_seed': pickle.dumps(random.getstate()),
-                 'numpy_seed': pickle.dumps(numpy.random.get_state())
-                }
-        sets = [stars, multiples_code.stars, options]
-        names = ['stars', 'multiples_code.stars', 'options']
-        
-        storage = io.store.StoreHDF(options.restart_file, append_to_file=False,
+    if options.restart_file is not None:
+        sets = [stars]
+        names = ['stars']
+        storage = io.store.StoreHDF(options.restart_file + ".stars", append_to_file=False,
                                    open_for_writing=True, copy_history=True)
-        storage.store_sets(sets, names, extra)
+        storage.store_sets(sets, names)
         storage.close()
-        
+
+        with open(options.restart_file + ".multiples", "wb") as f:
+            pickle.dump(multiples_code.root_to_tree, f, protocol=-1)
+
+        config = {'time' : time,
+                  'py_seed': pickle.dumps(random.getstate()),
+                  'numpy_seed': pickle.dumps(numpy.random.get_state()),
+                  'options': pickle.dumps(options)
+        }
+        with open(options.restart_file + ".conf", "wb") as f:
+            pickle.dump(config, f)
+
+def read_state_from_file(restart_file):
+    names = ['stars']
+    storage = io.store.StoreHDF(restart_file + ".stars")
+    sets = storage.load_sets(names)
+    storage.close()
+
+    stars = sets[0]
+
+    with open(options.restart_file + ".multiples", "rb") as f:
+        mc_root_to_tree = pickle.load(f)
+
+    with open(restart_file + ".conf", "rb") as f:
+        config = pickle.load(f)
+    random.setstate(pickle.loads(config["py_seed"]))
+    numpy.random.set_state(pickle.loads(config["numpy_seed"]))
+    return config["time"], stars, mc_root_to_tree, pickle.loads(config["options"])
+
 
 def write_star(s, f):
     x,y,z = s.position.number
@@ -464,6 +502,7 @@ if __name__ == '__main__':
     print '\n'
 
     parser = OptionParser()
+    parser.set_defaults(use_gpu=False)
     parser.add_option("-a", "--accuracy-parameter", dest="accuracy_parameter", 
                       default=0.1, type="float", 
                       help="Accuracy parameter for the top-level N-Body code.")
@@ -504,9 +543,11 @@ if __name__ == '__main__':
 
     assert is_mpd_running()
 
-    if False and options.restart_file != None and os.path.isfile(options.restart_file):
+    if options.restart_file is not None and os.path.isfile(options.restart_file + ".stars"):
         print "Restart detected.  Loading parameters from restart."
-        # TODO --- actually do that
-
-    run_ph4(options)
+        # TODO: fix the fact that interrupted runs do not agree with through runs
+        time, stars, mc_root_to_tree, options = read_state_from_file(options.restart_file)
+        run_ph4(options, time, stars, mc_root_to_tree, randomize=False)
+    else:
+        run_ph4(options)
 
