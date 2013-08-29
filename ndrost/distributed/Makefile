@@ -3,6 +3,14 @@
 AMUSE_DIR?=../../..
 -include $(AMUSE_DIR)/config.mk
 
+MPICXX   ?= mpicxx
+
+CFLAGS   += -Wall -g
+CXXFLAGS += $(CFLAGS) 
+LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+
+OBJS = interface.o
+
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 RM ?= rm
@@ -11,27 +19,42 @@ JAR ?= jar
 MV ?= mv
 CP ?= cp
 
-#This target intentionally left blank
+UPDATE_URL = https://github.com/NLeSC/AMUSE-Distributed/archive/develop.zip
+UPDATE_ARCHIVE_DIR = AMUSE-Distributed-develop
+
+#this target intentionally left blank
 ALL = 
 
 all: $(ALL)
+	#done
 
 code: distributed_worker_java
 
 java_check:
 #Makefile requires these checks to be at the beginning of the line
+#Also: make sure the indentation is TABS, not spaces
 ifeq ($(JAVA_ENABLED),no)
 	$(error "Java support not configured in AMUSE")
 endif
 ifeq (,$(findstring $(JAVA_VERSION), 1.7))
-	$(error "Java 1.7 required for the Distributed code, but AMUSE configured with Java $(JAVA_VERSION)")
+	$(error "Java 1.7 required for Asterisk, but AMUSE configured with Java $(JAVA_VERSION)")
 endif
 
+update:
+	$(RM) -rf code.zip $(UPDATE_ARCHIVE_DIR)
+	$(MV) -T src src.old
+	wget $(UPDATE_URL) -O code.zip
+	unzip code.zip -x "*/.*"
+	$(MV) $(UPDATE_ARCHIVE_DIR) src
+	$(CP) Makefile.code src/Makefile
+	$(RM) code.zip
+
 clean:
-	$(RM) -f *.pyc 
-	$(RM) *~ distributed_worker distributed_worker_java
-	$(RM) -f *.jar CodeInterface.java Worker.java
+	$(RM) -f *.so *.o *.pyc 
+	$(RM) *~ distributed distributed_worker_java 
+	$(RM) -f *.jar CodeInterface.java Worker.java binev.data
 	$(RM) -rf tmp
+	make -C src clean
 
 CodeInterface.java: interface.py
 	$(CODE_GENERATOR) --type=java --mode=interface interface.py DistributedAmuseInterface -o $@
@@ -39,35 +62,27 @@ CodeInterface.java: interface.py
 Worker.java: interface.py
 	$(CODE_GENERATOR) --type=java --mode=class interface.py DistributedAmuseInterface -o $@
 
-distributed-server.jar: $(shell find lib -name "*.jar") distributed.jar worker.jar
-
+distributed-server.jar: $(shell find src/lib -name "*.jar") src/dist/distributed-amuse.jar worker.jar
 	$(RM) -r tmp
 	mkdir tmp
-	unzip -q -o -d tmp "lib/*.jar"
-	unzip -q -o -d tmp "lib/ipl/*.jar"
-	unzip -q -o -d tmp distributed.jar
+	unzip -q -o -d tmp "src/lib/jetty/*.jar"
+	unzip -q -o -d tmp "src/lib/ipl/*.jar"
+	unzip -q -o -d tmp "src/lib/octopus/*.jar"
+	unzip -q -o -d tmp src/dist/*.jar
 	unzip -q -o -d tmp worker.jar
 	jar -cf distributed-server.jar -C tmp/ .
 
-distributed.jar: $(shell find src -name "*.java")
+src/dist/distributed-amuse.jar: $(shell find src -name "*.java")
 	@echo Compiling Distributed Code
-	$(RM) -r tmp
-	mkdir tmp
-	$(JAVAC) -g -cp "lib/*:lib/ipl/*" -d tmp $(shell find src -name "*.java")
-	@echo Building jar file
-	$(JAR) -cf distributed.jar -C tmp .
-	$(RM) -rf tmp
+	make -C src
 
-worker.jar: Worker.java CodeInterface.java Code.java distributed.jar
+worker.jar: Worker.java CodeInterface.java Code.java src/dist/distributed-amuse.jar
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -g -cp "lib/*:lib/ipl/*:distributed.jar" -d tmp Worker.java CodeInterface.java Code.java
+	$(JAVAC) -g -cp "src/lib/*:src/lib/ipl/*:src/lib/octopus/*:src/dist/distributed-amuse.jar" -d tmp Worker.java CodeInterface.java Code.java
 	@echo Building jar file
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp
 
 distributed_worker_java: java_check worker.jar distributed-server.jar
 	$(CODE_GENERATOR) -x --type=java --mode=script interface.py DistributedAmuseInterface -o $@
-
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
