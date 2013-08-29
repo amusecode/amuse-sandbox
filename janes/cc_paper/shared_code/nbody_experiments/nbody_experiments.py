@@ -97,7 +97,7 @@ def _scaleByFirst(a):
     return b
 
 def _vprod(a,b):
-    return [ 
+    return [
             a[1] * b[2] - a[2] * b[1],
             a[2] * b[0] - a[0] * b[2],
             a[0] * b[1] - a[1] * b[0]
@@ -303,9 +303,7 @@ class NBodyComputationResult:
         rr.cdto_prevdir()
 
 class NBodyComputation:
-
     def __init__(self, initialConditions, analyticSolution, dt, tFinal, ndim, storeParticles=True, outfName="nbody"):
-
         # carry arguments
         self.initialConditions = initialConditions.copy()
         self.analyticSolution = analyticSolution
@@ -314,7 +312,6 @@ class NBodyComputation:
         self.ndim = ndim
         self.storeParticles = storeParticles
         self.outfName = outfName
-        
         # dictionary containing NBodyComputationResult's with labels as keys
         self.results = {}
 

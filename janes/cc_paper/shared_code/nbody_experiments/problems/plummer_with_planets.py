@@ -11,7 +11,6 @@ import amuse.units.nbody_system as nbu
 from shared_code.nbody_experiments.problems.two_body import two_body_initial_conditions, two_body_orbital_period
 import shared_code.nbody_experiments as nbe
 
-
 def particles_from_floats(m, x, y, z, vx, vy, vz):
     stars = datamodel.Stars(len(x))
     for i in range(len(stars)):
@@ -102,4 +101,18 @@ def plummer_initial_conditions(n=128):
         star.radius = 0. | nbody_system.length # obligatory for Hermite() integrator
     return stars
     """
+
+def binplummer_initial_conditions():
+    (x_adj, v_adj, m_adj) = create_planet(m1=1.0, m2=1.0, a=0.01, e=0.0)
+    
+    m = [1.0, 1.0]
+    x = [0.5*x_adj, -0.5*x_adj]
+    y = [0.0, 0.0]
+    z = [0.0, 0.0]
+
+    vx = [0.0, 0.0]
+    vy = [0.5*v_adj, -0.5*v_adj]
+    vz = [0.0, 0.0]
+
+    return particles_from_floats(m, x, y, z, vx, vy, vz)
 
