@@ -83,7 +83,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Error on creating new resource: " + e, e);
             return 10;
         }
     }
@@ -97,7 +97,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Error on deleting resource: " + e, e);
             return 10;
         }
     }
@@ -115,7 +115,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Error on creating new reservation: " + e, e);
             return 10;
         }
 
@@ -129,7 +129,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Error on deleting reservation: " + e, e);
             return 10;
         }
     }
@@ -140,7 +140,7 @@ public class Code implements CodeInterface {
             distributedAmuse.reservationManager().waitForAllReservations();
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Error on waiting for reservations: " + e, e);
             return 10;
         }
     }
@@ -154,7 +154,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Cannot submit pickled job: " + e, e);
             return 10;
         }
 
@@ -173,7 +173,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Cannot submit script job: " + e, e);
             return 10;
         }
 
@@ -187,7 +187,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Error on getting job result: " + e, e);
             return 10;
         }
     }
@@ -198,7 +198,7 @@ public class Code implements CodeInterface {
             distributedAmuse.jobManager().waitForAllBatchJobs();
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on running distributed code: " + e, e);
+            logger.error("Error on waiting for jobs: " + e, e);
             return 10;
         }
 

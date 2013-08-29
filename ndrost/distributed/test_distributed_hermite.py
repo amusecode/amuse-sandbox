@@ -25,10 +25,19 @@ class TestHermiteInterface(TestWithMPI):
 
     @classmethod
     def setup_class(cls):
+	print "setting up distributed code"
 	#make this a global variable to keep it from being garbadge collected
         cls.dist = DistributedAmuse(redirection='none')
         cls.dist.initialize_code()
-	cls.dist.new_reservation(resource_name='local', node_count=1, time= 2|units.hour, node_label='local')
+
+	cls.dist.new_resource(name='DAS4-VU',
+                              hostname="fs0.das4.cs.vu.nl",
+                              username="niels",
+                              scheduler_type="sge",
+                              amuse_dir="/home/niels/amuse",
+                              )
+
+	cls.dist.new_reservation(resource_name='DAS4-VU', node_count=1, time= 2|units.hour, node_label='VU')
  	cls.dist.wait_for_reservations()
 
     @classmethod
