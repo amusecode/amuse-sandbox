@@ -34,8 +34,8 @@ public class Code implements CodeInterface {
 
     private final DistributedAmuse distributedAmuse;
 
-    public Code() throws DistributedAmuseException {
-        distributedAmuse = new DistributedAmuse();
+    public Code(String codeDir, String amuseRootDir) throws DistributedAmuseException {
+        distributedAmuse = new DistributedAmuse(codeDir, amuseRootDir, 0);
     }
 
     @Override

@@ -24,6 +24,7 @@ import java.util.UUID;
 import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 import nl.esciencecenter.amuse.distributed.reservations.ReservationManager;
 import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
+import nl.esciencecenter.amuse.distributed.web.WebInterface;
 import nl.esciencecenter.amuse.distributed.workers.WorkerConnectionServer;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
@@ -41,7 +42,8 @@ import org.slf4j.LoggerFactory;
 public class DistributedAmuse {
 
     public static PortType MANY_TO_ONE_PORT_TYPE = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
-            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_AUTO_UPCALLS, PortType.CONNECTION_MANY_TO_ONE, PortType.CONNECTION_UPCALLS);
+            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_AUTO_UPCALLS, PortType.CONNECTION_MANY_TO_ONE,
+            PortType.CONNECTION_UPCALLS);
 
     public static PortType ONE_TO_ONE_PORT_TYPE = new PortType(PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
             PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT, PortType.CONNECTION_ONE_TO_ONE);
@@ -63,6 +65,9 @@ public class DistributedAmuse {
     //talks to AMUSE, handling any worker requests and messages
     private final WorkerConnectionServer workerConnectionServer;
 
+    //monitoring web interface
+    private final WebInterface webInterface;
+
     //used to copy files, start jobs, etc.
     private final Octopus octopus;
 
@@ -81,7 +86,7 @@ public class DistributedAmuse {
         return result;
     }
 
-    public DistributedAmuse() throws DistributedAmuseException {
+    public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort) throws DistributedAmuseException {
         try {
             octopus = OctopusFactory.newOctopus(null);
         } catch (OctopusException e) {
@@ -90,13 +95,19 @@ public class DistributedAmuse {
 
         tmpDir = createTmpDir();
 
-        resourceManager = new ResourceManager(octopus, tmpDir);
-
-        reservationManager = new ReservationManager(octopus, resourceManager, tmpDir);
+        resourceManager = new ResourceManager(octopus, tmpDir, amuseRootDir);
 
         jobManager = new JobManager(resourceManager.getIplServerAddress(), tmpDir);
+        
+        reservationManager = new ReservationManager(octopus, resourceManager, jobManager.getNodes(), tmpDir);
 
         workerConnectionServer = new WorkerConnectionServer(jobManager, tmpDir);
+
+        try {
+            webInterface = new WebInterface(this, webInterfacePort);
+        } catch (Exception e) {
+            throw new DistributedAmuseException("could not create web interface", e);
+        }
     }
 
     public ResourceManager resourceManager() {
@@ -126,11 +137,12 @@ public class DistributedAmuse {
      */
     public void end() {
         logger.debug("Ending distributed Amuse.");
+        webInterface.end();
         jobManager.end();
         reservationManager.end();
         resourceManager.end();
         workerConnectionServer.end();
         logger.debug("Distributed Amuse ended.");
     }
-
+    
 }

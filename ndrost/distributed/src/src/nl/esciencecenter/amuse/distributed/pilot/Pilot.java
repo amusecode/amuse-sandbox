@@ -65,13 +65,13 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
     private final AmuseConfiguration configuration;
 
-    Pilot(AmuseConfiguration configuration, Properties properties, String nodeLabel, int slots)
+    Pilot(AmuseConfiguration configuration, Properties properties, String reservationID, String nodeLabel, int slots)
             throws IbisCreationFailedException, IOException {
         this.configuration = configuration;
         jobs = new HashMap<Integer, JobRunner>();
 
-        //label, slots, hostname
-        String tag = nodeLabel + "," + slots + "," + InetAddress.getLocalHost().getHostAddress();
+        //reservation ID, label, slots, hostname
+        String tag = reservationID + "," + nodeLabel + "," + slots + "," + InetAddress.getLocalHost().getHostAddress();
 
         ibis =
                 IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, null, null, tag, DistributedAmuse.ONE_TO_ONE_PORT_TYPE,
@@ -101,6 +101,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     public static void main(String[] arguments) throws Exception {
         File amuseHome = null;
         String nodeLabel = "default";
+        String reservationID = null;
         int slots = 1;
 
         Properties properties = new Properties();
@@ -110,7 +111,10 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         //properties.put("ibis.bytescount", "true");
 
         for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i].equalsIgnoreCase("--node-label")) {
+            if (arguments[i].equalsIgnoreCase("--reservation-id")) {
+                i++;
+                reservationID = arguments[i];
+            } else if (arguments[i].equalsIgnoreCase("--node-label")) {
                 i++;
                 nodeLabel = arguments[i];
             } else if (arguments[i].equalsIgnoreCase("--resource-name")) {
@@ -141,7 +145,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             System.err.println(entry.getKey() + " = " + entry.getValue());
         }
 
-        Pilot pilot = new Pilot(configuration, properties, nodeLabel, slots);
+        Pilot pilot = new Pilot(configuration, properties, reservationID, nodeLabel, slots);
 
         pilot.run();
         

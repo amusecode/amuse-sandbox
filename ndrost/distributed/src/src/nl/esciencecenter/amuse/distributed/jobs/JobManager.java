@@ -101,6 +101,10 @@ public class JobManager extends Thread implements MessageUpcall {
         notifyAll();
     }
 
+    public PilotNodes getNodes() {
+        return nodes;
+    }
+    
     /**
      * @return
      */

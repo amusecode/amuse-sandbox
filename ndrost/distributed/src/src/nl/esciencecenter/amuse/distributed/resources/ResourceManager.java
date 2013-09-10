@@ -29,7 +29,7 @@ public class ResourceManager {
     
     private final ArrayList<Resource> resources;
     
-    public ResourceManager(Octopus octopus, File tmpDir) throws DistributedAmuseException {
+    public ResourceManager(Octopus octopus, File tmpDir, String amuseRootDir) throws DistributedAmuseException {
         resources = new ArrayList<Resource>();
         this.octopus = octopus;
         
@@ -44,9 +44,8 @@ public class ResourceManager {
 
         //add local resource by default
 
-        String amuseDir = System.getProperty("amuse.root.dir");
-        logger.debug("local amuse dir = " + amuseDir);
-        newResource("local", null, amuseDir, -1, null, "local", false);
+        logger.debug("local amuse dir = " + amuseRootDir);
+        newResource("local", null, amuseRootDir, -1, null, "local", false);
     }
 
     public synchronized Resource newResource(String name, String hostname, String amuseDir, int port, String username,
@@ -84,6 +83,14 @@ public class ResourceManager {
         }
         throw new DistributedAmuseException("Resource with name " + name + " not found");
     }
+    
+    public synchronized int getResourceCount() {
+        return resources.size();
+    }
+    
+    public synchronized Resource[] getResources() {
+        return resources.toArray(new Resource[resources.size()]);
+    }
 
     public synchronized void deleteResource(Resource resource) throws DistributedAmuseException {
         for (int i = 0; i < resources.size(); i++) {
@@ -108,5 +115,6 @@ public class ResourceManager {
         for(Resource resource: resources) {
             resource.stop();
         }
+        iplServer.end(1000);
     }
 }

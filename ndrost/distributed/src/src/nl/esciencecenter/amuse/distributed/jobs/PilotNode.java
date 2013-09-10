@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +38,11 @@ public class PilotNode {
 
     private final String label;
 
-    private int slots;
+    private final int slots;
 
-    private String hostname;
+    private final int reservationID;
+
+    private final String hostname;
 
     //address of this node
     private final IbisIdentifier ibisIdentifier;
@@ -46,31 +50,26 @@ public class PilotNode {
     //list of all jobs running on this node
     private List<Job> jobs;
 
-    public PilotNode(IbisIdentifier ibisIdentifier) {
+    public PilotNode(IbisIdentifier ibisIdentifier) throws DistributedAmuseException {
         this.ibisIdentifier = ibisIdentifier;
 
         jobs = new LinkedList<Job>();
 
         String[] tags = ibisIdentifier.tagAsString().split(",");
 
-        if (tags.length != 3) {
-            logger.error("Cannot parse ibis tag: " + ibisIdentifier.tagAsString());
-            label = "unknown";
-            slots = 1;
-        } else {
-
-            label = tags[0];
-
-            try {
-                slots = Integer.parseInt(tags[1]);
-            } catch (NumberFormatException e) {
-                logger.error("Cannot parse ibis tag: " + ibisIdentifier.tagAsString(), e);
-                slots = 1;
-            }
-
-            hostname = tags[2];
+        if (tags.length != 4) {
+            throw new DistributedAmuseException("Cannot parse ibis tag: " + ibisIdentifier.tagAsString());
         }
 
+        try {
+            reservationID = Integer.parseInt(tags[0]);
+            label = tags[1];
+            slots = Integer.parseInt(tags[2]);
+            hostname = tags[3];
+
+        } catch (NumberFormatException e) {
+            throw new DistributedAmuseException("Cannot parse ibis tag: " + ibisIdentifier.tagAsString(), e);
+        }
     }
 
     void addJob(Job job) {
@@ -94,6 +93,10 @@ public class PilotNode {
         }
 
         return jobCount < slots;
+    }
+    
+    public int getReservationID() {
+        return reservationID;
     }
 
     public int getSlots() {

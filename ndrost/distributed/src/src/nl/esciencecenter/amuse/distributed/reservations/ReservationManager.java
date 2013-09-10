@@ -19,9 +19,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.jobs.PilotNodes;
 import nl.esciencecenter.amuse.distributed.resources.Resource;
 import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
 import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.octopus.jobs.JobStatus;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,21 +36,30 @@ import org.slf4j.LoggerFactory;
  */
 public class ReservationManager {
 
+    private final int JOIN_WAIT_TIME = 60000;
+
     private static final Logger logger = LoggerFactory.getLogger(ReservationManager.class);
 
+    private final JobStatusMonitor jobStatusMonitor;
+
     private final ResourceManager resourceManager;
+
+    private final PilotNodes nodes;
 
     private final ArrayList<Reservation> reservations;
 
     private final Octopus octopus;
-    
+
     private final File tmpDir;
 
-    public ReservationManager(Octopus octopus, ResourceManager resourceManager, File tmpDir) throws DistributedAmuseException {
+    public ReservationManager(Octopus octopus, ResourceManager resourceManager, PilotNodes nodes, File tmpDir)
+            throws DistributedAmuseException {
         this.octopus = octopus;
         this.resourceManager = resourceManager;
+        this.nodes = nodes;
         this.tmpDir = tmpDir;
         reservations = new ArrayList<Reservation>();
+        jobStatusMonitor = new JobStatusMonitor(octopus);
     }
 
     public synchronized Reservation newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes,
@@ -58,11 +69,11 @@ public class ReservationManager {
 
         Resource resource = resourceManager.getResource(resourceName);
 
-        Reservation result =
-                new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel, resourceManager.getIplServerAddress(),
-                        resourceManager.getHubAddresses(), octopus, tmpDir);
+        Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel,
+                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), octopus, tmpDir);
 
         reservations.add(result);
+        jobStatusMonitor.addJob(result.getJob());
 
         return result;
     }
@@ -83,6 +94,7 @@ public class ReservationManager {
             Reservation reservation = reservations.get(i);
             if (reservationID == reservation.getID()) {
                 reservations.remove(i);
+                jobStatusMonitor.removeJob(reservation.getJob());
                 reservation.cancel();
                 return;
             }
@@ -90,11 +102,37 @@ public class ReservationManager {
         throw new DistributedAmuseException("Reservation " + reservationID + " not found");
     }
 
-    public synchronized void waitForAllReservations() throws DistributedAmuseException {
+    private synchronized int[] getReservationIDs() {
+        int[] result = new int[reservations.size()];
+
+        for (int i = 0; i < result.length; i++) {
+            result[i] = reservations.get(i).getID();
+        }
+
+        return result;
+    }
+
+    public void waitForAllReservations() throws DistributedAmuseException {
         logger.debug("waiting for all reservations to start");
 
-        for (Reservation reservation : reservations) {
-            reservation.waitUntilStarted();
+        //first wait until all reservations are running
+        //note that this function will thrown an exception if jobs are already finished and/or in error
+        jobStatusMonitor.waitUntilAllRunning();
+
+        //then wait until all the nodes are actually joined. This should take some fixed amount of time
+        long deadline = System.currentTimeMillis() + JOIN_WAIT_TIME;
+        while (!nodes.containsNodesFrom(getReservationIDs())) {
+            if (System.currentTimeMillis() > deadline) {
+                throw new DistributedAmuseException("Pilot nodes failed to join");
+            }
+            //keep checking if all jobs are still running
+            jobStatusMonitor.waitUntilAllRunning();
+            
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                //IGNORE
+            }
         }
 
         logger.debug("All reservations started");
@@ -108,5 +146,13 @@ public class ReservationManager {
                 logger.error("Failed to cancel reservation: " + reservation, e);
             }
         }
+    }
+
+    public synchronized Reservation[] getReservations() {
+        return reservations.toArray(new Reservation[reservations.size()]);
+    }
+
+    public JobStatus getStatus(Reservation reservation) {
+        return jobStatusMonitor.getstatus(reservation.getJob());
     }
 }

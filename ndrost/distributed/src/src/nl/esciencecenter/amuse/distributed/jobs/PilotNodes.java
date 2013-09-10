@@ -20,13 +20,17 @@ import ibis.ipl.RegistryEventHandler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
+
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Set of nodes available to run jobs on
+ * Set of nodes available to run jobs on.
  * 
  * @author Niels Drost
  * 
@@ -91,7 +95,11 @@ public class PilotNodes implements RegistryEventHandler {
         synchronized (this) {
             //ignore local daemon node,
             if (!ibis.location().toString().equals("daemon@local")) {
-                nodes.add(new PilotNode(ibis));
+                try {
+                    nodes.add(new PilotNode(ibis));
+                } catch (DistributedAmuseException e) {
+                    logger.error("Failure on joining node", e);
+                }
             }
         }
 
@@ -132,6 +140,26 @@ public class PilotNodes implements RegistryEventHandler {
     @Override
     public void poolTerminated(IbisIdentifier arg0) {
         //IGNORED
+    }
+
+    /**
+     * @param reservationIDs
+     */
+    public synchronized boolean containsNodesFrom(int[] reservationIDs) {
+        Set<Integer> ids = new HashSet<Integer>();
+
+        //add all ids we need to find to the set
+        for (int id: reservationIDs) {
+            ids.add(id);
+        }
+        
+        //remove the id of each node
+        for (PilotNode node: nodes) {
+            ids.remove(node.getReservationID());
+        }
+        
+        //if all ids are present at some node the set should now be empty
+        return ids.isEmpty();
     }
 
 }

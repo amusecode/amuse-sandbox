@@ -28,7 +28,7 @@ ALL =
 all: $(ALL)
 	#done
 
-code: distributed_worker_java
+code: java_check worker.jar src/dist/distributed-amuse.jar distributed_worker_java
 
 java_check:
 #Makefile requires these checks to be at the beginning of the line
@@ -62,16 +62,6 @@ CodeInterface.java: interface.py
 Worker.java: interface.py
 	$(CODE_GENERATOR) --type=java --mode=class interface.py DistributedAmuseInterface -o $@
 
-distributed-server.jar: $(shell find src/lib -name "*.jar") src/dist/distributed-amuse.jar worker.jar
-	$(RM) -r tmp
-	mkdir tmp
-	unzip -q -o -d tmp "src/lib/jetty/*.jar"
-	unzip -q -o -d tmp "src/lib/ipl/*.jar"
-	unzip -q -o -d tmp "src/lib/octopus/*.jar"
-	unzip -q -o -d tmp src/dist/*.jar
-	unzip -q -o -d tmp worker.jar
-	jar -cf distributed-server.jar -C tmp/ .
-
 src/dist/distributed-amuse.jar: $(shell find src -name "*.java")
 	@echo Compiling Distributed Code
 	make -C src
@@ -79,10 +69,10 @@ src/dist/distributed-amuse.jar: $(shell find src -name "*.java")
 worker.jar: Worker.java CodeInterface.java Code.java src/dist/distributed-amuse.jar
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -g -cp "src/lib/*:src/lib/ipl/*:src/lib/octopus/*:src/dist/distributed-amuse.jar" -d tmp Worker.java CodeInterface.java Code.java
+	$(JAVAC) -g -cp "src/dist/*" -d tmp Worker.java CodeInterface.java Code.java
 	@echo Building jar file
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp
 
-distributed_worker_java: java_check worker.jar distributed-server.jar
+distributed_worker_java: interface.py
 	$(CODE_GENERATOR) -x --type=java --mode=script interface.py DistributedAmuseInterface -o $@
