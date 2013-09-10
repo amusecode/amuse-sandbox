@@ -18,7 +18,6 @@ package nl.esciencecenter.amuse.distributed.resources;
 import ibis.ipl.server.Server;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Arrays;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;

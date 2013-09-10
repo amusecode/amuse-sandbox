@@ -62,14 +62,14 @@ public class ReservationManager {
         jobStatusMonitor = new JobStatusMonitor(octopus);
     }
 
-    public synchronized Reservation newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes,
+    public synchronized Reservation newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes, int slots,
             String nodeLabel) throws DistributedAmuseException {
         logger.debug("reserving new nodes: resource name = " + resourceName + " queue name = " + queueName
                 + " number of nodes = " + nodeCount + " time (in minutes) = " + timeMinutes + " node label = " + nodeLabel);
 
         Resource resource = resourceManager.getResource(resourceName);
 
-        Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, nodeLabel,
+        Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, slots, nodeLabel,
                 resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), octopus, tmpDir);
 
         reservations.add(result);

@@ -27,7 +27,7 @@ public class DistributedAmuseIT {
     public void test01_Constructor() throws DistributedAmuseException {
         DistributedAmuse da = new DistributedAmuse("/home/niels/workspace/amuse/sandbox/ndrost/distributed", "/home/niels/workspace/amuse", 8678);
         
-        da.reservationManager().newReservation("local", "unlimited", 1, 10, "default");
+        da.reservationManager().newReservation("local", "unlimited", 1, 10, 1, "default");
         da.reservationManager().waitForAllReservations();
         try {
             Thread.sleep(300000);

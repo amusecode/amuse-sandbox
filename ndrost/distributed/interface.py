@@ -150,6 +150,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("queue_name", dtype='string', direction=function.IN, default="")
         function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
+        function.addParameter("slots", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
 

@@ -42,7 +42,7 @@ class DistributedTests(TestWithMPI):
     
 #        instance.new_reservation(resource_name='DAS4-VU', node_count=5, time= 2|units.hour, node_label='VU')
 #        instance.new_reservation(resource_name='DAS4-Leiden', node_count=5, time= 2|units.hour, node_label='Leiden')
-        instance.new_reservation(resource_name='local', node_count=1, time= 2|units.hour, node_label='local')
+        instance.new_reservation(resource_name='local', node_count=1, time= 2|units.hour, slots=2, node_label='local')
         
 #        instance.new_reservation(resource_name='LGM-4', node_count=1, time=2|units.hour, node_label='LGM')
     
@@ -67,6 +67,7 @@ class DistributedTests(TestWithMPI):
 
        print "starting codes"
        gravity = Hermite(number_of_workers = 1, redirection='none')
+       gravity2 = Hermite(number_of_workers = 1, redirection='none')
         
        #gadget2 = Gadget(nr_of_workers=4, nr_of_nodes=2, node_label='VU')
 

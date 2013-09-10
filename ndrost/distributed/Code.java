@@ -104,12 +104,12 @@ public class Code implements CodeInterface {
 
     @Override
     public int new_reservation(int[] reservation_id, String[] resource_name, String[] queue_name, int[] node_count,
-            int[] time_minutes, String[] node_label, int count) {
+            int[] time_minutes, int[] slots, String[] node_label, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 Reservation result =
                         distributedAmuse.reservationManager().newReservation(resource_name[i], queue_name[i], node_count[i],
-                                time_minutes[i], node_label[i]);
+                                time_minutes[i], slots[i], node_label[i]);
 
                 reservation_id[i] = result.getID();
             }
