@@ -15,8 +15,7 @@ class DistributedTests(TestWithMPI):
         instance.initialize_code()
 
         instance.new_resource(name='DAS4-VU',
-                              hostname="fs0.das4.cs.vu.nl",
-                              username="niels",
+                              location="niels@fs0.das4.cs.vu.nl",
                               scheduler_type="sge", 
                               amuse_dir="/home/niels/amuse",
                               )
@@ -67,7 +66,7 @@ class DistributedTests(TestWithMPI):
        instance = self.start_nodes()
 
        print "starting codes"
-       gravity = Hermite(number_of_workers = 1)
+       gravity = Hermite(number_of_workers = 1, redirection='none')
         
        #gadget2 = Gadget(nr_of_workers=4, nr_of_nodes=2, node_label='VU')
 

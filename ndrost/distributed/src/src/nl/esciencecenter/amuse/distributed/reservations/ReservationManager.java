@@ -119,15 +119,19 @@ public class ReservationManager {
         //note that this function will thrown an exception if jobs are already finished and/or in error
         jobStatusMonitor.waitUntilAllRunning();
 
+        logger.debug("reservations all running, wait until all pilots have joined");
+
         //then wait until all the nodes are actually joined. This should take some fixed amount of time
         long deadline = System.currentTimeMillis() + JOIN_WAIT_TIME;
-        while (!nodes.containsNodesFrom(getReservationIDs())) {
+        int[] reservations = getReservationIDs();
+        while (!nodes.containsNodesFrom(reservations)) {
+            logger.debug("still waiting for all pilot nodes");
             if (System.currentTimeMillis() > deadline) {
                 throw new DistributedAmuseException("Pilot nodes failed to join");
             }
             //keep checking if all jobs are still running
             jobStatusMonitor.waitUntilAllRunning();
-            
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -135,7 +139,7 @@ public class ReservationManager {
             }
         }
 
-        logger.debug("All reservations started");
+        logger.debug("All reservations started, all {} pilots accounted for.", reservations.length);
     }
 
     public synchronized void end() {

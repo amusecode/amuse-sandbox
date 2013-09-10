@@ -83,12 +83,11 @@ public class Hub {
             Scheduler scheduler;
 
             if (resource.isLocal()) {
-                scheduler = octopus.jobs().getLocalScheduler();
+                scheduler = octopus.jobs().newScheduler("local", null, null, null);
             } else {
                 Credential credential = octopus.credentials().getDefaultCredential("ssh");
 
-                URI uri = new URI("ssh", resource.getUsername(), resource.getHostname(), resource.getPort(), null, null, null);
-                scheduler = octopus.jobs().newScheduler(uri, credential, null);
+                scheduler = octopus.jobs().newScheduler("ssh", resource.getLocation(), credential, null);
 
                 logger.debug("starting hub using scheduler " + scheduler);
             }
@@ -101,9 +100,8 @@ public class Hub {
 
             new StreamForwarder(streams.getStderr(), System.err);
 
-            serverConnection =
-                    new ServerConnection(streams.getStdout(), streams.getStdin(), System.out, "Hub at " + resource.getName()
-                            + ": ", TIMEOUT, null);
+            serverConnection = new ServerConnection(streams.getStdout(), streams.getStdin(), System.out, "Hub at "
+                    + resource.getName() + ": ", TIMEOUT, null);
 
             address = serverConnection.getAddress();
 

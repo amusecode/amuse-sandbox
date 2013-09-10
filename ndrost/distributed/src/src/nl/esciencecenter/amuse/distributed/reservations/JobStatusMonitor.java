@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.jobs.Job;
 import nl.esciencecenter.octopus.jobs.JobStatus;
@@ -80,13 +81,20 @@ public class JobStatusMonitor extends Thread {
         notifyAll();
     }
 
-    public synchronized void waitUntilAllRunning() {
+    public synchronized void waitUntilAllRunning() throws DistributedAmuseException {
         while (true) {
             boolean allRunning = true;
 
             for (JobStatus status : statusMap.values()) {
                 if (status == null || !status.isRunning()) {
                     allRunning = false;
+                }
+                if (status != null && status.hasException()) {
+                    throw new DistributedAmuseException("Reservation failed while waiting for all reservations to start",
+                            status.getException());
+                }
+                if (status != null && status.isDone()) {
+                    throw new DistributedAmuseException("Reservation already done waiting for all reservations to start");
                 }
             }
 

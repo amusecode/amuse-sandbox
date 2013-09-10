@@ -62,8 +62,8 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int new_resource(int[] index_of_the_resource, String[] name, String[] hostname, String[] amuse_dir, int[] port,
-            String[] username, String[] scheduler_type, int[] start_hub, int count) {
+    public int new_resource(int[] index_of_the_resource, String[] name, String[] location, String[] amuse_dir,
+            String[] scheduler_type, int[] start_hub, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 Boolean startHub;
@@ -77,7 +77,7 @@ public class Code implements CodeInterface {
                     startHub = true;
                 }
                 Resource resource =
-                        distributedAmuse.resourceManager().newResource(name[i], hostname[i], amuse_dir[i], port[i], username[i],
+                        distributedAmuse.resourceManager().newResource(name[i], location[i], amuse_dir[i],
                                 scheduler_type[i], startHub);
                 index_of_the_resource[i] = resource.getId();
             }

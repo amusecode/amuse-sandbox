@@ -134,7 +134,7 @@ public class WebInterface extends AbstractHandler {
         writer.println("<tr><th>ID</th><th>Name</th><th>Hostname</th><th>Type</th></tr>");
         for (Resource resource : distributedAmuse.resourceManager().getResources()) {
             writer.printf("<tr><td><a href=/resources/%s>%s</a></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", resource.getId(),
-                    resource.getId(), resource.getName(), resource.getHostname(), resource.getSchedulerType());
+                    resource.getId(), resource.getName(), resource.getLocation(), resource.getSchedulerType());
         }
         writer.println("</table>");
     }
@@ -169,7 +169,7 @@ public class WebInterface extends AbstractHandler {
         Resource resource = distributedAmuse.resourceManager().getResource(id);
 
         writer.println("<h1>Resource " + resourceID + "</h1>");
-        writer.println("<p>" + resource.getHostname() + "</p>");
+        writer.println("<p>" + resource.getLocation() + "</p>");
     }
 
     private void writeReservationDetailsResponse(PrintWriter writer, String reservationID) throws DistributedAmuseException {

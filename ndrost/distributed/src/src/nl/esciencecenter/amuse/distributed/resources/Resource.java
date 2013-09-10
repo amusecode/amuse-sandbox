@@ -25,8 +25,8 @@ import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.credentials.Credential;
-import nl.esciencecenter.octopus.files.AbsolutePath;
 import nl.esciencecenter.octopus.files.FileSystem;
+import nl.esciencecenter.octopus.files.Path;
 import nl.esciencecenter.octopus.files.RelativePath;
 
 import org.slf4j.Logger;
@@ -48,10 +48,8 @@ public class Resource {
 
     private final int id;
     private final String name;
-    private final String hostname;
+    private final String location;
     private final String amuseDir;
-    private final int port;
-    private final String username;
     private final String schedulerType;
 
     private final AmuseConfiguration configuration;
@@ -80,14 +78,12 @@ public class Resource {
         throw new DistributedAmuseException("Local and new remote Hub at " + name + " not able to communicate");
     }
 
-    public Resource(String name, String hostname, String amuseDir, int port, String username, String schedulerType,
+    public Resource(String name, String location, String amuseDir, String schedulerType,
             Boolean startHub, Octopus octopus, Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
-        this.hostname = hostname;
+        this.location = location;
         this.amuseDir = amuseDir;
-        this.port = port;
-        this.username = username;
         this.schedulerType = schedulerType;
         this.startHub = startHub;
 
@@ -112,17 +108,16 @@ public class Resource {
             FileSystem filesystem;
 
             if (this.name.equals("local")) {
-                filesystem = octopus.files().getLocalHomeFileSystem();
+                filesystem = octopus.files().newFileSystem("local", "/",  null,  null);
             } else {
-                URI uri = new URI("ssh", username, hostname, port, null, null, null);
                 Credential credential = octopus.credentials().getDefaultCredential("ssh");
 
-                filesystem = octopus.files().newFileSystem(uri, credential, null);
+                filesystem = octopus.files().newFileSystem("ssh", location, credential, null);
             }
 
             RelativePath amuseConfig = new RelativePath(this.amuseDir + "/config.mk");
 
-            AbsolutePath path = octopus.files().newPath(filesystem, amuseConfig);
+            Path path = octopus.files().newPath(filesystem, amuseConfig);
 
             try (InputStream in = octopus.files().newInputStream(path)) {
                 return new AmuseConfiguration(this.amuseDir, in);
@@ -140,20 +135,12 @@ public class Resource {
         return name;
     }
 
-    public String getHostname() {
-        return hostname;
+    public String getLocation() {
+        return location;
     }
 
     public String getAmuseDir() {
         return amuseDir;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public String getSchedulerType() {
@@ -201,13 +188,12 @@ public class Resource {
     }
 
     public boolean isLocal() {
-        return hostname == null || hostname.equals("localhost") || hostname.equals("local");
+        return location == null || location.equals("localhost") || location.equals("local");
     }
 
     @Override
     public String toString() {
-        return "Resource [id=" + id + ", name=" + name + ", hostname=" + hostname + ", amuseDir=" + amuseDir + ", port=" + port
-                + ", username=" + username + ", schedulerType=" + schedulerType + ", configuration=" + configuration
+        return "Resource [id=" + id + ", name=" + name + ", location=" + location + ", amuseDir=" + amuseDir + ", schedulerType=" + schedulerType + ", configuration=" + configuration
                 + ", startHub=" + startHub + ", hub=" + hub + "]";
     }
 }

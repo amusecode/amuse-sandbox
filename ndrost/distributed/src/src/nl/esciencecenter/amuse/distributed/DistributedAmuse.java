@@ -29,6 +29,7 @@ import nl.esciencecenter.amuse.distributed.workers.WorkerConnectionServer;
 import nl.esciencecenter.octopus.Octopus;
 import nl.esciencecenter.octopus.OctopusFactory;
 import nl.esciencecenter.octopus.exceptions.OctopusException;
+import nl.esciencecenter.octopus.exceptions.OctopusIOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +90,7 @@ public class DistributedAmuse {
     public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort) throws DistributedAmuseException {
         try {
             octopus = OctopusFactory.newOctopus(null);
-        } catch (OctopusException e) {
+        } catch (OctopusException | OctopusIOException e) {
             throw new DistributedAmuseException("could not create Octopus library object", e);
         }
 

@@ -18,6 +18,7 @@ package nl.esciencecenter.amuse.distributed.reservations;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
@@ -55,8 +56,9 @@ public class Reservation {
             throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
 
-        result.setStdout("reservation-" + id + ".out");
-        result.setStderr("reservation-" + id + ".err");
+        UUID uniqueID = UUID.randomUUID();
+        result.setStdout("reservation-" + id + "-" + uniqueID.toString() + ".out");
+        result.setStderr("reservation-" + id + "-" + uniqueID.toString() + ".err");
 
         result.setInteractive(false);
 
@@ -85,7 +87,7 @@ public class Reservation {
 
         javaArguments.add("--node-label");
         javaArguments.add(nodeLabel);
-        
+
         javaArguments.add("--resource-name");
         javaArguments.add(resource.getName());
 
@@ -153,14 +155,11 @@ public class Reservation {
             Scheduler scheduler;
 
             if (resource.isLocal()) {
-                scheduler = octopus.jobs().getLocalScheduler();
+                scheduler = octopus.jobs().newScheduler("local", null, null, null);
             } else {
-                Credential credential = octopus.credentials().getDefaultCredential("ssh");
+                Credential credential = octopus.credentials().getDefaultCredential(resource.getSchedulerType());
 
-                URI uri = new URI(resource.getSchedulerType(), resource.getUsername(), resource.getHostname(),
-                        resource.getPort(), null, null, null);
-                scheduler = octopus.jobs().newScheduler(uri, credential, null);
-
+                scheduler = octopus.jobs().newScheduler(resource.getSchedulerType(), resource.getLocation(), credential, null);
             }
 
             JobDescription jobDescription = createJobDesciption(id, resource, queueName, nodeCount, timeMinutes, nodeLabel,
@@ -204,7 +203,7 @@ public class Reservation {
     public int getResourceID() {
         return resourceID;
     }
-    
+
     public Job getJob() {
         return job;
     }
@@ -218,25 +217,25 @@ public class Reservation {
         }
     }
 
-//    public void waitUntilStarted() throws DistributedAmuseException {
-//        try {
-//            JobStatus status = octopus.jobs().waitUntilRunning(job, 0);
-//
-//            if (status.hasException()) {
-//                throw new DistributedAmuseException("error in reservation job: " + job, status.getException());
-//            }
-//        } catch (OctopusIOException | OctopusException e) {
-//            throw new DistributedAmuseException("failed to get job status " + job, e);
-//        }
-//    }
-//
-//    public String getStatus() throws DistributedAmuseException {
-//        try {
-//            return octopus.jobs().getJobStatus(job).getState();
-//        } catch (OctopusIOException | OctopusException e) {
-//            throw new DistributedAmuseException("failed to get job status " + job, e);
-//        }
-//    }
+    //    public void waitUntilStarted() throws DistributedAmuseException {
+    //        try {
+    //            JobStatus status = octopus.jobs().waitUntilRunning(job, 0);
+    //
+    //            if (status.hasException()) {
+    //                throw new DistributedAmuseException("error in reservation job: " + job, status.getException());
+    //            }
+    //        } catch (OctopusIOException | OctopusException e) {
+    //            throw new DistributedAmuseException("failed to get job status " + job, e);
+    //        }
+    //    }
+    //
+    //    public String getStatus() throws DistributedAmuseException {
+    //        try {
+    //            return octopus.jobs().getJobStatus(job).getState();
+    //        } catch (OctopusIOException | OctopusException e) {
+    //            throw new DistributedAmuseException("failed to get job status " + job, e);
+    //        }
+    //    }
 
     @Override
     public String toString() {
