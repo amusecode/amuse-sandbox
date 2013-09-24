@@ -137,7 +137,38 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
             not yet implemented
         """
         return function
-
+    
+    @legacy_function
+    def get_resource_name():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('resource_name', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_resource_hostname():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('resource_hostname', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_resource_type():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('resource_type', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    
     @legacy_function
     def new_reservation():
         """
@@ -156,8 +187,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
 
         function.result_type = 'int32'
         return function
-
-        
+    
     @legacy_function
     def delete_reservation():
         """
@@ -169,7 +199,48 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
-
+    
+    @legacy_function
+    def get_reservation_node_label():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('node_label', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_reservation_resource_name():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('resource_name', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_reservation_node_count():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('node_count', dtype='int32', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_reservation_status():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('reservation_status', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    
     
     @legacy_function
     def wait_for_reservations():
@@ -246,6 +317,33 @@ class DistributedAmuse(CommonCode):
     def __init__(self, **options):
         CommonCode.__init__(self,  DistributedAmuseInterface(**options), **options)
     
+    def define_particle_sets(self, object):
+        object.define_super_set('particles', ['resources', 'reservations', 'jobs'], 
+            index_to_default_set = 0)
+        
+        object.define_set('resources', 'index_of_the_resource')
+        object.set_new('resources', 'new_resource')
+        object.set_delete('resources', 'delete_resource')
+        object.add_getter('resources', 'get_resource_name', names = ('name',))
+        object.add_getter('resources', 'get_resource_hostname', names = ('hostname',))
+        object.add_getter('resources', 'get_resource_type', names = ('type',))
+        
+        object.define_set('reservations', 'index_of_the_reservation')
+        object.set_new('reservations', 'new_reservation')
+        object.set_delete('reservations', 'delete_reservation')
+        object.add_getter('reservations', 'get_reservation_node_label', names = ('name',))
+        object.add_getter('reservations', 'get_reservation_resource_name', names = ('resource',))
+        object.add_getter('reservations', 'get_reservation_node_count', names = ('node_count',))
+        object.add_getter('reservations', 'get_reservation_status', names = ('status',))
+        
+        object.define_set('jobs', 'index_of_the_job')
+        object.set_new('jobs', None) # Not sure yet what's best here. Do we need an 'update_particle_set', 
+        # or should we catch worker instantiations and calls to 'submit_pickled_function_job' and 'submit_script_job'?
+        
+        object.set_delete('jobs', 'delete_job')
+#        object.add_getter('jobs', 'get_job_label', names = ('name',))
+#        object.add_getter('jobs', 'get_job_reservation_name', names = ('reservation',))
+#        object.add_getter('jobs', 'get_job_status', names = ('status',))
         
 #    def store_view(self, description=""):
 #        self.overridden().store_view(str(description))

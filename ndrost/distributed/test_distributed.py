@@ -13,12 +13,20 @@ class DistributedTests(TestWithMPI):
 	
         instance = DistributedAmuse(redirection='none')
         instance.initialize_code()
+        
+        resource = Particle()
+        resource.name='DAS4-VU'
+        resource.location="niels@fs0.das4.cs.vu.nl"
+        resource.scheduler_type="sge"
+        resource.amuse_dir="/home/niels/amuse"
+        instance.resources.add_particle(resource)
+        print instance.resources
 
-        instance.new_resource(name='DAS4-VU',
-                              location="niels@fs0.das4.cs.vu.nl",
-                              scheduler_type="sge", 
-                              amuse_dir="/home/niels/amuse",
-                              )
+#        instance.new_resource(name='DAS4-VU',
+#                              location="niels@fs0.das4.cs.vu.nl",
+#                              scheduler_type="sge", 
+#                              amuse_dir="/home/niels/amuse",
+#                              )
         
 #        instance.new_resource(name='DAS4-Leiden',
 #                              hostname="fs1.das4.liacs.nl",
@@ -42,8 +50,15 @@ class DistributedTests(TestWithMPI):
     
 #        instance.new_reservation(resource_name='DAS4-VU', node_count=5, time= 2|units.hour, node_label='VU')
 #        instance.new_reservation(resource_name='DAS4-Leiden', node_count=5, time= 2|units.hour, node_label='Leiden')
-        instance.new_reservation(resource_name='local', node_count=1, time= 2|units.hour, slots=2, node_label='local')
+#        instance.new_reservation(resource_name='local', node_count=1, time= 2|units.hour, slots=2, node_label='local')
         
+        reservation = Particle()
+        reservation.resource_name='local'
+        reservation.node_count=1
+        reservation.time= 2|units.hour
+        reservation.slots=2
+        reservation.node_label='local'
+        instance.reservations.add_particle(reservation)
 #        instance.new_reservation(resource_name='LGM-4', node_count=1, time=2|units.hour, node_label='LGM')
     
         instance.wait_for_reservations()
@@ -51,43 +66,45 @@ class DistributedTests(TestWithMPI):
         return instance
 
     def test0(self):
-       print "starting"
-       instance = self.start_nodes()
+        print "starting"
+        instance = self.start_nodes()
 
-       print "taking a nap"
-       import time
-       time.sleep(60)
+        print "taking a nap"
+        import time
+        time.sleep(60)
 
-       print "stopping instance"
-       instance.stop()
+        print "stopping instance"
+        instance.stop()
 
     def test1(self):
-       print "starting"
-       instance = self.start_nodes()
+        print "starting"
+        instance = self.start_nodes()
 
-       print "starting codes"
-       gravity = Hermite(number_of_workers = 1, redirection='none')
-       gravity2 = Hermite(number_of_workers = 1, redirection='none')
+        print "starting codes"
+        gravity = Hermite(number_of_workers = 1, redirection='none')
+        gravity2 = Hermite(number_of_workers = 1, redirection='none')
         
-       #gadget2 = Gadget(nr_of_workers=4, nr_of_nodes=2, node_label='VU')
+        #gadget2 = Gadget(nr_of_workers=4, nr_of_nodes=2, node_label='VU')
 
-       # some interesting simulation using these workers
+        # some interesting simulation using these workers
 
 
-       print "taking a nap"
-       import time
-       time.sleep(60)
+        print "taking a nap"
+        import time
+        time.sleep(60)
+        
+        print "stopping instance"
+        gravity.stop()
+        gravity2.stop()
+        instance.stop()
 
-       print "stopping instance"
-       instance.stop()
-
-    def do_something(x, y):
-        return x * y
+    
 
     #run a single function job
     def test2(self):
         instance = self.start_nodes()
-        
+        def do_something(x, y):
+            return x * y
         arguments = [8, 2]
 
         #job_id = instance.submit_function_job(self.do_something, arguments, node_label='VU')
