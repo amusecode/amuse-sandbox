@@ -310,15 +310,28 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         del options.GlobalOptions.instance().overriden_options["channel_type"]
         return 0
     
+    def bookkeeping_after_job_started(self, job_id):
+        return job_id
     
+    new_worker = None
     
+
 class DistributedAmuse(CommonCode):
 
     def __init__(self, **options):
         CommonCode.__init__(self,  DistributedAmuseInterface(**options), **options)
     
+    def submit_function_job(self, function, *args, **kwargs):
+        # pickle the input function
+        job_id = self.overridden().submit_pickled_function_job(*args, **kwargs)
+        self.bookkeeping_after_job_started(job_id)
+    
+    def submit_script_job(self, *args, **kwargs):
+        job_id = self.overridden().submit_script_job(*args, **kwargs)
+        self.bookkeeping_after_job_started(job_id)
+    
     def define_particle_sets(self, object):
-        object.define_super_set('particles', ['resources', 'reservations', 'jobs'], 
+        object.define_super_set('particles', ['resources', 'reservations', 'jobs', 'workers'], 
             index_to_default_set = 0)
         
         object.define_set('resources', 'index_of_the_resource')
@@ -337,31 +350,33 @@ class DistributedAmuse(CommonCode):
         object.add_getter('reservations', 'get_reservation_status', names = ('status',))
         
         object.define_set('jobs', 'index_of_the_job')
-        object.set_new('jobs', None) # Not sure yet what's best here. Do we need an 'update_particle_set', 
+        object.set_new('jobs', 'bookkeeping_after_job_started') # Not sure yet what's best here. Do we need an 'update_particle_set', 
         # or should we catch worker instantiations and calls to 'submit_pickled_function_job' and 'submit_script_job'?
-        
         object.set_delete('jobs', 'delete_job')
-#        object.add_getter('jobs', 'get_job_label', names = ('name',))
-#        object.add_getter('jobs', 'get_job_reservation_name', names = ('reservation',))
-#        object.add_getter('jobs', 'get_job_status', names = ('status',))
+        object.add_getter('jobs', 'get_job_label', names = ('name',))
+        object.add_getter('jobs', 'get_job_reservation_name', names = ('reservation',))
+        object.add_getter('jobs', 'get_job_status', names = ('status',))
         
-#    def store_view(self, description=""):
-#        self.overridden().store_view(str(description))
-#        
-#    def define_parameters(self, object):
-#        object.add_boolean_parameter(
-#            "get_use_star_shader_flag",
-#            "set_use_star_shader_flag",
-#            "use_star_shader",
-#            "Use-star-shader flag. False means: plain spheres.",
-#            True
-#        )
-#        object.add_boolean_parameter(
-#            "get_use_octree_for_gas_flag",
-#            "set_use_octree_for_gas_flag",
-#            "use_octree_for_gas",
-#            "Use-octree-for-gas flag. True means: gas resources are divided over "
-#                "octree cells, and these cells will be visualized instead.",
-#            False
-#        )
+        object.define_set('workers', 'index_of_the_worker')
+        object.set_new('workers', 'new_worker')
+        object.set_delete('workers', 'delete_worker')
+        object.add_getter('workers', 'get_worker_name', names = ('name',))
+        object.add_getter('workers', 'get_worker_reservation_name', names = ('reservation',))
+        object.add_getter('workers', 'get_worker_resource_name', names = ('resource',))
+        object.add_getter('workers', 'get_worker_status', names = ('status',))
+        
+    def update_particle_set(self):
+        """
+        update the particle set after changes in the code
+        
+        this implementation needs to move to the
+        amuse.datamodel.incode_storage module, as
+        it uses a lot of internal methods and info!
+        """
+        number_of_updated_particles = self.get_number_of_particles_updated()
+        if number_of_updated_particles:
+            self.particles._private.attribute_storage._add_indices(
+                range(number_of_updated_particles)
+            )
     
+
