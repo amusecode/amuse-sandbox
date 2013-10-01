@@ -1,4 +1,6 @@
 import numpy
+import matplotlib
+matplotlib.use("Agg")
 
 from amuse.units import units, nbody_system, constants
 #~from amuse.units.quantities import zero
@@ -9,6 +11,7 @@ from amuse.plot import pynbody_column_density_plot, HAS_PYNBODY
 #~from amuse.community.bhtree.interface import BHTree
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.gadget2.interface import Gadget2
+from amuse.community.fi.interface import Fi
 #~from amuse.community.seba.interface import SeBa
 #~from amuse.community.evtwin.interface import EVtwin
 from amuse.community.mesa.interface import MESA
@@ -35,9 +38,9 @@ def new_gravity(particles):
     return gravity
 
 def new_stellar(particles):
-    stellar = MESA()
+    stellar = MESA(redirection="file", redirect_file="mesa_out.log")
     stellar.particles.add_particles(particles)
-    stellar.evolve_model(0.01 | units.Myr)
+    stellar.evolve_model(3.0 | units.Myr)
     return stellar
 
 def new_collision_handler(number_of_sph_particles, stellar, gravity):
@@ -46,16 +49,23 @@ def new_collision_handler(number_of_sph_particles, stellar, gravity):
     density_min = numpy.log10(density_resolution.value_in(constants.proton_mass.to_unit() / units.cm**2))
     density_max = numpy.log10((max_density * (10|units.RSun)).value_in(constants.proton_mass.to_unit() / units.cm**2))
     
+    dt = 0.01 * ((1.0|units.RSun**3 / units.MSun) / constants.G).sqrt()
     collision_code = StellarEncounterInHydrodynamics(
         number_of_sph_particles,
         new_plotting_hydrodynamics_code(
-            Gadget2, 
-            0.2|units.hour, 
+#~            Gadget2, 
+            Fi, 
+            0.02|units.hour, 
             plot_function = pynbody_column_density_plot,
             plot_function_arguments = dict(width=200|units.RSun, vmin=density_min, vmax=density_max)
         ), 
+        initial_separation = 2,
+#~        hydrodynamics_arguments = dict(redirection="file", redirect_file="gadget.out"),
+        hydrodynamics_arguments = dict(redirection="file", redirect_file="fi.out"),
+#~        hydrodynamics_parameters = dict(time_limit_cpu=1|units.day),
+        hydrodynamics_parameters = dict(timestep=dt, eps_is_h_flag=True),
         verbose = True,
-#~        debug = True
+        debug = False
     )
     collision_handler = CollisionHandler(
         collision_code, 
@@ -82,14 +92,22 @@ def run(number_of_sph_particles = 100000, masses = [40, 20]|units.MSun, separati
 
 
 if __name__ == "__main__":
-    number_of_sph_particles = [5000, 10000, 20000, 50000, 100000, 200000]
-    number_of_sph_particles = [10000, 20000]
+    number_of_sph_particles = [5000, 10000, 20000, 50000, 100000, 200000, 500000]
+
+#~    number_of_sph_particles = [10000, 20000]
+#~    [0.5, 1, 3, 5]
+#~[10000, 20000] [[quantity<[35.016179016] 1.98892e+30 * kg>, quantity<[20.6873650802, 11.8748891614] 1.98892e+30 * kg>, quantity<[36.1781614105, 14.227400147] 1.98892e+30 * kg>, quantity<[39.2199405654, 19.3939086747] 1.98892e+30 * kg>], [quantity<[35.5467636472] 1.98892e+30 * kg>, quantity<[32.6307745706] 1.98892e+30 * kg>, quantity<[36.0337547055, 14.3512639382] 1.98892e+30 * kg>, quantity<[39.2888635366, 19.4959986343] 1.98892e+30 * kg>]]
     
     mass = []
     for n in number_of_sph_particles:
         new_list = []
-        for sep in [0.0001, 1, 3, 5] | units.RSun:
-            new_list.append(run(number_of_sph_particles=n, separation=sep))
+#~        for sep in [0.5, 1, 3, 5] | units.RSun: # How to do head-on (vy should be ~0, but I have to think about vx)?
+        for sep in [1.0] | units.RSun: # How to do head-on (vy should be ~0, but I have to think about vx)?
+            try:
+                result = run(number_of_sph_particles=n, separation=sep)
+            except Exception as result:
+                pass
+            new_list.append(result)
         mass.append(new_list)
     
     print number_of_sph_particles, mass
