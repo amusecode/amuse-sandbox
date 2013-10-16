@@ -16,18 +16,21 @@
 package nl.esciencecenter.amuse.distributed.jobs;
 
 import ibis.ipl.Ibis;
-import ibis.ipl.IbisIdentifier;
+import ibis.ipl.MessageUpcall;
 import ibis.ipl.ReadMessage;
 import ibis.ipl.ReceivePort;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.WorkerDescription;
 import nl.esciencecenter.amuse.distributed.pilot.Pilot;
 
 import org.slf4j.Logger;
@@ -39,14 +42,10 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class Job extends Thread {
+public abstract class Job extends Thread implements MessageUpcall {
 
-    public enum State {
-        PENDING, INITIALIZING, RUNNING, DONE, REPORTED;
-    }
-
-    public enum Type {
-        WORKER, PICKLED, SCRIPT;
+    private enum State {
+        PENDING, INITIALIZING, RUNNING, DONE, FAILED;
     }
 
     //how long we keep jobs which have finished.
@@ -60,60 +59,62 @@ public class Job extends Thread {
         return nextID++;
     }
 
-    private final WorkerDescription workerDescription;
-
     private final Ibis ibis;
+
+    private final ReceivePort resultReceivePort;
 
     private final int jobID;
 
+    private final String nodeLabel;
+
+    private final int numberOfNodes;
+
     private State state;
 
-    private final Type type;
-
     private PilotNode[] target = null;
-
-    //only for pickled jobs
-    private String result = null;
 
     private Exception error = null;
 
     //will never timeout until timeout set
-    private long timeout = Long.MAX_VALUE;
+    private long expirationDate = Long.MAX_VALUE;
 
-    public Job(WorkerDescription description, Ibis ibis) {
-        this.type = Type.WORKER;
-        this.workerDescription = description;
+    public Job(String nodeLabel, int numberOfNodes, Ibis ibis) throws DistributedAmuseException {
+        this.nodeLabel = nodeLabel;
+        this.numberOfNodes = numberOfNodes;
+
         this.ibis = ibis;
+
         this.jobID = getNextID();
 
         this.state = State.PENDING;
+
+        try {
+            resultReceivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, "job-" + jobID, this);
+            resultReceivePort.enableConnections();
+            resultReceivePort.enableMessageUpcalls();
+        } catch (IOException e) {
+            throw new DistributedAmuseException("Cannot create receive port for job", e);
+        }
     }
 
-    public WorkerDescription getWorkerDescription() {
-        return workerDescription;
+    public void end() {
+        try {
+            resultReceivePort.close();
+        } catch (IOException e) {
+            //IGNORE
+        }
     }
 
     public int getNumberOfNodes() {
-        if (type != Type.WORKER) {
-            return 1;
-        }
-        return workerDescription.getNrOfNodes();
+        return numberOfNodes;
     }
 
-    public String getLabel() {
-        //FIXME: support non-worker jobs
-        return workerDescription.getNodeLabel();
+    public String getNodeLabel() {
+        return nodeLabel;
     }
 
     public int getJobID() {
         return jobID;
-    }
-    
-    /**
-     * @return True if this job is a batch job (script or pickled).
-     */
-    public boolean isBatchJob() {
-        return type == Type.SCRIPT || type == Type.PICKLED;
     }
 
     private synchronized void setState(State newState) {
@@ -121,8 +122,17 @@ public class Job extends Thread {
         notifyAll();
 
         if (isDone()) {
-            timeout = System.currentTimeMillis() + TIMEOUT;
+            expirationDate = System.currentTimeMillis() + TIMEOUT;
         }
+    }
+
+    private synchronized void setError(Exception error) {
+        this.error = error;
+        setState(State.FAILED);
+    }
+
+    public synchronized String getJobState() {
+        return state.toString();
     }
 
     public synchronized boolean isPending() {
@@ -134,22 +144,11 @@ public class Job extends Thread {
     }
 
     public synchronized boolean isDone() {
-        return state == State.DONE || state == State.REPORTED;
+        return state == State.DONE || state == State.FAILED;
     }
 
-    public synchronized boolean isReported() {
-        return state == State.REPORTED;
-    }
-
-    public synchronized boolean hasError() {
-        return error != null;
-    }
-
-    /**
-     * Job completely done.
-     */
-    public synchronized boolean isObsolete() {
-        return isReported() && System.currentTimeMillis() > timeout;
+    public synchronized boolean hasFailed() {
+        return state == State.FAILED;
     }
 
     public synchronized void waitUntilRunning() {
@@ -172,45 +171,12 @@ public class Job extends Thread {
         }
     }
 
-    /**
-     * @return the result
-     * 
-     * @throws DistributedAmuseException
-     *             in case the job failed for some reason
-     */
-    public synchronized String getResult() throws DistributedAmuseException {
-        if (type != Type.PICKLED) {
-            throw new DistributedAmuseException("Can only get job result for pickled jobs");
-        }
-
-        waitUntilDone();
-
-        if (state == State.DONE) {
-            setState(State.REPORTED);
-        }
-
-        if (hasError()) {
-            throw new DistributedAmuseException("Error while running job " + this, error);
-        }
-
-        return result;
+    protected synchronized Exception getError() {
+        return error;
     }
 
-    /**
-     * @return
-     */
-    private synchronized IbisIdentifier[] getIbisIdentifiers() {
-        if (target == null) {
-            return null;
-        }
-
-        IbisIdentifier[] result = new IbisIdentifier[target.length];
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = target[i].getIbisIdentifier();
-        }
-
-        return result;
+    protected synchronized PilotNode[] getTarget() {
+        return target;
     }
 
     /**
@@ -261,19 +227,18 @@ public class Job extends Thread {
 
             logger.debug("writing content");
 
-            //where to send the reply
-            writeMessage.writeObject(receivePort.identifier());
-
             //command
             writeMessage.writeString("start");
 
+            //where to send the reply for this message
+            writeMessage.writeObject(receivePort.identifier());
+
             //details of job
             writeMessage.writeInt(jobID);
-            writeMessage.writeObject(workerDescription);
-
-            writeMessage.writeObject(getIbisIdentifiers());
-
-            //FIXME: transfer files etc
+            writeMessage.writeString(nodeLabel);
+            writeMessage.writeInt(numberOfNodes);
+            writeMessage.writeObject(this.resultReceivePort.identifier());
+            writeJobDetails(writeMessage);
 
             writeMessage.finish();
 
@@ -286,29 +251,27 @@ public class Job extends Thread {
             //FIXME: we should use some kind of rpc mechanism
             ReadMessage readMessage = receivePort.receive(60000);
 
-            logger.debug("reading status message from reply");
+            logger.debug("reading status from reply");
 
-            String statusMessage = readMessage.readString();
+            Exception error = (Exception) readMessage.readObject();
+
+            //implemented by job subtype (worker, pickled, script)
+            readJobStatus(readMessage);
 
             readMessage.finish();
             receivePort.close();
 
-            if (!statusMessage.equals("ok")) {
-                setState(State.DONE);
-                error = new DistributedAmuseException("Remote node reported error: " + statusMessage);
+            if (error != null) {
+                setError(new DistributedAmuseException("Remote node reported error", error));
             }
-
-            setState(State.RUNNING);
-            logger.debug("Job {} started on node {}", this, master);
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             logger.error("Job failed!", e);
-            setState(State.DONE);
-            error = e;
+            setError(e);
         }
     }
 
     /**
-     * 
+     * Cancel a job by sending a message to the pilot
      */
     public void cancel() throws DistributedAmuseException {
         PilotNode master = target[0];
@@ -317,15 +280,10 @@ public class Job extends Thread {
 
         try {
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
-            ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
-            receivePort.enableConnections();
 
             sendPort.connect(master.getIbisIdentifier(), Pilot.PORT_NAME);
 
             WriteMessage writeMessage = sendPort.newMessage();
-
-            //where to send the reply
-            writeMessage.writeObject(receivePort.identifier());
 
             //command
             writeMessage.writeString("cancel");
@@ -336,50 +294,60 @@ public class Job extends Thread {
 
             sendPort.close();
 
-            //FIXME: we should use some kind of rpc mechanism
-            ReadMessage readMessage = receivePort.receive(60000);
-
-            String statusMessage = readMessage.readString();
-
-            readMessage.finish();
-            receivePort.close();
-
-            if (!statusMessage.equals("ok")) {
-                setState(State.DONE);
-                error = new DistributedAmuseException("Remote node reported error: " + statusMessage);
-            }
-
-            setState(State.DONE);
-            logger.debug("Job {} canceled on node {}", this, master);
-
         } catch (IOException e) {
             throw new DistributedAmuseException("Failed to cancel job " + this, e);
         }
     }
 
-    void handleResult(ReadMessage message) throws IOException, ClassNotFoundException {
+    /**
+     * Handles incoming result message from Pilots
+     */
+    @Override
+    public void upcall(ReadMessage message) throws IOException, ClassNotFoundException {
         logger.debug("Reading status message");
-        
-        String statusMessage = message.readString();
-        
-        if (!statusMessage.equals("ok")) {
-            logger.warn("Job ended in error: " + statusMessage);
+
+        Exception error = (Exception) message.readObject();
+
+        //implemented by job sub type
+        readJobResult(message);
+
+        if (error != null) {
+            setError(new DistributedAmuseException("Remote node reported error", error));
         }
 
-        this.error = (Exception) message.readObject();
-
-        logger.debug("Got status message {} and error {}", statusMessage, this.error, this.error);
-        
-        //FIXME: read result files
-
         setState(State.DONE);
-        logger.debug("Job {} done on node {}", this, message.origin());
     }
 
     @Override
     public String toString() {
-        return "Job [jobID=" + jobID + ", label=" + getLabel() + ", state=" + state + ", target=" + Arrays.toString(target)
-                + ", result=" + result + ", error=" + error + ", timeout=" + timeout + "]";
+        return "Job [jobID=" + jobID + ", label=" + getNodeLabel() + ", state=" + state + ", target=" + Arrays.toString(target)
+                + ", error=" + error + ", expirationDate=" + expirationDate + "]";
     }
+
+    public Map<String, String> getStatusMap() {
+        Map<String, String> result = new LinkedHashMap<String, String>();
+
+        result.put("ID", Integer.toString(jobID));
+        result.put("Label", getNodeLabel());
+        result.put("State", getJobState().toString());
+        result.put("Target", Arrays.toString(target));
+
+        Exception error = getError();
+
+        if (error != null) {
+            StringWriter writer = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(writer);
+            error.printStackTrace(printWriter);
+            result.put("Error", writer.toString());
+        }
+
+        return result;
+    }
+
+    abstract void writeJobDetails(WriteMessage writeMessage) throws IOException;
+
+    abstract void readJobStatus(ReadMessage readMessage) throws ClassNotFoundException, IOException;
+
+    abstract void readJobResult(ReadMessage readMessage) throws ClassNotFoundException, IOException;
 
 }

@@ -32,9 +32,9 @@ import java.util.Map;
  */
 public class AmuseConfiguration {
 
-    File amuseHome;
+    private final File amuseHome;
 
-    Map<String, String> config;
+    private final Map<String, String> config;
 
     private void parseConfig(BufferedReader reader) throws DistributedAmuseException {
         try {
@@ -118,11 +118,12 @@ public class AmuseConfiguration {
     public String getMpiexec() throws DistributedAmuseException {
         return getConfigOption("MPIEXEC");
     }
+    
+    public boolean isJavaEnabled() throws DistributedAmuseException {
+        return getConfigOption("JAVA_ENABLED").equals("yes");
+    }
 
     public String getJava() throws DistributedAmuseException {
-        if (!getConfigOption("JAVA_ENABLED").equals("yes")) {
-            throw new DistributedAmuseException("Java not enabled");
-        }
         return getConfigOption("JAVA");
     }
 }

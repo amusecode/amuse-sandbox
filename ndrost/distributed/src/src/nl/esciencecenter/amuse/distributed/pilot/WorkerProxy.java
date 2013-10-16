@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.workers;
+package nl.esciencecenter.amuse.distributed.pilot;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
@@ -34,7 +34,8 @@ import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.workers.OutputForwarder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,17 +131,9 @@ public class WorkerProxy extends Thread {
 
     private static Process startWorkerProcess(WorkerDescription description, AmuseConfiguration amuseConfiguration,
             int localSocketPort, String[] hostnames, File workingDirectory) throws Exception {
-        File executable;
+        File executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getExecutable());
 
-        if (description.copyWorkerCode()) {
-            // executable in workingDirectory
-            executable = new File(description.getCodeName());
-        } else {
-            executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getCodeDir() + File.separator
-                    + description.getCodeName());
-        }
-
-        if (!description.copyWorkerCode() && !executable.canExecute()) {
+        if (!executable.canExecute()) {
             throw new DistributedAmuseException(executable + " is not executable, or does not exist");
         }
 
@@ -186,11 +179,6 @@ public class WorkerProxy extends Thread {
         } else {
             // use machine file
             builder.command(amuseConfiguration.getMpiexec(), "-machinefile", hostFile.getAbsolutePath());
-        }
-
-        if (description.copyWorkerCode()) {
-            // run executable via amuse.sh script to set python path and interpreter
-            builder.command().add(new File(amuseConfiguration.getAmuseHome(), "amuse.sh").getAbsolutePath());
         }
 
         // executable and port options

@@ -104,7 +104,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.OUT)
+        function.addParameter('resource_id', dtype='int32', direction=function.OUT)
         function.addParameter("name", dtype='string', direction=function.IN)
         function.addParameter("location", dtype='string', direction=function.IN)
         function.addParameter("gateway", dtype='string', direction=function.IN)
@@ -122,7 +122,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('resource_id', dtype='int32', direction=function.IN)
         function.addParameter("name", dtype='string', direction=function.OUT)
         function.addParameter("location", dtype='string', direction=function.OUT)
         function.addParameter("gateway", dtype='string', direction=function.OUT)
@@ -142,7 +142,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN,
+        function.addParameter('resource_id', dtype='int32', direction=function.IN,
             description = "Index of the resource to be removed. This index must have been returned by an earlier call to :meth:`new_resource`")
 
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
@@ -203,8 +203,8 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     def get_reservation_status():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
-        function.addParameter('reservation_status', dtype='string', direction=function.OUT)
+        function.addParameter('resource_id', dtype='int32', direction=function.IN)
+        function.addParameter('status', dtype='string', direction=function.OUT)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function

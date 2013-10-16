@@ -26,12 +26,13 @@ import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.WorkerDescription;
 import nl.esciencecenter.amuse.distributed.jobs.Job;
 import nl.esciencecenter.amuse.distributed.jobs.JobManager;
+import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +48,6 @@ public class WorkerConnection extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(WorkerConnection.class);
 
     public static final int CONNECT_TIMEOUT = 60000;
-
-    private static int nextID = 0;
-
-    private static int getNextID() {
-        return nextID++;
-    }
 
     private final SocketChannel socket;
 
@@ -77,6 +72,8 @@ public class WorkerConnection extends Thread {
         this.socket = socket;
         this.jobManager = jobManager;
 
+        this.id = UUID.randomUUID().toString();
+
         if (logger.isDebugEnabled()) {
             logger.debug("New worker connection from " + socket.socket().getRemoteSocketAddress());
         }
@@ -90,32 +87,8 @@ public class WorkerConnection extends Thread {
             throw new IOException("first call to worker must be init function");
         }
 
-        String codeName = initRequest.getString(0);
-        String codeDir = initRequest.getString(1);
-        //String hostname = initRequest.getString(2);
-        String stdoutFile = initRequest.getString(3);
-        String stderrFile = initRequest.getString(4);
-        String nodeLabel = initRequest.getString(5);
-
-        if (nodeLabel.isEmpty()) {
-            nodeLabel = null;
-        }
-
-        int nrOfWorkers = initRequest.getInteger(0);
-        int nrOfNodes = initRequest.getInteger(1);
-        int nrOfThreads = initRequest.getInteger(2);
-
-        boolean copyWorkerCode = initRequest.getBoolean(0);
-
-        // get rid of "ugly" parts of id
-        String idName = codeName.replace("_worker", "").replace("_sockets", "");
-
-        id = idName + "-" + getNextID();
-
         //description of the worker, used for both the scheduler and the code proxy to start the worker properly
-        WorkerDescription workerDescription =
-                new WorkerDescription(id, codeName, codeDir, stdoutFile, stderrFile, nodeLabel, nrOfWorkers, nrOfNodes,
-                        nrOfThreads, copyWorkerCode);
+        WorkerDescription workerDescription = new WorkerDescription(initRequest, id);
 
         // initialize ibis ports
         receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, id);
@@ -171,8 +144,8 @@ public class WorkerConnection extends Thread {
             //
 
             //send a reply
-            AmuseMessage initReply =
-                    new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(), initRequest.getCallCount());
+            AmuseMessage initReply = new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(),
+                    initRequest.getCallCount());
             initReply.writeTo(socket);
 
         } catch (Exception e) {
@@ -180,9 +153,8 @@ public class WorkerConnection extends Thread {
                 logger.error("Error on handling call", e);
 
                 // report error to amuse
-                AmuseMessage errormessage =
-                        new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(), initRequest.getCallCount(),
-                                "Amuse error: " + e.getMessage());
+                AmuseMessage errormessage = new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(),
+                        initRequest.getCallCount(), "Amuse error: " + e.getMessage());
                 try {
                     errormessage.writeTo(socket);
                 } catch (IOException e1) {
@@ -262,9 +234,8 @@ public class WorkerConnection extends Thread {
                     logger.error("Error on handling call", e);
 
                     // report error to amuse
-                    AmuseMessage errormessage =
-                            new AmuseMessage(request.getCallID(), request.getFunctionID(), request.getCallCount(),
-                                    "Ibis/Amuse error: " + e.getMessage());
+                    AmuseMessage errormessage = new AmuseMessage(request.getCallID(), request.getFunctionID(),
+                            request.getCallCount(), "Ibis/Amuse error: " + e.getMessage());
                     try {
                         errormessage.writeTo(socket);
                     } catch (IOException e1) {
@@ -272,7 +243,7 @@ public class WorkerConnection extends Thread {
                     }
 
                     try {
-                        jobManager.cancelJob(job.getJobID());
+                        job.cancel();
                     } catch (Exception e2) {
                         logger.error("Error cancelling job", e);
                     }

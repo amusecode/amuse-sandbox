@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.octopus.Octopus;
-import nl.esciencecenter.octopus.jobs.Job;
-import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.xenon.Xenon;
+import nl.esciencecenter.xenon.jobs.Job;
+import nl.esciencecenter.xenon.jobs.JobStatus;
 
 /**
  * @author Niels Drost
@@ -37,10 +37,10 @@ public class JobStatusMonitor extends Thread {
 
     private final Map<Job, JobStatus> statusMap;
 
-    private final Octopus octopus;
+    private final Xenon xenon;
 
-    JobStatusMonitor(Octopus octopus) {
-        this.octopus = octopus;
+    JobStatusMonitor(Xenon xenon) {
+        this.xenon = xenon;
         statusMap = new HashMap<Job, JobStatus>();
 
         setName("Job Status monitor");
@@ -116,7 +116,7 @@ public class JobStatusMonitor extends Thread {
         while (true) {
             Job[] jobs = getInProgressJobs();
 
-            JobStatus[] statuses = octopus.jobs().getJobStatuses(jobs);
+            JobStatus[] statuses = xenon.jobs().getJobStatuses(jobs);
 
             update(jobs, statuses);
 

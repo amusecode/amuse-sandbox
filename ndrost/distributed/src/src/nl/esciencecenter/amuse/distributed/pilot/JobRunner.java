@@ -28,9 +28,8 @@ import org.slf4j.LoggerFactory;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.WorkerDescription;
 import nl.esciencecenter.amuse.distributed.jobs.JobManager;
-import nl.esciencecenter.amuse.distributed.workers.WorkerProxy;
+import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
 
 /**
  * A job running on a pilot node.S

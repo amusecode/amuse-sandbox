@@ -22,8 +22,8 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.jobs.PilotNodes;
 import nl.esciencecenter.amuse.distributed.resources.Resource;
 import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
-import nl.esciencecenter.octopus.Octopus;
-import nl.esciencecenter.octopus.jobs.JobStatus;
+import nl.esciencecenter.xenon.Xenon;
+import nl.esciencecenter.xenon.jobs.JobStatus;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,29 +48,29 @@ public class ReservationManager {
 
     private final ArrayList<Reservation> reservations;
 
-    private final Octopus octopus;
+    private final Xenon xenon;
 
     private final File tmpDir;
 
-    public ReservationManager(Octopus octopus, ResourceManager resourceManager, PilotNodes nodes, File tmpDir)
+    public ReservationManager(Xenon xenon, ResourceManager resourceManager, PilotNodes nodes, File tmpDir)
             throws DistributedAmuseException {
-        this.octopus = octopus;
+        this.xenon = xenon;
         this.resourceManager = resourceManager;
         this.nodes = nodes;
         this.tmpDir = tmpDir;
         reservations = new ArrayList<Reservation>();
-        jobStatusMonitor = new JobStatusMonitor(octopus);
+        jobStatusMonitor = new JobStatusMonitor(xenon);
     }
 
-    public synchronized Reservation newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes, int slots,
-            String nodeLabel) throws DistributedAmuseException {
+    public synchronized Reservation newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes,
+            int slots, String nodeLabel) throws DistributedAmuseException {
         logger.debug("reserving new nodes: resource name = " + resourceName + " queue name = " + queueName
                 + " number of nodes = " + nodeCount + " time (in minutes) = " + timeMinutes + " node label = " + nodeLabel);
 
         Resource resource = resourceManager.getResource(resourceName);
 
         Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, slots, nodeLabel,
-                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), octopus, tmpDir);
+                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, tmpDir);
 
         reservations.add(result);
         jobStatusMonitor.addJob(result.getJob());
@@ -156,7 +156,13 @@ public class ReservationManager {
         return reservations.toArray(new Reservation[reservations.size()]);
     }
 
-    public JobStatus getStatus(Reservation reservation) {
-        return jobStatusMonitor.getstatus(reservation.getJob());
+    public String getState(Reservation reservation) {
+        JobStatus status = jobStatusMonitor.getstatus(reservation.getJob());
+
+        if (status == null) {
+            return "UNKNOWN";
+        } else {
+            return status.getState();
+        }
     }
 }

@@ -13,22 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed;
+package nl.esciencecenter.amuse.distributed.jobs;
 
+import java.io.IOException;
 import java.io.Serializable;
 
+import nl.esciencecenter.amuse.distributed.AmuseMessage;
+
 /**
- * Description of a worker
+ * Description of a worker.
+ * 
  * 
  * @author Niels Drost
  */
 public class WorkerDescription implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private final String id;
-    private final String codeName;
-    private final String codeDir;
+    private final String executable;
     private final String stdoutFile;
     private final String stderrFile;
     private final String nodeLabel;
@@ -37,32 +40,50 @@ public class WorkerDescription implements Serializable {
     private final int nrOfNodes;
     private final int nrOfThreads;
 
-    private final boolean copyWorkerCode;
-
-    public WorkerDescription(String id, String codeName, String codeDir, String stdoutFile, String stderrFile, String nodeLabel,
-            int nrOfWorkers, int nrOfNodes, int nrOfThreads, boolean copyWorkerCode) {
+    public WorkerDescription(String id, String executable, String stdoutFile, String stderrFile, String nodeLabel,
+            int nrOfWorkers, int nrOfNodes, int nrOfThreads) {
         this.id = id;
-        this.codeName = codeName;
-        this.codeDir = codeDir;
+        this.executable = executable;
         this.stdoutFile = stdoutFile;
         this.stderrFile = stderrFile;
         this.nodeLabel = nodeLabel;
         this.nrOfWorkers = nrOfWorkers;
         this.nrOfNodes = nrOfNodes;
         this.nrOfThreads = nrOfThreads;
-        this.copyWorkerCode = copyWorkerCode;
     }
 
+    /**
+     * @param message
+     *            a message containing all required fields of a worker description
+     * @throws IOException
+     *             if the message cannot be read
+     */
+    public WorkerDescription(AmuseMessage message, String id) throws IOException {
+        this.id = id;
+        executable = message.getString(0);
+        stdoutFile = message.getString(1);
+        stderrFile = message.getString(2);
+
+        if (message.getString(3).isEmpty()) {
+            nodeLabel = null;
+        } else {
+            nodeLabel = message.getString(3);
+        }
+
+        nrOfWorkers = message.getInteger(0);
+        nrOfNodes = message.getInteger(1);
+        nrOfThreads = message.getInteger(2);
+    }
+    
     public String getID() {
         return id;
     }
 
-    public String getCodeName() {
-        return codeName;
-    }
-
-    public String getCodeDir() {
-        return codeDir;
+    /**
+     * Executable relative to AMUSE distribution root.
+     */
+    public String getExecutable() {
+        return executable;
     }
 
     public String getStdoutFile() {
@@ -89,14 +110,11 @@ public class WorkerDescription implements Serializable {
         return nrOfThreads;
     }
 
-    public boolean copyWorkerCode() {
-        return copyWorkerCode;
-    }
-
     @Override
     public String toString() {
-        return "WorkerDescription [id=" + id + ", codeName=" + codeName + ", codeDir=" + codeDir + ", stdoutFile=" + stdoutFile
-                + ", stderrFile=" + stderrFile + ", nodeLabel=" + nodeLabel + ", nrOfWorkers=" + nrOfWorkers + ", nrOfNodes="
-                + nrOfNodes + ", nrOfThreads=" + nrOfThreads + ", copyWorkerCode=" + copyWorkerCode + "]";
+        return "WorkerDescription [executable=" + executable + ", stdoutFile=" + stdoutFile + ", stderrFile=" + stderrFile
+                + ", nodeLabel=" + nodeLabel + ", nrOfWorkers=" + nrOfWorkers + ", nrOfNodes=" + nrOfNodes + ", nrOfThreads="
+                + nrOfThreads + "]";
     }
+
 }

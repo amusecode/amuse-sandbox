@@ -26,10 +26,9 @@ import nl.esciencecenter.amuse.distributed.reservations.ReservationManager;
 import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
 import nl.esciencecenter.amuse.distributed.web.WebInterface;
 import nl.esciencecenter.amuse.distributed.workers.WorkerConnectionServer;
-import nl.esciencecenter.octopus.Octopus;
-import nl.esciencecenter.octopus.OctopusFactory;
-import nl.esciencecenter.octopus.exceptions.OctopusException;
-import nl.esciencecenter.octopus.exceptions.OctopusIOException;
+import nl.esciencecenter.xenon.Xenon;
+import nl.esciencecenter.xenon.XenonException;
+import nl.esciencecenter.xenon.XenonFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +69,7 @@ public class DistributedAmuse {
     private final WebInterface webInterface;
 
     //used to copy files, start jobs, etc.
-    private final Octopus octopus;
+    private final Xenon xenon;
 
     private File tmpDir;
 
@@ -89,18 +88,18 @@ public class DistributedAmuse {
 
     public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort) throws DistributedAmuseException {
         try {
-            octopus = OctopusFactory.newOctopus(null);
-        } catch (OctopusException | OctopusIOException e) {
-            throw new DistributedAmuseException("could not create Octopus library object", e);
+            xenon = XenonFactory.newXenon(null);
+        } catch (XenonException  e) {
+            throw new DistributedAmuseException("could not create Xenon library object", e);
         }
 
         tmpDir = createTmpDir();
 
-        resourceManager = new ResourceManager(octopus, tmpDir, amuseRootDir);
+        resourceManager = new ResourceManager(xenon, tmpDir, amuseRootDir);
 
         jobManager = new JobManager(resourceManager.getIplServerAddress(), tmpDir);
         
-        reservationManager = new ReservationManager(octopus, resourceManager, jobManager.getNodes(), tmpDir);
+        reservationManager = new ReservationManager(xenon, resourceManager, jobManager.getNodes(), tmpDir);
 
         workerConnectionServer = new WorkerConnectionServer(jobManager, tmpDir);
 
@@ -143,6 +142,7 @@ public class DistributedAmuse {
         reservationManager.end();
         resourceManager.end();
         workerConnectionServer.end();
+        XenonFactory.endAll();
         logger.debug("Distributed Amuse ended.");
     }
     

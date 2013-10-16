@@ -57,7 +57,7 @@ public class PilotNodes implements RegistryEventHandler {
 
     public synchronized PilotNode[] getSuitableNodes(Job job) {
 
-        String label = job.getLabel();
+        String label = job.getNodeLabel();
 
         PilotNode[] result = new PilotNode[job.getNumberOfNodes()];
         int found = 0;

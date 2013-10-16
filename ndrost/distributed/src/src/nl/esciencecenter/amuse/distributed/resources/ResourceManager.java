@@ -8,7 +8,8 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.octopus.Octopus;
+import nl.esciencecenter.amuse.distributed.reservations.Reservation;
+import nl.esciencecenter.xenon.Xenon;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,15 +24,15 @@ public class ResourceManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
-    private final Octopus octopus;
+    private final Xenon xenon;
     
     private final Server iplServer;
     
     private final ArrayList<Resource> resources;
     
-    public ResourceManager(Octopus octopus, File tmpDir, String amuseRootDir) throws DistributedAmuseException {
+    public ResourceManager(Xenon xenon, File tmpDir, String amuseRootDir) throws DistributedAmuseException {
         resources = new ArrayList<Resource>();
-        this.octopus = octopus;
+        this.xenon = xenon;
         
         try {
             Properties properties = new Properties();
@@ -45,10 +46,10 @@ public class ResourceManager {
         //add local resource by default
 
         logger.debug("local amuse dir = " + amuseRootDir);
-        newResource("local", null, amuseRootDir, "local", false);
+        newResource("local", null, null, amuseRootDir, "local", false);
     }
 
-    public synchronized Resource newResource(String name, String location, String amuseDir,
+    public synchronized Resource newResource(String name, String location, String gateway, String amuseDir,
             String schedulerType, Boolean startHub) throws DistributedAmuseException {
         logger.debug("creating new resource: name = " + name + " location = " + location 
                 + " scheduler type = " + schedulerType + " amuse dir = " + amuseDir + " start hub = " + startHub);
@@ -59,7 +60,7 @@ public class ResourceManager {
             }
         }
 
-        Resource result = new Resource(name, location, amuseDir, schedulerType, startHub, octopus, iplServer);
+        Resource result = new Resource(name, location, gateway, amuseDir, schedulerType, startHub, xenon, iplServer);
 
         resources.add(result);
 
@@ -117,4 +118,6 @@ public class ResourceManager {
         }
         iplServer.end(1000);
     }
+
+
 }
