@@ -77,14 +77,14 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int new_resource(int[] index_of_the_resource, String[] name, String[] location, String[] gateway, String[] amuse_dir,
+    public int new_resource(int[] resource_id, String[] name, String[] location, String[] amuse_dir, String[] gateway,
             String[] scheduler_type, int[] start_hub, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 Boolean startHub = startHubFromInt(start_hub[i]);
                 Resource resource = distributedAmuse.resourceManager().newResource(name[i], location[i], gateway[i],
                         amuse_dir[i], scheduler_type[i], startHub);
-                index_of_the_resource[i] = resource.getId();
+                resource_id[i] = resource.getId();
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -275,7 +275,12 @@ public class Code implements CodeInterface {
     public int delete_script_job(int[] job_id, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                distributedAmuse.jobManager().deleteScriptJob(job_id[i]);
+                //first cancel job
+                ScriptJob job = distributedAmuse.jobManager().getScriptJob(job_id[i]);
+                job.cancel();
+
+                //then delete from manager list
+                distributedAmuse.jobManager().removeScriptJob(job_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -361,7 +366,12 @@ public class Code implements CodeInterface {
     public int delete_function_job(int[] job_id, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                distributedAmuse.jobManager().deleteFunctionJob(job_id[i]);
+                //first cancel job
+                FunctionJob job = distributedAmuse.jobManager().getFunctionJob(job_id[i]);
+                job.cancel();
+
+                //then delete from manager list
+                distributedAmuse.jobManager().removeFunctionJob(job_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -419,13 +429,13 @@ public class Code implements CodeInterface {
                 WorkerJob worker = distributedAmuse.jobManager().getWorkerJob(worker_id[i]);
 
                 WorkerDescription description = worker.getDescription();
-                
+
                 executable[i] = description.getExecutable();
                 node_label[i] = description.getNodeLabel();
                 worker_count[i] = description.getNrOfWorkers();
                 node_count[i] = description.getNrOfNodes();
                 thread_count[i] = description.getNrOfThreads();
-                
+
                 status[i] = worker.getJobState();
             }
             return 0;

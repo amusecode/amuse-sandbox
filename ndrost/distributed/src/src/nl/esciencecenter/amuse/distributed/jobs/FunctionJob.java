@@ -29,9 +29,8 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
  */
 public class FunctionJob extends Job {
     
-    public FunctionJob(String nodeLabel, int numberOfNodes, Ibis ibis) throws DistributedAmuseException  {
-        super(nodeLabel, numberOfNodes, ibis);
-        // TODO Auto-generated constructor stub
+    public FunctionJob(String function, String arguments, String nodeLabel, Ibis ibis) throws DistributedAmuseException {
+        super(nodeLabel, 1, ibis);
     }
 
     private String result = null;

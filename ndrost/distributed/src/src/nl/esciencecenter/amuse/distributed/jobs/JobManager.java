@@ -91,60 +91,11 @@ public class JobManager extends Thread {
         return ibis;
     }
 
-    private synchronized void addWorkerJob(WorkerJob job) {
-        queue.add(job);
-
-        workers.add(job);
-
-        //run scheduler thread now
-        notifyAll();
-    }
-
+  
     public PilotNodes getNodes() {
         return nodes;
     }
-
-    public synchronized WorkerJob[] getWorkerJobs() {
-        return workers.toArray(new WorkerJob[0]);
-    }
-
-    public synchronized ScriptJob[] getScriptJobs() {
-        return scriptJobs.toArray(new ScriptJob[0]);
-    }
-
-    public FunctionJob submitFunctionJob(String function, String arguments, String nodeLabel) throws DistributedAmuseException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public ScriptJob submitScriptJob(String scriptName, String arguments, String scriptDir, String nodeLabel,
-            boolean reUseCodeFiles) throws DistributedAmuseException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public synchronized FunctionJob[] getFunctionJobs() {
-        return functionJobs.toArray(new FunctionJob[0]);
-    }
-
-    public synchronized FunctionJob getFunctionJob(int jobID) throws DistributedAmuseException {
-        for (FunctionJob job : functionJobs) {
-            if (jobID == job.getJobID()) {
-                return job;
-            }
-        }
-        throw new DistributedAmuseException("Unknown job: " + jobID);
-    }
-
-    public synchronized ScriptJob getScriptJob(int jobID) throws DistributedAmuseException {
-        for (ScriptJob job : scriptJobs) {
-            if (jobID == job.getJobID()) {
-                return job;
-            }
-        }
-        throw new DistributedAmuseException("Unknown job: " + jobID);
-    }
-
+    
     public synchronized Job getJob(int jobID) throws DistributedAmuseException {
         for (Job job : workers) {
             if (jobID == job.getJobID()) {
@@ -166,20 +117,89 @@ public class JobManager extends Thread {
 
         throw new DistributedAmuseException("Unknown job: " + jobID);
     }
+    
+    //FUNCTION JOBS
 
-    public WorkerJob submitWorkerJob(WorkerDescription jobDescription) throws DistributedAmuseException {
-        WorkerJob result = new WorkerJob(jobDescription, ibis);
+    
+    private synchronized void addFunctionJob(FunctionJob job) {
+        queue.add(job);
 
-        addWorkerJob(result);
+        functionJobs.add(job);
 
+        //run scheduler thread now
+        notifyAll();
+    }
+    
+    public FunctionJob submitFunctionJob(String function, String arguments, String nodeLabel) throws DistributedAmuseException {
+        FunctionJob result = new FunctionJob(function, arguments, nodeLabel, ibis);
+        
+        addFunctionJob(result);
+        
         return result;
     }
-
-
-    public synchronized WorkerJob getWorkerJob(int jobID) throws DistributedAmuseException {
-        for (WorkerJob job : workers) {
+    
+    public synchronized FunctionJob[] getFunctionJobs() {
+        return functionJobs.toArray(new FunctionJob[0]);
+    }
+    
+    public synchronized FunctionJob getFunctionJob(int jobID) throws DistributedAmuseException {
+        for (FunctionJob job : functionJobs) {
             if (jobID == job.getJobID()) {
                 return job;
+            }
+        }
+        throw new DistributedAmuseException("Unknown job: " + jobID);
+    }
+    
+    public void removeFunctionJob(int jobID) throws DistributedAmuseException {
+        for (int i = 0; i < functionJobs.size(); i++) {
+            if (functionJobs.get(i).getJobID() == jobID) {
+                functionJobs.remove(i);
+                return;
+            }
+        }
+        throw new DistributedAmuseException("Unknown job: " + jobID);
+    }
+    
+    //SCRIPT JOBS
+    
+    private synchronized void addScriptJob(ScriptJob job) {
+        queue.add(job);
+
+        scriptJobs.add(job);
+
+        //run scheduler thread now
+        notifyAll();
+    }
+
+    public ScriptJob submitScriptJob(String scriptName, String arguments, String scriptDir, String nodeLabel,
+            boolean reUseCodeFiles) throws DistributedAmuseException {
+        ScriptJob result = new ScriptJob(scriptName, arguments, scriptDir, nodeLabel, reUseCodeFiles, ibis);
+        
+        addScriptJob(result);
+        
+        return result;
+
+    }
+
+    public synchronized ScriptJob[] getScriptJobs() {
+        return scriptJobs.toArray(new ScriptJob[0]);
+    }
+
+    public synchronized ScriptJob getScriptJob(int jobID) throws DistributedAmuseException {
+        for (ScriptJob job : scriptJobs) {
+            if (jobID == job.getJobID()) {
+                return job;
+            }
+        }
+        throw new DistributedAmuseException("Unknown job: " + jobID);
+    }
+
+    public synchronized void removeScriptJob(int jobID) throws DistributedAmuseException {
+        for (int i = 0; i < scriptJobs.size(); i++) {
+            if (scriptJobs.get(i).getJobID() == jobID) {
+                scriptJobs.remove(i);
+                return;
             }
         }
         throw new DistributedAmuseException("Unknown job: " + jobID);
@@ -193,6 +213,41 @@ public class JobManager extends Thread {
         }
         return true;
     }
+
+    //WORKER JOBS
+    
+    private synchronized void addWorkerJob(WorkerJob job) {
+        queue.add(job);
+
+        workers.add(job);
+
+        //run scheduler thread now
+        notifyAll();
+    }
+
+
+    public WorkerJob submitWorkerJob(WorkerDescription jobDescription) throws DistributedAmuseException {
+        WorkerJob result = new WorkerJob(jobDescription, ibis);
+
+        addWorkerJob(result);
+
+        return result;
+    }
+    
+    public synchronized WorkerJob[] getWorkerJobs() {
+        return workers.toArray(new WorkerJob[0]);
+    }
+    
+    public synchronized WorkerJob getWorkerJob(int jobID) throws DistributedAmuseException {
+        for (WorkerJob job : workers) {
+            if (jobID == job.getJobID()) {
+                return job;
+            }
+        }
+        throw new DistributedAmuseException("Unknown job: " + jobID);
+    }
+
+  
 
     public synchronized void waitForScriptJobs() throws DistributedAmuseException {
         while (!allScriptJobsDone()) {
@@ -286,34 +341,19 @@ public class JobManager extends Thread {
         }
     }
 
-    /**
-     * @param i
-     * @return
-     */
-    public void deleteFunctionJob(int jobID) throws DistributedAmuseException {
+
+
+    public synchronized int getWorkerJobCount() {
+        return workers.size();
     }
 
-    /**
-     * @param i
-     * @return
-     */
-    public void deleteScriptJob(int jobID) throws DistributedAmuseException {
-    }
+    public synchronized int[] getWorkerIDs() {
+        int[] result = new int[workers.size()];
 
-    /**
-     * @return
-     */
-    public int getWorkerJobCount() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    /**
-     * @return
-     */
-    public int[] getWorkerIDs() {
-        // TODO Auto-generated method stub
-        return null;
+        for (int i = 0; i < result.length; i++) {
+            result[i] = workers.get(i).getJobID();
+        }
+        return result;
     }
 
 }

@@ -107,9 +107,9 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('resource_id', dtype='int32', direction=function.OUT)
         function.addParameter("name", dtype='string', direction=function.IN)
         function.addParameter("location", dtype='string', direction=function.IN)
-        function.addParameter("gateway", dtype='string', direction=function.IN)
         function.addParameter("amuse_dir", dtype='string', direction=function.IN)
-        function.addParameter("scheduler_type", dtype='string', direction=function.IN, default="fork")
+        function.addParameter("gateway", dtype='string', direction=function.IN, default=[""])
+        function.addParameter("scheduler_type", dtype='string', direction=function.IN, default=["fork"])
         function.addParameter('start_hub', dtype='int32', direction=function.IN, default=-1)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
@@ -166,11 +166,11 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.must_handle_array = True
         function.addParameter('reservation_id', dtype='int32', direction=function.OUT)
         function.addParameter("resource_name", dtype='string', direction=function.IN)
-        function.addParameter("queue_name", dtype='string', direction=function.IN, default="")
+        function.addParameter("queue_name", dtype='string', direction=function.IN, default=[""])
         function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
         function.addParameter("slots_per_node", dtype='int32', direction=function.IN, default = 1)
-        function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
+        function.addParameter("node_label", dtype='string', direction=function.IN, default = ["default"])
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
 
         function.result_type = 'int32'
@@ -241,7 +241,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('script_name', dtype='string', direction=function.IN)
         function.addParameter('arguments', dtype='string', direction=function.IN)
         function.addParameter('script_dir', dtype='string', direction=function.IN)
-        function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
+        function.addParameter("node_label", dtype='string', direction=function.IN, default = ["default"])
         function.addParameter("re_use_code_files", dtype='int32', direction=function.IN, default = 0)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
@@ -306,7 +306,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('job_id', dtype='int32', direction=function.OUT)
         function.addParameter('function', dtype='string', direction=function.IN)
         function.addParameter('arguments', dtype='string', direction=function.IN)
-        function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
+        function.addParameter("node_label", dtype='string', direction=function.IN, default = ["default"])
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -444,34 +444,34 @@ class DistributedAmuse(CommonCode):
         object.define_super_set('items', ['resources', 'reservations', 'script_jobs', 'function_jobs', '_workers'])
         
         #resources
-        object.define_set('resources', 'index_of_the_resource')
+        object.define_set('resources', 'resource_id')
         object.set_new('resources', 'new_resource')
         object.set_delete('resources', 'delete_resource')
         object.add_getter('resources', 'get_resource_state')
         
         #reservations
-        object.define_set('reservations', 'index_of_the_reservation')
+        object.define_set('reservations', 'reservation_id')
         object.set_new('reservations', 'new_reservation')
         object.set_delete('reservations', 'delete_reservation')
         object.add_getter('reservations', 'get_reservation_state')
         object.add_getter('reservations', 'get_reservation_status', names = ('status',))
         
         #script jobs
-        object.define_set('script_jobs', 'index_of_the_script_job')
+        object.define_set('script_jobs', 'job_id')
         object.set_new('script_jobs', 'submit_script_job')
         object.set_delete('script_jobs', 'delete_script_job')
         object.add_getter('script_jobs', 'get_script_job_state')
         object.add_getter('script_jobs', 'get_script_job_status', names = ('status',))
         
         #function jobs
-        object.define_set('function_jobs', 'index_of_the_function_job')
+        object.define_set('function_jobs', 'job_id')
         object.set_new('function_jobs', 'submit_function_job')
         object.set_delete('function_jobs', 'delete_function_job')
         object.add_getter('function_jobs', 'get_function_job_state')
         object.add_getter('function_jobs', 'get_function_job_status')
         
         #workers
-        object.define_set('_workers', 'index_of_the_worker')
+        object.define_set('_workers', 'worker_id')
         object.set_new('_workers', 'new_worker')
         object.set_delete('_workers', 'delete_worker')
         object.add_getter('_workers', 'get_worker_state')
@@ -499,4 +499,3 @@ class DistributedAmuse(CommonCode):
         if not len(ids_to_add) == 0:
             self._workers._add_indices_in_attribute_storage(list(ids_to_add))
     
-

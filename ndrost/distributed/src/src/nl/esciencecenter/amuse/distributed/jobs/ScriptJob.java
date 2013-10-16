@@ -29,16 +29,10 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
  */
 public class ScriptJob extends Job {
 
-    /**
-     * @param nodeLabel
-     * @param numberOfNodes
-     * @param ibis
-     * @throws DistributedAmuseException 
-     * @throws IOException 
-     */
-    public ScriptJob(String nodeLabel, int numberOfNodes, Ibis ibis) throws DistributedAmuseException {
-        super(nodeLabel, numberOfNodes, ibis);
-        // TODO Auto-generated constructor stub
+   
+    public ScriptJob(String scriptName, String arguments, String scriptDir, String nodeLabel, boolean reUseCodeFiles, Ibis ibis)
+            throws DistributedAmuseException {
+        super(nodeLabel, 1, ibis);
     }
 
     /**
