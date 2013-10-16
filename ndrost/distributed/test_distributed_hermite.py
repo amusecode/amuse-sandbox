@@ -9,6 +9,8 @@ from amuse.community.hermite0.interface import HermiteInterface, Hermite
 from interface import DistributedAmuseInterface
 from interface import DistributedAmuse
 
+from amuse.lab import *
+
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
@@ -26,19 +28,29 @@ class TestHermiteInterface(TestWithMPI):
     @classmethod
     def setup_class(cls):
 	print "setting up distributed code"
+        instance = DistributedAmuse(redirection='none')
+        instance.initialize_code()
+
+	resource = Particle()
+        resource.name='DAS4-VU'
+        resource.location="niels@fs0.das4.cs.vu.nl"
+        resource.scheduler_type="sge"
+        resource.amuse_dir="/home/niels/amuse"
+        instance.resources.add_particle(resource)
+        print instance.resources
+
+	reservation = Particle()
+        reservation.resource_name='local'
+        reservation.node_count=1
+        reservation.time= 2|units.hour
+        reservation.slots_per_node=2
+        reservation.node_label='local'
+        instance.reservations.add_particle(reservation)
+
+	instance.wait_for_reservations()
+
 	#make this a global variable to keep it from being garbadge collected
-        cls.dist = DistributedAmuse(redirection='none')
-        cls.dist.initialize_code()
-
-	cls.dist.new_resource(name='DAS4-VU',
-                              hostname="fs0.das4.cs.vu.nl",
-                              username="niels",
-                              scheduler_type="sge",
-                              amuse_dir="/home/niels/amuse",
-                              )
-
-	cls.dist.new_reservation(resource_name='DAS4-VU', node_count=1, time= 2|units.hour, node_label='VU')
- 	cls.dist.wait_for_reservations()
+	cls.dist = instance
 
     @classmethod
     def teardown_class(cls):

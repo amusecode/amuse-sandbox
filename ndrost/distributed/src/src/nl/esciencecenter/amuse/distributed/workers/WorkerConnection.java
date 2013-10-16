@@ -99,7 +99,7 @@ public class WorkerConnection extends Thread {
         // start deployment of worker (possibly on remote machine)
         job = jobManager.submitWorkerJob(workerDescription);
 
-        logger.info("New worker submitted {} with description {}", this, workerDescription);
+        logger.info("New worker submitted : {} with description : {}", this, workerDescription);
 
         setDaemon(true);
         start();

@@ -235,9 +235,8 @@ public abstract class Job extends Thread implements MessageUpcall {
 
             //details of job
             writeMessage.writeInt(jobID);
-            writeMessage.writeString(nodeLabel);
-            writeMessage.writeInt(numberOfNodes);
             writeMessage.writeObject(this.resultReceivePort.identifier());
+            
             writeJobDetails(writeMessage);
 
             writeMessage.finish();
@@ -263,7 +262,10 @@ public abstract class Job extends Thread implements MessageUpcall {
 
             if (error != null) {
                 setError(new DistributedAmuseException("Remote node reported error", error));
+            } else {
+                setState(State.RUNNING);
             }
+            logger.debug("job started");
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Job failed!", e);
             setError(e);
@@ -313,14 +315,17 @@ public abstract class Job extends Thread implements MessageUpcall {
 
         if (error != null) {
             setError(new DistributedAmuseException("Remote node reported error", error));
+        } else {
+            setState(State.DONE);
         }
+        
+        logger.debug("Status message received, state now: {}", this);
 
-        setState(State.DONE);
     }
 
     @Override
     public String toString() {
-        return "Job [jobID=" + jobID + ", label=" + getNodeLabel() + ", state=" + state + ", target=" + Arrays.toString(target)
+        return "Job [jobID=" + jobID + ", label=" + getNodeLabel() + ", state=" + getState() + ", target=" + Arrays.toString(target)
                 + ", error=" + error + ", expirationDate=" + expirationDate + "]";
     }
 

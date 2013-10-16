@@ -71,14 +71,15 @@ public class WorkerJob extends Job {
 
     @Override
     void writeJobDetails(WriteMessage writeMessage) throws IOException {
+        writeMessage.writeObject(description);
         writeMessage.writeObject(getTargetIbisIdentifiers());
     }
 
     @Override
     void readJobStatus(ReadMessage readMessage) throws ClassNotFoundException, IOException {
-        ReceivePortIdentifier workerPort = (ReceivePortIdentifier) readMessage.readObject();
-        
-        setRemoteWorkerPort(workerPort);
+//        ReceivePortIdentifier workerPort = (ReceivePortIdentifier) readMessage.readObject();
+//        
+//        setRemoteWorkerPort(workerPort);
     }
 
     /**

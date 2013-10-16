@@ -17,19 +17,19 @@ package nl.esciencecenter.amuse.distributed.pilot;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.jobs.JobManager;
 import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A job running on a pilot node.S
@@ -43,6 +43,7 @@ public class JobRunner extends Thread {
 
     private final int jobID;
     private final WorkerProxy workerProxy;
+    private final ReceivePortIdentifier resultPort;
     private final Ibis ibis;
 
     /**
@@ -50,12 +51,16 @@ public class JobRunner extends Thread {
      * @param description
      * @param nodes
      * @param configuration
+     * @param resultPort 
      * @throws Exception
      */
-    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, IbisIdentifier[] nodes, Ibis ibis)
+    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, IbisIdentifier[] nodes, ReceivePortIdentifier resultPort, Ibis ibis)
             throws Exception {
         this.jobID = jobID;
+        this.resultPort = resultPort;
         this.ibis = ibis;
+        
+        logger.debug("Starting job runner....");
 
         File workingDirectory = new File(System.getProperty("java.io.tmpdir") + File.separator + "distributed-amuse-worker"
                 + jobID);
@@ -77,19 +82,13 @@ public class JobRunner extends Thread {
 
         logger.debug("worker {} done. Sending result to main amuse node.", jobID);
 
-        //send result message to main node (handled by JobManager, passed to Job)
+        //send result message to job
         try {
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
-            IbisIdentifier mainNode = ibis.registry().getElectionResult("amuse");
-
-            sendPort.connect(mainNode, JobManager.PORT_NAME);
+            sendPort.connect(resultPort);
 
             WriteMessage message = sendPort.newMessage();
-
-            message.writeInt(jobID);
-
-            message.writeString(workerProxy.getResult());
 
             message.writeObject(workerProxy.getError());
             message.finish();

@@ -92,6 +92,8 @@ public class PilotNode {
             }
         }
 
+        logger.debug("pilot node {} currently running {} jobs, has {} slots available", this, jobCount, slots);
+        
         return jobCount < slots;
     }
     

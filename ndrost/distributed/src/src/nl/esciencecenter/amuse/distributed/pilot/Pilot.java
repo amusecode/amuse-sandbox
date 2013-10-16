@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
-    
+
     public static final String PORT_NAME = "pilot";
 
     private static final Logger logger = LoggerFactory.getLogger(Pilot.class);
@@ -73,9 +73,8 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         //reservation ID, label, slots, hostname
         String tag = reservationID + "," + nodeLabel + "," + slots + "," + InetAddress.getLocalHost().getHostAddress();
 
-        ibis =
-                IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, null, null, tag, DistributedAmuse.ONE_TO_ONE_PORT_TYPE,
-                        DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
+        ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, null, null, tag,
+                DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
         receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, PORT_NAME, this, this, null);
     }
@@ -148,7 +147,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         Pilot pilot = new Pilot(configuration, properties, reservationID, nodeLabel, slots);
 
         pilot.run();
-        
+
         logger.debug("Main pilot thread ended");
     }
 
@@ -179,27 +178,33 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     public void upcall(ReadMessage readMessage) throws IOException, ClassNotFoundException {
         logger.debug("Received message upcall");
 
-        String replyMessage = "ok";
+        Exception replyException = null;
 
         //run cleanup
         removeFinishedJobs();
 
-        ReceivePortIdentifier replyPort = (ReceivePortIdentifier) readMessage.readObject();
-
         String command = readMessage.readString();
 
+        logger.debug("Got command: " + command);
+
         if (command.equals("start")) {
+            ReceivePortIdentifier replyPort = (ReceivePortIdentifier) readMessage.readObject();
+
             //details of job
             int jobID = readMessage.readInt();
+
+            ReceivePortIdentifier resultPort = (ReceivePortIdentifier) readMessage.readObject();
+
+            //hard coded worker job info
             WorkerDescription description = (WorkerDescription) readMessage.readObject();
             IbisIdentifier[] nodes = (IbisIdentifier[]) readMessage.readObject();
-            ReceivePortIdentifier resultPort = (ReceivePortIdentifier) readMessage.readObject();
+
             readMessage.finish();
 
             //FIXME: transfer files etc
 
             try {
-                JobRunner jobRunner = new JobRunner(jobID, description, configuration, nodes, ibis);
+                JobRunner jobRunner = new JobRunner(jobID, description, configuration, nodes, resultPort, ibis);
 
                 addJobRunner(jobID, jobRunner);
 
@@ -207,8 +212,24 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
                 jobRunner.start();
             } catch (Exception e) {
                 logger.error("Error starting job", e);
-                replyMessage = "Error starting job: " + e;
+                replyException = new Exception("Error starting job", e);
             }
+            logger.debug("Sending reply");
+
+            //send reply
+            SendPort sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
+
+            sendPort.connect(replyPort);
+
+            WriteMessage reply = sendPort.newMessage();
+
+            reply.writeObject(replyException);
+            
+            reply.finish();
+
+            sendPort.close();
+
+            logger.debug("Reply sent");
         } else if (command.equals("cancel")) {
             int jobID = readMessage.readInt();
             readMessage.finish();
@@ -221,21 +242,8 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             }
         } else {
             logger.error("Failed to handle message, unknown command: " + command);
-            replyMessage = "unknown command: " + command;
+            
         }
-
-        //send reply
-        SendPort sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
-
-        sendPort.connect(replyPort);
-
-        WriteMessage reply = sendPort.newMessage();
-
-        reply.writeString(replyMessage);
-
-        reply.finish();
-
-        sendPort.close();
 
     }
 

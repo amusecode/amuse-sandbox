@@ -75,8 +75,6 @@ public class WorkerProxy extends Thread {
 
     private final File workingDirectory;
 
-    private String result = "ok";
-
     private Exception error = null;
 
     /**
@@ -236,14 +234,6 @@ public class WorkerProxy extends Thread {
         setName("Worker Proxy for " + description.getID());
         setDaemon(true);
         start();
-    }
-
-    public synchronized String getResult() {
-        return result;
-    }
-
-    synchronized void setResult(String result) {
-        this.result = result;
     }
 
     private synchronized void setError(Exception error) {
