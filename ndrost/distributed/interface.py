@@ -399,11 +399,32 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_number_of_workers():
+        function = LegacyFunctionSpecification()
+        function.addParameter('number_of_workers', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_worker_ids():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index', dtype='int32', direction=function.IN) # probably unused, but required to get 'count'
+        function.addParameter('id_of_the_worker', dtype='int32', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
     def cleanup_code(self):
         del options.GlobalOptions.instance().overriden_options["channel_type"]
         return 0
     
-    new_worker = None
+    def new_worker(self):
+        raise exceptions.AmuseException("Can't add to 'workers' directly. Create community code instances in the usual way instead.")
+    
+    def delete_worker(self):
+        raise exceptions.AmuseException("Can't remove from 'workers' directly. Stop community code instances in the usual way instead.")
 
 class DistributedAmuse(CommonCode):
 
@@ -420,7 +441,7 @@ class DistributedAmuse(CommonCode):
         return result
     
     def define_particle_sets(self, object):
-        object.define_super_set('items', ['resources', 'reservations', 'script_jobs', 'function_jobs', 'workers'])
+        object.define_super_set('items', ['resources', 'reservations', 'script_jobs', 'function_jobs', '_workers'])
         
         #resources
         object.define_set('resources', 'index_of_the_resource')
@@ -450,24 +471,32 @@ class DistributedAmuse(CommonCode):
         object.add_getter('function_jobs', 'get_function_job_status')
         
         #workers
-        object.define_set('workers', 'index_of_the_worker')
-        object.set_new('workers', 'new_worker')
-        object.set_delete('workers', 'delete_worker')
-        object.add_getter('workers', 'get_worker_state')
-        object.add_getter('workers', 'get_worker_status', names = ('status',))
+        object.define_set('_workers', 'index_of_the_worker')
+        object.set_new('_workers', 'new_worker')
+        object.set_delete('_workers', 'delete_worker')
+        object.add_getter('_workers', 'get_worker_state')
+        object.add_getter('_workers', 'get_worker_status', names = ('status',))
         
-    def update_particle_set(self):
+    @property
+    def workers(self):
+        self.update_workers_particle_set()
+        return self._workers
+    
+    def update_workers_particle_set(self):
         """
-        update the particle set after changes in the code
+        Update the "workers" particle set after new instances of codes have been
+        created or previously created instances have been stopped.
+        """
+        old_ids = set(self._workers.get_all_indices_in_store())
+        number_of_workers = self.get_number_of_workers()
+        if not number_of_workers == 0:
+            new_ids = set(self.get_worker_ids(range(number_of_workers)))
         
-        this implementation needs to move to the
-        amuse.datamodel.incode_storage module, as
-        it uses a lot of internal methods and info!
-        """
-        number_of_updated_particles = self.get_number_of_particles_updated()
-        if number_of_updated_particles:
-            self.workers._private.attribute_storage._add_indices(
-                range(number_of_updated_particles)
-            )
+        ids_to_remove = old_ids - new_ids
+        ids_to_add = new_ids - old_ids
+        if not len(ids_to_remove) == 0:
+            self._workers._remove_indices_in_attribute_storage(list(ids_to_remove))
+        if not len(ids_to_add) == 0:
+            self._workers._add_indices_in_attribute_storage(list(ids_to_add))
     
 
