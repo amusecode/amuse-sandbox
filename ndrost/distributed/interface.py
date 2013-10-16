@@ -79,11 +79,11 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
 #        self.stdoutHandler = OutputHandler(sys.stdout, port)
 #        self.stderrHandler = OutputHandler(sys.stderr, port)
 
-        options.GlobalOptions.instance().override_value_for_option("channel_type", "ibis")
+        options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
         options.GlobalOptions.instance().override_value_for_option("port", port)
 
 
-    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
+    @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'sockets'
     
@@ -107,9 +107,28 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('index_of_the_resource', dtype='int32', direction=function.OUT)
         function.addParameter("name", dtype='string', direction=function.IN)
         function.addParameter("location", dtype='string', direction=function.IN)
+        function.addParameter("gateway", dtype='string', direction=function.IN)
         function.addParameter("amuse_dir", dtype='string', direction=function.IN)
         function.addParameter("scheduler_type", dtype='string', direction=function.IN, default="fork")
         function.addParameter('start_hub', dtype='int32', direction=function.IN, default=-1)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_resource_state():
+        """
+        Get all the attributes of a resource.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter("name", dtype='string', direction=function.OUT)
+        function.addParameter("location", dtype='string', direction=function.OUT)
+        function.addParameter("gateway", dtype='string', direction=function.OUT)
+        function.addParameter("amuse_dir", dtype='string', direction=function.OUT)
+        function.addParameter("scheduler_type", dtype='string', direction=function.OUT)
+        function.addParameter('start_hub', dtype='int32', direction=function.OUT)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -139,37 +158,6 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     @legacy_function
-    def get_resource_name():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
-        function.addParameter('resource_name', dtype='string', direction=function.OUT)
-        function.addParameter('count', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_resource_hostname():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
-        function.addParameter('resource_hostname', dtype='string', direction=function.OUT)
-        function.addParameter('count', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_resource_type():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
-        function.addParameter('resource_type', dtype='string', direction=function.OUT)
-        function.addParameter('count', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    
-    @legacy_function
     def new_reservation():
         """
         Reserve one or more nodes for later use by the simulation.
@@ -181,10 +169,43 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("queue_name", dtype='string', direction=function.IN, default="")
         function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
-        function.addParameter("slots", dtype='int32', direction=function.IN, default = 1)
+        function.addParameter("slots_per_node", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
 
+        function.result_type = 'int32'
+        return function
+    
+ 
+
+    @legacy_function
+    def get_reservation_state():
+        """
+        Get all attributes of a reservation
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('reservation_id', dtype='int32', direction=function.IN)
+        function.addParameter("resource_name", dtype='string', direction=function.OUT)
+        function.addParameter("queue_name", dtype='string', direction=function.OUT)
+        function.addParameter("node_count", dtype='int32', direction=function.OUT)
+        function.addParameter("time", dtype='int32', direction=function.OUT, unit = units.minute)
+        function.addParameter("slots_per_node", dtype='int32', direction=function.OUT)
+        function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter('status', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+
+        function.result_type = 'int32'
+        return function
+
+    
+    @legacy_function
+    def get_reservation_status():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
+        function.addParameter('reservation_status', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
     
@@ -201,48 +222,6 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     @legacy_function
-    def get_reservation_node_label():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
-        function.addParameter('node_label', dtype='string', direction=function.OUT)
-        function.addParameter('count', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_reservation_resource_name():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
-        function.addParameter('resource_name', dtype='string', direction=function.OUT)
-        function.addParameter('count', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_reservation_node_count():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
-        function.addParameter('node_count', dtype='int32', direction=function.OUT)
-        function.addParameter('count', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_reservation_status():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_resource', dtype='int32', direction=function.IN)
-        function.addParameter('reservation_status', dtype='string', direction=function.OUT)
-        function.addParameter('count', dtype='int32', direction=function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    
-    
-    @legacy_function
     def wait_for_reservations():
         """
         Wait until all reservations are started, and all nodes are available to run jobs and/or workers
@@ -251,9 +230,74 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.result_type = 'int32'
         return function
     
-        
     @legacy_function
-    def submit_pickled_function_job():
+    def submit_script_job():
+        """
+        Submit a job, specified by a script
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('job_id', dtype='int32', direction=function.OUT)
+        function.addParameter('script_name', dtype='string', direction=function.IN)
+        function.addParameter('arguments', dtype='string', direction=function.IN)
+        function.addParameter('script_dir', dtype='string', direction=function.IN)
+        function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
+        function.addParameter("re_use_code_files", dtype='int32', direction=function.IN, default = 0)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_script_job_state():
+        """
+        Get all attributes of a script job
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('job_id', dtype='int32', direction=function.IN)
+        function.addParameter('script_name', dtype='string', direction=function.OUT)
+        function.addParameter('arguments', dtype='string', direction=function.OUT)
+        function.addParameter('script_dir', dtype='string', direction=function.OUT)
+        function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter("re_use_code_files", dtype='int32', direction=function.OUT)
+        function.addParameter("status", dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_script_job_status():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('job_id', dtype='int32', direction=function.IN)
+        function.addParameter('status', dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def delete_script_job():
+        """
+        Delete (cancel) a script job
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('job_id', dtype='int32', direction=function.IN)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def wait_for_script_jobs():
+        """
+        Wait until all script jobs are done.
+        """
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def submit_function_job():
         """
         Submit a job, specified by a pickle of the function, and a pickle of the arguments.
         """
@@ -268,7 +312,36 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     @legacy_function
-    def get_pickled_function_job_result():
+    def get_function_job_state():
+        """
+        Get all attributes of a pickled job
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('job_id', dtype='int32', direction=function.IN)
+        function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter("status", dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    
+    
+    @legacy_function
+    def get_function_job_status():
+        """
+        Get all attributes of a pickled job
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('job_id', dtype='int32', direction=function.IN)
+        function.addParameter("status", dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_function_job_result():
         """
         Get a result of a picked function job. Will block until the result is available
         """
@@ -281,28 +354,48 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     @legacy_function
-    def submit_script_job():
+    def delete_function_job():
         """
-        Submit a job, specified by a script
+        Delete (cancel) a script job
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('job_id', dtype='int32', direction=function.OUT)
-        function.addParameter('script', dtype='string', direction=function.IN)
-        function.addParameter('arguments', dtype='string', direction=function.IN)
-        function.addParameter('script_dir', dtype='string', direction=function.IN)
-        function.addParameter("node_label", dtype='string', direction=function.IN, default = "default")
-        function.addParameter("re_use_code_files", dtype='int32', direction=function.IN, default = 0)
+        function.addParameter('job_id', dtype='int32', direction=function.IN)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
-
+    
     @legacy_function
-    def wait_for_jobs():
+    def get_worker_state():
         """
-        Wait until all jobs are done.
+        Get all attributes of a pickled job
         """
         function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('worker_id', dtype='int32', direction=function.IN)
+
+        function.addParameter('executable', dtype='string', direction=function.OUT)
+        function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter("worker_count", dtype='int32', direction=function.OUT)
+        function.addParameter("node_count", dtype='int32', direction=function.OUT)
+        function.addParameter("thread_count", dtype='int32', direction=function.OUT)
+        function.addParameter("status", dtype='string', direction=function.OUT)
+        
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
+        
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_worker_status():
+        """
+        Get all attributes of a pickled job
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('worker_id', dtype='int32', direction=function.IN)
+        function.addParameter("status", dtype='string', direction=function.OUT)
+        function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
     
@@ -310,11 +403,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         del options.GlobalOptions.instance().overriden_options["channel_type"]
         return 0
     
-    def bookkeeping_after_job_started(self, job_id):
-        return job_id
-    
     new_worker = None
-    
 
 class DistributedAmuse(CommonCode):
 
@@ -323,46 +412,48 @@ class DistributedAmuse(CommonCode):
     
     def submit_function_job(self, function, *args, **kwargs):
         # pickle the input function
-        job_id = self.overridden().submit_pickled_function_job(*args, **kwargs)
-        self.bookkeeping_after_job_started(job_id)
+        return self.overridden().submit_function_job(*args, **kwargs)
     
-    def submit_script_job(self, *args, **kwargs):
-        job_id = self.overridden().submit_script_job(*args, **kwargs)
-        self.bookkeeping_after_job_started(job_id)
+    def get_function_job_result(self, function, *args, **kwargs):
+        result = self.overridden().get_function_job_result(*args, **kwargs)
+        #un-pickle
+        return result
     
     def define_particle_sets(self, object):
-        object.define_super_set('particles', ['resources', 'reservations', 'jobs', 'workers'], 
-            index_to_default_set = 0)
+        object.define_super_set('items', ['resources', 'reservations', 'script_jobs', 'function_jobs', 'workers'])
         
+        #resources
         object.define_set('resources', 'index_of_the_resource')
         object.set_new('resources', 'new_resource')
         object.set_delete('resources', 'delete_resource')
-        object.add_getter('resources', 'get_resource_name', names = ('name',))
-        object.add_getter('resources', 'get_resource_hostname', names = ('hostname',))
-        object.add_getter('resources', 'get_resource_type', names = ('type',))
+        object.add_getter('resources', 'get_resource_state')
         
+        #reservations
         object.define_set('reservations', 'index_of_the_reservation')
         object.set_new('reservations', 'new_reservation')
         object.set_delete('reservations', 'delete_reservation')
-        object.add_getter('reservations', 'get_reservation_node_label', names = ('name',))
-        object.add_getter('reservations', 'get_reservation_resource_name', names = ('resource',))
-        object.add_getter('reservations', 'get_reservation_node_count', names = ('node_count',))
+        object.add_getter('reservations', 'get_reservation_state')
         object.add_getter('reservations', 'get_reservation_status', names = ('status',))
         
-        object.define_set('jobs', 'index_of_the_job')
-        object.set_new('jobs', 'bookkeeping_after_job_started') # Not sure yet what's best here. Do we need an 'update_particle_set', 
-        # or should we catch worker instantiations and calls to 'submit_pickled_function_job' and 'submit_script_job'?
-        object.set_delete('jobs', 'delete_job')
-        object.add_getter('jobs', 'get_job_label', names = ('name',))
-        object.add_getter('jobs', 'get_job_reservation_name', names = ('reservation',))
-        object.add_getter('jobs', 'get_job_status', names = ('status',))
+        #script jobs
+        object.define_set('script_jobs', 'index_of_the_script_job')
+        object.set_new('script_jobs', 'submit_script_job')
+        object.set_delete('script_jobs', 'delete_script_job')
+        object.add_getter('script_jobs', 'get_script_job_state')
+        object.add_getter('script_jobs', 'get_script_job_status', names = ('status',))
         
+        #function jobs
+        object.define_set('function_jobs', 'index_of_the_function_job')
+        object.set_new('function_jobs', 'submit_function_job')
+        object.set_delete('function_jobs', 'delete_function_job')
+        object.add_getter('function_jobs', 'get_function_job_state')
+        object.add_getter('function_jobs', 'get_function_job_status')
+        
+        #workers
         object.define_set('workers', 'index_of_the_worker')
         object.set_new('workers', 'new_worker')
         object.set_delete('workers', 'delete_worker')
-        object.add_getter('workers', 'get_worker_name', names = ('name',))
-        object.add_getter('workers', 'get_worker_reservation_name', names = ('reservation',))
-        object.add_getter('workers', 'get_worker_resource_name', names = ('resource',))
+        object.add_getter('workers', 'get_worker_state')
         object.add_getter('workers', 'get_worker_status', names = ('status',))
         
     def update_particle_set(self):
@@ -375,7 +466,7 @@ class DistributedAmuse(CommonCode):
         """
         number_of_updated_particles = self.get_number_of_particles_updated()
         if number_of_updated_particles:
-            self.particles._private.attribute_storage._add_indices(
+            self.workers._private.attribute_storage._add_indices(
                 range(number_of_updated_particles)
             )
     
