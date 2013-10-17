@@ -504,9 +504,8 @@ public class AmuseMessage {
 
     public void writeTo(WriteMessage writeMessage) throws IOException {
         if (logger.isTraceEnabled()) {
-            logger.trace("writing to write message: " + this.toContentString());
-        } else if (logger.isDebugEnabled()) {
-            logger.debug("writing to write message: " + this);
+            logger.trace("writing to write message: {} ", this);
+            //logger.trace("writing to write message: {} ", this.toContentString());
         }
 
         headerBytes.clear();
@@ -716,8 +715,8 @@ public class AmuseMessage {
             }
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("done receiving message from ReadMessage: " + this);
+        if (logger.isTraceEnabled()) {
+            logger.trace("done receiving message from ReadMessage: " + this);
         }
 
         return updatedBuffers;

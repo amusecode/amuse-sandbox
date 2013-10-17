@@ -193,7 +193,7 @@ public class WorkerConnection extends Thread {
                 request.writeTo(writeMessage);
                 writeMessage.finish();
 
-                logger.debug("waiting for result");
+                logger.trace("waiting for result");
 
                 ReadMessage readMessage = null;
 
@@ -215,15 +215,17 @@ public class WorkerConnection extends Thread {
                     logger.warn("Error while doing call at worker", result.getError());
                 }
 
-                logger.debug("request " + request.getCallID() + " handled, result: " + result);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("request " + request.getCallID() + " handled, result: " + result);
+                }
 
                 // forward result to the channel
                 result.writeTo(socket);
 
                 finish = System.currentTimeMillis();
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("call took " + (finish - start) + " ms");
+                if (logger.isTraceEnabled()) {
+                    logger.trace("call took " + (finish - start) + " ms");
                 }
             } catch (ConnectionClosedException e) {
                 logger.info("channel closed on receiving request");
@@ -252,9 +254,9 @@ public class WorkerConnection extends Thread {
                 }
             }
         }
-        logger.info(this + " ending");
+        logger.debug(this + " ending");
         end();
-        logger.info(this + " done!");
+        logger.info("Worker {} ended", id);
     }
 
     private void end() {

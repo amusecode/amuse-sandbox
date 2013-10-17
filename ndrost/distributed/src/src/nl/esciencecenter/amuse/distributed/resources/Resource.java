@@ -65,12 +65,13 @@ public class Resource {
     private final Hub hub;
 
     private static void waitUntilHubStarted(Server iplServer, String hubAddress, String name) throws DistributedAmuseException {
+        logger.info("waiting for new remote hub on {} to connect to the local hub", name);
         for (int i = 0; i < 40; i++) {
             String[] knownHubAddresses = iplServer.getHubs();
-            logger.debug("ipl hub addresses now " + Arrays.toString(iplServer.getHubs()));
+            logger.trace("ipl hub addresses now " + Arrays.toString(iplServer.getHubs()));
             for (String knownHub : knownHubAddresses) {
                 if (knownHub.equals(hubAddress)) {
-                    logger.debug("new hub now connected to local hub");
+                    logger.info("new hub at {} now connected to local hub", name);
                     return;
                 }
             }
@@ -111,7 +112,7 @@ public class Resource {
         } else {
             this.hub = null;
         }
-        logger.debug("Created new resource {}", this);
+        logger.info("Created new resource {}", this);
     }
 
     private FileSystem openFileSystem(Xenon xenon) throws DistributedAmuseException {

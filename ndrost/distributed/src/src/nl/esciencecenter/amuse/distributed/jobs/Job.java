@@ -184,11 +184,13 @@ public abstract class Job extends Thread implements MessageUpcall {
      *            the nodes to run this job on.
      */
     public synchronized void start(PilotNode[] target) {
-        logger.debug("Running job on target nodes {}", (Object) target);
         if (!isPending()) {
             logger.error("Tried to run job {} that was not pending. Ignoring", this);
             return;
         }
+        
+        logger.debug("Running job on target nodes {}", (Object) target);
+        
         //set state to initializing
         setState(State.INITIALIZING);
 
@@ -213,19 +215,16 @@ public abstract class Job extends Thread implements MessageUpcall {
         try {
             PilotNode master = target[0];
 
+            logger.trace("sending start command for {} to pilot", this);
+            
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
             ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
 
-            logger.debug("connecting to pilot");
 
             sendPort.connect(master.getIbisIdentifier(), "pilot");
 
-            logger.debug("sending message to pilot");
-
             WriteMessage writeMessage = sendPort.newMessage();
-
-            logger.debug("writing content");
 
             //command
             writeMessage.writeString("start");
@@ -236,21 +235,17 @@ public abstract class Job extends Thread implements MessageUpcall {
             //details of job
             writeMessage.writeInt(jobID);
             writeMessage.writeObject(this.resultReceivePort.identifier());
-            
+
             writeJobDetails(writeMessage);
 
             writeMessage.finish();
 
-            logger.debug("closing sendport");
-
             sendPort.close();
 
-            logger.debug("receiving reply from pilot");
+            logger.trace("receiving reply from pilot");
 
             //FIXME: we should use some kind of rpc mechanism
             ReadMessage readMessage = receivePort.receive(60000);
-
-            logger.debug("reading status from reply");
 
             Exception error = (Exception) readMessage.readObject();
 
@@ -265,7 +260,7 @@ public abstract class Job extends Thread implements MessageUpcall {
             } else {
                 setState(State.RUNNING);
             }
-            logger.debug("job started");
+            logger.trace("job {} started", this);
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Job failed!", e);
             setError(e);
@@ -278,7 +273,12 @@ public abstract class Job extends Thread implements MessageUpcall {
     public void cancel() throws DistributedAmuseException {
         PilotNode master = target[0];
 
-        logger.debug("Cancelling job {}", this);
+        if (isDone()) {
+            logger.trace("NOT Cancelling job as it is already done {}", this);
+            return;
+        } else {
+            logger.debug("Cancelling job {}", this);
+        }
 
         try {
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
@@ -318,15 +318,15 @@ public abstract class Job extends Thread implements MessageUpcall {
         } else {
             setState(State.DONE);
         }
-        
+
         logger.debug("Status message received, state now: {}", this);
 
     }
 
     @Override
     public String toString() {
-        return "Job [jobID=" + jobID + ", label=" + getNodeLabel() + ", state=" + getState() + ", target=" + Arrays.toString(target)
-                + ", error=" + error + ", expirationDate=" + expirationDate + "]";
+        return "Job [jobID=" + jobID + ", label=" + getNodeLabel() + ", state=" + getJobState() + ", target="
+                + Arrays.toString(target) + ", error=" + error + ", expirationDate=" + expirationDate + "]";
     }
 
     public Map<String, String> getStatusMap() {
