@@ -151,7 +151,7 @@ public class WorkerProxy extends Thread {
         builder.directory(workingDirectory);
 
         // make sure there is an "output" directory for a code to put output in
-        new File("output").mkdir();
+        new File(workingDirectory, "output").mkdir();
 
         for (String key : builder.environment().keySet().toArray(new String[0])) {
             for (String blacklistedKey : ENVIRONMENT_BLACKLIST) {
