@@ -10,6 +10,9 @@ from amuse.community.interface.common import CommonCode
 from amuse.units import units
 from amuse.support import options
 
+from distributed_datamodel import Resources, Resource
+from distributed_datamodel import Reservations, Reservation
+
 logger = logging.getLogger(__name__)
 
 class OutputHandler(threading.Thread):
@@ -448,6 +451,7 @@ class DistributedAmuse(CommonCode):
         object.set_new('resources', 'new_resource')
         object.set_delete('resources', 'delete_resource')
         object.add_getter('resources', 'get_resource_state')
+        object.mapping_from_name_to_set_definition['resources'].particles_factory = Resources
         
         #reservations
         object.define_set('reservations', 'reservation_id')
@@ -455,6 +459,7 @@ class DistributedAmuse(CommonCode):
         object.set_delete('reservations', 'delete_reservation')
         object.add_getter('reservations', 'get_reservation_state')
         object.add_getter('reservations', 'get_reservation_status', names = ('status',))
+        object.mapping_from_name_to_set_definition['reservations'].particles_factory = Reservations
         
         #script jobs
         object.define_set('script_jobs', 'job_id')

@@ -6,10 +6,8 @@ import math
 
 from amuse.community.hermite0.interface import HermiteInterface, Hermite
 
-from interface import DistributedAmuseInterface
-from interface import DistributedAmuse
-
-from amuse.lab import *
+from interface import DistributedAmuseInterface, DistributedAmuse
+from interface import Resource, Resources, Reservation, Reservations
 
 from amuse.units import nbody_system
 from amuse.units import units
@@ -27,42 +25,44 @@ class TestHermiteInterface(TestWithMPI):
 
     @classmethod
     def setup_class(cls):
-	print "setting up distributed code"
-        instance = DistributedAmuse(redirection='none')
+        print "setting up distributed code"
+        instance = DistributedAmuse(redirection='file', redirect_file="DistributedAmuse.log")
         instance.initialize_code()
-
-	resource = Particle()
+        
+        print instance.resources
+        resource = Resource()
         resource.name='DAS4-VU'
         resource.location="niels@fs0.das4.cs.vu.nl"
         resource.scheduler_type="sge"
         resource.amuse_dir="/home/niels/amuse"
-        instance.resources.add_particle(resource)
+        instance.resources.add_resource(resource)
         print instance.resources
 
-	reservation = Particle()
+        reservation = Reservation()
         reservation.resource_name='local'
         reservation.node_count=1
         reservation.time= 2|units.hour
         reservation.slots_per_node=2
         reservation.node_label='local'
-        instance.reservations.add_particle(reservation)
+        instance.reservations.add_reservation(reservation)
+        print instance.reservations
 
-	instance.wait_for_reservations()
+        instance.wait_for_reservations()
 
-	#make this a global variable to keep it from being garbadge collected
-	cls.dist = instance
+        #make this a global variable to keep it from being garbadge collected
+        cls.dist = instance
 
     @classmethod
     def teardown_class(cls):
-	pass
-	#print "tearing down"
-	#from amuse.rfi.core import stop_interfaces
+        pass
+        #print "tearing down"
+        #from amuse.rfi.core import stop_interfaces
         #stop_interfaces()
 
     def tearDown(self):
-	#the standard TestWithMPI class stops all instances after each run.
-	#override this method to keep the distributed amuse code from being stopped
-	pass
+        #the standard TestWithMPI class stops all instances after each run.
+        #override this method to keep the distributed amuse code from being stopped
+        pass
 
     def test0(self):
         instance = HermiteInterface()
