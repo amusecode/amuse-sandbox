@@ -27,6 +27,8 @@ public class Hub {
 
     private static final Logger logger = LoggerFactory.getLogger(Hub.class);
 
+    private final String resourceName;
+    
     private final Job job;
 
     private final ServerConnection serverConnection;
@@ -77,10 +79,12 @@ public class Hub {
 
     public Hub(Resource resource, AmuseConfiguration config, String[] hubs, Xenon xenon) throws DistributedAmuseException {
         try {
+            resourceName = resource.getName();
+            
             JobDescription jobDescription = createJobDesciption(resource, hubs);
 
-            logger.debug("starting hub with job description " + jobDescription + " with arguments "
-                    + jobDescription.getArguments());
+            logger.debug("starting hub on {} with job description {} with arguments {}",
+                     resourceName, jobDescription, jobDescription.getArguments());
 
             Scheduler scheduler;
 
@@ -97,7 +101,7 @@ public class Hub {
 
                 scheduler = xenon.jobs().newScheduler("ssh", resource.getLocation(), credential, properties);
 
-                logger.debug("starting hub using scheduler " + scheduler);
+                logger.debug("starting hub on {} using scheduler {}", resourceName, scheduler);
             }
 
             job = xenon.jobs().submitJob(scheduler, jobDescription);
@@ -113,9 +117,9 @@ public class Hub {
 
             address = serverConnection.getAddress();
 
-            logger.debug("hub on " + resource.getName() + " has address " + address);
+            logger.debug("hub on {} has address {}", resource.getName() , address);
         } catch (Exception e) {
-            throw new DistributedAmuseException("cannot start hub on " + resource.getName(), e);
+            throw new DistributedAmuseException("cannot start hub on " + resource.getName() + ": " + e, e);
         }
     }
 
@@ -127,4 +131,8 @@ public class Hub {
         serverConnection.closeConnection();
     }
 
+    @Override
+    public String toString() {
+        return "Hub [resourceName=" + resourceName + ", address=" + address + "]";
+    }
 }

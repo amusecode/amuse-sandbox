@@ -118,10 +118,14 @@ public class ResourceManager {
     }
     
     public synchronized void end() {
+        logger.debug("waiting for all ipl services to end");
+        iplServer.end(60000);
+        logger.debug("services ended");
+
         for(Resource resource: resources) {
+            logger.debug("ending resource {}", resource);
             resource.stop();
         }
-        iplServer.end(60000);
     }
 
 

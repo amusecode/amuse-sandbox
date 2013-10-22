@@ -435,8 +435,18 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def end_all():
+        """
+        Stop all jobs, resources and reservations
+        """
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
+    
     def cleanup_code(self):
         del options.GlobalOptions.instance().overriden_options["channel_type"]
+        self.end_all()
         return 0
     
     def new_worker(self):

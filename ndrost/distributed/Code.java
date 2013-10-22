@@ -460,8 +460,14 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public void end() {
+    public int end_all() {
         distributedAmuse.end();
+        return 0;
+    }
+
+    @Override
+    public void end() {
+        //NOTHING
     }
 
 }

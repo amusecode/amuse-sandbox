@@ -136,14 +136,26 @@ public class DistributedAmuse {
      * 
      */
     public void end() {
-        logger.debug("Ending distributed Amuse.");
+        logger.info("Ending distributed Amuse.");
+        
+        logger.debug("Ending web interface");
         webInterface.end();
-        jobManager.end();
-        reservationManager.end();
-        resourceManager.end();
+        
+        logger.debug("Ending worker connection server");
         workerConnectionServer.end();
+        
+        logger.debug("Ending job manager");
+        jobManager.end();
+        
+        logger.debug("Ending reservation manager");
+        reservationManager.end();
+        
+        logger.debug("Ending resource manager");
+        resourceManager.end();
+        
+        logger.debug("Ending Xenon");
         XenonFactory.endAll();
-        logger.debug("Distributed Amuse ended.");
+        logger.info("Distributed Amuse ended.");
     }
     
 }

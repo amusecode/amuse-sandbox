@@ -61,6 +61,8 @@ public class WorkerConnection extends Thread {
 
     private final AmuseMessage initRequest;
 
+    private final WorkerDescription workerDescription;
+    
     private final Job job;
 
     /*
@@ -88,7 +90,7 @@ public class WorkerConnection extends Thread {
         }
 
         //description of the worker, used for both the scheduler and the code proxy to start the worker properly
-        WorkerDescription workerDescription = new WorkerDescription(initRequest, id);
+        workerDescription = new WorkerDescription(initRequest, id);
 
         // initialize ibis ports
         receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, id);
@@ -275,8 +277,15 @@ public class WorkerConnection extends Thread {
             logger.error("Error closing receiveport", e);
         }
     }
+    
+    
 
+    @Override
     public String toString() {
-        return "Worker \"" + id + "\"";
+        return "WorkerConnection [id=" + id + ", executable=" + workerDescription.getExecutable() + ", nodeLabel=" + workerDescription.getNodeLabel()+ "]";
     }
+
+    
+        
+    
 }
