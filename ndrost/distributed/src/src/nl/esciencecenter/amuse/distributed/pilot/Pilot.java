@@ -87,6 +87,8 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     private void run() throws IOException {
         receivePort.enableConnections();
         receivePort.enableMessageUpcalls();
+        
+        ibis.registry().enableEvents();
 
         //Wait until the pool is terminated by the DistributedAmuse master node
         //FIXME: no way to interrupt this wait.

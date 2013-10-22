@@ -13,17 +13,15 @@ resource = Resource()
 resource.name='LGM'
 #~resource.location="vriesn@node00"
 #~resource.gateway="vriesn@fs.lgm.liacs.nl"
-resource.location="vriesn@fs.lgm.liacs.nl"
-resource.scheduler_type="ssh"
-resource.amuse_dir="/home/vriesn/amuse-svn"
+resource.location="fs.lgm.liacs.nl"
+resource.amuse_dir="/home/niels/amuse"
 instance.resources.add_resource(resource)
 
 resource = Resource()
 resource.name="LGMnode00"
-resource.location="vriesn@node00"
-resource.gateway="vriesn@fs.lgm.liacs.nl"
-resource.scheduler_type="ssh"
-resource.amuse_dir="/home/vriesn/amuse-svn"
+resource.location="node00"
+resource.gateway="LGM"
+resource.amuse_dir="/home/niels/amuse"
 instance.resources.add_resource(resource)
 print "Resources:"
 print instance.resources

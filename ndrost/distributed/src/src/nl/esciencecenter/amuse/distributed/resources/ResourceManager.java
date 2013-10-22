@@ -59,8 +59,13 @@ public class ResourceManager {
                 throw new DistributedAmuseException("Resource " + name + " already exists");
             }
         }
+        
+        String gatewayLocation = null;
+        if (gateway != null && !gateway.isEmpty()) {
+            gatewayLocation = getResource(gateway).getLocation();
+        }
 
-        Resource result = new Resource(name, location, gateway, amuseDir, schedulerType, startHub, xenon, iplServer);
+        Resource result = new Resource(name, location, gatewayLocation, amuseDir, schedulerType, startHub, xenon, iplServer);
 
         resources.add(result);
 
