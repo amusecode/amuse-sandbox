@@ -26,15 +26,15 @@ instance.resources.add_resource(resource)
 print "Resources:"
 print instance.resources
 
-reservation = Reservations(2)
-reservation.resource_name=['local', 'LGMnode00']
+reservation = Reservations(3)
+reservation.resource_name=['local', 'LGM', 'LGMnode00']
 reservation.node_count=1
 reservation.time= 2|units.hour
 reservation.slots_per_node=10
-reservation.node_label=['local', 'LGMnode00']
+reservation.node_label=['local', 'LGM', 'LGMnode00']
 print reservation
 #~instance.reservations.add_reservation(reservation[0])
-instance.reservations.add_reservation(reservation[0])
+instance.reservations.add_reservation(reservation[1])
 print "Reservations:"
 print instance.reservations
 

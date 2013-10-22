@@ -304,6 +304,7 @@ public class WorkerProxy extends Thread {
             logger.debug("connected, saying hello");
             WriteMessage helloMessage = sendPort.newMessage();
             helloMessage.writeObject(receivePort.identifier());
+            helloMessage.writeObject(amuseConfiguration.getAmuseHome().getAbsolutePath().toString());
             helloMessage.finish();
 
             while (running) {

@@ -115,11 +115,13 @@ public class WorkerConnection extends Thread {
 
             // wait until job is running
             job.waitUntilRunning();
-
+            
             //read initial "hello" message with identifier
             ReadMessage helloMessage = receivePort.receive(CONNECT_TIMEOUT);
 
             ReceivePortIdentifier remotePort = (ReceivePortIdentifier) helloMessage.readObject();
+            
+            String amuseHome = (String) helloMessage.readObject();
 
             helloMessage.finish();
 
@@ -146,6 +148,7 @@ public class WorkerConnection extends Thread {
             //send a reply
             AmuseMessage initReply = new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(),
                     initRequest.getCallCount());
+            initReply.addString(amuseHome);
             initReply.writeTo(socket);
 
         } catch (Exception e) {
