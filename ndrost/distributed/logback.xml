@@ -10,7 +10,7 @@
     <appender-ref ref="STDERR" />
   </root>
 
-  <logger name="nl.esciencecenter.octopus" level="info" />
+  <logger name="nl.esciencecenter.xenon" level="warn" />
   <logger name="nl.esciencecenter.amuse" level="info" />
   <logger name="ibis.smartsockets" level="error" />
 <!--

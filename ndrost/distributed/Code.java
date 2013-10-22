@@ -38,8 +38,21 @@ public class Code implements CodeInterface {
 
     private final DistributedAmuse distributedAmuse;
 
+    private String currentError = "";
+
     public Code(String codeDir, String amuseRootDir) throws DistributedAmuseException {
         distributedAmuse = new DistributedAmuse(codeDir, amuseRootDir, 0);
+    }
+
+    @Override
+    public synchronized int get_current_error(String[] result) {
+        result[0] = currentError;
+        return 0;
+    }
+
+    private synchronized void reportError(String message, DistributedAmuseException e) {
+        logger.error(message, e);
+        currentError = message;
     }
 
     @Override
@@ -88,7 +101,7 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on creating new resource: " + e, e);
+            reportError("Error on creating new resource: " + e, e);
             return 10;
         }
     }
@@ -118,8 +131,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 
@@ -132,32 +145,32 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on deleting resource: " + e, e);
-            return 10;
+            reportError("Error on deleting resource: " + e, e);
+            return -10;
         }
     }
 
     @Override
     public int new_reservation(int[] reservation_id, String[] resource_name, String[] queue_name, int[] node_count,
-            int[] time_minutes, int[] slots, String[] node_label, int count) {
+            int[] time_minutes, int[] slots, String[] node_label, String[] options, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 Reservation result = distributedAmuse.reservationManager().newReservation(resource_name[i], queue_name[i],
-                        node_count[i], time_minutes[i], slots[i], node_label[i]);
+                        node_count[i], time_minutes[i], slots[i], node_label[i], options[i]);
 
                 reservation_id[i] = result.getID();
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on creating new reservation: " + e, e);
-            return 10;
+            reportError("Error on creating new reservation: " + e, e);
+            return -10;
         }
 
     }
 
     @Override
     public int get_reservation_state(int[] reservation_id, String[] resource_name, String[] queue_name, int[] node_count,
-            int[] time, int[] slots_per_node, String[] node_label, String[] status, int count) {
+            int[] time, int[] slots_per_node, String[] node_label, String[] status, String[] options, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 Reservation reservation = distributedAmuse.reservationManager().getReservation(reservation_id[i]);
@@ -168,12 +181,13 @@ public class Code implements CodeInterface {
                 time[i] = reservation.getTimeMinutes();
                 slots_per_node[i] = reservation.getSlotsPerNode();
                 node_label[i] = reservation.getNodeLabel();
+                options[i] = reservation.getOptions();
                 status[i] = distributedAmuse.reservationManager().getState(reservation);
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 
@@ -187,8 +201,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 
@@ -200,8 +214,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on deleting reservation: " + e, e);
-            return 10;
+            reportError("Error on deleting reservation: " + e, e);
+            return -10;
         }
     }
 
@@ -211,8 +225,8 @@ public class Code implements CodeInterface {
             distributedAmuse.reservationManager().waitForAllReservations();
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on waiting for reservations: " + e, e);
-            return 10;
+            reportError("Error on waiting for reservations: " + e, e);
+            return -10;
         }
     }
 
@@ -228,8 +242,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Cannot submit script job: " + e, e);
-            return 10;
+            reportError("Cannot submit script job: " + e, e);
+            return -10;
         }
 
     }
@@ -251,8 +265,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 
@@ -266,8 +280,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 
@@ -284,8 +298,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on deleting reservation: " + e, e);
-            return 10;
+            reportError("Error on deleting reservation: " + e, e);
+            return -10;
         }
     }
 
@@ -295,8 +309,8 @@ public class Code implements CodeInterface {
             distributedAmuse.jobManager().waitForScriptJobs();
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on waiting for jobs: " + e, e);
-            return 10;
+            reportError("Error on waiting for jobs: " + e, e);
+            return -10;
         }
 
     }
@@ -311,8 +325,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Cannot submit pickled job: " + e, e);
-            return 10;
+            reportError("Cannot submit pickled job: " + e, e);
+            return -10;
         }
 
     }
@@ -327,8 +341,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 
@@ -343,8 +357,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 
@@ -357,8 +371,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting job result: " + e, e);
-            return 10;
+            reportError("Error on getting job result: " + e, e);
+            return -10;
         }
     }
 
@@ -375,8 +389,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on deleting function job: " + e, e);
-            return 10;
+            reportError("Error on deleting function job: " + e, e);
+            return -10;
         }
     }
 
@@ -394,15 +408,15 @@ public class Code implements CodeInterface {
      */
     public int get_worker_ids(int[] index, int[] id_of_the_worker, int count) {
         if (distributedAmuse.jobManager().getWorkerJobCount() != count) {
-            logger.error("Error on getting worker IDs: number of indexes requested does not match number of workers");
-            return 10;
+            reportError("Error on getting worker IDs: number of indexes requested " + count
+                    + " does not match number of workers " + distributedAmuse.jobManager().getWorkerJobCount(), null);
+            return -10;
         }
 
         int[] workerIDs = distributedAmuse.jobManager().getWorkerIDs();
         for (int i = 0; i < count; i++) {
             id_of_the_worker[i] = workerIDs[i];
         }
-        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -416,8 +430,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 
@@ -440,8 +454,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            logger.error("Error on getting resource state: " + e, e);
-            return 10;
+            reportError("Error on getting resource state: " + e, e);
+            return -10;
         }
     }
 

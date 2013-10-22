@@ -47,6 +47,10 @@ import org.slf4j.LoggerFactory;
  */
 public class Reservation {
 
+    public static final String WHITESPACE_REGEX = ";";
+
+    public static final String EQUALS_REGEX = "\\s*=\\s*";
+
     private static final Logger logger = LoggerFactory.getLogger(Reservation.class);
 
     private static int nextID = 0;
@@ -55,12 +59,30 @@ public class Reservation {
         return nextID++;
     }
 
-    private static JavaJobDescription createJobDesciption(int id, UUID uniqueID, Resource resource, String queueName, int nodeCount,
-            int timeMinutes, int slots, String nodeLabel, String serverAddress, String[] hubAddresses, Path stdoutPath, Path stderrPath)
-            throws DistributedAmuseException {
+    private static Map<String, String> parseOptions(String options) throws DistributedAmuseException {
+        Map<String, String> result = new HashMap<String, String>();
+
+        if (options == null || options.isEmpty()) {
+            return result;
+        }
+
+        for (String option : options.split(WHITESPACE_REGEX)) {
+            String[] keyvalue = option.split(EQUALS_REGEX, 2);
+            if (keyvalue.length != 2) {
+                throw new DistributedAmuseException("Key-Value option " + "\"" + option + "\" not a valid key=value pair");
+            }
+            logger.debug("adding option \"{}\" = \"{}\"", keyvalue[0], keyvalue[1]);
+            result.put(keyvalue[0], keyvalue[1]);
+        }
+
+        return result;
+    }
+
+    private static JavaJobDescription createJobDesciption(int id, UUID uniqueID, Resource resource, String queueName,
+            int nodeCount, int timeMinutes, int slots, String nodeLabel, String options, String serverAddress,
+            String[] hubAddresses, Path stdoutPath, Path stderrPath) throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
 
-  
         result.setStdout(stdoutPath.getRelativePath().getAbsolutePath());
         result.setStderr(stderrPath.getRelativePath().getAbsolutePath());
 
@@ -68,6 +90,11 @@ public class Reservation {
 
         if (queueName != null && !queueName.isEmpty()) {
             result.setQueueName(queueName);
+        }
+
+        //parse and add job options
+        for (Map.Entry<String, String> option : parseOptions(options).entrySet()) {
+            result.addJobOption(option.getKey(), option.getValue());
         }
 
         result.setNodeCount(nodeCount);
@@ -128,7 +155,7 @@ public class Reservation {
 
     //ID in amuse
     private final int id;
-    
+
     //unique ID for log files and such
     private final UUID uniqueID;
 
@@ -137,13 +164,14 @@ public class Reservation {
     private final int timeMinutes;
     private final int slots;
     private final String nodeLabel;
+    private final String options;
 
     private final Job job;
 
     private final Resource resource;
 
     private final Xenon xenon;
-    
+
     private final Path stdoutPath;
     private final Path stderrPath;
 
@@ -155,7 +183,8 @@ public class Reservation {
      * @param nodeLabel
      */
     public Reservation(Resource resource, String queueName, int nodeCount, int timeMinutes, int slots, String nodeLabel,
-            String serverAddress, String[] hubAddresses, Xenon xenon, File tmpDir) throws DistributedAmuseException {
+            String options, String serverAddress, String[] hubAddresses, Xenon xenon, File tmpDir)
+            throws DistributedAmuseException {
         this.xenon = xenon;
         this.resource = resource;
 
@@ -164,6 +193,7 @@ public class Reservation {
         this.timeMinutes = timeMinutes;
         this.slots = slots;
         this.nodeLabel = nodeLabel;
+        this.options = options;
 
         this.id = getNextID();
         this.uniqueID = UUID.randomUUID();
@@ -175,7 +205,7 @@ public class Reservation {
             if (resource.isLocal()) {
                 scheduler = Utils.getLocalScheduler(xenon.jobs());
                 resourceHome = Utils.getLocalHome(xenon.files());
-                
+
             } else {
                 Credential credential = xenon.credentials().getDefaultCredential(resource.getSchedulerType());
 
@@ -191,15 +221,15 @@ public class Reservation {
             }
 
             Path logDir = Utils.resolveWithRoot(xenon.files(), resourceHome, "distributed-amuse-logs", uniqueID.toString());
-            
+
             xenon.files().createDirectories(logDir);
-            
+
             stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "stdout.txt");
             stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "stderr.txt");
-                   
+
             JobDescription jobDescription = createJobDesciption(id, uniqueID, resource, queueName, nodeCount, timeMinutes, slots,
-                    nodeLabel, serverAddress, hubAddresses, stdoutPath, stderrPath);
-            
+                    nodeLabel, options, serverAddress, hubAddresses, stdoutPath, stderrPath);
+
             logger.debug("starting reservation using scheduler {}", scheduler);
 
             this.job = xenon.jobs().submitJob(scheduler, jobDescription);
@@ -207,7 +237,7 @@ public class Reservation {
             logger.debug("submitted reservation: {}", job);
 
         } catch (Exception e) {
-            throw new DistributedAmuseException("cannot start reservation on " + resource.getName(), e);
+            throw new DistributedAmuseException("cannot start reservation on " + resource.getName() + ": " + e, e);
         }
     }
 
@@ -234,6 +264,10 @@ public class Reservation {
     public String getNodeLabel() {
         return nodeLabel;
     }
+    
+    public String getOptions() {
+        return options;
+    }
 
     public String getResourceName() {
         return resource.getName();
@@ -254,12 +288,13 @@ public class Reservation {
             throw new DistributedAmuseException("failed to read stdout file " + stdoutPath + " for " + this, e);
         }
     }
-    
+
     public List<String> getStderr() throws DistributedAmuseException {
         try {
             return Utils.readAllLines(xenon.files(), stderrPath, StandardCharsets.UTF_8);
         } catch (XenonException e) {
-            throw new DistributedAmuseException("failed to read stderr file " + stderrPath + " for " + this, e);        }
+            throw new DistributedAmuseException("failed to read stderr file " + stderrPath + " for " + this, e);
+        }
     }
 
     public void cancel() throws DistributedAmuseException {
@@ -310,6 +345,5 @@ public class Reservation {
 
         return result;
     }
-
 
 }

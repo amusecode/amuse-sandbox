@@ -174,6 +174,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
         function.addParameter("slots_per_node", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("node_label", dtype='string', direction=function.IN, default = ["default"])
+        function.addParameter("options", dtype='string', direction=function.IN, default = [""])
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
 
         function.result_type = 'int32'
@@ -195,6 +196,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("time", dtype='int32', direction=function.OUT, unit = units.minute)
         function.addParameter("slots_per_node", dtype='int32', direction=function.OUT)
         function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter("options", dtype='string', direction=function.OUT)
         function.addParameter('status', dtype='string', direction=function.OUT)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
 
@@ -419,6 +421,20 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_current_error():
+        """When a function returns an error, this will retrieve
+        a description (if possible)
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string', 
+            dtype='string',
+            direction=function.OUT,
+            description = "description of the error"
+        )
+        function.result_type = 'int32'
+        return function
+    
     def cleanup_code(self):
         del options.GlobalOptions.instance().overriden_options["channel_type"]
         return 0
@@ -428,6 +444,8 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     
     def delete_worker(self):
         raise exceptions.AmuseException("Can't remove from 'workers' directly. Stop community code instances in the usual way instead.")
+    
+    
 
 class DistributedAmuse(CommonCode):
 

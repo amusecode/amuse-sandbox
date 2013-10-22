@@ -63,13 +63,13 @@ public class ReservationManager {
     }
 
     public synchronized Reservation newReservation(String resourceName, String queueName, int nodeCount, int timeMinutes,
-            int slots, String nodeLabel) throws DistributedAmuseException {
+            int slots, String nodeLabel, String options) throws DistributedAmuseException {
         logger.debug("reserving new nodes: resource name = " + resourceName + " queue name = " + queueName
                 + " number of nodes = " + nodeCount + " time (in minutes) = " + timeMinutes + " node label = " + nodeLabel);
 
         Resource resource = resourceManager.getResource(resourceName);
 
-        Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, slots, nodeLabel,
+        Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, slots, nodeLabel, options,
                 resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, tmpDir);
 
         reservations.add(result);
