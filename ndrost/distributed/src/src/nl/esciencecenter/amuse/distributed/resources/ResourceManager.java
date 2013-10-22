@@ -121,7 +121,7 @@ public class ResourceManager {
         for(Resource resource: resources) {
             resource.stop();
         }
-        iplServer.end(1000);
+        iplServer.end(10000);
     }
 
 

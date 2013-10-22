@@ -34,7 +34,7 @@ reservation.slots_per_node=10
 reservation.node_label=['local', 'LGMnode00']
 print reservation
 #~instance.reservations.add_reservation(reservation[0])
-instance.reservations.add_reservation(reservation[1])
+instance.reservations.add_reservation(reservation[0])
 print "Reservations:"
 print instance.reservations
 
