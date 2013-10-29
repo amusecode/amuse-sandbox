@@ -58,6 +58,7 @@ class TestHermiteInterface(TestWithMPI):
         #print "tearing down"
         #from amuse.rfi.core import stop_interfaces
         #stop_interfaces()
+        cls.dist.stop()
 
     def tearDown(self):
         #the standard TestWithMPI class stops all instances after each run.

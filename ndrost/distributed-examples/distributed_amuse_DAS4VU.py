@@ -53,4 +53,4 @@ execfile(script)
 
 print "all tests done, stopping distributed code"
 
-
+instance.stop()
