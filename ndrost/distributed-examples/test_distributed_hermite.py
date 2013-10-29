@@ -6,8 +6,8 @@ import math
 
 from amuse.community.hermite0.interface import HermiteInterface, Hermite
 
-from interface import DistributedAmuseInterface, DistributedAmuse
-from interface import Resource, Resources, Reservation, Reservations
+from amuse.community.distributed.interface import DistributedAmuse
+from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
 
 from amuse.units import nbody_system
 from amuse.units import units

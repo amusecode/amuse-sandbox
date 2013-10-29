@@ -1,9 +1,8 @@
 #!/usr/bin/python
 import nose
 from amuse.lab import *
-from interface import DistributedAmuseInterface
-from interface import DistributedAmuse
-from interface import Resource, Resources, Reservation, Reservations
+from amuse.community.distributed.interface import DistributedAmuse
+from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
 
 print "Setting up distributed code"
 instance = DistributedAmuse(redirection='none')

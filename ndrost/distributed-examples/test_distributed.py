@@ -2,8 +2,8 @@ from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 from amuse.lab import *
 
-from interface import DistributedAmuseInterface
-from interface import DistributedAmuse
+from amuse.community.distributed.interface import DistributedAmuse
+from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
 
 from amuse.community.hermite0.interface import Hermite
 
