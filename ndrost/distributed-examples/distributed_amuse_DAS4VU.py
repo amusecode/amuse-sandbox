@@ -2,9 +2,9 @@
 import sys
 from amuse.lab import *
 from amuse.support.exceptions import AmuseException
-from interface import DistributedAmuseInterface
-from interface import DistributedAmuse
-from interface import Resource, Resources, Reservation, Reservations
+from amuse.community.distributed.interface import DistributedAmuseInterface, DistributedAmuse
+from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
+
 
 print "Setting up distributed code"
 instance = DistributedAmuse(redirection='none')

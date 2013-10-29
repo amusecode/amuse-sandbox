@@ -26,16 +26,16 @@ clustergas.clustergas(sfeff=0.3,
 		    dt_plot=0.01 | units.Myr,
 
                     grav_code=PhiGRAPE,
-                    grav_code_extra=dict(mode='normal', channel_type='ibis'),
+                    grav_code_extra=dict(mode='normal'),
 
                     gas_code=Gadget2,
-                    gas_code_extra=dict(mode='nogravity', number_of_workers=1,use_gl=False, channel_type='ibis'),
+                    gas_code_extra=dict(mode='nogravity', number_of_workers=1,use_gl=False),
 
                     se_code=SSEplus,
-                    se_code_extra=dict(channel_type='ibis'),
+                    se_code_extra=dict(),
 
                     grav_couple_code=Fi,
-                    grav_couple_code_extra=dict(channel_type='ibis')
+                    grav_couple_code_extra=dict()
 )
 
 
