@@ -4,7 +4,7 @@
 #include "stdinc.h"
 
 void warning(const char *s)  {cout << s << endl << flush;}
-void err_exit(const char *s) {warning(s); exit(1);}
+void err_exit(const char *s) {warning(s); throw ExitException(s);}
 
 #include <sys/time.h>
 #ifdef _WIN32

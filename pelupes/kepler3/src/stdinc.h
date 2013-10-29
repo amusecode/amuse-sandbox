@@ -58,6 +58,18 @@ typedef real (*real2)[3];	// 2-d array: "real2 x" = "real (*x)[3]"
 #define  sym_angle(phi)    ((phi) - 2*M_PI * floor(((phi)+M_PI)/(2*M_PI)))
 #define  sign(x)	   ((x > 0 ? 1 : (x < 0 ? -1 : 0)))
 
+class ExitException: public exception
+{
+private:
+    const char * msg;
+public:
+    ExitException(const char * message) : msg(message){}
+    virtual const char* what() const throw()
+    {
+        return msg;
+    }
+};
+
 // Functions in util.cc:
 
 real get_elapsed_time();

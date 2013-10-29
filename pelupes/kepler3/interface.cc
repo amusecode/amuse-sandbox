@@ -7,6 +7,8 @@ typedef struct {
     double mass;                                        /// mass
     double x, y, z;                                     /// position
     double vx, vy, vz;                                  /// velocity
+    int error;                                      /// has error
+    const char * error_message;
 } dynamics_state;
 
 static double simtime;
@@ -20,6 +22,13 @@ static double central_vx=0.,central_vy=0.,central_vz=0.;
 static int central_id=-1;
 
 using namespace std;
+
+#define INITKEPLER(k,d,time) \
+      (k).set_time(time); \
+      (k).set_total_mass(central_mass + (d).mass); \
+      (k).set_rel_pos(vec( (d).x-central_x, (d).y-central_y, (d).z-central_z)); \
+      (k).set_rel_vel(vec( (d).vx-central_vx, (d).vy-central_vy, (d).vz-central_vz)); \
+      (k).initialize_from_pos_and_vel(); \
 
 int initialize_code()
 {
@@ -171,6 +180,15 @@ int new_particle(int *id, double mass,
     k->vx=vx;
     k->vy=vy;
     k->vz=vz;
+    k->error = 0;
+    k->error_message = 0;
+    
+    try {
+        kepler kep;
+        INITKEPLER(kep,(*k),0.)
+    } catch(ExitException e) {
+        return -1;
+    }
     *id=kcounter++;
    	kmap.insert(kmap.end(), std::pair<int, dynamics_state*>( *id, k));
     return 0;
@@ -291,61 +309,71 @@ int set_velocity(int id,double vx, double vy, double vz)
 }
 
 
-#define INITKEPLER(k,d,time) \
-      (k).set_time(time); \
-      (k).set_total_mass(central_mass + (d).mass); \
-      (k).set_rel_pos(vec( (d).x-central_x, (d).y-central_y, (d).z-central_z)); \
-      (k).set_rel_vel(vec( (d).vx-central_vx, (d).vy-central_vy, (d).vz-central_vz)); \
-      (k).initialize_from_pos_and_vel(); \
 
 int evolve_model(double tend)
 {
-   map<int, dynamics_state*>::iterator iter;
-   int *keys= new int[kmap.size()];
-   int i=0;
-   for(iter=kmap.begin(); iter!=kmap.end(); iter++)
-   {
+    map<int, dynamics_state*>::iterator iter;
+    int *keys= new int[kmap.size()];
+    int i=0;
+    for(iter=kmap.begin(); iter!=kmap.end(); iter++)
+    {
       keys[i]=iter->first;
       i++;
-   }
+    }
 
-   double new_x=central_x;
-   double new_y=central_y;
-   double new_z=central_z;
+    double new_x=central_x;
+    double new_y=central_y;
+    double new_z=central_z;
 
-   new_x+=central_vx*(tend-simtime);
-   new_y+=central_vy*(tend-simtime);
-   new_z+=central_vz*(tend-simtime);
+    new_x+=central_vx*(tend-simtime);
+    new_y+=central_vy*(tend-simtime);
+    new_z+=central_vz*(tend-simtime);
 
 #pragma omp parallel for
-   for(i=0;i<kmap.size();i++)
-   {
-      kepler k;
-      dynamics_state *d=kmap[keys[i]];
+    for(i=0;i<kmap.size();i++)
+    {
+        kepler k;
+        dynamics_state *d=kmap[keys[i]];
      
-      INITKEPLER(k,(*d),0.)
-      
-      k.transform_to_time(tend-simtime);       
-      
-      vec r = k.get_rel_pos();
-      vec v = k.get_rel_vel();
+        try{
+            INITKEPLER(k,(*d),0.)
+            k.transform_to_time(tend-simtime);       
 
-      d->x = r[0]+new_x;
-      d->y = r[1]+new_y;
-      d->z = r[2]+new_z;
-      d->vx = v[0]+central_vx;
-      d->vy = v[1]+central_vy;
-      d->vz = v[2]+central_vz;
-   }
+            vec r = k.get_rel_pos();
+            vec v = k.get_rel_vel();
 
-   central_x=new_x;
-   central_y=new_y;
-   central_z=new_z;
+            d->x = r[0]+new_x;
+            d->y = r[1]+new_y;
+            d->z = r[2]+new_z;
+            d->vx = v[0]+central_vx;
+            d->vy = v[1]+central_vy;
+            d->vz = v[2]+central_vz;
+            d->error = 0;
+            d->error_message = 0;
+        } catch (ExitException e) {
+            d->error = 1;
+            d->error_message = e.what();
+        }
+    }
 
-   simtime=tend;
-   
-   delete keys;
-   return 0;
+    central_x=new_x;
+    central_y=new_y;
+    central_z=new_z;
+
+    simtime=tend;
+
+    int number_of_errors = 0;
+    for(i=0;i<kmap.size();i++)
+    {
+       dynamics_state *d=kmap[keys[i]];
+       number_of_errors += d->error;
+    }
+    delete keys;
+    if(number_of_errors > 0) {
+        return -1;
+    } else{
+        return 0;
+    }
 }
 
 int get_mass(int id, double *mass)
@@ -380,6 +408,26 @@ int get_position(int id,double * x, double * y, double * z)
     return 0;
 }
 
+
+const char * empty_string = "";
+int get_error_message(int id, char ** buffer)
+{
+        
+    map<int, dynamics_state*>::iterator iter = kmap.find(id);
+    if (iter == kmap.end()){
+      return -3;
+    }
+    dynamics_state *k=iter->second;
+    if(k->error == 0 || k->error_message == 0) {
+        *buffer = (char *) empty_string;
+    } else {
+        *buffer = (char *) k->error_message;
+    }
+    
+    return 0;
+}
+
+
 int get_velocity(int id, double * vx, double * vy, double * vz)
 {
     map<int, dynamics_state*>::iterator iter = kmap.find(id);
@@ -405,8 +453,12 @@ int get_semi_major_axis(int *id,double * semi,int n)
         kepler k;
         dynamics_state *d=iter->second;
        
-        INITKEPLER(k,(*d),0.)
-        semi[i] = k.get_semi_major_axis();
+        try {
+            INITKEPLER(k,(*d),0.)
+            semi[i] = k.get_semi_major_axis();
+        } catch(ExitException e) {
+            semi[i] = -1;
+        }
       } else {
 #pragma omp critical
         err=-3;
@@ -417,20 +469,24 @@ int get_semi_major_axis(int *id,double * semi,int n)
 
 int get_eccentricity(int *id,double * ecc,int n)
 {
-  int err=0;
+    int err=0;
 #pragma omp parallel for shared(err) if(n>1000) 
     for(int i=0;i<n;i++)
     {  
     map<int, dynamics_state*>::iterator iter = kmap.find(id[i]);
     if (iter != kmap.end()){
-      kepler k;
-      dynamics_state *d=iter->second;
-     
-      INITKEPLER(k,(*d),0.)
-      ecc[i] = k.get_eccentricity();
+        kepler k;
+        dynamics_state *d=iter->second;
+
+        try {
+            INITKEPLER(k,(*d),0.)
+            ecc[i] = k.get_eccentricity();
+        } catch(ExitException e) {
+            ecc[i] = -1;
+        }
     } else {
 #pragma omp critical
-        err=-3;
+            err=-3;
       }
     }
     return err;

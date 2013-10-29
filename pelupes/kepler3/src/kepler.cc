@@ -1007,8 +1007,8 @@ void kepler::initialize_from_pos_and_vel(bool minimal, bool verbose)
 	    // 1), so expect check_trig_limit() to complain...
 
 	    if (fabs(cos_true_an) > 1.0) {
-		cout << "  rp, rsep, ecc =  " << periastron << " " 
-		     << separation << " " << eccentricity << endl;
+		/*cout << "  rp, rsep, ecc =  " << periastron << " " 
+		     << separation << " " << eccentricity << endl;*/
 		// print_all();
 	    }
 

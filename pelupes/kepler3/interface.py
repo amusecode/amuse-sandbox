@@ -200,6 +200,16 @@ class KeplerInterface(CodeInterface,
         function.addParameter('number_of_points', 'i', function.LENGTH)           
         function.result_type = 'int32'
         return function
+        
+    @legacy_function
+    def get_error_message():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index', dtype='i', direction=function.IN)
+        function.addParameter('error_message', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+          
 
     def get_gravity_at_point(self,radius,x,y,z):
         mass,err=self.get_central_mass()
@@ -292,6 +302,7 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
         object.add_getter('orbiters', 'get_velocity')
         object.add_getter('orbiters', 'get_semi_major_axis')
         object.add_getter('orbiters', 'get_eccentricity')
+        object.add_getter('orbiters', 'get_error_message')
         object.add_getter('orbiters', 'get_specific_orbital_energy')
         object.add_method('orbiters', 'get_next_radial_crossing_time')
   
