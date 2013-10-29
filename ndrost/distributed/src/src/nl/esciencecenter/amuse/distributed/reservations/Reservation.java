@@ -220,12 +220,11 @@ public class Reservation {
                 resourceHome = xenon.files().newFileSystem("ssh", resource.getLocation(), credential, properties).getEntryPath();
             }
 
-            Path logDir = Utils.resolveWithRoot(xenon.files(), resourceHome, "distributed-amuse-logs", uniqueID.toString());
-
-            xenon.files().createDirectories(logDir);
-
-            stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "stdout.txt");
-            stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "stderr.txt");
+ 
+            Path xenonTmpDir = Utils.fromLocalPath(xenon.files(), tmpDir.getAbsolutePath());
+            
+            stdoutPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stdout.txt");
+            stderrPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stderr.txt");
 
             JobDescription jobDescription = createJobDesciption(id, uniqueID, resource, queueName, nodeCount, timeMinutes, slots,
                     nodeLabel, options, serverAddress, hubAddresses, stdoutPath, stderrPath);

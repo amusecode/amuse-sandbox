@@ -54,7 +54,7 @@ public class JobRunner extends Thread {
      * @param resultPort 
      * @throws Exception
      */
-    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, IbisIdentifier[] nodes, ReceivePortIdentifier resultPort, Ibis ibis)
+    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, IbisIdentifier[] nodes, ReceivePortIdentifier resultPort, Ibis ibis, File tmpDir)
             throws Exception {
         this.jobID = jobID;
         this.resultPort = resultPort;
@@ -62,11 +62,7 @@ public class JobRunner extends Thread {
         
         logger.debug("Starting job runner....");
 
-        File workingDirectory = new File(System.getProperty("java.io.tmpdir") + File.separator + "distributed-amuse-worker"
-                + jobID);
-        workingDirectory.mkdirs();
-
-        workerProxy = new WorkerProxy(description, configuration, nodes, ibis, workingDirectory);
+        workerProxy = new WorkerProxy(description, configuration, nodes, ibis, tmpDir, jobID);
 
         setName("Job Runner for " + jobID);
     }

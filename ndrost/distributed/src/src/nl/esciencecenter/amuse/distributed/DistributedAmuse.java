@@ -80,7 +80,7 @@ public class DistributedAmuse {
             throw new DistributedAmuseException("Java tmpdir does not exist " + systemTmpDir);
         }
 
-        File result = new File(systemTmpDir, "distributed-amuse-" + UUID.randomUUID().toString());
+        File result = new File(systemTmpDir, "distributed-amuse/daemon-" + UUID.randomUUID().toString());
         result.mkdirs();
 
         return result;

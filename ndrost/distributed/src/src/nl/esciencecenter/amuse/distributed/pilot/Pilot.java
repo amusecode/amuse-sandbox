@@ -37,6 +37,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
@@ -64,6 +65,23 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     private final HashMap<Integer, JobRunner> jobs;
 
     private final AmuseConfiguration configuration;
+    
+    private UUID id;
+    
+    private File tmpDir;
+
+    private static File createTmpDir(UUID id) throws IOException {
+        File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
+
+        if (!systemTmpDir.exists()) {
+            throw new IOException("Java tmpdir does not exist " + systemTmpDir);
+        }
+
+        File result = new File(systemTmpDir, "distributed-amuse/pilot-" + id.toString());
+        result.mkdirs();
+
+        return result;
+    }
 
     Pilot(AmuseConfiguration configuration, Properties properties, String reservationID, String nodeLabel, int slots)
             throws IbisCreationFailedException, IOException {
@@ -77,6 +95,10 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
                 DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
         receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, PORT_NAME, this, this, null);
+        
+        this.id = UUID.randomUUID();
+        tmpDir = createTmpDir(id);
+        
     }
 
     /**
@@ -206,7 +228,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             //FIXME: transfer files etc
 
             try {
-                JobRunner jobRunner = new JobRunner(jobID, description, configuration, nodes, resultPort, ibis);
+                JobRunner jobRunner = new JobRunner(jobID, description, configuration, nodes, resultPort, ibis, tmpDir);
 
                 addJobRunner(jobID, jobRunner);
 

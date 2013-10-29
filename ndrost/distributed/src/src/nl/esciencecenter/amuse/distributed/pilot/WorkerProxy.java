@@ -73,8 +73,6 @@ public class WorkerProxy extends Thread {
 
     private final Ibis ibis;
 
-    private final File workingDirectory;
-
     private Exception error = null;
 
     /**
@@ -127,31 +125,37 @@ public class WorkerProxy extends Thread {
         return hostnames;
     }
 
-    private static Process startWorkerProcess(WorkerDescription description, AmuseConfiguration amuseConfiguration,
-            int localSocketPort, String[] hostnames, File workingDirectory) throws Exception {
-        File executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getExecutable());
+    private static File createHostFile(String[] hostnames, File tempDirectory) throws IOException {
+        File result = File.createTempFile("host", "file", tempDirectory).getAbsoluteFile();
 
-        if (!executable.canExecute()) {
-            throw new DistributedAmuseException(executable + " is not executable, or does not exist");
-        }
-
-        File hostFile = File.createTempFile("host", "file").getAbsoluteFile();
-
-        FileWriter hostFileWriter = new FileWriter(hostFile);
+        FileWriter hostFileWriter = new FileWriter(result);
         for (String hostname : hostnames) {
             hostFileWriter.write(hostname + "\n");
         }
         hostFileWriter.flush();
         hostFileWriter.close();
 
-        logger.info("host file = " + hostFile);
+        logger.info("host file = " + result);
+
+        return result;
+    }
+
+    private static Process startWorkerProcess(WorkerDescription description, AmuseConfiguration amuseConfiguration,
+            int localSocketPort, String[] hostnames, File tempDirectory) throws Exception {
+        File executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getExecutable());
+
+        if (!executable.canExecute()) {
+            throw new DistributedAmuseException(executable + " is not executable, or does not exist");
+        }
 
         ProcessBuilder builder = new ProcessBuilder();
 
+        File workingDirectory = new File(tempDirectory, "worker-" + description.getID());
+        workingDirectory.mkdirs();
         builder.directory(workingDirectory);
 
         // make sure there is an "output" directory for a code to put output in
-        new File(workingDirectory, "output").mkdir();
+        //new File(workingDirectory, "output").mkdir();
 
         for (String key : builder.environment().keySet().toArray(new String[0])) {
             for (String blacklistedKey : ENVIRONMENT_BLACKLIST) {
@@ -176,6 +180,7 @@ public class WorkerProxy extends Thread {
             builder.command(amuseConfiguration.getMpiexec(), "-n", Integer.toString(description.getNrOfWorkers()));
         } else {
             // use machine file
+            File hostFile = createHostFile(hostnames, tempDirectory);
             builder.command(amuseConfiguration.getMpiexec(), "-machinefile", hostFile.getAbsolutePath());
         }
 
@@ -204,11 +209,10 @@ public class WorkerProxy extends Thread {
      * Starts a worker proxy. Make take a while.
      */
     public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, IbisIdentifier[] nodes, Ibis ibis,
-            File workingDirectory) throws Exception {
+            File tempDirectory, int jobID) throws Exception {
         this.description = description;
         this.amuseConfiguration = amuseConfiguration;
         this.ibis = ibis;
-        this.workingDirectory = workingDirectory;
 
         String[] hostnames = createHostnameList(description, nodes);
 
@@ -216,8 +220,7 @@ public class WorkerProxy extends Thread {
         serverSocket.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
 
         //create process
-        process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(), hostnames,
-                workingDirectory);
+        process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(), hostnames, tempDirectory);
 
         //attach streams
         out = new OutputForwarder(process.getInputStream(), description.getStdoutFile(), ibis);
