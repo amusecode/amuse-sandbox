@@ -23,17 +23,28 @@ resource.gateway="LGM"
 resource.amuse_dir="/home/niels/amuse"
 instance.resources.add_resource(resource)
 print "Resources:"
+
+resource2 = Resource()
+resource2.name="LGMnode02"
+resource2.location="node02"
+resource2.gateway="LGM"
+resource2.amuse_dir="/home/niels/amuse"
+instance.resources.add_resource(resource2)
+print "Resources:"
 print instance.resources
 
-reservation = Reservations(3)
-reservation.resource_name=['local', 'LGM', 'LGMnode00']
+print instance.resources
+
+reservation = Reservations(2)
+reservation.resource_name=['LGMnode00','LGMnode02']
 reservation.node_count=1
 reservation.time= 2|units.hour
-reservation.slots_per_node=10
-reservation.node_label=['local', 'LGM', 'LGMnode00']
+reservation.slots_per_node=1
+reservation.node_label=['default', 'default']
 print reservation
 #~instance.reservations.add_reservation(reservation[0])
-instance.reservations.add_reservation(reservation[2])
+instance.reservations.add_reservation(reservation[0])
+instance.reservations.add_reservation(reservation[1])
 print "Reservations:"
 print instance.reservations
 
