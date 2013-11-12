@@ -13,11 +13,13 @@ from amuse.units import units
 from amuse import datamodel
 from amuse.units.quantities import zero
 
-from fast import FAST
+#~from fast import FAST
+from amuse.couple.bridge import Bridge, CalculateFieldForCodesUsingReinitialize
+
 from lmech import lmech
-from copycat import copycat
-from copycat import reinitializecopycat
-from copycat import resetparticlescopycat
+#~from copycat import copycat
+#~from copycat import reinitializecopycat
+#~from copycat import resetparticlescopycat
 from amuse.ext.evrard_test import uniform_unit_sphere
 
 numpy.random.seed(123456)
@@ -65,12 +67,20 @@ class grav_gas_sse(object):
     print
     print self.sph.parameters
 
-    self.sph_grav=reinitializecopycat(grav_couple_code, (self.sph,self.grav), conv,
-                            parameters=couple_parameters, extra=grav_couple_code_extra)
-    self.star_grav=reinitializecopycat(grav_couple_code, (self.sph,), conv,
-                            parameters=couple_parameters, extra=grav_couple_code_extra)
+    #~self.sph_grav=reinitializecopycat(grav_couple_code, (self.sph,self.grav), conv,
+                            #~parameters=couple_parameters, extra=grav_couple_code_extra)
+    #~self.star_grav=reinitializecopycat(grav_couple_code, (self.sph,), conv,
+                            #~parameters=couple_parameters, extra=grav_couple_code_extra)
+    new_couple_code1 = grav_couple_code(conv, **grav_couple_code_extra)
+    for param, value in couple_parameters:
+        new_couple_code1.parameters.__setattr__(param, value)
+    self.sph_grav = CalculateFieldForCodesUsingReinitialize(new_couple_code1, (self.sph,self.grav))
+    new_couple_code2 = grav_couple_code(conv, **grav_couple_code_extra)
+    for param, value in couple_parameters:
+        new_couple_code2.parameters.__setattr__(param, value)
+    self.star_grav = CalculateFieldForCodesUsingReinitialize(new_couple_code2, (self.sph,))
   
-    self.fast=FAST(verbose=True, timestep=dt_fast)
+    self.fast=Bridge(verbose=True, timestep=dt_fast)
     self.fast.add_system(self.sph, (self.sph_grav,),False)
     self.fast.add_system(self.grav, (self.star_grav,),False)
 

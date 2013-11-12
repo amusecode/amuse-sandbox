@@ -174,7 +174,7 @@ def clustergas(sfeff=0.05,Nstar=1000,Ngas=1000, t_end=30. | units.Myr,
   
   sys=grav_gas_sse(grav_code,gas_code,se_code,grav_couple_code,
                conv,mgas,star_parts,gas_parts,dt_feedback,dt_fast,
-               grav_parameters=(["epsilon_squared", eps_star**2],["timestep_parameter", 0.001]),
+               grav_parameters=(["epsilon_squared", eps_star**2],["timestep_parameter", 0.1]),
 #                                ["timestep", dt_star]),
                gas_parameters=(["time_max", 32. | units.Myr],
 #                               ["courant", 0.15 | units.none],
