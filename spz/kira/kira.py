@@ -178,11 +178,11 @@ def kira(tend, N, R, Nbin):
             rel_velocity = as_vector_quantity(kep.get_velocity_vector())
             mu = bi.child1.mass / total_mass 
             bs.child1.position = mu * rel_position 
-            bs.child1.position = -(1-mu) * rel_position 
+            bs.child2.position = -(1-mu) * rel_position 
             bs.child1.velocity = mu * rel_velocity
-            bs.child1.velocity = -(1-mu) * rel_velocity
+            bs.child2.velocity = -(1-mu) * rel_velocity
 
-            print "semi_major_axis=", ti, bi.semi_major_axis, bi.eccentricity, total_mass, bi.eccentricity
+            print "semi_major_axis=", ti, bi.semi_major_axis, total_mass, bi.child1.mass, bi.child2.mass, bi.eccentricity
         kep.stop()
 
         print "Lagrangian radii:", multiples_code.all_singles.LagrangianRadii(converter)
@@ -214,4 +214,7 @@ if __name__ == "__main__":
     options, arguments  = new_option_parser().parse_args()
     if options.seed>=0:
         numpy.random.seed(options.seed)
+        # This is only for random.sample, which apparently does not use numpy
+        import random
+        random.seed(options.seed)
     kira(options.tend, options.N, options.R, options.Nbin)
