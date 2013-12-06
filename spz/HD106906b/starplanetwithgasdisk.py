@@ -6,82 +6,8 @@ from amuse.lab import *
 from amuse.couple import bridge
 from amuse import datamodel
 from amuse.ext.evrard_test import uniform_unit_sphere
-from Kepler_orbiters import Orbiters
-from amuse.units import quantities
 
 from starplanet import get_kepler_elements, orbital_period, construct_HD106906b
-
-class Mybridge(bridge.Bridge):
-
-    def kick_codes(self,dt):
-        #do not kick, sinply return
-        #return
-        de = quantities.zero
-#        print "LP:", self.codes[0].code.central_particle.position
-#        print "O:", self.codes[0].code.orbiters.position
-        for x in self.codes:
-            if hasattr(x,"kick"):
-                de += x.kick(dt)
-
-#        print "Mycode=", self.codes[0].__name__
-
-        local_planets = self.codes[1].code.particles.copy()
-        local_planets.position -= self.codes[1].code.particles[0].position
-        for pi in range(len(local_planets)):
-            key_d2 = self.codes[0].code.orbiters.distances_squared(local_planets[pi:pi+1])
-            key_coll = numpy.where(key_d2<(1|units.RSun)**2)[0] 
-            if len(key_coll)>0:
-                print "N collision=", len(key_coll), key_coll, len(local_planets), local_planets[pi], local_planets[pi+1]
-                self.codes[0].code.orbiters.remove_particles(self.codes[0].code.orbiters[key_coll])
-                print "N left=", len(self.codes[0].code.orbiters)
-
-        self.kick_energy += de
-
-class planet_gravity_for_Heliocentric_orbits(object):
-    """
-    copy=copycat(base_class,grav_instance, converter)
-    derived system, returns copy of grav instance with
-    get_gravity_at_point, get_potential_at_point reimplemented in 
-    base_class
-    """
-    def __init__(self,baseclass, sun, planets, converter):
-        self.baseclass=baseclass
-        self.converter=converter
-        self.planets = planets
-        self.central_particle = sun
-        #print "initialize planet_gravity_for..."
-          
-    def get_gravity_at_point(self,radius,x,y,z):
-        #print "get_gravity_at_point(self,radius,x,y,z)"
-        instance=self.baseclass(self.converter)
-
-        # set planets heliocentric
-        parts=self.planets.copy()
-#        print "pos=", self.central_particle.position
-#        print "pos=", parts.position
-        parts.position -= self.central_particle.position
-        parts.velocity -= self.central_particle.velocity
-        instance.particles.add_particles(parts)
-
-        ax,ay,az=instance.get_gravity_at_point(radius,x,y,z)
-        
-        instance.stop()
-        return ax,ay,az
-
-    def get_potential_at_point(self,radius,x,y,z):
-        #print "get_get_potential_at_point(self,radius,x,y,z)"
-        instance=self.baseclass(self.converter)
-
-        instance.initialize_code()
-        parts=self.planets.copy()
-        parts.position -= self.central_particle.position
-        parts.velocity -= self.central_particle.velocity
-        instance.particles.add_particles(parts)
-
-        phi=instance.get_potential_at_point(radius,x,y,z)
-        
-        instance.stop()
-        return phi
 
 def calculate_disk_mass(disk_particles, starpos, Rmin, Rmax):
     
@@ -101,9 +27,7 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
     ecc = (apo-peri)/(apo+peri)
     print "initial orbital parameters:", a, ecc
     bodies = construct_HD106906b(a, ecc)
-    bodies.age = zero
     Pplanet = orbital_period(a, bodies.mass.sum())
-    sun = bodies[0]
 
     converter=nbody_system.nbody_to_si(bodies.mass.sum(), a)
     gravity = Huayno(converter) #, redirection="none")
@@ -117,44 +41,48 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
 
     from amuse.ext.protodisk import ProtoPlanetaryDisk
     hydro_converter=nbody_system.nbody_to_si(bodies.mass.sum(), Rinner)
-    planetesimals = ProtoPlanetaryDisk(Ndisk, convert_nbody=hydro_converter, 
+    disk_particles = ProtoPlanetaryDisk(Ndisk, convert_nbody=hydro_converter, 
                                 densitypower=1.5, 
                                 Rmin=1.0,
                                 Rmax=Router/Rinner,
                                 q_out=1.0,
                                 discfraction=Mdisk/bodies.mass.sum()).result
-    print "Mdisk=", Mdisk, planetesimals.mass.sum()
+    print "Mdisk=", Mdisk, disk_particles.mass.sum()
     bodies.move_to_center()
-    com = planetesimals.center_of_mass()
-    planetesimals.position += bodies[0].position
-    planetesimals.velocity += bodies[0].velocity
+    com = disk_particles.center_of_mass()
+    disk_particles.position += bodies[0].position
+    disk_particles.velocity += bodies[0].velocity
 #    ism.u = 0 | units.m**2 * units.s**-2 
 #    ism.h_smooth= 0.01*a
 
     Pinnerdiskedge = orbital_period(Rinner, bodies[0].mass)
     print "Periods:", Pinnerdiskedge, Pplanet, orbital_period(Router, bodies[0].mass)
 
-    orbiter = Orbiters(converter)
-    orbiter.setup_model(planetesimals, sun)
-    orbiter.particles = orbiter.orbiters
-    orbiter.dmdt = 0 | units.MSun/units.yr
-    orbiter.dt = zero
+    hydro = Fi(converter) #, redirection="none")
+    hydro.parameters.timestep = Pinnerdiskedge/1024.
+    hydro.parameters.use_hydro_flag=True
+    hydro.parameters.radiation_flag=False
+    hydro.parameters.self_gravity_flag=True
+    hydro.parameters.integrate_entropy_flag=False
+    hydro.parameters.gamma=1.
+    hydro.parameters.isothermal_flag=True
+    hydro.parameters.epsilon_squared = (1|units.AU)**2
+    hydro.gas_particles.add_particles(disk_particles)
+    Eh0_tot = hydro.kinetic_energy + hydro.potential_energy + hydro.thermal_energy
+    hydro.parameters.periodic_box_size = 10*a
 
-    channel_from_orb_to_framework = orbiter.orbiters.new_channel_to(planetesimals)
-    channel_from_framework_to_orb = planetesimals.new_channel_to(orbiter.orbiters)
-    channel_from_cp_to_framework = orbiter.central_particle.new_channel_to(planetesimals)
-    channel_from_framework_to_cp = planetesimals.new_channel_to(orbiter.central_particle)
+    channel_from_hydro = hydro.gas_particles.new_channel_to(disk_particles)
+    channel_to_hydro = disk_particles.new_channel_to(hydro.gas_particles)
 
-    channel_from_orb_to_framework.copy_attributes(["semi_major_axis", "eccentricity"])
-
-    moving_bodies = ParticlesSuperset([bodies, planetesimals])
+    moving_bodies = ParticlesSuperset([bodies, disk_particles])
 
     filename = "starplanetdisk.hdf5"
 
-    gravorbiter = Mybridge(use_threading=False)
-    gravorbiter.add_system(orbiter, (gravity,) )
-    gravorbiter.add_system(gravity, () )
-    gravorbiter.timestep = min(dt, 0.1*Pplanet)
+    gravhydro = bridge.Bridge(use_threading=False)
+    gravhydro.add_system(gravity, (hydro,) )
+    gravhydro.add_system(hydro, (gravity,) )
+    gravhydro.timestep = min(dt, min(0.1*Pplanet, 10*hydro.parameters.timestep))
+
 
     Ek0 = gravity.kinetic_energy
     Ep0 = gravity.potential_energy
@@ -167,14 +95,13 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
 
         write_set_to_file(moving_bodies, filename, 'hdf5')
 
-        gravorbiter.evolve_model(time)
+        gravhydro.evolve_model(time)
         channel_from_gravity.copy()
-        channel_from_orb_to_framework.copy_attributes(["semi_major_axis", "eccentricity"])
-#        channel_from_cp_to_framework.copy()
+        channel_from_hydro.copy()
 
-        a, ecc = get_kepler_elements(gravorbiter.model_time, sun, bodies[1], converter) 
+        a, ecc = get_kepler_elements(gravity.model_time, bodies[0], bodies[1], converter) 
 
-#        Mdisk = calculate_disk_mass(planetesimals, sun, Rinner, Router)
+        Mdisk = calculate_disk_mass(disk_particles, bodies[0].position, Rinner, Router)
         print "Diskmass=", time, Mdisk
         print "Planetary orbit=", time, a, ecc
         Ek = gravity.kinetic_energy
@@ -183,7 +110,7 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
         print "Energies:", E_tot/E0_tot, Ek, Ep
 
 
-    gravorbiter.stop()
+    gravhydro.stop()
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser
