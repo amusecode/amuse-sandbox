@@ -1,0 +1,21 @@
+Run with:
+Star+Disk Without any planet 
+	  *(Nsph = 10^3, 10^4, 10^5) for 10 orbits
+Star+Disk Without zero-mass planet on circular orbit at a=650AU
+	  *(Nsph = 10^3, 10^4, 10^5) for 10 orbits
+Star+Disk Without zero-mass planet orbit at apo=650, peri=20AU
+	  *(Nsph = 10^3, 10^4, 10^5) for 10 orbits
+Star+Disk With massive planet on circular orbit at a=650AU
+	  *(Nsph = 10^3, 10^4, 10^5) for 10 orbits
+Star+Disk with massive planet orbit at apo=650, peri=20AU
+	  *(Nsph = 10^3, 10^4, 10^5) for 10 orbits
+
+Select preferred Nsph
+
+Series Star+Disk with massive planet orbit at apo=650, peri = 1AU
+Series Star+Disk with massive planet orbit at apo=650, peri = 10AU
+Series Star+Disk with massive planet orbit at apo=650, peri = 20AU
+Series Star+Disk with massive planet orbit at apo=650, peri = 40AU
+Series Star+Disk with massive planet orbit at apo=650, peri = 80AU
+Series Star+Disk with massive planet orbit at apo=650, peri = 120AU
+Series Star+Disk with massive planet orbit at apo=650, peri = 160AU
