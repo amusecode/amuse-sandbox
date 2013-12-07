@@ -174,6 +174,10 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
 
         a, ecc = get_kepler_elements(gravorbiter.model_time, sun, bodies[1], converter) 
 
+        print "Planet:", time, a, ecc
+        for pi in planetesimals:
+            print "Planetesimal:", time, pi.semi_major_axis, pi.eccentricity
+
 #        Mdisk = calculate_disk_mass(planetesimals, sun, Rinner, Router)
         print "Diskmass=", time, Mdisk
         print "Planetary orbit=", time, a, ecc
@@ -188,9 +192,9 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-n", dest="n_steps", type="int", default = 10,
+    result.add_option("-n", dest="n_steps", type="int", default = 100,
                       help="number of diagnostics time steps [%default]")
-    result.add_option("-N", dest="Ndisk", type="int", default = 1024,
+    result.add_option("-N", dest="Ndisk", type="int", default = 100,
                       help="number of particles in the disk[%default]")
     result.add_option("-M", unit=units.MJupiter,
                       dest="Mdisk", type="float", default = 3.86984415126e-05|units.MJupiter,
@@ -208,7 +212,7 @@ def new_option_parser():
                       dest="apo", type="float", default = 650|units.AU,
                       help="apocenter of planet orbit [%default]")
     result.add_option("-t", unit=units.yr, 
-                      dest="t_end", type="float", default = 100|units.yr,
+                      dest="t_end", type="float", default = 5000|units.yr,
                       help="end time of the simulation [%default]")
     return result
 

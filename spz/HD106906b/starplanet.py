@@ -23,19 +23,21 @@ def orbital_period(a, Mtot) :
 
 def construct_HD106906b(a, ecc):
     bodies = Particles(2)
+    bodies[0].name = "HD106906"
     bodies[0].mass = 1.5| units.MSun
+    bodies[0].radius = 1|units.RSun
     bodies[0].position = (0,0,0) | units.AU
     bodies[0].velocity = (0,0,0) | units.kms
 
+    bodies[1].name = "HD106906b"
     bodies[1].mass = 11| units.MJupiter
-    bodies[0].position = (1,0,0) * a*(1+ecc)
+    bodies[1].radius = 1|units.RJupiter
+    bodies[1].position = (1,0,0) * a*(1+ecc)
     vc = (constants.G*bodies.mass.sum()/(a*(1+ecc))).sqrt()
     vc *= numpy.sqrt((1-ecc)/(1+ecc)) 
 
     bodies[1].velocity = (0,1,0) * vc
     bodies.move_to_center()
-    bodies[0].radius = 1|units.RSun
-    bodies[1].radius = 1|units.RJupiter
     return bodies
 
 def gravity_hydro_bridge(a, ecc, t_end, n_steps):
