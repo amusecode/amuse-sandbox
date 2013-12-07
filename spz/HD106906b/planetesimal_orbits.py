@@ -92,6 +92,18 @@ class planet_gravity_for_Heliocentric_orbits(object):
         instance.stop()
         return phi
 
+def remove_some_particles(remove_bodies, remove_from_sets):
+
+    if len(remove_bodies)>0:
+        print "remove particles N=", len(remove_bodies)
+        print remove_bodies.key
+        for x in remove_from_sets:
+            y = x.difference(remove_bodies)
+            if len(y)<len(x):
+                print "remove particle from set N=", len(x), len(y)
+                print x.key
+                x.remove_particles(remove_bodies)
+
 
 def merge_two_particles(gravity, p1, p2, bodies):
     particles_in_encounter = Particles(particles=[p1, p2])
@@ -186,6 +198,9 @@ def one_step_for_planetary_system(sun_and_planets, planetesimals,
         gravity.evolve_model(time)
         channel_from_ssd_to_framework.copy()
         channel_from_pdd_to_framework.copy()
+
+#        remove_some_particles(planetesimal_gravity.orbiters_with_error, [bodies, planets_gravity.particles, planetesimal_gravity.orbiters])
+
         # set planetesimals baricentric
         planetesimals.position += bodies[0].position
         planetesimals.velocity += bodies[0].velocity
@@ -214,26 +229,6 @@ def construct_single_planet_with_planetesimals(peri, apo, Ndisk):
     ecc = (apo-peri)/(apo+peri)
     print "initial orbital parameters:", a, ecc
     star_and_planet = construct_HD106906b(a, ecc)
-
-    """
-    sun_and_planets = Particles(2)
-    sun_and_planets.radius = 1|units.RSun
-    sun_and_planets[0].name = "SUN"
-    sun_and_planets[0].mass = 1|units.MSun
-    sun_and_planets[0].position = (0,0,0)|units.AU
-    sun_and_planets[0].velocity = (0,0,0)|units.kms
-    sun_and_planets[1].name = "JUP"
-    sun_and_planets[1].mass = 1|units.MJupiter
-#    sun_and_planets[1].position = (5.2,0,0)|units.AU
-    sun_and_planets[1].position = (325,0,0)|units.AU
-    vc = numpy.sqrt(constants.G*sun_and_planets.mass.sum()/sun_and_planets[1].position.length())
-    sun_and_planets[1].velocity = (0,0.1,0)*vc
-    sun_and_planets[0].semi_major_axis = 0 | units.AU
-    sun_and_planets[0].eccentricity = zero
-    #sun_and_planets[1].semi_major_axis = 5.2 | units.AU
-    sun_and_planets[1].semi_major_axis = 325 | units.AU
-    sun_and_planets[1].eccentricity = 0.95
-    """
 
     planetesimals = Particles(Ndisk)
     planetesimals.name = "PLN"

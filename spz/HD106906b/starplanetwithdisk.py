@@ -93,7 +93,7 @@ def calculate_disk_mass(disk_particles, starpos, Rmin, Rmax):
     print "in/out disk:", len(disk_particles), len(inner_particles), len(outer_particles)
     print "Nannulus:", len(particles_in_annulus), particles_in_annulus.mass.sum()
 
-    return particles_in_annulus.mass.sum()
+    return particles_in_annulus.mass.sum(), len(particles_in_annulus)
 
 
 def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
