@@ -7,7 +7,10 @@ from amuse.couple import bridge
 from amuse import datamodel
 from amuse.ext.evrard_test import uniform_unit_sphere
 
+#from starplanet import get_kepler_elements, orbital_period, construct_HD106906b
+
 def get_kepler_elements(model_time, bh, star, converter):
+    print bh, star
     kep = Kepler(converter)
     kep.initialize_code()
     pos = bh.position - star.position
@@ -28,11 +31,15 @@ def construct_HD106906b(a, ecc):
     bodies[0].radius = 1|units.RSun
     bodies[0].position = (0,0,0) | units.AU
     bodies[0].velocity = (0,0,0) | units.kms
+    bodies[0].semi_major_axis = 0| units.AU
+    bodies[0].eccentricity = zero
 
     bodies[1].name = "HD106906b"
     bodies[1].mass = 11| units.MJupiter
     bodies[1].radius = 1|units.RJupiter
     bodies[1].position = (1,0,0) * a*(1+ecc)
+    bodies[1].semi_major_axis = a
+    bodies[1].eccentricity = ecc
     vc = (constants.G*bodies.mass.sum()/(a*(1+ecc))).sqrt()
     vc *= numpy.sqrt((1-ecc)/(1+ecc)) 
 

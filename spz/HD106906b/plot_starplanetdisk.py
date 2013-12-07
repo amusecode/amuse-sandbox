@@ -23,7 +23,7 @@ def plot_starplanet(f1, plot_xz):
         xd = bi[2:].x.value_in(units.AU)
         yd = bi[2:].y.value_in(units.AU)
         zd = bi[2:].z.value_in(units.AU)
-        pyplot.xlim(-650, 150)
+        pyplot.xlim(-150, 650)
         pyplot.ylim(-400, 400)
         if plot_xz:
             pyplot.scatter(xb, zb, c='r', lw=2)
@@ -42,7 +42,7 @@ def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-f", 
-                      dest="f1",  default = "starplanetdisk.hdf5",
+                      dest="f1",  default = "HD106906_data.hdf5",
                       help="first file [%default]")
     result.add_option("--xz", 
                       dest="plot_xz", action='store_true', default = False,

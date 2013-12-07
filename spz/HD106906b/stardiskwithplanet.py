@@ -10,14 +10,15 @@ from Kepler.interface import Kepler
 from Kepler_orbiters import Orbiters
 from Kepler_orbiters import orbital_period, orbital_parameters_for_the_planets, construct_orbital_orientation, reconstruct_posvel
 
-from amuse.ext.stellar_tidal_evolution import TidalEvolution
-from amuse.ext.stellar_gyration_radius import calculate_gyration_radius
 from amuse.couple import bridge
 from amuse.units import quantities
 
 from starplanet import get_kepler_elements, orbital_period, construct_HD106906b
 
-He_WD = 10 | units.stellar_type
+converter=nbody_system.nbody_to_si(1|units.MSun, 1|units.AU)
+from amuse.community.kepler.interface import Kepler as Johannes
+kep = Johannes(converter)
+kep.initialize_code()
 
 class Mybridge(bridge.Bridge):
 
@@ -91,33 +92,56 @@ class planet_gravity_for_Heliocentric_orbits(object):
         instance.stop()
         return phi
 
-"""
-def construct_planetsimal_disk(Rinner, Router, Ndisk, Mdisk):
-    planetesimals = Particles(Ndisk)
-    planetesimals.semi_major_axis = Rinner + (Router-Rinner)*random.random()
-    planetesimals.eccentricity = 0
-    planetesimals.mass = Mdisk/float(Ndisk)
-    return planetesimals
-"""
+def get_posvel_from_binary_elements(a, e, m, phase, converter):
+    kep.initialize_from_elements(m, a, e)
+    kep.transform_to_time(phase * kep.get_period())
+    r = (kep.get_separation_vector())
+    v = (kep.get_velocity_vector())
+    return r, v
 
-def construct_planetesimal_disk(Mstar, Rinner, Router, Ndisk, Mdisk):
+def KeplerianPlanetesimalDisk(Mstar, N_disk, converter,
+                              amin, amax,
+                              emin, emax):
+    from random import random
+    m = 0.00001 | units.MJupiter
+    p = Particles(N_disk)
+    p.name = "PLN"
+    p.mass = m
+    p.age = 0|units.Myr
+    for pi in p:
+        a = amin+(amax-amin)*random()
+        e = 0.1*random()
+        phase = random()
+        r, v = get_posvel_from_binary_elements(a, e, Mstar+m, phase, converter)
+        mu = m/(M+m)
+        pi.x = r[0] * (1-mu)
+        pi.y = r[1] * (1-mu)
+        pi.z = r[2] * (1-mu)
+        pi.vx = v[0] * (1-mu)
+        pi.vy = v[1] * (1-mu)
+        pi.vz = v[2] * (1-mu)
+    return p
 
-    planetesimals = Particles(Ndisk)
-    planetesimals.mass = Mdisk/float(Ndisk)
-    planetesimals.name = "PLN"
-    planetesimals.radius = 100|units.km
-    for pi in planetesimals:
-        a = Rinner +  (Router-Rinner) * numpy.random.random() 
-        pi.position = (1, 0, 0)*a
-        vc = numpy.sqrt(constants.G*Mstar/a)
-        pi.velocity = (0, 1, 0)*vc
-    return planetesimals
-
-def construct_planetarysystem(a, ecc, Mdisk, Ndisk, Rinner, Router):
+def construct_planetarysystem( a, ecc, Mdisk, Ndisk, Rinner, Router):
 
     sun_and_planet = construct_HD106906b(a, ecc)
-    planetesimals = construct_planetesimal_disk(sun_and_planet[0].mass, Rinner, Router, Ndisk, Mdisk)
-
+    emin = 0
+    emax = 0
+    Mstar = sun_and_planet[0].mass
+#    planetesimals = KeplerianPlanetesimalDisk(Ndisk, converter,
+#                                              Rinner, Router,
+#                                              emin, emax)
+    from amuse.ext.protodisk import ProtoPlanetaryDisk
+    hydro_converter=nbody_system.nbody_to_si(Mstar, Rinner)
+    planetesimals = ProtoPlanetaryDisk(Ndisk, convert_nbody=hydro_converter, 
+                                       densitypower=1.5, 
+                                       Rmin=1.0,
+                                       Rmax=Router/Rinner,
+                                       q_out=1.0,
+                                       discfraction=Mdisk/Mstar).result
+    planetesimals.name = "PLN"
+#    planetesimals.position += sun_and_planet[0].position
+#    planetesimals.velocity += sun_and_planet[0].velocity
     return sun_and_planet, planetesimals
 
 def unbound_particles(bodies):
@@ -150,28 +174,15 @@ def print_solar_system(bodies):
     for bi in bodies[9:]:
         print "Planetesimal: ", bi.age, bi.name, "a=", bi.semi_major_axis, "e=", bi.eccentricity
 
-def remove_some_particles(remove_bodies, remove_from_sets):
-    if len(remove_bodies)>0:
-        print "remove particles N=", len(remove_bodies)
-        print remove_bodies.key
-        for x in remove_from_sets:
-            y = x.difference(remove_bodies)
-            if len(y)<len(x):
-                print "remove particle from set N=", len(x), len(y)
-                print x.key
-                x.remove_particles(remove_bodies)
-    else:
-        print "No particles removed"
-
 def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
 
+    t_start = 0*t_end
     restartfile = "RestartHD.hdf5"
     a = 0.5*(peri+apo)
     ecc = (apo-peri)/(apo+peri)
     print "generate new initial conditions"
     sun_and_planets, planetesimals = construct_planetarysystem(a, ecc, Mdisk, Ndisk, Rinner, Router)
     bodies = ParticlesSuperset([sun_and_planets, planetesimals])
-    t_start = 13|units.Myr
     bodies.age = t_start
     bodies.semi_major_axis = 0|units.RSun
     bodies.eccentricity = 0.0
@@ -183,39 +194,20 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
     sun = sun_and_planets[0:1]
     planets = sun_and_planets - sun
     planetesimals = bodies - sun_and_planets
-    orbital_parameters_for_the_planets(sun, bodies-sun)
+    orbital_parameters_for_the_planets(sun, bodies-sun, verbose=False)
     construct_orbital_orientation(sun, planets)
 
     converter=nbody_system.nbody_to_si(1|units.MSun,1|units.AU)
 
-    # add specific stellar parameters
     bodies[0].gyration_radius_sq = 0.2
     bodies[0].Omega = 2.6e-6|units.s**-1
-
-#    stellar = MESA()
-#    stellar.parameters.RGB_wind_scheme=1 
-#    stellar.parameters.AGB_wind_scheme=1 
-    stellar = SeBa()
-#    stellar.parameters.RGB_wind_scheme=1 
-#    stellar.parameters.AGB_wind_scheme=1 
-    stellar.parameters.metallicity = 0.02
-    stellar.particles.add_particles(bodies[0:1])
-
-    channel_from_se_to_framework = stellar.particles.new_channel_to(bodies)
-
-    print "evolve star to: ", t_start
-    if t_start>zero:
-        stellar.evolve_model(t_start)
-    #sun.gyration_radius_sq = calculate_gyration_radius(stellar.particles)
-    sun.Omega = sun.Omega * (sun.radius/stellar.particles[0].radius)**2
-    channel_from_se_to_framework.copy_attributes(["mass", "age", "radius", "stellar_type", "luminosity", "temperature", "stellar_type"])
 
     gravity = Huayno(converter)
     gravity.particles.add_particles(sun_and_planets)
     channel_from_gravity_to_framework = gravity.particles.new_channel_to(bodies)
     channel_from_framework_to_gravity = bodies.new_channel_to(gravity.particles)
 
-    orbital_parameters_for_the_planets(sun, planets)
+    orbital_parameters_for_the_planets(sun, planets, verbose=False)
 
     orbiter = Orbiters(converter)
     orbiter.setup_model(planetesimals, sun)
@@ -230,94 +222,29 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
 
     channel_from_orb_to_framework.copy_attributes(["semi_major_axis", "eccentricity"])
 
-    tidal = TidalEvolution(sun)
-    tidal.add_particles(bodies-sun)
-    channel_from_tidal_p = tidal.orbiters.new_channel_to(bodies)
-    channel_to_tidal_p = bodies.new_channel_to(tidal.orbiters)
-    channel_from_tidal_s = tidal.central_particle.new_channel_to(bodies)
-    channel_to_tidal_s = bodies.new_channel_to(tidal.central_particle)
-
     lost_particles = unbound_particles(bodies)
     print "N unbound:", len(lost_particles)
-    remove_some_particles(lost_particles, [bodies, gravity.particles, orbiter.orbiters, tidal.orbiters])
 
-    channel_to_tidal_s.copy_attributes(["mass", "radius", "gyration_radius_sq", "Omega"])
-
-    st_prev = sun.stellar_type
-    istp = st_prev.value_in(units.stellar_type)
-    if not restartfile:
-        filename = 'SolarSystem_%(i)04d.hdf5' %{'i':istp}
-        write_set_to_file(bodies, filename, "hdf5", append_to_file=False) 
-
+    filename = 'HD106906_data.hdf5'
     # First time write output file
-    write_set_to_file(bodies, 'SolarSystem_data.hdf5', "hdf5", append_to_file=False) 
+    write_set_to_file(bodies, filename, "hdf5", append_to_file=False) 
 
-    time = sun.age
+    time = 0|units.yr
     print "evolved to: T=", time, t_start, "M=", sun.mass
     Mtot_init = bodies[0].mass
-    while sun.stellar_type<He_WD:
-        write_set_to_file(bodies, "RestartSolarSystem.hdf5", "hdf5", 
-                          append_to_file=False) 
+    dt = t_end/float(n_steps)
+    while time < t_end:
 
-        t_prev = sun.age
-        m_prev = sun.mass
-        r_prev = sun.radius
-        #stellar.evolve_model()
-
-        #sun.gyration_radius_sq = calculate_gyration_radius(stellar.particles)
-        channel_from_se_to_framework.copy_attributes(["age", "mass", "radius", "luminosity", "temperature", "stellar_type"])
-        sun.Omega = sun.Omega * (r_prev/sun.radius)**2
-        dm = m_prev-sun.mass
-        channel_to_tidal_s.copy_attributes(["mass", "radius", "gyration_radius_sq", "Omega", "luminosity", "temperature", "stellar_type"])
-
-        orbital_parameters_for_the_planets(sun, planets)
-        construct_orbital_orientation(sun, planets)
-
-        channel_to_tidal_p.copy_attributes(["semi_major_axis", "eccentricity"])
-        channel_to_tidal_s.copy_attributes(["Omega"])
-
-        tidal.evolve_model(time)
-
-        channel_from_tidal_p.copy_attributes(["semi_major_axis", "eccentricity"])
-        channel_from_tidal_s.copy_attributes(["Omega"])
-
-        reconstruct_posvel(sun, planets)
-        channel_from_gravity_to_framework.copy_attributes(["x", "y", "z",
-                                                           "vx", "vy", "vz"])
-
-        remove_some_particles(tidal.all_merged_orbiters, [bodies, gravity.particles, orbiter.orbiters, tidal.orbiters])
-        remove_some_particles(tidal.orbiters_with_error, [bodies, gravity.particles, orbiter.orbiters, tidal.orbiters])
-
-        if len(planetesimals)==0:
-            print "No planetesimals left: exit"
-            exit()
-
-        if len(planets)==0:
-            print "No planetesimals left: exit"
-            exit()
-
-        time = bodies[0].age
-        dm = bodies[0].mass-m_prev
-        dmdt = 0 | units.MSun/units.yr
-
-        m_post = bodies[0].mass
-        bodies[0].mass = m_prev
-        channel_from_framework_to_cp.copy_attributes(["mass"])
-        dt = time-t_prev
-
-        print "dmdt=", dmdt, time, dt
-
-        verbose = True
+        verbose = False
         trun_start = clock() | units.s
         one_step_for_planetary_system(sun, planets, planetesimals, 
                                       gravity, orbiter,  converter,
-                                      time, time+dt, n_steps, verbose)
+                                      time, time+dt, verbose)
+        time += dt 
         trun_stop = clock() | units.s
         print "Performace data: N=", len(sun), len(planets), "n=", len(planetesimals), "t_end=", t_end, time, "dt for step=", trun_stop - trun_start
         time += dt
 
-        remove_some_particles(gravity.orbiters_with_error, [bodies, gravity.particles, orbiter.orbiters, tidal.orbiters])
-               
         channel_from_cp_to_framework.copy_attributes(["mass", "x", "y", "z","vx", "vy", "vz"])
         channel_from_orb_to_framework.copy_attributes(["x", "y", "z","vx", "vy", "vz", "semi_major_axis", "eccentricity"])
 
@@ -325,35 +252,25 @@ def starplanetwithdisk(peri, apo, t_end, n_steps, Rinner, Router, Mdisk, Ndisk):
         bodies.velocity -= sun.velocity
         channel_from_framework_to_gravity.copy_attributes(["x", "y", "z",
                                                            "vx", "vy", "vz"])
-        orbital_parameters_for_the_planets(sun, planets)
-        #print_solar_system(bodies)
- 
-        bodies[1:].age = gravity.time
 
-        # dump system
-        stp = bodies[0].stellar_type
-        if not st_prev == stp:
-            print "STP:", stp, st_prev
-            st_prev = stp
-            istp = stp.value_in(units.stellar_type)
-            filename = 'SolarSystem_%(i)04d.hdf5' %{'i':istp}
-            write_set_to_file(bodies, filename, "hdf5", append_to_file=False)
+        orbital_parameters_for_the_planets(sun, planets)
+#        a, ecc = get_kepler_elements(time, sun, planets, converter) 
+#        print "Planet:", time, a, ecc
 
         Mtot = bodies.mass.sum()
         print "T=", time
         print "N=", len(bodies)
         print "M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ") MSun=", bodies[0].mass
-        print "Masses:", bodies[0].mass, m_prev, m_post 
+        print "Masses:", bodies[0].mass
         #print_solar_system(bodies)
-        write_set_to_file(bodies, 'SolarSystem_data.hdf5', "hdf5", append_to_file=True) 
+        write_set_to_file(bodies, filename, "hdf5", append_to_file=True) 
 
     gravity.stop()
-    stellar.stop()
 
 def one_step_for_planetary_system(sun, planets, planetesimals, 
                                   planets_gravity, planetesimal_gravity, 
                                   converter, 
-                                  t_start, t_end, n_steps, verbose):
+                                  t_start, t_end, verbose):
 
     sun_and_planets = ParticlesSuperset([sun, planets])
     bodies = ParticlesSuperset([sun, planets, planetesimals])
@@ -368,7 +285,8 @@ def one_step_for_planetary_system(sun, planets, planetesimals,
     gravity = Mybridge(use_threading=False)
     Porb_min = orbital_period(planets.semi_major_axis.min(), sun.mass)
     print "Pmin=", Porb_min
-    gravity.timestep = 0.05*Porb_min
+    dt = (t_end-t_start)
+    gravity.timestep = min(dt, 0.05*Porb_min)
     gravity.add_system(planetesimal_gravity, (pl_gravity,) ) ## ss works on pd
     gravity.add_system(planets_gravity, () ) # ss is self aware (evoles itself)
 
@@ -379,20 +297,11 @@ def one_step_for_planetary_system(sun, planets, planetesimals,
                                                    "semi_major_axis", 
                                                    "eccentricity"])
 
-    Etot_init = planets_gravity.kinetic_energy + planets_gravity.potential_energy
-    Etot = Etot_init
-    dE = zero
-    ddE = zero
-    Mtot_init = bodies.mass.sum()
-    Nenc = 0
-    dEk_enc = zero
-    dEp_enc = zero
-    dt = (t_end-t_start)/float(n_steps)
     time = t_start
     while time<t_end:
         time += dt
         gravity.evolve_model(time)
-        bodies.age = gravity.time
+#        bodies.age = gravity.time
 
         channel_from_ssd_to_framework.copy_attributes(["x", "y", "z",
                                                        "vx", "vy", "vz"])
@@ -400,18 +309,6 @@ def one_step_for_planetary_system(sun, planets, planetesimals,
                                                        "vx", "vy", "vz", 
                                                        "semi_major_axis", 
                                                        "eccentricity"])
-        Ekin = planets_gravity.kinetic_energy 
-        Epot = planets_gravity.potential_energy
-        ddE += (Ekin+Epot-Etot)
-        Etot = Ekin + Epot
-        dE = Etot_init-Etot
-        Mtot = bodies.mass.sum()
-        print "T=", time, t_end 
-        print "M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")",
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE/E=", dE/Etot, dE/Etot_init, "ddE/E=", ddE/Etot
-        print "dE(enc)=", dEk_enc/Etot_init, dEp_enc/Etot_init
-        Etot_init -= dE
 
         orbital_parameters_for_the_planets(sun, planets, verbose=verbose)
     
@@ -426,7 +323,7 @@ def new_option_parser():
                       dest="Mdisk", type="float", default = 3.86984415126e-05|units.MJupiter,
                       help="Mass of the disk [%default]")
     result.add_option("-r", unit=units.AU,
-                      dest="Rinner", type="float", default = 50|units.AU,
+                      dest="Rinner", type="float", default = 20|units.AU,
                       help="inner edge of the disk [%default]")
     result.add_option("-R", unit=units.AU,
                       dest="Router", type="float", default = 120|units.AU,

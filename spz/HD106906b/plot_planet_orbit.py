@@ -38,7 +38,7 @@ def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-f", 
-                      dest="f1",  default = "starplanetdisk.hdf5",
+                      dest="f1",  default = "HD106906_data.hdf5",
                       help="first file [%default]")
 
     return result
