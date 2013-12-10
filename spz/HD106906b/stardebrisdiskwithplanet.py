@@ -239,11 +239,12 @@ def construct_single_planet_with_planetesimals(peri, apo, Ndisk):
     a = numpy.arange(20, 120, da) 
     planetesimals.semi_major_axis = a | units.AU
     planetesimals.eccentricity = zero
+    phi_rand = 2. * numpy.pi * numpy.random.rand(Ndisk)
     for i in range(len(a)):
-        planetesimals[i].position = ((a[i], 0, 0) |units.AU )
+#        planetesimals[i].position = ((a[i], 0, 0) |units.AU )
+        planetesimals[i].position = (a[i] * (numpy.cos(phi_rand[i]), numpy.sin(phi_rand[i]), 0.0) |units.AU )
         vc = numpy.sqrt(constants.G*star_and_planet[0].mass/(a[i]|units.AU))
-        planetesimals[i].velocity = numpy.array([0, 1, 0])*vc
-
+        planetesimals[i].velocity = numpy.array([-numpy.sin(phi_rand[i]), numpy.cos(phi_rand[i]), 0.0])*vc
     print planetesimals
     orbital_parameters_for_the_planets(star_and_planet[0:1], planetesimals, verbose=False)
 
