@@ -52,6 +52,8 @@ def make_secondaries(center_of_masses, Nbin):
         a = 0.001 | units.parsec
         e = 0.6
         nb = new_binary_orbit(mp, ms, a, e) 
+        nb.position += bi.position
+        nb.velocity += bi.velocity
         nb = singles_in_binaries.add_particles(nb)
         nb.radius = 0.01 * a 
         bi.radius = 3*a 
@@ -64,6 +66,9 @@ def make_secondaries(center_of_masses, Nbin):
         resulting_binaries.add_particle(binary_particle)
 
     single_stars = center_of_masses-binaries
+    print single_stars
+    print resulting_binaries
+    print singles_in_binaries
     return single_stars, resulting_binaries, singles_in_binaries
 
 def construct_orbital_elements(bi, converter):
@@ -118,11 +123,10 @@ def kira(tend, N, R, Nbin):
         handle_encounter_code = encounter_code,
         G=constants.G
         )
-    multiples_code.particles.add_particles(stars-binary_stars)
+    multiples_code.particles.add_particles((stars-binary_stars).copy())
     multiples_code.singles_in_binaries.add_particles(singles_in_binaries)
     multiples_code.binaries.add_particles(binary_stars)
     multiples_code.commit_particles()
-
     channel_from_stars_to_particles = stellar.particles.new_channel_to(multiples_code.particles)
 
     stopping_condition = multiples_code.stopping_conditions.binaries_change_detection
