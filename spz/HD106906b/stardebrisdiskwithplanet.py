@@ -245,7 +245,7 @@ def construct_single_planet_with_planetesimals(peri, apo, Ndisk):
         planetesimals[i].position = (a[i] * (numpy.cos(phi_rand[i]), numpy.sin(phi_rand[i]), 0.0) |units.AU )
         vc = numpy.sqrt(constants.G*star_and_planet[0].mass/(a[i]|units.AU))
         planetesimals[i].velocity = numpy.array([-numpy.sin(phi_rand[i]), numpy.cos(phi_rand[i]), 0.0])*vc
-    print planetesimals
+    print planetesimals.x
     orbital_parameters_for_the_planets(star_and_planet[0:1], planetesimals, verbose=False)
 
     return star_and_planet, planetesimals
