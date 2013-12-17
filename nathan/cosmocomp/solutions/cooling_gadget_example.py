@@ -49,9 +49,10 @@ if __name__=="__main__":
   UnitVelocity=units.kms
   
   convert=generic_unit_converter.ConvertBetweenGenericAndSiUnits(UnitLength, UnitMass, UnitVelocity)
-  sph=Gadget2(convert,mode='periodic')#,redirection='none')
+  sph=Gadget2(convert,mode='periodic_nogravity')#,redirection='none')
   
   sph.parameters.periodic_box_size=L
+  sph.parameters.interpret_heat_as_feedback = False
   
   sph.gas_particles.add_particles(particles)
   
