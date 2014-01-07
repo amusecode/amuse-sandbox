@@ -134,6 +134,13 @@ def new_hydro(gas, converter, time_step):
         number_of_workers=10, 
         redirection="file",
         redirect_file="gas_code.log")
+#    hydro = Gadget2(
+#        converter,
+#        node_label="cartesius", 
+#        number_of_workers=48, 
+#        number_of_nodes=2
+#        redirection="file",
+#        redirect_file="gas_code.log")
     hydro.parameters.gas_epsilon = converter.to_si(0.01|nbody_system.length) # or eps_is_h_flag
     hydro.parameters.n_smooth = 64
     hydro.parameters.n_smooth_tol = 0.005 |units.none
