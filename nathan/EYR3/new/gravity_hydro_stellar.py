@@ -1,4 +1,5 @@
 import numpy
+import time
 from numpy import sin, cos
 
 from amuse.units import nbody_system, units
@@ -66,6 +67,7 @@ class GravityHydroStellar(object):
         while self.current_time < end_time - 0.5 * self.time_step_feedback:
             self.current_time += self.time_step_feedback
             if self.verbose:
+		beginning = time.time()
                 print "GravityHydroStellar: Start evolving..."
             self.bridge.evolve_model(self.current_time)
 #~            print self.bridge.model_time,',',self.sph.model_time,self.grav.model_time
@@ -74,6 +76,9 @@ class GravityHydroStellar(object):
                 print "GravityHydroStellar: Evolved to:", self.current_time
                 print "GravityHydroStellar: Call mechanical_feedback"
             self.mechanical_feedback(self.time_step_feedback)
+	    if self.verbose:
+		end = time.time()
+		print 'evolve to', self.current_time, 'took:', (end - beginning), 'seconds'
     
     def mechanical_feedback(self, time_step):
         L_mech_new = self.star_particles.mechanical_luminosity
