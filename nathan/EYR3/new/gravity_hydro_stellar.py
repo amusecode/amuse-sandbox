@@ -155,9 +155,12 @@ class GravityHydroStellar(object):
     def store_system_state(self):
         snapshot_number = int(0.5 + self.current_time / self.time_step_feedback)
         filename = os.path.join("snapshots", "cluster_snapshot_{0:=06}_".format(snapshot_number))
-        channel = self.gravity.particles.new_channel_to(self.star_particles)
-        channel.copy_attributes(["x","y","z","vx","vy","vz"])
-        write_set_to_file(self.star_particles, filename+"stars.amuse", "amuse")
+        stars = Particles(keys=self.star_particles.key)
+        self.star_particles.copy_values_of_attributes_to(["mass", "temperature", 
+            "stellar_type", "radius", "luminosity", "age", "L_mech", "E_mech", 
+            "E_mech_last_feedback", "previous_mass"], stars)
+        self.gravity.particles.copy_values_of_attributes_to(["x","y","z","vx","vy","vz"], stars)
+        write_set_to_file(stars, filename+"stars.amuse", "amuse")
         write_set_to_file(self.hydro.gas_particles, filename+"gas.amuse", "amuse")
         with open(filename+"info.pkl", "wb") as outfile:
             cPickle.dump(
