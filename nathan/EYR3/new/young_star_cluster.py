@@ -38,6 +38,7 @@ def simulate_young_star_cluster():
     system = new_gravity_hydro_stellar(stars, gas, converter, time_step)
     system.store_system_state()
     system.evolve_model(end_time)
+    system.stop()
 
 def new_working_directory():
     i = 0

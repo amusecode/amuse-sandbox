@@ -184,4 +184,8 @@ class GravityHydroStellar(object):
                 self.verbose, self.total_feedback_energy, self.current_time
             ) = cPickle.load(infile)
     
+    def stop(self):
+        self.bridge.stop()
+        self.stellar.stop()
+    
 
