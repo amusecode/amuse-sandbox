@@ -21,7 +21,41 @@ from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 
-from amuse import io 
+from amuse import io
+
+def get_coms_in_multiples(multiples_code):
+    """ Returns the set of Centre of Mass particles in a Multiples module. """
+    result = datamodel.Particles()
+    for root, tree in multiples_code.root_to_tree.iteritems():
+        root_particle = root.as_particle_in_set(multiples_code._inmemory_particles)
+        result.add_particle(root)
+    return result
+
+def get_singles_in_multiples(multiples_code):
+    """ Returns the set of individual particles in a Multiples module. """
+    result = datamodel.Particles()
+    for root, tree in multiples_code.root_to_tree.iteritems():
+        root_particle = root.as_particle_in_set(multiples_code._inmemory_particles)
+        #result.remove_particle(root)
+        leaves = tree.get_leafs_subset()
+
+        original_star = tree.particle
+
+        dx = root_particle.x - original_star.x
+        dy = root_particle.y - original_star.y
+        dz = root_particle.z - original_star.z
+        dvx = root_particle.vx - original_star.vx
+        dvy = root_particle.vy - original_star.vy
+        dvz = root_particle.vz - original_star.vz
+
+        leaves_in_result = result.add_particles(leaves)
+        leaves_in_result.x += dx
+        leaves_in_result.y += dy
+        leaves_in_result.z += dz
+        leaves_in_result.vx += dvx
+        leaves_in_result.vy += dvy
+        leaves_in_result.vz += dvz
+    return result
 
 def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     cpu = clock()
@@ -95,14 +129,14 @@ SMALLN = None
 def new_smalln():
     SMALLN.reset()
     return SMALLN
-    
+
 def init_smalln():
     global SMALLN
     SMALLN = SmallN()
     SMALLN.parameters.timestep_parameter = 0.1
     SMALLN.parameters.cm_index = 2001
 
-def init_kepler(star1, star2):        
+def init_kepler(star1, star2):
     try:
         star1.mass.value_in(units.kg) # see if SI units, throw exception if not
         unit_converter \
@@ -110,12 +144,12 @@ def init_kepler(star1, star2):
                                        (star2.position-star1.position).length())
     except Exception as ex:
         unit_converter = None
-        
+
     kep = Kepler(unit_converter, redirection = "none")
     kep.initialize_code()
 
     return kep
-        
+
 def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True):
     infile = options.infile
     outfile = options.outfile
@@ -131,7 +165,7 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     accuracy_parameter = options.accuracy_parameter
     softening_length = options.softening_length | nbody_system.length
     manage_encounters = options.manage_encounters
-    random_seed = options.random_seed 
+    random_seed = options.random_seed
 
     if randomize:
         if random_seed <= 0:
@@ -152,7 +186,7 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     sys.stdout.flush()
 
     init_smalln()
-    
+
     # Note that there are actually three GPU options:
     #
     #	1. use the GPU code and allow GPU use (default)
@@ -190,7 +224,7 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
             scaled_mass = total_mass / number_of_stars
         else:
             print 'salpeter mass function'
-            scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
+            scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars)
         stars.mass = scaled_mass
 
         print "centering stars"
@@ -415,7 +449,7 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
         # Copy values from the module to the set in memory.
 
         channel.copy()
-    
+
         # Copy the index (ID) as used in the module to the id field in
         # memory.  The index is not copied by default, as different
         # codes may have different indices for the same particle and
@@ -453,9 +487,13 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
 
 def write_state_to_file(time, stars, multiples_code, options):
     if options.restart_file is not None:
-        sets = [stars]
+        out_set = stars
+        for p in get_coms_in_multiples(multiples_code):
+            out_set.remove_particle(p)
+        out_set.add_particles(get_singles_in_multiples(multiples_code))
+        sets = [out_set]
         names = ['stars']
-        storage = io.store.StoreHDF(options.restart_file + ".stars", append_to_file=False,
+        storage = io.store.StoreHDF(options.restart_file + ".stars.hdf5", append_to_file=False,
                                    open_for_writing=True, copy_history=True)
         storage.store_sets(sets, names)
         storage.close()
@@ -473,14 +511,16 @@ def write_state_to_file(time, stars, multiples_code, options):
 
 def read_state_from_file(restart_file):
     names = ['stars']
-    storage = io.store.StoreHDF(restart_file + ".stars")
+    storage = io.store.StoreHDF(restart_file + ".stars.hdf5")
     sets = storage.load_sets(names)
     storage.close()
 
     stars = sets[0]
 
-    with open(options.restart_file + ".multiples", "rb") as f:
-        mc_root_to_tree = pickle.load(f)
+    # DEBUG: Removing loading of pickled multiples
+    #with open(options.restart_file + ".multiples", "rb") as f:
+    #    mc_root_to_tree = pickle.load(f)
+    mc_root_to_tree = None
 
     with open(restart_file + ".conf", "rb") as f:
         config = pickle.load(f)
