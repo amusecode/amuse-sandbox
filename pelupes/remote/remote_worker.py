@@ -28,6 +28,12 @@ def dump_and_encode(x):
 def decode_and_load(x):
   return pickle.loads(x.encode("latin-1"))
 
+class RemoteCodeException(Exception):
+    def __init__(self,ex=None):
+        self.ex=ex
+    def __str__(self):
+        return "["+self.ex.__class__.__name__+"] "+str(self.ex)    
+
 class RemoteCodeImplementation(object):
    def __init__(self):
      self.scope={}
@@ -39,7 +45,7 @@ class RemoteCodeImplementation(object):
        exec express in self.scope
        return dump_and_encode(None)
      except Exception as ex:
-       return dump_and_encode(ex)
+       return dump_and_encode(RemoteCodeException(ex))
    def _eval(self,express,argout):
      try:
        self.scope.update(dict(express=express))
@@ -48,14 +54,14 @@ class RemoteCodeImplementation(object):
        return dump_and_encode(None)
      except Exception as ex:
        argout.value=dump_and_encode("")
-       return dump_and_encode(ex)
+       return dump_and_encode(RemoteCodeException(ex))
    def _assign(self,lhs,argin):
      try:
        self.scope.update(dict(argin=argin))
        exec lhs+"=decode_and_load(argin)" in self.scope
        return dump_and_encode(None)
      except Exception as ex:
-       return dump_and_encode(ex)
+       return dump_and_encode(RemoteCodeException(ex))
    def _func(self,f,argin,kwargin,argout):
      try:
        self.scope.update(dict(f=f,argin=argin,kwargin=kwargin))
@@ -67,7 +73,7 @@ class RemoteCodeImplementation(object):
        return dump_and_encode(None)
      except Exception as ex:
        argout.value=dump_and_encode("")
-       return dump_and_encode(ex)
+       return dump_and_encode(RemoteCodeException(ex))
 
 class RemoteCodeInterface(PythonCodeInterface):    
     def __init__(self, **options):

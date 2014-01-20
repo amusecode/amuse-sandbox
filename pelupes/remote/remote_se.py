@@ -5,37 +5,34 @@ from amuse.datamodel import Particles
 from amuse.units import units
 
 class forwarding_class_server(object):
-    def __init__(self,_class):
-      self.code=_class(channel_type="sockets")
+    def __init__(self,_class, *arg,**kwarg):
+        self.code=_class(*arg,**kwarg)
     def receive_parameters(self,parameters):
         self.code.parameters.reset_from_memento(parameters)
     def send_parameters(self):
         return self.code.parameters.copy()     
-    def receive_particles(self,particles):
-        add_set=particles.difference(self.code.particles)
-        remove_set=self.code.particles.difference(particles)
-
-        if len(remove_set)>0: self.code.particles.remove_particles(remove_set)
-        if len(add_set)>0: self.code.particles.add_particles(add_set)
-        self.code.commit_particles() 
-
+    def receive_particles(self,particles):        
+        particles.synchronize_to(self.code.particles)
         channel=particles.new_channel_to(self.code.particles)
         channel.copy_all_attributes()
     def send_particles(self):
         return self.code.particles.copy()
     def evolve_model(self,tend):
         self.code.evolve_model(tend)
+    def model_time(self):
+        return self.code.model_time
         
 class forwarding_class_client(object):
-    def __init__(self, _class, *arg, **kwargs):
+    def __init__(self, _class, server_arg=(),server_kwarg={},
+                   code_arg=(),code_kwarg={}):
 
         try:
-          self.remote=RemoteCodeInterface(*arg,**kwargs) 
+            self.remote=RemoteCodeInterface(*server_arg,**server_kwarg) 
         except Exception as ex:
-          print "forwarding_class_client: startup of remote worker failed"
-          raise ex
+            print "forwarding_class_client: startup of remote worker failed"
+            raise ex
 
-        self.start_remote(_class)
+        self.start_remote(_class,*code_arg,**code_kwarg)
 
         self._parameters=self.request_parameters()
         self._particles=Particles()
@@ -73,11 +70,13 @@ class forwarding_class_client(object):
         self.remote_evolve_model(tend)
         self.particles_accessed=False
 
-    def start_remote(self,_class):
+    def start_remote(self,_class, *arg, **kwarg):
         from remote_se import forwarding_class_server
         self.remote.assign("_class",_class)
+        self.remote.assign("_arg",arg)
+        self.remote.assign("_kwarg",kwarg)
         self.remote.assign("_server",forwarding_class_server)
-        self.remote.execute("server=_server(_class)")
+        self.remote.execute("server=_server(_class,*_arg,**_kwarg)")
 
     def dispatch_parameters(self,parameters):
         self.remote.assign("_p", parameters)
@@ -97,14 +96,19 @@ class forwarding_class_client(object):
         self.remote.assign("_t",tend)
         self.remote.execute("server.evolve_model(_t)")
 
+    @property
+    def model_time(self):
+        return self.remote.evaluate("server.model_time()")
+
 if __name__=="__main__":
     from amuse.community.sse.interface import SSE
 
-    se=forwarding_class_client(SSE,redirection="none")
+    se=forwarding_class_client(SSE,server_kwarg=dict(redirection="none"))
     
     p=Particles(1, mass=1| units.MSun)
     
     print se.parameters
+    print se.model_time
     
     se.particles.add_particles(p)
     se.evolve_model(1.| units.Gyr)
