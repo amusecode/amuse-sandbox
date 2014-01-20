@@ -1,4 +1,4 @@
-from remote_worker import RemoteCodeInterface
+from amuse.ext.job_server import RemoteCodeInterface
 
 from amuse.datamodel.parameters import ParametersMemento
 from amuse.datamodel import Particles
