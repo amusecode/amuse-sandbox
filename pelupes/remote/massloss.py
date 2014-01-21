@@ -4,6 +4,7 @@ from amuse.community.huayno.interface import Huayno
 from amuse.community.sse.interface import SSE
 
 from amuse.datamodel import Particles
+from amuse.units import units
 
 class combined_parameters(dict):
     def __init__(self, codes):
@@ -24,38 +25,57 @@ class grav_with_se(object):
       self.grav=Huayno(kwargs["converter"],channel_type="sockets")
       self.parameters=combined_parameters((self.se,self.grav))
       self._particles=Particles()
-      self.time=self.grav.model_time
+      if not kwargs.has_key("begin_time"):
+        kwargs["begin_time"]=self.grav.model_time
+      self.grav.parameters.begin_time=kwargs['begin_time']
+      self.time=kwargs['begin_time']
       self.timestep=kwargs['timestep']
+      self.particles_accessed=False
     @property
     def particles(self):
       return self._particles
     def evolve_model(self,tend):
+        
       self._particles.synchronize_to(self.grav.particles)
       channel=self._particles.new_channel_to(self.grav.particles)
-      channel.copy_all_attributes()
+      channel.copy_attributes(["mass","radius","x","y","z","vx","vy","vz"])
 
-      self._particles.synchronize_to(self.se.particles)
-      channel=self._particles.new_channel_to(self.se.particles)
-      channel.copy_all_attributes()
-      
+      if hasattr(self._particles,"is_star"):
+        stars=self._particles.select_array(lambda x:x, ["is_star"]).copy()
+      else:
+        stars=self._particles.copy()
+
+      remove_set=self.se.particles.difference(stars)
+      if len(remove_set)>0:        
+        self.se.particles.remove_particles(remove_set)
+
+      add_set=stars.difference(self.se.particles).copy()
+
+      if len(add_set)>0: 
+        if hasattr(add_set,"zams_mass"):
+          add_set.mass=add_set.zams_mass  
+        self.se.particles.add_particles(add_set)
+  
       channel=self.se.particles.new_channel_to(self.grav.particles)
       while self.time<(tend-self.timestep/2):
         self.grav.evolve_model(self.time+self.timestep/2)
-        channel.copy_attribute("mass")
         self.se.evolve_model(self.time+self.timestep)
+        channel.copy_attribute("mass")
         self.grav.evolve_model(self.time+self.timestep)
         self.time+=self.timestep
       
+      print self._particles.mass[0].in_(units.MSun)
+      
       channel=self.grav.particles.new_channel_to(self._particles)
-      channel.copy_attributes(["x","y","z","vx","vy","vz"])        
+      channel.copy_attributes(["mass","x","y","z","vx","vy","vz"])        
 
       channel=self.se.particles.new_channel_to(self._particles)
-      channel.copy_all_attributes()        
+      attributes=set(self.se.particles.get_attribute_names_defined_in_store()) -\
+                 set(["mass","x","y","z","vx","vy","vz"])
+      channel.copy_attributes(attributes)
     @property  
     def model_time(self):  
       return self.time
-
-#from massloss import grav_with_se
 
 if __name__=="__main__":
 
@@ -76,6 +96,9 @@ if __name__=="__main__":
 
 #  code=grav_with_se(converter=conv)
   code=forwarding_class_client(grav_with_se,code_kwarg=dict(converter=conv,timestep=timestep))
+
+  print code.parameters["SSE"]
+  print code.parameters["Huayno"]
   
   p=new_plummer_model(N,conv)
   
