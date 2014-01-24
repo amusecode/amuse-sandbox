@@ -1,6 +1,6 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=/data1/jilkova/amuse/amuse-svn
+AMUSE_DIR?=../../..
 -include ${AMUSE_DIR}/config.mk
 
 # Makefile to build the worker code.  First draft was auto-generated;
