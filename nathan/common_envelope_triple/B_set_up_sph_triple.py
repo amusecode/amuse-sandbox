@@ -7,6 +7,7 @@ from amuse.units import units, constants
 from amuse.datamodel import Particles, Particle
 from amuse.io import write_set_to_file
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
+from amuse.community.mesa.interface import MESA as stellar_evolution_code
 
 
 def to_output_directory(directory_name="new"):
