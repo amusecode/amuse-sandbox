@@ -100,7 +100,7 @@ def test_kepler( N,tend=1.| units.yr,method=0):
   
 if __name__=="__main__":
   for method in [0,1]:
-    test_kepler(N=10,tend=1.e7| units.yr,method=method)  
+    test_kepler(N=10000,tend=1.e9| units.yr,method=method)  
 
 #  for method in [0,1]:
 #    test_kepler(N=100000,tend=1000.| units.yr,method=method)  
