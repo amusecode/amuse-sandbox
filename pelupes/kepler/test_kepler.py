@@ -1,6 +1,7 @@
 import numpy
 
-from amuse.community.test_kepler.interface import Kepler
+#from amuse.community.test_kepler.interface import Kepler
+from interface import Kepler
 
 
 from amuse.units import nbody_system
