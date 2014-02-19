@@ -325,5 +325,5 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
 
     @property
     def potential_energy(self):
-        return self.particles.potential_energy()
+        return 0*self.kinetic_energy
         
