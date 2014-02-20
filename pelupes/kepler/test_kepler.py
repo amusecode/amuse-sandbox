@@ -208,12 +208,26 @@ def test_kepler_parabolic( tend=1,method=0):
 
   
 if __name__=="__main__":
+  print "-"*10
+  print
+
   for method in [1,0]:
-    
-    test_kepler_parabolic(tend=5000,method=method)
+    test_kepler_parabolic(tend=100000,method=method)
     print
 
-#    test_kepler(N=1000000,tend=100.| units.yr,method=method)  
+  print "-"*10
+  print
+
+  for method in [1,0]:
+    test_kepler_almost_parabolic(tend=100000,method=method)
+    print
+
+  print "-"*10
+  print
+
+  for method in [1,0]:
+    test_kepler(N=100000,tend=1.e10| units.yr,method=method)  
+    print
 
 #  for method in [0,1]:
 #    test_kepler(N=100000,tend=1000.| units.yr,method=method)  
