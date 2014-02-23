@@ -132,7 +132,7 @@ def new_smalln():
 
 def init_smalln():
     global SMALLN
-    SMALLN = SmallN()
+    SMALLN = SmallN(redirection="none", debugger="xterm")
     SMALLN.parameters.timestep_parameter = 0.1
     SMALLN.parameters.cm_index = 2001
 
@@ -185,7 +185,11 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
+    print 1
+    sys.stdout.flush()
     init_smalln()
+    print 2
+    sys.stdout.flush()
 
     # Note that there are actually three GPU options:
     #
@@ -196,7 +200,9 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     if gpu_worker == 1:
         try:
             gravity = GravityModule(number_of_workers = n_workers,
-                           redirection = "none", mode = "gpu")
+                           redirection = "xterm")
+            #gravity = GravityModule(number_of_workers = n_workers,
+            #               redirection = "none", mode = "gpu")
         except Exception as ex:
             gravity = GravityModule(number_of_workers = n_workers,
                            redirection = "none")
