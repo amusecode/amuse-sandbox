@@ -2,11 +2,9 @@
 #include <tgmath.h>
 #include "universal_variable_kepler.h"
 
-// todo: DOUBLE <-> TOLERANCE if DOUBLE=float ?
-
-#define TOLERANCE  1.e-15
+#define TOLERANCE  (sizeof(DOUBLE)<8? 1.e-6:1.e-15)
 #define ORDER  4
-#define MAXITER 60
+#define MAXITER 80
 
 DOUBLE stumpff_C(DOUBLE z)
 {
