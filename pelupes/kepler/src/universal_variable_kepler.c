@@ -5,6 +5,7 @@
 #define TOLERANCE  (sizeof(DOUBLE)<8? 1.e-6:1.e-15)
 #define ORDER  4
 #define MAXITER 80
+#define PI ( (DOUBLE) 3.14159265358979323846L)
 
 DOUBLE stumpff_C(DOUBLE z)
 {
@@ -229,6 +230,14 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
 
   if(alpha > 0)
   {
+    DOUBLE a=1/alpha;
+    DOUBLE p=2*PI*a*sqrt(a/mu);
+    DOUBLE ratio=dt/p;
+    dt = p*(ratio-(long)(ratio));
+    if(SIGN(ratio)*dt<0 || SIGN(ratio)*dt>p){
+     printf("dt: %g %g %g\n", ratio,dt,p); 
+     return -4;
+    }
     xi0=smu*dt*alpha;
   } else
   {
@@ -259,9 +268,11 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
    printf("%20.16g %20.16g arg: %20.16g %20.16g %20.16g %20.16g %20.16g\n", 
             xi, xi0, arg[0], arg[1], arg[2], arg[3], arg[4]);
    if( ! (sizeof(mu) == sizeof(long double)))
-     printf("input (hex): %a %a\n %a %a %a\n %a %a %a\n", mu, dt, pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2]);
+     printf("input (hex): %a %a\n %a %a %a\n %a %a %a\n", 
+       mu, dt, pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2]);
    else
-     printf("input (hex): %La %La\n %La %La %La\n %La %La %La\n", mu, dt, pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2]);   
+     printf("input (hex): %La %La\n %La %La %La\n %La %La %La\n",
+       mu, dt, pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2]);   
 
   return err;
   }
