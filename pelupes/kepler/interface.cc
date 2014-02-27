@@ -364,6 +364,8 @@ int evolve_model(double tend)
 
     simtime=tend;
 
+    delete[] keys;
+
     return 0;
 }
 
