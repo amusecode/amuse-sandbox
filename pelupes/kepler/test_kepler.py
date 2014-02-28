@@ -203,9 +203,9 @@ def test_kepler_parabolic( tend=1,method=0, sign=+1):
 
 def crash_test(method=1):
   code=Kepler(redirection="none")
-  
+
   code.set_method(method)
-  
+
   smu=1.224744871391589
   mu=smu**2
   r0=2.787802728537455
@@ -215,7 +215,7 @@ def crash_test(method=1):
   v02=(mu*(2/r0-alpha))
   vx=rv0
   vy=(v02-vx**2)**0.5
-  
+
   sun=Particle()
   sun.mass=mu | nbody_system.mass
   sun.x=0. | nbody_system.length
@@ -233,7 +233,7 @@ def crash_test(method=1):
   comet.vx=vx | nbody_system.speed
   comet.vy=vy | nbody_system.speed
   comet.vz=0. | nbody_system.speed
-  
+
   tend=(smudt/smu) | nbody_system.time
   print tend
 
@@ -242,33 +242,32 @@ def crash_test(method=1):
 
   a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
-  
+
   print orbital_elements_from_binary(code.particles[0:2])
-  
+
   t1=time.time()
   code.evolve_model(tend)
   t2=time.time()
 
-  print "time:",t2-t1
-
   print orbital_elements_from_binary(code.particles[0:2])
-  
+
   print code.orbiters.position
-  
+
   a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
-  
+
   da=abs((a-a0)/a0)
   deps=abs(eps-eps0)/eps0
 
   print da,deps
+  print "time:",t2-t1
 
 
 def crash_test2(method=1):
   code=Kepler(channel_type="sockets",redirection="none")
-  
+
   code.set_method(method)
-  
+
   """
   mu=struct.unpack('!d','3ff7ffffffffffff'.decode('hex'))[0]
   dt=struct.unpack('!d','40025ab746b00001'.decode('hex'))[0]
@@ -284,10 +283,10 @@ def crash_test2(method=1):
   pos1=float.fromhex("-0x1.d36dc82998ed4p-1")
   pos2=float.fromhex("0x1.51297fc6e5256p+1")
   pos3=float.fromhex("0x0p+0")
-  vel1=float.fromhex("0x1.09d8008ba33b9p-4")      
+  vel1=float.fromhex("0x1.09d8008ba33b9p-4")
   vel2=float.fromhex("-0x1.06788b551b81ep+0")
-  vel3=float.fromhex("0x0p+0")  
-    
+  vel3=float.fromhex("0x0p+0")
+
   sun=Particle()
   sun.mass=mu | nbody_system.mass
   sun.x=0. | nbody_system.length
@@ -305,7 +304,7 @@ def crash_test2(method=1):
   comet.vx=vel1 | nbody_system.speed
   comet.vy=vel2 | nbody_system.speed
   comet.vz=vel3 | nbody_system.speed
-    
+
   tend=dt | nbody_system.time
   print tend,mu
 
@@ -314,32 +313,46 @@ def crash_test2(method=1):
 
   a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
-  
+
   print orbital_elements_from_binary(code.particles[0:2])
-  
+
   t1=time.time()
   code.evolve_model(tend)
   t2=time.time()
 
   print orbital_elements_from_binary(code.particles[0:2])
-  
+
   print code.orbiters.position
-  
+
   a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
                      code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
-  
+
   da=abs((a-a0)/a0)
   deps=abs(eps-eps0)/eps0
 
   print da,deps
+  print "time:",t2-t1
 
-  
-  
+
+
 if __name__=="__main__":
-  crash_test2()
-  raise
 
   tend = 1.0e9
+
+
+  for method in [1,0]:
+      crash_test(method=method)
+      print
+
+  print "-"*10
+  print
+
+#  for method in [1,0]:
+#      crash_test2(method=method)
+#      print
+#
+#  print "-"*10
+#  print
 
   for method in [1,0]:
     test_kepler_parabolic(tend=tend,method=method, sign=+1)
