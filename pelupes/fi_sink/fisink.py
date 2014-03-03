@@ -47,22 +47,24 @@ class SinkFi(Fi):
         if not kargs.has_key('merge_radius'):
           raise Exception("provide merge_radius")
         self.merge_radius=kargs.pop('merge_radius')
+        self.verbose=kargs.pop("verbose", False)
         Fi.__init__(self, *args, **kargs)
 
     def merge_sinks(self):
-        print "identify groups.." 
+        if self.verbose: print "identify groups.." 
         ccs=self.sink_particles.copy().connected_components(threshold=self.merge_radius)
         if len(ccs):
-            print "merging sink sets... "
+            if self.verbose:  print "merging sink sets... "
         nmerge=0
         newsinks=Particles()
         for cc in ccs:
             if len(cc) >1:
               nmerge+=1
-              if len(cc) > 3: print "warning: large merge(than 3) ", len(cc)
-              new=Particle()
+              if len(cc) > 3: 
+                print "warning: large merge(than 3) ", len(cc)
               cc=cc.copy()
               self.sink_particles.remove_particles(cc)
+              new=cc.sorted_by_attribute('mass')[-1].empty_copy()
               try:
                 new.radius=cc.sink_radius.max()
               except Exception as ex:
@@ -81,8 +83,9 @@ class SinkFi(Fi):
         if len(newsinks)>0:
             new_in_code = self.dm_particles.add_particles(newsinks)
             self.sink_particles.add_sink(new_in_code)
-        if nmerge>0: print "nmerg found: ",nmerge,
-        print "...done"
+        if nmerge>0:
+          if self.verbose: print "nmerg found: ",nmerge,
+        if self.verbose: print "...done"
 
     def commit_parameters(self):
         self.parameters.stopping_condition_maximum_density = self.density_threshold
@@ -93,6 +96,7 @@ class SinkFi(Fi):
         density_limit_detection.enable()
         self.overridden().evolve_model(*args,**kargs)
         while density_limit_detection.is_set():
+          if self.verbose: print "processing high dens particles..."
           highdens=self.gas_particles.select_array(lambda rho:rho> self.density_threshold,["rho"])
           candidate_sinks=highdens.copy()
           if len(candidate_sinks)==0:
@@ -100,15 +104,18 @@ class SinkFi(Fi):
             raise Exception("I better stop")
           candidate_sinks.radius*=2 
           if len(self.sink_particles)>0:
+            if self.verbose: print "accreting and new sinks..."
             self.sink_particles.accrete(candidate_sinks)
             self.gas_particles.remove_particles(highdens)
             if len(candidate_sinks)>0:
               newsinks_in_code = self.dm_particles.add_particles(candidate_sinks)
               self.sink_particles.add_sinks(newsinks_in_code)
           else:
+            if self.verbose: print "new sinks..."
             self.gas_particles.remove_particles(highdens)
             newsinks_in_code = self.dm_particles.add_particles(candidate_sinks)
             self.sink_particles=SinkParticles(newsinks_in_code,looping_over="sources")
+          if self.verbose: print "..done"
           self.overridden().evolve_model(*args,**kargs)
         if len(self.sink_particles)>1: self.merge_sinks()        
   
