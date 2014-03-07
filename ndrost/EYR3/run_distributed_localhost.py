@@ -18,34 +18,34 @@ from amuse.community.bhtree.interface import BHTree
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.ph4.interface import ph4
 from amuse.community.fastkick.interface import FastKick
-from amuse.community.distributed.interface import DistributedAmuse, Resource, Reservation
+from amuse.community.distributed.interface import DistributedAmuse, Resource, Pilot
 from SSEplus import SSEplus
 import cProfile
 
-def new_local_reservation():
-    reservation = Reservation()
-    reservation.resource_name = "local"
-    reservation.node_count = 1
-    reservation.time = 2 | units.hour
-    reservation.slots_per_node = 10
-    reservation.node_label = "local"
-    return reservation
+def new_local_pilot():
+    pilot = Pilot()
+    pilot.resource_name = "local"
+    pilot.node_count = 1
+    pilot.time = 2 | units.hour
+    pilot.slots_per_node = 10
+    pilot.node_label = "local"
+    return pilot
 
 def start_distributed():
     instance = DistributedAmuse(redirection="file", redirect_file="distributed_amuse.log")
     instance.initialize_code()
     
-    instance.reservations.add_reservation(new_local_reservation())
+    instance.pilots.add_pilot(new_local_pilot())
     
-    print "Reservations:"
-    print instance.reservations
-    print "Waiting for reservations"
-    instance.wait_for_reservations()
+    print "Pilots:"
+    print instance.pilots
+    print "Waiting for pilots"
+    instance.wait_for_pilots()
     return instance
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     instance = start_distributed()
     numpy.random.seed(123491)
     try:
