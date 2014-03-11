@@ -11,6 +11,7 @@ from amuse.community.octgrav.interface import Octgrav
 from amuse.community.gadget2.interface import Gadget2
 from amuse.community.ph4.interface import ph4
 from amuse.community.sse.interface import SSE
+from amuse.community.fastkick.interface import FastKick
 
 from gravity_hydro_stellar import GravityHydroStellar
 
@@ -22,7 +23,8 @@ def simulate_young_star_cluster():
     
     new_working_directory()
     
-    stars, gas, converter = load_young_star_cluster("YSC_stars1000_gas1000k_")
+    stars, gas, converter = load_young_star_cluster("YSC_stars10_gas1k_")
+    #stars, gas, converter = load_young_star_cluster("YSC_stars1000_gas1000k_")
     system = new_gravity_hydro_stellar(stars, gas, converter, time_step)
     system.store_system_state()
     system.evolve_model(end_time)
@@ -45,7 +47,7 @@ def new_working_directory():
     os.chdir(new_directory)
 
 def load_young_star_cluster(filename_base):
-    filename_base = os.path.join("..", "initial_conditions", filename_base)
+    filename_base = os.path.join("..", "..", "initial_conditions", filename_base)
     with open(filename_base + "info.pkl", "rb") as infile:
         converter = cPickle.load(infile)[0]
     stars = read_set_from_file(filename_base + "stars.amuse", "amuse")
@@ -92,8 +94,7 @@ def new_hydro(gas, converter, time_step):
     hydro = Gadget2(
         converter,
         node_label="cartesius", 
-        number_of_workers=10, 
-        number_of_nodes=1,
+        number_of_workers=6, 
         redirection="file",
         redirect_file="gas_code.log")
     hydro.parameters.gas_epsilon = converter.to_si(0.01|nbody_system.length) # or eps_is_h_flag
@@ -129,5 +130,9 @@ def new_gravity_field_from(codes, converter, epsilon_squared):
     )
     new_gravity_field_from.counter += 1
     return gravity_field
+
+#count how often this function is called
 new_gravity_field_from.counter = 1
 
+if __name__ == "__main__":
+    simulate_young_star_cluster()

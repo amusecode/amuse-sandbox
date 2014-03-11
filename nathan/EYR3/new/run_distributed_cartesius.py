@@ -6,7 +6,7 @@
 import logging
 import cProfile
 
-from amuse.community.distributed.interface import DistributedAmuse, Resource, Reservation
+from amuse.community.distributed.interface import DistributedAmuse, Resource, Pilot
 from amuse.units import units
 
 from young_star_cluster import simulate_young_star_cluster
@@ -26,52 +26,52 @@ def new_lgm_node(node_name):
     resource.amuse_dir = "/home/niels/amuse"
     return resource
 
-def new_local_reservation():
-    reservation = Reservation()
-    reservation.resource_name = "local"
-    reservation.node_count = 1
-    reservation.time = 2 | units.hour
-    reservation.slots_per_node = 10
-    reservation.node_label = "local"
-    return reservation
+def new_local_pilot():
+    pilot = Pilot()
+    pilot.resource_name = "local"
+    pilot.node_count = 1
+    pilot.time = 2 | units.hour
+    pilot.slots_per_node = 10
+    pilot.node_label = "local"
+    return pilot
 
-def new_gpu_node_reservation(resource):
-    reservation = Reservation()
-    reservation.resource_name = resource.name
-    reservation.node_count = 1
-    reservation.time = 2 | units.hour
-    reservation.slots_per_node = 2
-    reservation.node_label = "GPU"
-    return reservation
+def new_gpu_node_pilot(resource):
+    pilot = Pilot()
+    pilot.resource_name = resource.name
+    pilot.node_count = 1
+    pilot.time = 2 | units.hour
+    pilot.slots_per_node = 2
+    pilot.node_label = "GPU"
+    return pilot
 
-def new_cpu_node_reservation(resource):
-    reservation = Reservation()
-    reservation.resource_name = resource.name
-    reservation.node_count = 1
-    reservation.time = 2 | units.hour
-    reservation.slots_per_node = 10
-    reservation.node_label = "CPU"
-    return reservation
+def new_cpu_node_pilot(resource):
+    pilot = Pilot()
+    pilot.resource_name = resource.name
+    pilot.node_count = 1
+    pilot.time = 2 | units.hour
+    pilot.slots_per_node = 10
+    pilot.node_label = "CPU"
+    return pilot
 
 def new_cartesius_resource():
     resource = Resource()
     resource.name = "cartesius"
     resource.location = "ndrosta@int2-bb.cartesius.surfsara.nl"
-    resource.amuse_dir = "/home/ndrosta/amuse"
+    resource.amuse_dir = "/home/ndrosta/amuse-svn"
     resource.scheduler_type = "slurm"
 #    resource.boot_command = "/home/ndrosta/amuse/prerequisites/bin/mpdboot"
     #resource.boot_command = "printenv"
     return resource
 
-def new_cartesius_reservation():
-    reservation = Reservation()
-    reservation.resource_name = "cartesius"
-    reservation.node_count = 2
-    reservation.time = 1 | units.hour
-    reservation.queue_name = "short"
-    reservation.slots_per_node = 24
-    reservation.node_label = "cartesius"
-    return reservation
+def new_cartesius_pilot():
+    pilot = Pilot()
+    pilot.resource_name = "cartesius"
+    pilot.node_count = 2
+    pilot.time = 1 | units.hour
+    pilot.queue_name = "short"
+    pilot.slots_per_node = 24
+    pilot.node_label = "cartesius"
+    return pilot
 
 
 
@@ -86,18 +86,18 @@ def start_distributed(lgm_node_names):
 
     instance.resources.add_resource(new_cartesius_resource())
     
-    instance.reservations.add_reservation(new_local_reservation())
+    instance.pilots.add_pilot(new_local_pilot())
     for lgm_node in lgm_nodes:
-        instance.reservations.add_reservation(new_gpu_node_reservation(lgm_node))
-        instance.reservations.add_reservation(new_cpu_node_reservation(lgm_node))
+        instance.pilots.add_pilot(new_gpu_node_pilot(lgm_node))
+        instance.pilots.add_pilot(new_cpu_node_pilot(lgm_node))
 
-    instance.reservations.add_reservation(new_cartesius_reservation())
+    instance.pilots.add_pilot(new_cartesius_pilot())
     
-    print "Reservations:"
-    print instance.reservations
-    print "Waiting for reservations"
-    instance.wait_for_reservations()
-    print instance.reservations
+    print "Pilots:"
+    print instance.pilots
+    print "Waiting for pilots"
+    instance.wait_for_pilots()
+    print instance.pilots
     return instance
 
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     logging.basicConfig(filename='example.log', level=logging.WARN)
     logging.getLogger("code").setLevel(logging.DEBUG)
     #~instance = start_distributed(lgm_node_names=["node12"])#, "node07"])
-    instance = start_distributed(lgm_node_names=["node07", "node11"])
+    instance = start_distributed(lgm_node_names=[])
     try:
         cProfile.run("simulate_young_star_cluster()", "prof")
     finally:
