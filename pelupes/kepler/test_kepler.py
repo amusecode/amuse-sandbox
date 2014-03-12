@@ -45,7 +45,7 @@ def elements(starmass,x,y,z,vx,vy,vz,G=constants.G):
 
 def test_kepler( N,tend=1.| units.yr,method=0):
 
-  numpy.random.seed(1234567)
+  numpy.random.seed(12345)
 
   conv=nbody_system.nbody_to_si(2.| units.MSun, 5.|units.AU)
 
@@ -58,7 +58,7 @@ def test_kepler( N,tend=1.| units.yr,method=0):
 
   comets.mass*=0.
 
-  code=Kepler(conv,redirection="none")
+  code=Kepler(conv,redirection="none",channel_type="sockets")
 
   code.set_method(method)
 
@@ -93,15 +93,15 @@ def test_kepler( N,tend=1.| units.yr,method=0):
   print a0[dev].value_in(units.AU)
   print eps0[dev]
 
-  pyplot.plot(a0[dev].value_in(units.AU),eps0[dev],"ro")
-  pyplot.plot(a[dev].value_in(units.AU),eps[dev],"g+")
+#  pyplot.plot(a0[dev].value_in(units.AU),eps0[dev],"ro")
+#  pyplot.plot(a[dev].value_in(units.AU),eps[dev],"g+")
 
 
   print "max da,deps:",da.max(), deps.max()
 
   print "time:",t2-t1
 
-  pyplot.show()
+#  pyplot.show()
 
   return t2-t1,da.max(),deps.max()
 
@@ -333,12 +333,93 @@ def crash_test2(method=1):
   print da,deps
   print "time:",t2-t1
 
+def test_linear(tend=1,N=100,method=0):
+  code=Kepler(redirection="none",channel_type="sockets")
+
+  code.set_method(method)
+
+  mass=1. | nbody_system.mass
+  x=1. | nbody_system.length
+  vx=0 | nbody_system.speed
+  
+  e=0.5*vx**2-nbody_system.G*mass/x
+  
+  semimajor_axis=-nbody_system.G*mass/2/e
+
+  p=2*numpy.pi*(semimajor_axis**3/nbody_system.G/mass)**0.5
+
+  print semimajor_axis
+  print p
+
+  tend=tend*p
+  dt=p/N
+  
+  sun=Particle()
+  sun.mass=mass
+  sun.x=0. | nbody_system.length
+  sun.y=0. | nbody_system.length
+  sun.z=0. | nbody_system.length
+  sun.vx=0. | nbody_system.speed
+  sun.vy=0. | nbody_system.speed
+  sun.vz=0. | nbody_system.speed
+
+  comet=Particle()
+  comet.mass= 0 | nbody_system.mass
+  comet.x=x
+  comet.y=0. | nbody_system.length
+  comet.z=0. | nbody_system.length
+  comet.vx=vx
+  comet.vy=0. | nbody_system.speed
+  comet.vz=0. | nbody_system.speed
+
+  code.central_particle.add_particle(sun)
+  code.orbiters.add_particle(comet)
+
+  a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
+                     code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
+
+  print orbital_elements_from_binary(code.particles[0:2])
+
+  pyplot.ion()
+  f=pyplot.figure(figsize=(8,6))
+  pyplot.show()
+
+  tnow=0*tend
+  time=[]
+  xs=[]
+  while tnow<tend:
+    tnow+=dt
+    print tnow,int(tnow/dt)
+    code.evolve_model(tnow)
+    f.clf()
+    time.append(tnow/tend)
+    xs.append(code.orbiters.x[0].number)
+  pyplot.plot(time,xs,"r+")
+  pyplot.xlim(-0.1,1.1)
+  pyplot.ylim(-1.1,3.1)
+  pyplot.draw()
+    
+  print orbital_elements_from_binary(code.particles[0:2])
+
+  print code.orbiters.position
+
+  a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
+                     code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
+
+  da=abs((a-a0)/a0)
+  deps=abs(eps-eps0)/eps0
+
+  print da,deps
+  raw_input()
 
 
 if __name__=="__main__":
 
-  tend = 1.0e9
-
+  test_linear(N=100,method=0)
+  
+  raise
+  
+  tend = 0.
 
   for method in [1,0]:
       crash_test(method=method)
@@ -376,6 +457,6 @@ if __name__=="__main__":
   print
 
   for method in [1,0]:
-    test_kepler(N=100000,tend=tend | units.yr,method=method)
+    test_kepler(N=10000,tend=tend | units.yr,method=method)
     print
 
