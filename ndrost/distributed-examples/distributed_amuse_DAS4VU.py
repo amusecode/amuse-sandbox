@@ -22,14 +22,23 @@ try:
     print "Resources:"
     print instance.resources
     
+    resource = Resource()
+    resource.name='DAS4-Leiden'
+    resource.location="niels@fs1.das4.liacs.nl"
+    resource.scheduler_type="sge"
+    resource.amuse_dir="/home/niels/amuse"
+    instance.resources.add_resource(resource)
+    print "Resources:"
+    print instance.resources
+    
     reservation = Reservation()
-    reservation.resource_name='DAS4-VU'
+    reservation.resource_name='DAS4-Leiden'
     reservation.node_count=1
     reservation.time= 2|units.hour
     reservation.slots_per_node=22
 #    reservation.queue_name="all.q"
     reservation.node_label='normal'
-    reservation.options="resources=gpu=GTX480"
+#    reservation.options="resources=gpu=GTX480"
     instance.reservations.add_reservation(reservation)
     
     

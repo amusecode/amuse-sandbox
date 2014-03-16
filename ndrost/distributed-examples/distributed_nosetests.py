@@ -1,39 +1,111 @@
 #!/usr/bin/python
 import nose
+
+
+
 from amuse.lab import *
-from amuse.community.distributed.interface import DistributedAmuse
-from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
 
-print "Setting up distributed code"
-instance = DistributedAmuse(redirection='none')
-instance.initialize_code()
+from amuse.community.distributed.interface import DistributedAmuseInterface, DistributedAmuse
+from amuse.community.distributed.interface import Resource, Resources, Pilot, Pilots
 
-resource = Resource()
-#resource.name='DAS4-VU'
-#resource.location="niels@fs0.das4.cs.vu.nl"
-#resource.scheduler_type="sge"
-#resource.amuse_dir="/home/niels/amuse"
-#instance.resources.add_resource(resource)
-print "Resources:"
-print instance.resources
+#Simple script to run nosetests using the distributed code. Should work for any existing amuse test.
+#This example only runs the tests on the local machine.
 
-reservation = Reservation()
-reservation.resource_name='local'
-reservation.node_count=1
-reservation.time= 2|units.hour
-reservation.slots_per_node=2
-reservation.node_label='local'
-instance.reservations.add_reservation(reservation)
-print "Reservations:"
-print instance.reservations
 
-print "Waiting for reservations"
-instance.wait_for_reservations()
+def new_lgm_gateway():
+    resource = Resource()
+    resource.name = "LGM"
+    resource.location = "fs.lgm.liacs.nl"
+    resource.amuse_dir = "amuse"
+    return resource
 
-print "Running tests"
+def new_lgm_node(node_name):
+    resource = Resource()
+    resource.name = "LGM" + node_name
+    resource.location = node_name
+    resource.gateway = "LGM"
+    resource.amuse_dir = "amuse"
+    return resource
 
-nose.run()
+def new_local_pilot():
+    pilot = Pilot()
+    pilot.resource_name = "local"
+    pilot.node_count = 1
+    pilot.time = 2 | units.hour
+    pilot.slots_per_node = 10
+    pilot.node_label = "local"
+    return pilot
 
-print "all tests done, stopping distributed code"
+def new_gpu_node_pilot(resource):
+    pilot = Pilot()
+    pilot.resource_name = resource.name
+    pilot.node_count = 1
+    pilot.time = 2 | units.hour
+    pilot.slots_per_node = 2
+    pilot.node_label = "GPU"
+    return pilot
 
-instance.stop()
+def new_cpu_node_pilot(resource):
+    pilot = Pilot()
+    pilot.resource_name = resource.name
+    pilot.node_count = 1
+    pilot.time = 2 | units.hour
+    pilot.slots_per_node = 10
+    pilot.node_label = "CPU"
+    return pilot
+
+def new_cartesius_resource():
+    resource = Resource()
+    resource.name = "cartesius"
+    resource.location = "ndrosta@int2-bb.cartesius.surfsara.nl"
+    resource.amuse_dir = "amuse-svn"
+    resource.scheduler_type = "slurm"
+    return resource
+
+def new_cartesius_pilot():
+    pilot = Pilot()
+    pilot.resource_name = "cartesius"
+    pilot.node_count = 1
+    pilot.time = 1 | units.hour
+    pilot.queue_name = "short"
+    pilot.slots_per_node = 24
+    pilot.node_label = "cartesius"
+    return pilot
+
+
+def start_distributed(lgm_node_names):
+    lgm_nodes = [new_lgm_node(lgm_node_name) for lgm_node_name in lgm_node_names]
+    instance = DistributedAmuse(redirection="file", redirect_file="distributed_amuse.log")
+    instance.parameters.debug = True
+    instance.resources.add_resource(new_lgm_gateway())
+    for lgm_node in lgm_nodes:
+        instance.resources.add_resource(lgm_node)
+        
+    instance.resources.add_resource(new_cartesius_resource())
+    
+    instance.pilots.add_pilot(new_local_pilot())
+    
+    for lgm_node in lgm_nodes:
+        instance.pilots.add_pilot(new_gpu_node_pilot(lgm_node))
+        instance.pilots.add_pilot(new_cpu_node_pilot(lgm_node))
+        
+    instance.pilots.add_pilot(new_cartesius_pilot())
+    
+    print "Pilots:"
+    print instance.pilots
+    print "Waiting for pilots"
+    instance.wait_for_pilots()
+    return instance
+
+
+if __name__ == "__main__":
+
+    instance = start_distributed(lgm_node_names=["node07", "node08"])
+
+    print "Running tests"
+
+    nose.run()
+
+    print "all tests done, stopping distributed code"
+
+    instance.stop()
