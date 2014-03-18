@@ -4,16 +4,6 @@
 #include "common.h"
 
 
-#ifdef CONFIG_USE_DOUBLE
-    #define TOLERANCE ((REAL)(2.2737367544323205948e-13))     // 2^(-42)
-#else
-    #define TOLERANCE ((REAL)(1.52587890625e-5))              // (2^-16)
-#endif
-#define MAXITER 64
-#define COMPARE(x, y) (((x) > (y)) - ((x) < (y)))
-#define SIGN(x) COMPARE(x, 0)
-
-
 static inline REAL stumpff_c0(
 //    const REAL zeta)
     REAL zeta)      // This is because of bug 4775 on old versions of glibc.
@@ -370,7 +360,7 @@ static inline void set_new_pos_vel(
     const REAL r0v0,
     const REAL m,
     const REAL e2,
-    const REAL alpha,
+    const REAL alpha0,
     REAL *rx,
     REAL *ry,
     REAL *rz,
@@ -385,6 +375,13 @@ static inline void set_new_pos_vel(
     REAL v0y = *vy;
     REAL v0z = *vz;
 
+    REAL alpha = alpha0;
+    if (e2 > 0) {
+        alpha += m * e2 / (r0 * r0 * r0);
+        REAL dfv = universal_kepler_ds(s/4, r0, r0v0, m, alpha);
+        alpha = alpha0 + m * e2 / (dfv * dfv * dfv);
+    }
+
     REAL lf = lagrange_f(s, r0, m, alpha);
     REAL lg = lagrange_g(s, r0, r0v0, alpha);
     REAL r1x, r1y, r1z;
@@ -392,13 +389,16 @@ static inline void set_new_pos_vel(
     r1y = r0y * lf + v0y * lg;
     r1z = r0z * lf + v0z * lg;
 
-//    REAL r1 = sqrt(e2 + r1x * r1x + r1y * r1y + r1z * r1z);
-    REAL r1 = universal_kepler_ds(s, r0, r0v0, m, alpha);
+    REAL ldf = lagrange_dfds(s, r0, m, alpha);
+    REAL ldg = lagrange_dgds(s, r0, r0v0, alpha);
 
-    REAL ldf = lagrange_dfds(s, r0, m, alpha) / r1;
-    REAL ldg = lagrange_dgds(s, r0, r0v0, alpha) / r1;
-//    REAL ldg = (1 + lg * ldf) / lf;
-//    REAL ldf = (lf * ldg - 1) / lg;
+//    REAL r1 = sqrt(e2 + r1x * r1x + r1y * r1y + r1z * r1z);
+//    REAL r1 = universal_kepler_ds(s, r0, r0v0, m, alpha);
+    REAL r1 = lf * ldg - lg * ldf;
+
+    ldf /= r1;
+    ldg /= r1;
+
     REAL v1x, v1y, v1z;
     v1x = r0x * ldf + v0x * ldg;
     v1y = r0y * ldf + v0y * ldg;
@@ -438,8 +438,7 @@ static inline INT _universal_kepler_solver(
     REAL vz = v0z;
 
     REAL r2 = rx * rx + ry * ry + rz * rz;
-    INT mask = (r2 > 0);
-    if (!mask) {
+    if (!(r2 > 0)) {
         *r1x = rx;
         *r1y = ry;
         *r1z = rz;
@@ -450,11 +449,11 @@ static inline INT _universal_kepler_solver(
     }
     r2 += e2;
     REAL r = sqrt(r2);
+    REAL inv_r = sqrt(1/r2);
 
     REAL v2 = vx * vx + vy * vy + vz * vz;
     REAL rv = rx * vx + ry * vy + rz * vz;
-    REAL beta = 2 - (e2 / r2);
-    REAL alpha = v2 - beta * m / r;
+    REAL alpha = v2 - 2 * m * inv_r;
     REAL abs_alpha = fabs(alpha);
 
     REAL s0, s, arg[5];
@@ -473,8 +472,9 @@ static inline INT _universal_kepler_solver(
          * step to a fraction of the orbital period.
          */
         if (alpha < 0) {
-            REAL a = m / abs_alpha;
-            REAL T = 2 * PI * a * sqrt(a / m);
+//            REAL a = m / abs_alpha;
+//            REAL T = 2 * PI * a * sqrt(a / m);
+            REAL T = 2 * PI * m / (abs_alpha * sqrt(abs_alpha));
             REAL ratio = dt0 / T;
             dt = (ratio - (INT)(ratio)) * T;
         }
@@ -482,7 +482,7 @@ static inline INT _universal_kepler_solver(
          * elliptical and nearly parabolical
          * orbits.
          */
-        s0 = dt * abs_alpha / (beta * m);
+        s0 = dt * abs_alpha / m;
 
         REAL s01 = dt / r;
         if (fabs(alpha * s01 * s01) < 1)
@@ -609,7 +609,7 @@ static inline void universal_kepler_solver(
                               r0x, r0y, r0z, v0x, v0y, v0z,
                               &rx, &ry, &rz, &vx, &vy, &vz);
 
-    if (e2 == 0) {
+    if (!(e2 > 0)) {
         *r1x = rx;
         *r1y = ry;
         *r1z = rz;
@@ -620,8 +620,7 @@ static inline void universal_kepler_solver(
     }
 
     REAL r2 = r0x * r0x + r0y * r0y + r0z * r0z;
-    INT mask = (r2 > 0);
-    if (!mask) {
+    if (!(r2 > 0)) {
         *r1x = r0x;
         *r1y = r0y;
         *r1z = r0z;
@@ -644,9 +643,9 @@ static inline void universal_kepler_solver(
     REAL e1 = v2 - u1;
 
     INT n = 1;
-    REAL tol = 64*TOLERANCE;
+    REAL tol = 16 * TOLERANCE;
     REAL err = fabs(e1 - e0);
-    if (2*err < tol * (u1+u0)) {
+    if (2 * err < tol * (u1 + u0)) {
         *r1x = rx;
         *r1y = ry;
         *r1z = rz;
@@ -679,7 +678,7 @@ label1:
         e1 = v2 - u1;
 
         err = fabs(e1 - e0);
-        if (2*err > tol * (u1+u0)) {
+        if (2 * err > tol * (u1 + u0)) {
             goto label1;
         }
     }

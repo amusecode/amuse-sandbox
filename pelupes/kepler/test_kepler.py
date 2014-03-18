@@ -341,9 +341,9 @@ def test_linear(tend=1,N=100,method=0):
   mass=1. | nbody_system.mass
   x=1. | nbody_system.length
   vx=0 | nbody_system.speed
-  
+
   e=0.5*vx**2-nbody_system.G*mass/x
-  
+
   semimajor_axis=-nbody_system.G*mass/2/e
 
   p=2*numpy.pi*(semimajor_axis**3/nbody_system.G/mass)**0.5
@@ -353,7 +353,7 @@ def test_linear(tend=1,N=100,method=0):
 
   tend=tend*p
   dt=p/N
-  
+
   sun=Particle()
   sun.mass=mass
   sun.x=0. | nbody_system.length
@@ -398,7 +398,7 @@ def test_linear(tend=1,N=100,method=0):
   pyplot.xlim(-0.1,1.1)
   pyplot.ylim(-1.1,3.1)
   pyplot.draw()
-    
+
   print orbital_elements_from_binary(code.particles[0:2])
 
   print code.orbiters.position
@@ -416,9 +416,9 @@ def test_linear(tend=1,N=100,method=0):
 if __name__=="__main__":
 
   test_linear(N=100,method=0)
-  
   raise
-  
+
+
   tend = 0.
 
   for method in [1,0]:
