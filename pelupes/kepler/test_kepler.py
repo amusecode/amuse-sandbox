@@ -106,7 +106,7 @@ def test_kepler( N,tend=1.| units.yr,method=0):
   return t2-t1,da.max(),deps.max()
 
 def test_kepler_almost_parabolic( tend=1,method=0):
-  code=Kepler(redirection="none")
+  code=Kepler(redirection="none",channel_type="sockets")
 
   code.set_method(method)
 
@@ -151,7 +151,7 @@ def test_kepler_almost_parabolic( tend=1,method=0):
   print "time:",t2-t1
 
 def test_kepler_parabolic( tend=1,method=0, sign=+1):
-  code=Kepler(redirection="none")
+  code=Kepler(redirection="none",channel_type="sockets")
 
   code.set_method(method)
 
@@ -202,7 +202,7 @@ def test_kepler_parabolic( tend=1,method=0, sign=+1):
   print "time:",t2-t1
 
 def crash_test(method=1):
-  code=Kepler(redirection="none")
+  code=Kepler(redirection="none",channel_type="sockets")
 
   code.set_method(method)
 
@@ -264,7 +264,7 @@ def crash_test(method=1):
 
 
 def crash_test2(method=1):
-  code=Kepler(channel_type="sockets",redirection="none")
+  code=Kepler(redirection="none",channel_type="sockets")
 
   code.set_method(method)
 
@@ -415,11 +415,15 @@ def test_linear(tend=1,N=100,method=0):
 
 if __name__=="__main__":
 
-  test_linear(N=100,method=0)
-  raise
+  for method in [1,0]:
+      test_linear(N=100,method=method)
+      print
+
+  print "-"*10
+  print
 
 
-  tend = 0.
+  tend = 1.0
 
   for method in [1,0]:
       crash_test(method=method)
@@ -428,12 +432,12 @@ if __name__=="__main__":
   print "-"*10
   print
 
-#  for method in [1,0]:
-#      crash_test2(method=method)
-#      print
-#
-#  print "-"*10
-#  print
+  for method in [1,0]:
+      crash_test2(method=method)
+      print
+
+  print "-"*10
+  print
 
   for method in [1,0]:
     test_kepler_parabolic(tend=tend,method=method, sign=+1)
