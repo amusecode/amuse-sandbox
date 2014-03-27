@@ -20,7 +20,7 @@ class KeplerInterface(CodeInterface,
     # Interface specification.
 
     include_headers = ['interface.h']
-    
+
     def __init__(self, **options):
         CodeInterface.__init__(self,
                                name_of_the_worker = "kepler_worker",
@@ -29,14 +29,14 @@ class KeplerInterface(CodeInterface,
     @legacy_function
     def get_method():
         function = LegacyFunctionSpecification()
-        function.addParameter('method', dtype='i', direction=function.OUT, default=0)        
+        function.addParameter('method', dtype='i', direction=function.OUT, default=0)
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_method():
         function = LegacyFunctionSpecification()
-        function.addParameter('method', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('method', dtype='i', direction=function.IN, default=0)
         function.result_type = 'int32'
         return function
 
@@ -46,7 +46,7 @@ class KeplerInterface(CodeInterface,
     def get_central_mass():
         function = LegacyFunctionSpecification()
         function.can_handle_array=True
-        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)
         function.addParameter('mass', dtype='float64', direction=function.OUT,
                               unit = nbody_system.mass)
         function.result_type = 'int32'
@@ -66,7 +66,7 @@ class KeplerInterface(CodeInterface,
     def get_central_radius():
         function = LegacyFunctionSpecification()
         function.can_handle_array=True
-        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)
         function.addParameter('radius', dtype='float64', direction=function.OUT,
                               unit = nbody_system.length)
         function.result_type = 'int32'
@@ -87,7 +87,7 @@ class KeplerInterface(CodeInterface,
     def get_central_pos():
         function = LegacyFunctionSpecification()
         function.can_handle_array=True
-        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)
         function.addParameter('x', dtype='float64', direction=function.OUT,
                               unit = nbody_system.length)
         function.addParameter('y', dtype='float64', direction=function.OUT,
@@ -115,7 +115,7 @@ class KeplerInterface(CodeInterface,
     def get_central_vel():
         function = LegacyFunctionSpecification()
         function.can_handle_array=True
-        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.IN, default=0)
         function.addParameter('vx', dtype='float64', direction=function.OUT,
                               unit = nbody_system.speed)
         function.addParameter('vy', dtype='float64', direction=function.OUT,
@@ -143,7 +143,7 @@ class KeplerInterface(CodeInterface,
     def new_central_particle():
         function = LegacyFunctionSpecification()
         function.can_handle_array=True
-        function.addParameter('index_of_the_particle', dtype='i', direction=function.OUT)        
+        function.addParameter('index_of_the_particle', dtype='i', direction=function.OUT)
         function.addParameter('mass', dtype='float64', direction=function.IN,
                               unit = nbody_system.mass)
         function.addParameter('x', dtype='float64', direction=function.IN,
@@ -171,7 +171,7 @@ class KeplerInterface(CodeInterface,
         function.result_type = 'int32'
         return function
 
-          
+
     def get_gravity_at_point(self,radius,x,y,z):
         mass,err=self.get_central_mass()
         xc,yc,zc,err=self.get_central_pos()
@@ -194,7 +194,7 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, unit_converter = None,  **options):
         self.unit_converter = unit_converter
-        
+
         CommonCode.__init__(self,
                                KeplerInterface(**options),
                                **options)
@@ -202,10 +202,29 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
     def define_converter(self, object):
         if not self.unit_converter is None:
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
-    
-         
+
+
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_eps2",
+            "set_eps2",
+            "epsilon_squared",
+            "smoothing parameter for gravity calculations",
+            default_value = 0.0 | nbody_system.length * nbody_system.length
+        )
+
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
+        object.add_method(
+            "get_eps2",
+            (),
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "set_eps2",
+            (nbody_system.length * nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
         object.add_method(
             'get_gravity_at_point',
             (
@@ -233,9 +252,9 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
             )
         )
 
-      
+
     def define_particle_sets(self, object):
-        object.define_super_set('particles', ['central_particle','orbiters'], 
+        object.define_super_set('particles', ['central_particle','orbiters'],
             index_to_default_set = 1)
 
         object.define_set('central_particle', 'index_of_the_particle')
@@ -261,7 +280,7 @@ class Kepler(GravitationalDynamics, GravityFieldCode):
         object.add_getter('orbiters', 'get_position')
         object.add_setter('orbiters', 'set_velocity')
         object.add_getter('orbiters', 'get_velocity')
-  
+
 
     def get_gravity_at_point(self,radius,x,y,z):
         xx=x-self.central_particle.x

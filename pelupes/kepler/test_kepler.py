@@ -333,6 +333,69 @@ def crash_test2(method=1):
   print da,deps
   print "time:",t2-t1
 
+def test_softening(method=1):
+  code=Kepler(redirection="none",channel_type="sockets")
+
+  code.set_method(method)
+
+  dt=float.fromhex("0x1.67b39e372f04dp+4")
+  mu=float.fromhex("0x1.fffffffffffdfp-3")
+  e2=float.fromhex("0x1.0000000000003p+0")
+  pos1=float.fromhex("0x1.1b76542265052p-1")
+  pos2=float.fromhex("0x1.0c4dbda42097cp-6")
+  pos3=float.fromhex("0x1.54fd66cd1e212p-3")
+  vel1=float.fromhex("0x1.d6ef43d58ca7ep-2")
+  vel2=float.fromhex("0x1.7a85379e59794p-2")
+  vel3=float.fromhex("-0x1.5421044d1acffp-1")
+
+  sun=Particle()
+  sun.mass=mu | nbody_system.mass
+  sun.x=0. | nbody_system.length
+  sun.y=0. | nbody_system.length
+  sun.z=0. | nbody_system.length
+  sun.vx=0. | nbody_system.speed
+  sun.vy=0. | nbody_system.speed
+  sun.vz=0. | nbody_system.speed
+
+  comet=Particle()
+  comet.mass= 0 | nbody_system.mass
+  comet.x=pos1 | nbody_system.length
+  comet.y=pos2 | nbody_system.length
+  comet.z=pos3 | nbody_system.length
+  comet.vx=vel1 | nbody_system.speed
+  comet.vy=vel2 | nbody_system.speed
+  comet.vz=vel3 | nbody_system.speed
+
+  tend=dt | nbody_system.time
+  print tend,mu
+
+  code.central_particle.add_particle(sun)
+  code.orbiters.add_particle(comet)
+
+  code.parameters.epsilon_squared = e2 | nbody_system.length**2
+
+  a0,eps0=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
+                     code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
+
+  print orbital_elements_from_binary(code.particles[0:2])
+
+  t1=time.time()
+  code.evolve_model(tend)
+  t2=time.time()
+
+  print orbital_elements_from_binary(code.particles[0:2])
+
+  print code.orbiters.position
+
+  a,eps=elements(sun.mass,code.orbiters.x,code.orbiters.y,code.orbiters.z,
+                     code.orbiters.vx,code.orbiters.vy,code.orbiters.vz,G=nbody_system.G)
+
+  da=abs((a-a0)/a0)
+  deps=abs(eps-eps0)/eps0
+
+  print da,deps
+  print "time:",t2-t1
+
 def test_linear(tend=1,N=100,method=0):
   code=Kepler(redirection="none",channel_type="sockets")
 
@@ -463,4 +526,11 @@ if __name__=="__main__":
   for method in [1,0]:
     test_kepler(N=10000,tend=tend | units.yr,method=method)
     print
+
+  print "-"*10
+  print
+
+  for method in [0,]:
+      test_softening(method=method)
+      print
 
