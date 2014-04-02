@@ -2,11 +2,11 @@
 import nose
 from amuse.lab import *
 from amuse.community.distributed.interface import DistributedAmuse
-from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
+from amuse.community.distributed.interface import Resource, Resources, Pilot, Pilots
 
 print "Setting up distributed code"
 instance = DistributedAmuse(redirection='none')
-instance.initialize_code()
+#instance.parameters.start_hubs = False
 
 resource = Resource()
 resource.name='LGM'
@@ -35,21 +35,21 @@ print instance.resources
 
 print instance.resources
 
-reservation = Reservations(2)
-reservation.resource_name=['LGMnode00','LGMnode02']
-reservation.node_count=1
-reservation.time= 2|units.hour
-reservation.slots_per_node=1
-reservation.node_label=['default', 'default']
-print reservation
-#~instance.reservations.add_reservation(reservation[0])
-instance.reservations.add_reservation(reservation[0])
-instance.reservations.add_reservation(reservation[1])
-print "Reservations:"
-print instance.reservations
+pilot = Pilots(2)
+pilot.resource_name=['LGMnode00','LGMnode02']
+pilot.node_count=1
+pilot.time= 2|units.hour
+pilot.slots_per_node=1
+pilot.node_label=['default', 'default']
+print pilot
+#~instance.pilots.add_pilot(pilot[0])
+instance.pilots.add_pilot(pilot[0])
+instance.pilots.add_pilot(pilot[1])
+print "Pilots:"
+print instance.pilots
 
-print "Waiting for reservations"
-instance.wait_for_reservations()
+print "Waiting for pilots"
+instance.wait_for_pilots()
 
 print "Running tests"
 
