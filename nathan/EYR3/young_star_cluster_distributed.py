@@ -102,8 +102,9 @@ def new_hydro(gas, converter, time_step, distributed):
     if distributed is None:
         distributed_kwargs = dict(number_of_workers=2)
     else:
-        distributed_kwargs = dict(node_label="cartesius", number_of_workers=8, number_of_nodes=1)
-        distributed.pilots.add_pilot(new_cartesius_pilot())
+        distributed_kwargs = dict(node_label="hofvijver", number_of_workers=8, number_of_nodes=1)
+#~        distributed_kwargs = dict(node_label="cartesius", number_of_workers=8, number_of_nodes=1)
+#~        distributed.pilots.add_pilot(new_cartesius_pilot())
         print "Waiting for Cartesius reservation"
         distributed.wait_for_pilots()
     
@@ -209,6 +210,22 @@ def new_cartesius_pilot():
     pilot.node_label = "cartesius"
     return pilot
 
+def new_hofvijver_resource():
+    resource = Resource()
+    resource.name = "hofvijver"
+    resource.location = "hofvijver.strw.leidenuniv.nl"
+    resource.amuse_dir = "/data1/vriesn/amuse-svn"
+    return resource
+
+def new_hofvijver_pilot():
+    pilot = Pilot()
+    pilot.resource_name = "hofvijver"
+    pilot.node_count = 1
+    pilot.time = 2 | units.hour
+    pilot.slots_per_node = 64
+    pilot.node_label = "hofvijver"
+    return pilot
+
 
 def start_distributed(lgm_node_names):
     lgm_nodes = [new_lgm_node(lgm_node_name) for lgm_node_name in lgm_node_names]
@@ -218,7 +235,8 @@ def start_distributed(lgm_node_names):
     for lgm_node in lgm_nodes:
         instance.resources.add_resource(lgm_node)
         
-    instance.resources.add_resource(new_cartesius_resource())
+#~    instance.resources.add_resource(new_cartesius_resource())
+    instance.resources.add_resource(new_hofvijver_resource())
     
     instance.pilots.add_pilot(new_local_pilot())
     
@@ -228,6 +246,7 @@ def start_distributed(lgm_node_names):
     instance.pilots.add_pilot(new_gpu_node_pilot(lgm_nodes[1]))
         
     #instance.pilots.add_pilot(new_cartesius_pilot())
+    instance.pilots.add_pilot(new_hofvijver_pilot())
     
     print "Pilots:"
     print instance.pilots
@@ -246,7 +265,7 @@ if __name__ == "__main__":
         cProfile.run("simulate_young_star_cluster()", "prof")
     else:
 
-        distributed = start_distributed(lgm_node_names=["node06", "node07"])
+        distributed = start_distributed(lgm_node_names=["node05", "node07"])
         try:
             cProfile.run("simulate_young_star_cluster(distributed)", "prof")
         finally:

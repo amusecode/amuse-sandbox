@@ -48,13 +48,24 @@ class GravityHydroStellar(object):
     def stars_with_mechanical_luminosity(self, particles):
         result = ParticlesOverlay(particles)
         
-        def lmech_function(temperature, mass_loss):
-            t4 = numpy.log10(temperature.value_in(units.K)) - 4.0
-            v_terminal = (30 + 4000 * t4.clip(0.0, 1.0)) | units.km / units.s
+        def lmech_function(temperature, mass, luminosity, radius):
+            T = temperature.value_in(units.K)
+            M = mass.value_in(units.MSun)
+            L = luminosity.value_in(units.LSun)
+            R = radius.value_in(units.RSun)
+            
+            # Reimers wind below 8000K
+            mass_loss = (4.0e-13 | units.MSun / units.yr) * L * R / M
+            # ... wind above 8000K
+            i = numpy.where(temperature > 8000 | units.K)[0]
+            mass_loss[i] = (10**-24.06 | units.MSun / units.yr) * (L**2.45 * M**(-1.1) * T.clip(1000, 8.0e4)**(1.31))
+            
+            t4 = numpy.log10(T * 1.0e-4).clip(0.0, 1.0)
+            v_terminal = (30 + 4000*t4) | units.km/units.s
             return 0.5 * mass_loss * v_terminal**2
         
         result.add_calculated_attribute("mechanical_luminosity", 
-            lmech_function, attributes_names=["temperature", "mass_loss_wind"])
+            lmech_function, attributes_names=["temperature", "mass", "luminosity", "radius"])
         result.L_mech = result.mechanical_luminosity
         result.E_mech = (0.0|units.Myr) * result.L_mech
         result.E_mech_last_feedback = result.E_mech
