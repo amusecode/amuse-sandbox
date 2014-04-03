@@ -23,11 +23,12 @@ from gravity_hydro_stellar import GravityHydroStellar
 
 def simulate_young_star_cluster(distributed=None):
     end_time = 10.0 | units.Myr
+    end_time = 0.06 | units.Myr
     time_step = 0.01 | units.Myr
     
     new_working_directory()
     
-    stars, gas, converter = load_young_star_cluster("YSC_stars10_gas1k_")
+    stars, gas, converter = load_young_star_cluster("YSC_stars1000_gas100k_")
     #stars, gas, converter = load_young_star_cluster("YSC_stars1000_gas1000k_")
     system = new_gravity_hydro_stellar(stars, gas, converter, time_step, distributed)
     system.store_system_state()
@@ -55,7 +56,8 @@ def load_young_star_cluster(filename_base):
     with open(filename_base + "info.pkl", "rb") as infile:
         converter = cPickle.load(infile)[0]
     stars = read_set_from_file(filename_base + "stars.amuse", "amuse")
-    gas = read_set_from_file(filename_base + "gas.amuse", "amuse")
+#    gas = read_set_from_file(filename_base + "gas.amuse", "amuse")
+    gas = read_set_from_file(filename_base + "gas_relaxed.amuse", "amuse")
     return stars, gas, converter
 
 def new_gravity_hydro_stellar(stars, gas, converter, time_step, distributed):
@@ -65,8 +67,8 @@ def new_gravity_hydro_stellar(stars, gas, converter, time_step, distributed):
     
     epsilon_squared_bridge = (constants.G * stars.mass.max() * time_step**2)**(2.0/3.0)
     print "Gravitational softening for Bridge:", epsilon_squared_bridge.sqrt().as_quantity_in(units.parsec)
-    gravity_to_hydro = new_gravity_field_from([gravity], converter, epsilon_squared_bridge, "gravity_to_hydro")
-    hydro_to_gravity = new_gravity_field_from([hydro], converter, epsilon_squared_bridge, "hydro_to_gravity")
+    gravity_to_hydro = new_gravity_field_from_stars([gravity], converter, epsilon_squared_bridge)
+    hydro_to_gravity = new_gravity_field_from_gas([hydro], converter, epsilon_squared_bridge)
     
     system = GravityHydroStellar(
         gravity, hydro, stellar, 
@@ -102,11 +104,11 @@ def new_hydro(gas, converter, time_step, distributed):
     if distributed is None:
         distributed_kwargs = dict(number_of_workers=2)
     else:
-        distributed_kwargs = dict(node_label="hofvijver", number_of_workers=8, number_of_nodes=1)
-#~        distributed_kwargs = dict(node_label="cartesius", number_of_workers=8, number_of_nodes=1)
-#~        distributed.pilots.add_pilot(new_cartesius_pilot())
-        print "Waiting for Cartesius reservation"
-        distributed.wait_for_pilots()
+        distributed_kwargs = dict(node_label="hydro", number_of_workers=24, number_of_nodes=1)
+        if "cartesius" in distributed.resources.name:
+            distributed.pilots.add_pilot(new_cartesius_pilot())
+            print "Waiting for Cartesius reservation"
+            distributed.wait_for_pilots()
     
     print "Start hydro"
     hydro = Gadget2(
@@ -131,21 +133,36 @@ def new_stellar(stars):
     stellar.particles.add_particles(stars)
     return stellar
 
-def new_gravity_field_from(codes, converter, epsilon_squared, name):
-#    gravity_field_code = FastKick(
+def new_gravity_field_from_stars(codes, converter, epsilon_squared):
     gravity_field_code = Octgrav(
         converter,
         node_label="GPU", 
         redirection="file", 
-        redirect_file="gravity_field_code_{0}.log".format(name))
+        redirect_file="gravity_field_code_gravity_to_hydro.log")
     gravity_field_code.parameters.epsilon_squared = epsilon_squared
     gravity_field_code.parameters.opening_angle = 0.5
     
     gravity_field = CalculateFieldForCodesUsingReinitialize(
         gravity_field_code, 
         codes, 
-        required_attributes=['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']
-    )
+        required_attributes=['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'radius']
+    ) # "radius" isn't really required, but get_state is faster than get_mass+get_position+get_velocity
+    return gravity_field
+
+def new_gravity_field_from_gas(codes, converter, epsilon_squared):
+    gravity_field_code = Octgrav(
+        converter,
+        node_label="GPU", 
+        redirection="file", 
+        redirect_file="gravity_field_code_hydro_to_gravity.log")
+    gravity_field_code.parameters.epsilon_squared = epsilon_squared
+    gravity_field_code.parameters.opening_angle = 0.5
+    
+    gravity_field = CalculateFieldForCodesUsingReinitialize(
+        gravity_field_code, 
+        codes, 
+        required_attributes=['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'u']
+    ) # "u" isn't really required, but get_state_sph is faster than get_mass+get_position+get_velocity
     return gravity_field
 
 
@@ -207,7 +224,7 @@ def new_cartesius_pilot():
     pilot.time = 1 | units.hour
     pilot.queue_name = "short"
     pilot.slots_per_node = 24
-    pilot.node_label = "cartesius"
+    pilot.node_label = "hydro"
     return pilot
 
 def new_hofvijver_resource():
@@ -223,30 +240,31 @@ def new_hofvijver_pilot():
     pilot.node_count = 1
     pilot.time = 2 | units.hour
     pilot.slots_per_node = 64
-    pilot.node_label = "hofvijver"
+    pilot.node_label = "hydro"
     return pilot
 
 
-def start_distributed(lgm_node_names):
+def start_distributed(lgm_node_names, forhydro="none"):
     lgm_nodes = [new_lgm_node(lgm_node_name) for lgm_node_name in lgm_node_names]
     instance = DistributedAmuse(redirection="file", redirect_file="distributed_amuse.log")
     instance.initialize_code()
     instance.resources.add_resource(new_lgm_gateway())
     for lgm_node in lgm_nodes:
         instance.resources.add_resource(lgm_node)
-        
-#~    instance.resources.add_resource(new_cartesius_resource())
-    instance.resources.add_resource(new_hofvijver_resource())
-    
-    instance.pilots.add_pilot(new_local_pilot())
     
     for lgm_node in lgm_nodes:
         instance.pilots.add_pilot(new_cpu_node_pilot(lgm_node))
     instance.pilots.add_pilot(new_gpu_node_pilot(lgm_nodes[0], slots=1, label="2GPUs_ph4"))
     instance.pilots.add_pilot(new_gpu_node_pilot(lgm_nodes[1]))
-        
-    #instance.pilots.add_pilot(new_cartesius_pilot())
-    instance.pilots.add_pilot(new_hofvijver_pilot())
+    instance.pilots.add_pilot(new_local_pilot())
+    
+    if forhydro == "hofvijver":
+        instance.resources.add_resource(new_hofvijver_resource())
+        instance.pilots.add_pilot(new_hofvijver_pilot())
+    elif forhydro == "cartesius":
+        instance.resources.add_resource(new_cartesius_resource())
+    else:
+        raise Exception("Unknown option for forhydro resource: '{0}'".format(forhydro))
     
     print "Pilots:"
     print instance.pilots
@@ -257,15 +275,16 @@ def start_distributed(lgm_node_names):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='example.log', level=logging.WARN)
+#~    logging.basicConfig(filename='example.log', level=logging.WARN)
+    logging.basicConfig(level=logging.WARN)
     logging.getLogger("code").setLevel(logging.DEBUG)
 
     run_local = False
     if run_local is True:
         cProfile.run("simulate_young_star_cluster()", "prof")
     else:
-
-        distributed = start_distributed(lgm_node_names=["node05", "node07"])
+#~        distributed = start_distributed(lgm_node_names=["node05", "node07"], forhydro="cartesius")
+        distributed = start_distributed(lgm_node_names=["node05", "node07"], forhydro="hofvijver")
         try:
             cProfile.run("simulate_young_star_cluster(distributed)", "prof")
         finally:

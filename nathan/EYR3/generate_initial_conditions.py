@@ -5,8 +5,9 @@ import cPickle
 from amuse.units import nbody_system, units
 from amuse.io import write_set_to_file
 
-from amuse.ic.salpeter import new_salpeter_mass_distribution
+from amuse.ic.kroupa import new_kroupa_mass_distribution
 from amuse.ic.fractalcluster import new_fractal_cluster_model
+from amuse.ic.plummer import new_plummer_model
 from amuse.ext.spherical_model import new_gas_plummer_distribution
 from amuse.ext.relax_sph import relax
 from amuse.community.gadget2.interface import Gadget2
@@ -21,20 +22,24 @@ def to_initial_conditions_directory():
     os.chdir(initial_conditions_directory)
 
 def generate_initial_conditions(
-        number_of_stars = 10,
-        number_of_gas_particles = 1000,
+        number_of_stars = 10000,
+        number_of_gas_particles = 10**7,
         star_formation_efficiency = 0.1,
         virial_radius = 1.0 | units.parsec,
-        virial_ratio = 0.5):
+        virial_ratio = 0.5,
+        use_fractal = False):
     
     numpy.random.seed(12345678)
     seed_fractal = 312357271
     
-    masses = new_salpeter_mass_distribution(number_of_stars, mass_max=100|units.MSun)
+    masses = new_kroupa_mass_distribution(number_of_stars)
     total_stellar_mass = masses.sum()
     total_mass = total_stellar_mass / star_formation_efficiency
     converter = nbody_system.nbody_to_si(total_mass, virial_radius)
-    stars = new_fractal_cluster_model(number_of_stars, convert_nbody=converter, do_scale=False, fractal_dimension=1.6, random_seed=seed_fractal)
+    if use_fractal:
+        stars = new_fractal_cluster_model(number_of_stars, convert_nbody=converter, do_scale=False, fractal_dimension=1.6, random_seed=seed_fractal)
+    else:
+        stars = new_plummer_model(number_of_stars, convert_nbody=converter, do_scale=False)
     stars.mass = masses
     stars.move_to_center()
     print "scaling positions to match virial_radius"
@@ -51,7 +56,8 @@ def generate_initial_conditions(
         type = "fcc")
     gas.h_smooth = 0.0 | units.parsec
     
-    filename = "YSC_stars{0}_gas{1}k_".format(number_of_stars, number_of_gas_particles/1000)
+    filename = "YSC_{0}_stars{1}_gas{2}k_".format("fractal" if use_fractal else "plummer",
+        number_of_stars, number_of_gas_particles/1000)
     write_set_to_file(stars, filename+"stars.amuse", "amuse")
     write_set_to_file(gas, filename+"gas.amuse", "amuse")
     with open(filename+"info.pkl", "wb") as outfile:

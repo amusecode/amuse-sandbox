@@ -37,7 +37,7 @@ class GravityHydroStellar(object):
         self.feedback_radius = feedback_radius
         self.verbose = verbose
         
-        self.bridge = Bridge(verbose=False, timestep=self.time_step_bridge, use_threading=False)
+        self.bridge = Bridge(verbose=verbose, timestep=self.time_step_bridge, use_threading=False)
         self.bridge.add_system(self.hydro, (self.gravity_to_hydro,))
         self.bridge.add_system(self.gravity, (self.hydro_to_gravity,))
         
@@ -77,6 +77,7 @@ class GravityHydroStellar(object):
             self.current_time += self.time_step_feedback
             if self.verbose:
                 time_begin = time.time()
+                print
                 print "GravityHydroStellar: Start evolving..."
             self.bridge.evolve_model(self.current_time)
             self.stellar.evolve_model(self.current_time)
@@ -86,6 +87,8 @@ class GravityHydroStellar(object):
                 print "   (Stellar: {0}, Bridge: {1}, Gravity: {2}, Hydro: {3})".format(*model_times)
                 print "GravityHydroStellar: Call mechanical_feedback"
             self.mechanical_feedback(self.time_step_feedback)
+            if self.verbose:
+                print "GravityHydroStellar: store system state"
             self.store_system_state()
             if self.verbose:
                 print "GravityHydroStellar: Iteration took {0} seconds.".format(time.time() - time_begin)
@@ -196,7 +199,13 @@ class GravityHydroStellar(object):
             ) = cPickle.load(infile)
     
     def stop(self):
+        print "STOP fieldcode"
+        self.bridge.codes[0].field_codes[0].code.stop()
+        print "STOP fieldcode"
+        self.bridge.codes[1].field_codes[0].code.stop()
+        print "STOP bridge"
         self.bridge.stop()
+        print "STOP stellar"
         self.stellar.stop()
     
 
