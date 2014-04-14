@@ -1,5 +1,5 @@
 
-from amuse.community.distributed.interface import DistributedAmuse, Pilot, Resource, Pilots
+from amuse.community.distributed.interface import DistributedAmuse, Pilot, Resource, Pilots, Resources
 
 from amuse.test.amusetest import TestCase
 from amuse.support import exceptions
@@ -10,12 +10,14 @@ import subprocess
 import os
 import time
 import unittest
+import logging
 
+logger = logging.getLogger(__name__)
 
 class TestDistributedLocal(TestCase):
     
     def initialize_distributed_code(self):
-        "Default initialization of distributed code for all tests. Creates a single pilot"
+        logger.info("initializing distributed code")
         distinstance = self.create_distributed_code()
         
         self.create_resources(distinstance)
@@ -25,9 +27,9 @@ class TestDistributedLocal(TestCase):
         return distinstance
     
     def create_distributed_code(self):
-        print "Setting up distributed code"
-        distinstance = DistributedAmuse(redirection='none')
-        distinstance.parameters.debug = True
+        logger.info("Setting up distributed code")
+        distinstance = DistributedAmuse()#redirection='none')
+        distinstance.parameters.debug = False
         
         return distinstance
     
@@ -35,7 +37,7 @@ class TestDistributedLocal(TestCase):
         pass
     
     def create_pilot(self, distinstance, wait=True):
-        print "starting local pilot"
+        logger.info("starting local pilot")
         pilot = Pilot()
         pilot.resource_name='local'
         pilot.node_count=1
@@ -57,8 +59,21 @@ class TestDistributedLocal(TestCase):
         distinstance.stop()
 
     #RESOURCES
-        
+    
     def test2a(self):
+        "Test if default local resource is created"
+
+        distinstance = self.create_distributed_code()
+        
+        distinstance.commit_parameters()
+        
+        local_resource = distinstance.resources[0]
+        
+        self.assertEqual(local_resource.name, "local")
+        
+        distinstance.stop()
+        
+    def test2b(self):
         "Test creating default resource"
 
         distinstance = self.create_distributed_code()
@@ -67,7 +82,7 @@ class TestDistributedLocal(TestCase):
         
         distinstance.stop()
 
-    def test2b(self):
+    def test2c(self):
         "Test creating additional (local) resource"
 
         distinstance = self.create_distributed_code()
@@ -83,7 +98,7 @@ class TestDistributedLocal(TestCase):
         distinstance.stop()
         
         
-    def test2c(self):
+    def test2d(self):
         "Test creating and removing additional (local) resource"
 
         distinstance = self.create_distributed_code()
@@ -93,16 +108,48 @@ class TestDistributedLocal(TestCase):
         resource.location = "local"
         resource.amuse_dir = self.get_amuse_root_dir()
         resource.scheduler_type = "local"
-        
+
         distinstance.resources.add_resource(resource)
         
-        distinstance.resources.remove(resource)
+        logger.info(distinstance.resources)
+        
+        self.assertEquals(len(distinstance.resources), 2)
+        
+        distinstance.resources.remove_resource(resource)
+        
+        self.assertEquals(len(distinstance.resources), 1)
         
         distinstance.stop()
-
         
-    
-    
+        
+    def test2e(self):
+        "Test creating multiple (local) resources"
+
+        distinstance = self.create_distributed_code()
+
+        resources = Resources()
+        for i in range(1, 11):       
+            resource = Resource()
+            resource.name = "also-local-" + str(i)
+            resource.location = "local"
+            resource.amuse_dir = self.get_amuse_root_dir()
+            resource.scheduler_type = "local"
+
+            resources.add_resource(resource)
+        
+        distinstance.resources.add_resources(resources)
+        
+        logger.info(distinstance.resources)
+        
+        #one default local resources, and 10 additional resources created above
+        self.assertEquals(len(distinstance.resources), 11)
+        
+        self.assertEquals(distinstance.resources[0].name, "local")
+        
+        for i in range(1, 11):
+            self.assertEquals(distinstance.resources[i].name, "also-local-" + str(i))
+        
+        distinstance.stop()
 
     #PILOTS
     
@@ -151,33 +198,31 @@ class TestDistributedLocal(TestCase):
     def test3d(self):
         "Cancel and remove a pilot"
         
-        self.skip("this should work, but doesn't")
-        
         distinstance = self.initialize_distributed_code()
+
+        self.assertEquals(len(distinstance.pilots), 1)
         
-        print distinstance.pilots
+        distinstance.pilots.remove_pilot(distinstance.pilots[0])
         
-        #distinstance.pilots.remove_particle(distinstance.pilots[0])
-        distinstance.pilots.delete_pilot(distinstance.pilots[0])
-        
-        print distinstance.pilots
+        self.assertEquals(len(distinstance.pilots), 0)
         
         distinstance.stop
         
-
-
 class TestDistributedCartesius(TestDistributedLocal):
     
     def create_resources(self, distinstance):
+        logger.info("creating cartesius resource")
         resource = Resource()
         resource.name = "cartesius"
         resource.location = "ndrosta@int2-bb.cartesius.surfsara.nl"
         resource.amuse_dir = "/home/ndrosta/amuse"
         resource.scheduler_type = "slurm"
         distinstance.resources.add_resource(resource)
+        logger.info("creating cartesius resource done")
+
     
     def create_pilot(self, distinstance, wait=True):
-        print "starting cartesius pilot"
+        logger.info("starting cartesius pilot")
         pilot = Pilot()
         pilot.resource_name = "cartesius"
         pilot.node_count = 1
@@ -188,10 +233,12 @@ class TestDistributedCartesius(TestDistributedLocal):
         distinstance.pilots.add_pilot(pilot)
 
         if wait:
-            print "Waiting for pilots"
+            logger.info("Waiting for cartesius pilot")
             distinstance.wait_for_pilots()
+            logger.info("Done waiting for cartesius pilot")
+            
         
-    def test4(self):
-        self.skip("this test specific for local machine")
+#     def test3c(self):
+#         self.skip("this test specific for local machine")
         
         
