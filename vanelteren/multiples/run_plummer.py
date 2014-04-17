@@ -13,6 +13,29 @@ import logging
 
 from amuse.units.optparse import OptionParser
 
+class CountingHandleEncounter(encounters.HandleEncounter):
+    
+    def __init__(self,
+        kepler_code,
+        resolve_collision_code,
+        interaction_over_code = None,
+        G = nbody_system.G
+    ):
+        encounters.HandleEncounter.__init__(
+            self,
+            kepler_code,
+            resolve_collision_code,
+            interaction_over_code,
+            G
+        )
+        self.number_of_encounters = 0
+
+    def execute(self):
+        encounters.HandleEncounter.execute(self)
+        self.number_of_encounters += 1
+        
+    def get_number_of_encounters(self):
+        return self.number_of_encounters
 
 def new_option_parser():
     result = OptionParser()
@@ -64,7 +87,7 @@ def run_hermite(number_of_particles, seed, end_time_nbody, radius):
     smalln.parameters.cm_index = 2001
     
         
-    encounter_code = encounters.HandleEncounter(
+    encounter_code = CountingHandleEncounter(
         kepler_code =  kepler,
         resolve_collision_code = smalln,
         interaction_over_code = None
@@ -93,7 +116,7 @@ def run_hermite(number_of_particles, seed, end_time_nbody, radius):
                 print "--", code.model_time.value_in(nbody_system.time),  coreposition.length().value_in(nbody_system.length), coreradius.value_in(nbody_system.length), coredens.value_in(nbody_system.mass / nbody_system.length**3)
             
             radii = particles.LagrangianRadii(mf=[0.1,0.5])
-            print "--", code.model_time.value_in(nbody_system.time), radii[0][0].value_in(nbody_system.length), radii[0][1].value_in(nbody_system.length),(code.get_total_energy() - e0) / e0, len(code.multiples)
+            print "--", code.model_time.value_in(nbody_system.time), radii[0][0].value_in(nbody_system.length), radii[0][1].value_in(nbody_system.length),(code.get_total_energy() - e0) / e0, len(code.multiples), encounter_code.get_number_of_encounters()
             t += dt
     finally:
         print "stopping..."
