@@ -2,9 +2,13 @@
 from amuse.community.distributed.interface import DistributedAmuse, Pilot, Resource, Pilots, Resources
 
 from amuse.test.amusetest import TestCase
-from amuse.support import exceptions
+from amuse.support import exceptions, options
 
 from amuse.units import units
+
+from amuse.rfi.channel import DistributedChannel
+
+from amuse.community.bhtree.interface import BHTree
 
 import subprocess
 import os
@@ -28,8 +32,8 @@ class TestDistributedLocal(TestCase):
     
     def create_distributed_code(self):
         logger.info("Setting up distributed code")
-        distinstance = DistributedAmuse()#redirection='none')
-        distinstance.parameters.debug = False
+        distinstance = DistributedAmuse(redirection='none')
+        distinstance.parameters.debug = True
         
         return distinstance
     
@@ -206,7 +210,127 @@ class TestDistributedLocal(TestCase):
         
         self.assertEquals(len(distinstance.pilots), 0)
         
-        distinstance.stop
+        distinstance.stop()
+        
+        
+    # WORKER JOBS
+    
+    def test4a(self):
+        "Test setting code as default for all workers"
+        
+        distinstance = self.initialize_distributed_code()
+        
+        distinstance.use_for_all_workers()
+
+        #check if distributed channel is now set as default
+        self.assertEqual(DistributedChannel.default_distributed_instance, distinstance)
+        self.assertTrue(options.GlobalOptions.instance().overriden_options.has_key("channel_type"))
+        self.assertEquals(options.GlobalOptions.instance().overriden_options["channel_type"], "distributed")
+        
+        distinstance.stop()
+        
+        
+    def test4b(self):
+        "Test creating distributed worker with explicit distributed code"
+        
+        distinstance = self.initialize_distributed_code()
+        
+        self.assertEqual(len(distinstance.workers), 0)
+        
+        bhtree = BHTree(channel_type="distributed", distributed_instance=distinstance)
+        
+        bhtree.stop()
+
+        #check if the distributed instance has a worker (and thus the setting had an effect)        
+        self.assertEqual(len(distinstance.workers), 1)
+        
+        distinstance.stop()
+        
+
+    def test4c(self):
+        "Test creating distributed worker with default distributed code"
+        
+        distinstance = self.initialize_distributed_code()
+        
+        distinstance.use_for_distributed_workers()
+
+        self.assertEqual(len(distinstance.workers), 0)
+        
+        bhtree = BHTree(channel_type="distributed")
+        
+        bhtree.stop()
+
+        #check if the distributed instance has a worker (and thus the setting had an effect)        
+        self.assertEqual(len(distinstance.workers), 1)
+        
+        distinstance.stop()
+        
+    def test4d(self):
+        "Test creating distributed worker with distributed code implcitly"
+        
+        distinstance = self.initialize_distributed_code()
+        
+        distinstance.use_for_all_workers()
+        
+        self.assertEqual(len(distinstance.workers), 0)
+        
+        bhtree = BHTree()
+        
+        bhtree.stop()
+
+        #check if the distributed instance has a worker (and thus the setting had an effect)        
+        self.assertEqual(len(distinstance.workers), 1)
+        
+        distinstance.stop()
+
+    def test4e(self):
+        "Test if creating a distributed code with any but the sockets channel leads to an error"
+
+        distinstance = DistributedAmuse()
+        distinstance.commit_parameters()
+        distinstance.use_for_all_workers()
+        
+        try:
+            distinstance2 = DistributedAmuse()
+        except Exception:
+            #exception we are hoping for
+            return
+        finally:
+            distinstance.stop()
+            
+            
+        raise Exception("Test failed, as distributed channel did not produce an error")
+        
+        
+    def test4f(self):
+        "Test if creating two distributed codes and using one of them works"
+
+        distinstance1 = self.initialize_distributed_code()
+        
+        distinstance2 = self.initialize_distributed_code()
+        
+        distinstance1.use_for_all_workers()
+        
+        distinstance2.use_for_all_workers()
+        
+        self.assertEqual(len(distinstance2.workers), 0)
+        
+        bhtree = BHTree()
+        
+        bhtree.stop()
+
+        #check if the correct distributed instance has a worker (and thus the setting had an effect)        
+        self.assertEqual(len(distinstance2.workers), 1)
+        
+        distinstance1.stop()
+        distinstance2.stop()
+    
+    # (DYNAMIC) PYTHON WORKER JOBS
+    
+    # SCRIPT JOBS
+    
+    # FUNCTION JOBS
+    
         
 class TestDistributedCartesius(TestDistributedLocal):
     
