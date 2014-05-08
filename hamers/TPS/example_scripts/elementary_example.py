@@ -43,6 +43,7 @@ def evolve_triple_system(binaries,end_time,output_time_step):
     i_tot_array = []
     g_in_array = []
 
+    ### evolve system ###
     time = 0.0 | units.Myr
     while (time < end_time):
         code.evolve_model(time)  
