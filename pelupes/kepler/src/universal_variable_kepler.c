@@ -224,10 +224,18 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
   DOUBLE r0=sqrt(pos0[0]*pos0[0]+pos0[1]*pos0[1]+pos0[2]*pos0[2]);
   DOUBLE v0=sqrt(vel0[0]*vel0[0]+vel0[1]*vel0[1]+vel0[2]*vel0[2]);
   DOUBLE vr0=(pos0[0]*vel0[0]+pos0[1]*vel0[1]+pos0[2]*vel0[2])/r0;
-  DOUBLE alpha=2./r0-v0*v0/mu;
+  DOUBLE alpha;
   DOUBLE xi0,arg[5],xi,xtol,ytol,dxi0;
   int err;
 
+  if(mu==0){
+    int i;
+    for(i=0;i<3;i++) pos[i]+=dt*vel0[i];
+    for(i=0;i<3;i++) vel[i]=vel0[i];
+    return 0; 
+  }
+
+  alpha=2./r0-v0*v0/mu;
   if(alpha > 0)
   {
     DOUBLE a=1/alpha;
