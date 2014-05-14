@@ -74,7 +74,6 @@ def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
       nb.evolve_model(-1.e4 | units.yr)
      
       print "initial sep:",(bin[1].position-bin[0].position).length().in_(units.AU)
-      raise
       bin=bin.copy()
   else:
       raise Exception("not implemented")
