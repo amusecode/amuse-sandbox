@@ -21,7 +21,7 @@ from directsum import directsum
 from boxedfi import BoxedFi as Fi
 
 def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
-     ecc=1.1,Rimpact=500. | units.AU,inclination=0):
+     ecc=1.1,Rimpact=500. | units.AU,Rstart=None,inclination=0):
 
   rp=Rimpact
   mu=constants.G*(m1+m2)
@@ -65,16 +65,19 @@ def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
     bin[1].radius=r2
 
   convert=nbody_system.nbody_to_si(1|units.MSun,1|units.AU)
-  nb = interface(convert,redirection="none")
-  bin=nb.particles.add_particles(bin)
+  if Rstart is None:
+      nb = interface(convert,redirection="none")
+      bin=nb.particles.add_particles(bin)
+    
+      print (bin[1].position-bin[0].position).length().in_(units.AU)
+    
+      nb.evolve_model(1.e4 | units.yr)
+     
+      print "initial sep:",(bin[1].position-bin[0].position).length().in_(units.AU)
+      bin=bin.copy()
+  else:
+      raise Exception("not implemented")
 
-  print (bin[1].position-bin[0].position).length().in_(units.AU)
-
-  nb.evolve_model(1.e4 | units.yr)
- 
-  print "initial sep:",(bin[1].position-bin[0].position).length().in_(units.AU)
-
-  bin=bin.copy()
   bin.position-=bin[0].position
   bin.velocity-=bin[0].velocity
 
@@ -282,14 +285,12 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
   os.mkdir(outputdir+'/map')
   os.mkdir(outputdir+'/snap')
   
-#  a=(Pbinary/(2*numpy.pi)*(constants.G*(m1+m2))**0.5)**(2./3.)
-
-  print "binary semi major axis:", a.in_(units.AU)
+  print "Rimpact:", Rimpact.in_(units.AU)
   print "disc inner edge:", Rmin.in_(units.AU)
   print "disc outer edge:", Rmax.in_(units.AU)
 
-  bin=encounter(TwoBody,m1=m1*(1+discfraction),m2=m2,r1=r1,r2=r2,ecc=ecc,Rimpact=Rimpact,Rstart=Rstart,inclination=inclination)
-  bin[0].mass=m1
+  bin=encounter(TwoBody,m1=m1*(1+discfraction),m2=m2,r1=r1,r2=r2,ecc=ecc,Rimpact=Rimpact,inclination=inclination)
+  bin.particles[0].mass=m1
   
   disc,gas=sphdisc(Fi,Ngas,m1,Rmin=Rmin, Rmax=Rmax,
                      q_out=q_out, discfraction=discfraction,densitypower=densitypower,dt_sph=dt_int)
@@ -342,8 +343,9 @@ if __name__=="__main__":
                           r1=1. | units.RSun,      # primary radius
                           r2=None,      # secondary radius
                           ecc=1.1,                 # binary orbit eccentricity
-                          Rmin=10.,                    # inner edge of initial disk (in AU or (w/o units) in a_binary)  
-                          Rmax=300.,                     # outer edge of initial disk (in AU or (w/o units) in a_binary)
+                          Rimpact=500. | units.AU,   # impact parameter
+                          Rmin=10. | units.AU,                    # inner edge of initial disk (in AU or (w/o units) in a_binary)  
+                          Rmax=300. | units.AU,                     # outer edge of initial disk (in AU or (w/o units) in a_binary)
                           q_out=12.,                   # outer disk Toomre Q parameter
                           discfraction=0.5,           # disk mass fraction
                           Raccretion=0.5 | units.AU,   # accretion radius for sink particle
