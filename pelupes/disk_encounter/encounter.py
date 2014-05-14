@@ -64,14 +64,14 @@ def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
   else:
     bin[1].radius=r2
 
-  convert=nbody_system.nbody_to_si(1|units.MSun,1|units.AU)
+  convert=nbody_system.nbody_to_si(1.|units.MSun,100.|units.AU)
   if Rstart is None:
       nb = interface(convert,redirection="none")
       bin=nb.particles.add_particles(bin)
     
       print (bin[1].position-bin[0].position).length().in_(units.AU)
     
-      nb.evolve_model(-1.e4 | units.yr)
+      nb.evolve_model(-2.e3 | units.yr)
      
       print "initial sep:",(bin[1].position-bin[0].position).length().in_(units.AU)
       bin=bin.copy()
@@ -86,10 +86,10 @@ def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
 
   return nb
 
-def sphdisc(interface,N=10000,Mstar=1| units.MSun, Rmin=1|units.AU,
+def sphdisc(interface,N=10000,Mstar=1| units.MSun, Rmin=1.|units.AU,
               Rmax=10|units.AU, q_out=1.5, discfraction=0.1,densitypower=1,dt_sph=1|units.day):
 
-    convert=nbody_system.nbody_to_si(Mstar, Rmin.unit)
+    convert=nbody_system.nbody_to_si(Mstar, 1.| Rmin.unit)
     proto=ProtoPlanetaryDisk(N,convert_nbody=convert,densitypower=densitypower,
                                Rmin=Rmin.number,Rmax=Rmax.number,q_out=q_out,
                                discfraction=discfraction)
@@ -97,6 +97,9 @@ def sphdisc(interface,N=10000,Mstar=1| units.MSun, Rmin=1|units.AU,
     gas.h_smooth=0.06 | units.AU
     gas.u0=gas.u.copy()
 
+    print Rmax,Rmin
+    convert=nbody_system.nbody_to_si(Mstar, Rmax)
+    print convert.to_nbody(1.e-13 |units.g/units.cm**3),gas.total_mass().in_(units.MSun)
     sph=interface(convert,redirection='none')
 
     sph.parameters.use_hydro_flag=True
@@ -117,7 +120,8 @@ def sphdisc(interface,N=10000,Mstar=1| units.MSun, Rmin=1|units.AU,
 
     return sph,gas
 
-def make_map(sph,N=100,L=1):
+def make_map(sph,N=100,L=1,poffset=[0,0,0]|units.AU,
+     voffset=[0,0,0]| units.kms):
 
     x,y=numpy.indices( ( N+1,N+1 ))
 
@@ -129,19 +133,20 @@ def make_map(sph,N=100,L=1):
     vy=0.*x
     vz=0.*x
 
-    x=units.AU(x)
-    y=units.AU(y)
-    z=units.AU(z)
-    vx=units.kms(vx)
-    vy=units.kms(vy)
-    vz=units.kms(vz)
+    x=units.AU(x)+poffset[0]
+    y=units.AU(y)+poffset[1]
+    z=units.AU(z)+poffset[2]
+    vx=units.kms(vx)+voffset[0]
+    vy=units.kms(vy)+voffset[1]
+    vz=units.kms(vz)+voffset[2]
 
     rho,rhovx,rhovy,rhovz,rhoe=sph.get_hydro_state_at_point(x,y,z,vx,vy,vz)
     rho=rho.reshape((N+1,N+1))
 
     return numpy.transpose(rho)
 
-def make_phi_map(sph,N=100,Rrange=(0.3,2),phioffset=0.):
+def make_phi_map(sph,N=100,Rrange=(0.3,2),phioffset=0.,poffset=[0,0,0]|units.AU,
+     voffset=[0,0,0]| units.kms):
 
     phi,r=numpy.mgrid[0:2*numpy.pi:N*1j,Rrange[0]:Rrange[1]:N*1j] 
     phi=phi.flatten()
@@ -154,12 +159,12 @@ def make_phi_map(sph,N=100,Rrange=(0.3,2),phioffset=0.):
     vy=0.*x
     vz=0.*x
 
-    x=units.AU(x)
-    y=units.AU(y)
-    z=units.AU(z)
-    vx=units.kms(vx)
-    vy=units.kms(vy)
-    vz=units.kms(vz)
+    x=units.AU(x)+poffset[0]
+    y=units.AU(y)+poffset[1]
+    z=units.AU(z)+poffset[2]
+    vx=units.kms(vx)+voffset[0]
+    vy=units.kms(vy)+voffset[1]
+    vz=units.kms(vz)+voffset[2]
 
     rho,rhovx,rhovy,rhovz,rhoe=sph.get_hydro_state_at_point(x,y,z,vx,vy,vz)
     rho=rho.reshape((N,N))
@@ -168,12 +173,15 @@ def make_phi_map(sph,N=100,Rrange=(0.3,2),phioffset=0.):
 
 def output_maps(tnow,bin,disc,Lmap,i,outputdir='./',Pplanet=None):
   L=Lmap.value_in(units.AU)
-  rho=make_map(disc,N=200,L=L)
+  poffset=bin.particles[0].position
+  voffset=bin.particles[0].velocity
+  rho=make_map(disc,N=200,L=L,poffset=poffset,voffset=voffset)
   f=pyplot.figure(figsize=(8,8))
-  pyplot.imshow(numpy.log10(1.e-15+rho.value_in(units.g/units.cm**3)),
-          extent=[-L/2,L/2,-L/2,L/2],vmin=-13,vmax=-7.,origin='lower')    
-  pyplot.plot(bin.particles.x.value_in(units.AU),
-                  bin.particles.y.value_in(units.AU),'r+')
+  print rho.min().value_in(units.g/units.cm**3),rho.max().value_in(units.g/units.cm**3)
+  pyplot.imshow(numpy.log10(1.e-18+rho.value_in(units.g/units.cm**3)),
+          extent=[-L/2,L/2,-L/2,L/2],vmin=-16,vmax=-12.,origin='lower')    
+  pyplot.plot((bin.particles.x-poffset[0]).value_in(units.AU),
+                  (bin.particles.y-poffset[1]).value_in(units.AU),'g+',mew=2.)
   pyplot.xlim(-L/2,L/2)
   pyplot.ylim(-L/2,L/2)
   pyplot.title(tnow)
@@ -187,20 +195,22 @@ def output_maps(tnow,bin,disc,Lmap,i,outputdir='./',Pplanet=None):
   else:  
     offset=numpy.mod(2*numpy.pi*tnow.value_in(units.day)/Pplanet.value_in(units.day),2*numpy.pi)
 
-  rho=make_phi_map(disc,N=200,phioffset=offset)
+  r1=Lmap.value_in(units.AU)/40.
+  r2=Lmap.value_in(units.AU)/2.
+  rho=make_phi_map(disc,N=200,Rrange=[r1,r2],phioffset=offset,poffset=poffset,voffset=voffset)
   f=pyplot.figure(figsize=(12,4))
   pyplot.imshow(numpy.log10(1.e-15+rho.value_in(units.g/units.cm**3)),
-          extent=[0,2*numpy.pi,0.3,2],vmin=-13.,vmax=-7.,origin='lower')    
-  x=bin.particles.x.value_in(units.AU)
-  y=bin.particles.y.value_in(units.AU)
+          extent=[0,2*numpy.pi,r1/r2,1],vmin=-16.,vmax=-12.,origin='lower')    
+  x=(bin.particles.x-poffset[0]).value_in(units.AU)
+  y=(bin.particles.y-poffset[1]).value_in(units.AU)
   r=(x**2+y**2)**0.5
   phi=numpy.arctan2(y,x)-offset
   phi=numpy.mod(phi,2*numpy.pi)
-  pyplot.plot(phi,r,'r+')
+  pyplot.plot(phi,r/r2,'g+',mew=2.)
   pyplot.xlabel('phi')
   pyplot.ylabel('R')
   pyplot.xlim(0,2.*numpy.pi)
-  pyplot.ylim(0.,2)
+  pyplot.ylim(0.,1.)
   pyplot.savefig(outputdir+'/map/phi-%6.6i.png'%i)
   f.clear()
   pyplot.close(f)
@@ -336,8 +346,8 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
 
 if __name__=="__main__":
 
-  encounter_disc_run(  tend=1000. | units.yr,        # simulation time
-                          Ngas=5000,                 # number of gas particles
+  encounter_disc_run(  tend=3000. | units.yr,        # simulation time
+                          Ngas=10000,                 # number of gas particles
                           m1=1. | units.MSun,      # primary mass
                           m2=0.5 | units.MSun,      # secondary mass
                           r1=1. | units.RSun,      # primary radius
@@ -348,13 +358,13 @@ if __name__=="__main__":
                           Rmax=300. | units.AU,                     # outer edge of initial disk (in AU or (w/o units) in a_binary)
                           q_out=12.,                   # outer disk Toomre Q parameter
                           discfraction=0.5,           # disk mass fraction
-                          Raccretion=0.5 | units.AU,   # accretion radius for sink particle
+                          Raccretion=1. | units.AU,   # accretion radius for sink particle
                           dt_int=50. | units.day,       # timestep for gas - binary grav interaction (bridge timestep)
                           Pplanet=None, # period of planet (makes the r-phi map rotate with this period)
                           densitypower=1.,             # surface density powerlaw
                           eosfreq=4,                   # times between EOS updates/sink particle checks
                           mapfreq=1,                   # time between maps ( in units of dt=eosfreq*dt_int)
-                          Lmap=6. | units.AU,          # size of map
+                          Lmap=600. | units.AU,          # size of map
                           outputfreq=100,              # output snapshot frequency (every ... dt=eosfreq*dt_int)
                           outputdir='./r1',           # output directory
                           label='X002',                  # label for run (only for terminal output)
