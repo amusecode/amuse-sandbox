@@ -71,9 +71,10 @@ def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
     
       print (bin[1].position-bin[0].position).length().in_(units.AU)
     
-      nb.evolve_model(1.e4 | units.yr)
+      nb.evolve_model(-1.e4 | units.yr)
      
       print "initial sep:",(bin[1].position-bin[0].position).length().in_(units.AU)
+      raise
       bin=bin.copy()
   else:
       raise Exception("not implemented")
@@ -325,7 +326,7 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
     sink_particles(bin.particles,disc.particles,Raccretion=Raccretion)
     bridge.evolve_model(tnow)
     
-    frac=(tnow/tend).value_in(units.none)
+    frac=(tnow/tend)
     time_now=time.time()
     print 'sim '+label+' reached:',tnow, ": %4.2f%%, ETA: %6.2f hours"%(100*frac, (time_now-time_begin)/frac*(1-frac)/3600)
 
@@ -357,6 +358,7 @@ if __name__=="__main__":
                           Lmap=6. | units.AU,          # size of map
                           outputfreq=100,              # output snapshot frequency (every ... dt=eosfreq*dt_int)
                           outputdir='./r1',           # output directory
-                          label='X002'                  # label for run (only for terminal output)
+                          label='X002',                  # label for run (only for terminal output)
+                          overwrite=True
                           )
 # mencoder "mf://map*.png" -mf fps=20 -ovc x264 -o movie.avi
