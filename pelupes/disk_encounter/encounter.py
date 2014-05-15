@@ -4,7 +4,7 @@ import numpy
 import time
 
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 from matplotlib import pyplot
 
 from amuse.community.twobody.twobody import TwoBody
@@ -19,6 +19,8 @@ from amuse.io import write_set_to_file,read_set_from_file
 from fast import FAST
 from directsum import directsum
 from boxedfi import BoxedFi as Fi
+
+from amuse.datamodel import rotate
 
 def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
      ecc=1.1,Rimpact=500. | units.AU,Rstart=None,inclination=0):
@@ -38,7 +40,7 @@ def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
   r0=rp
 
   print 'semimajor axis:', a.in_(units.AU)
-  print 'initial separation:',r0.in_(units.AU)
+  print 'impact parameter:',r0.in_(units.AU)
   
   v0=vp
 
@@ -55,6 +57,9 @@ def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
   bin.z=0.*r0
   bin.vx=0*v0
   bin.vz=0.*v0
+
+  rotate(bin,0,inclination,0)
+
   if r1 is None:
     bin[0].radius=(1.|units.RSun)*(m1/(1.|units.MSun))**(1./3.)
   else:
@@ -94,13 +99,13 @@ def sphdisc(interface,N=10000,Mstar=1| units.MSun, Rmin=1.|units.AU,
                                Rmin=Rmin.number,Rmax=Rmax.number,q_out=q_out,
                                discfraction=discfraction)
     gas=proto.result
-    gas.h_smooth=0.06 | units.AU
+    gas.h_smooth=.1 | units.AU
     gas.u0=gas.u.copy()
 
     print Rmax,Rmin
     convert=nbody_system.nbody_to_si(Mstar, Rmax)
     print convert.to_nbody(1.e-13 |units.g/units.cm**3),gas.total_mass().in_(units.MSun)
-    sph=interface(convert,redirection='none')
+    sph=interface(convert,mode="openmp",redirection='none')
 
     sph.parameters.use_hydro_flag=True
     sph.parameters.radiation_flag=False
@@ -115,6 +120,10 @@ def sphdisc(interface,N=10000,Mstar=1| units.MSun, Rmin=1.|units.AU,
 #    print sph.parameters
 #    print sph.parameters.periodic_box_size.in_(units.AU)
     print 'disc mass:',gas.mass.sum().in_(units.MSun)
+
+#    pyplot.plot(gas.x.number,((2|units.amu)*gas.u/(constants.kB)).value_in(units.K),'r+')
+#    pyplot.show()
+#    raise
 
     sph.gas_particles.add_particles(gas)
 
@@ -299,8 +308,8 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
   print "disc inner edge:", Rmin.in_(units.AU)
   print "disc outer edge:", Rmax.in_(units.AU)
 
-  bin=encounter(TwoBody,m1=m1*(1+discfraction),m2=m2,r1=r1,r2=r2,ecc=ecc,Rimpact=Rimpact,inclination=inclination)
-  bin.particles[0].mass=m1
+  enc=encounter(TwoBody,m1=m1*(1+discfraction),m2=m2,r1=r1,r2=r2,ecc=ecc,Rimpact=Rimpact,inclination=inclination)
+  enc.particles[0].mass=m1
   
   disc,gas=sphdisc(Fi,Ngas,m1,Rmin=Rmin, Rmax=Rmax,
                      q_out=q_out, discfraction=discfraction,densitypower=densitypower,dt_sph=dt_int)
@@ -309,8 +318,8 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
     
   bridge=FAST(verbose=False)
   bridge.set_timestep(dt_int)
-  bridge.add_system(bin, (directsum_disc,), False)
-  bridge.add_system(disc, (bin,), False)
+  bridge.add_system(enc, (directsum_disc,), False)
+  bridge.add_system(disc, (enc,), False)
 
   tnow=0. |  units.day  
   dt=eosfreq*dt_int
@@ -326,13 +335,13 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
   while tnow < tend-dt/2:
 
     if i%outputfreq==0:
-      write_set_to_file(bin.particles,outputdir+'/snap/bin-%6.6i'%(i),'amuse')
+      write_set_to_file(enc.particles,outputdir+'/snap/bin-%6.6i'%(i),'amuse')
       write_set_to_file(disc.gas_particles,outputdir+'/snap/disc-%6.6i'%(i),'amuse')
 
     tnow+=dt
     i+=1
     handle_eos(disc.particles,gas,rhotrans=(1.e-5 | units.g/units.cm**3))
-    sink_particles(bin.particles,disc.particles,Raccretion=Raccretion)
+    sink_particles(enc.particles,disc.particles,Raccretion=Raccretion)
     bridge.evolve_model(tnow)
     
     frac=(tnow/tend)
@@ -340,31 +349,32 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
     print 'sim '+label+' reached:',tnow, ": %4.2f%%, ETA: %6.2f hours"%(100*frac, (time_now-time_begin)/frac*(1-frac)/3600)
 
     if i%mapfreq==0:
-      output_maps(tnow,bin,disc,Lmap,i,outputdir,Pplanet)
+      output_maps(tnow,enc,disc,Lmap,i,outputdir,Pplanet)
     
   return gethostname(),outputdir       
 
 if __name__=="__main__":
 
   encounter_disc_run(  tend=3000. | units.yr,        # simulation time
-                          Ngas=10000,                 # number of gas particles
+                          Ngas=5000,                 # number of gas particles
                           m1=1. | units.MSun,      # primary mass
                           m2=0.5 | units.MSun,      # secondary mass
                           r1=1. | units.RSun,      # primary radius
                           r2=None,      # secondary radius
                           ecc=1.1,                 # binary orbit eccentricity
+                          inclination=10,           # inclination angle
                           Rimpact=500. | units.AU,   # impact parameter
                           Rmin=10. | units.AU,                    # inner edge of initial disk (in AU or (w/o units) in a_binary)  
                           Rmax=300. | units.AU,                     # outer edge of initial disk (in AU or (w/o units) in a_binary)
-                          q_out=12.,                   # outer disk Toomre Q parameter
+                          q_out=2.,                   # outer disk Toomre Q parameter
                           discfraction=0.5,           # disk mass fraction
                           Raccretion=1. | units.AU,   # accretion radius for sink particle
                           dt_int=50. | units.day,       # timestep for gas - binary grav interaction (bridge timestep)
                           Pplanet=None, # period of planet (makes the r-phi map rotate with this period)
-                          densitypower=1.,             # surface density powerlaw
+                          densitypower=1.75,             # surface density powerlaw
                           eosfreq=4,                   # times between EOS updates/sink particle checks
                           mapfreq=1,                   # time between maps ( in units of dt=eosfreq*dt_int)
-                          Lmap=600. | units.AU,          # size of map
+                          Lmap=2200. | units.AU,          # size of map
                           outputfreq=100,              # output snapshot frequency (every ... dt=eosfreq*dt_int)
                           outputdir='./r1',           # output directory
                           label='X002',                  # label for run (only for terminal output)
