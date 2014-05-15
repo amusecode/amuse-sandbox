@@ -20,7 +20,7 @@ from fast import FAST
 from directsum import directsum
 from boxedfi import BoxedFi as Fi
 
-from amuse.datamodel import rotate
+from amuse.datamodel.rotation import rotate
 
 def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
      ecc=1.1,Rimpact=500. | units.AU,Rstart=None,inclination=0):
@@ -58,7 +58,7 @@ def encounter(interface,m1=1.|units.MSun,m2=.5| units.MSun,r1=None,r2=None,
   bin.vx=0*v0
   bin.vz=0.*v0
 
-  rotate(bin,0,inclination,0)
+  rotate(bin,0,numpy.pi*inclination/180.,0)
 
   if r1 is None:
     bin[0].radius=(1.|units.RSun)*(m1/(1.|units.MSun))**(1./3.)
@@ -193,7 +193,7 @@ def output_maps(tnow,bin,disc,Lmap,i,outputdir='./',Pplanet=None):
                   (bin.particles.y-poffset[1]).value_in(units.AU),'g+',mew=2.)
   pyplot.xlim(-L/2,L/2)
   pyplot.ylim(-L/2,L/2)
-  pyplot.title(tnow)
+  pyplot.title("%8.4f yr"%tnow.value_in(units.yr))
   pyplot.xlabel('AU')
   pyplot.savefig(outputdir+'/map/map%6.6i.png'%i)
   f.clear()
@@ -207,19 +207,21 @@ def output_maps(tnow,bin,disc,Lmap,i,outputdir='./',Pplanet=None):
   r1=Lmap.value_in(units.AU)/40.
   r2=Lmap.value_in(units.AU)/2.
   rho=make_phi_map(disc,N=200,Rrange=[r1,r2],phioffset=offset,poffset=poffset,voffset=voffset)
-  f=pyplot.figure(figsize=(12,4))
+  f=pyplot.figure(figsize=(10,6))
   pyplot.imshow(numpy.log10(1.e-15+rho.value_in(units.g/units.cm**3)),
-          extent=[0,2*numpy.pi,r1/r2,1],vmin=-16.,vmax=-12.,origin='lower')    
+          extent=[0,2.,r1/r2,1],vmin=-16.,vmax=-12.,origin='lower')    
   x=(bin.particles.x-poffset[0]).value_in(units.AU)
   y=(bin.particles.y-poffset[1]).value_in(units.AU)
   r=(x**2+y**2)**0.5
   phi=numpy.arctan2(y,x)-offset
   phi=numpy.mod(phi,2*numpy.pi)
-  pyplot.plot(phi,r/r2,'g+',mew=2.)
+  pyplot.plot(phi/numpy.pi,r/r2,'g+',mew=2.)
+  pyplot.title("%8.4f yr"%tnow.value_in(units.yr))
   pyplot.xlabel('phi')
   pyplot.ylabel('R')
-  pyplot.xlim(0,2.*numpy.pi)
+  pyplot.xlim(0,2.)
   pyplot.ylim(0.,1.)
+  pyplot.tight_layout()
   pyplot.savefig(outputdir+'/map/phi-%6.6i.png'%i)
   f.clear()
   pyplot.close(f)
@@ -346,7 +348,7 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
     
     frac=(tnow/tend)
     time_now=time.time()
-    print 'sim '+label+' reached:',tnow, ": %4.2f%%, ETA: %6.2f hours"%(100*frac, (time_now-time_begin)/frac*(1-frac)/3600)
+    print 'sim '+label+' reached:',"%8.4f yr"%tnow.value_in(units.yr), ": %4.2f%%, ETA: %6.2f hours"%(100*frac, (time_now-time_begin)/frac*(1-frac)/3600)
 
     if i%mapfreq==0:
       output_maps(tnow,enc,disc,Lmap,i,outputdir,Pplanet)
@@ -356,7 +358,7 @@ def encounter_disc_run(tend=10. | units.yr,       # simulation time
 if __name__=="__main__":
 
   encounter_disc_run(  tend=3000. | units.yr,        # simulation time
-                          Ngas=5000,                 # number of gas particles
+                          Ngas=50000,                 # number of gas particles
                           m1=1. | units.MSun,      # primary mass
                           m2=0.5 | units.MSun,      # secondary mass
                           r1=1. | units.RSun,      # primary radius
@@ -373,9 +375,9 @@ if __name__=="__main__":
                           Pplanet=None, # period of planet (makes the r-phi map rotate with this period)
                           densitypower=1.75,             # surface density powerlaw
                           eosfreq=4,                   # times between EOS updates/sink particle checks
-                          mapfreq=1,                   # time between maps ( in units of dt=eosfreq*dt_int)
-                          Lmap=2200. | units.AU,          # size of map
-                          outputfreq=100,              # output snapshot frequency (every ... dt=eosfreq*dt_int)
+                          mapfreq=4,                   # time between maps ( in units of dt=eosfreq*dt_int)
+                          Lmap=1600. | units.AU,          # size of map
+                          outputfreq=400,              # output snapshot frequency (every ... dt=eosfreq*dt_int)
                           outputdir='./r1',           # output directory
                           label='X002',                  # label for run (only for terminal output)
                           overwrite=True
