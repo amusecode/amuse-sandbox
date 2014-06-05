@@ -37,7 +37,7 @@ class RadiativeHydro(object):
   
         if self._src_particles:
           self._src_particles.synchronize_to(self.rad.src_particles)
-          self._src_particles.new_channel_to(self.rad.sr_particles).copy_attributes(["x","y","z","luminosity"])
+          self._src_particles.new_channel_to(self.rad.src_particles).copy_attributes(["x","y","z","luminosity"])
   
         self.hydro.gas_particles.synchronize_to(self.rad.gas_particles)
     
@@ -84,5 +84,5 @@ class RadiativeHydro(object):
     def radhydro_particles_copy(self):
           parts=self.rad.gas_particles.copy()
           channel = self.gas_particles.new_channel_to(parts)
-          channel.copy_attributes(["mass","x","y","z","vx","vy","vz","rho","u"])  	  
+          channel.copy_attributes(["mass","x","y","z","vx","vy","vz","rho","u","h_smooth"])  	  
           return parts
