@@ -1,0 +1,43 @@
+# Many of the macros are inherited from the makefile in the parent directory
+
+library: glkinds.o cwrap.obj fwrap.o interf.o
+	$(MAKELIB) lib$(LIBNAME)f90GL.a glkinds.o cwrap.obj fwrap.o interf.o
+	$(RANLIB) lib$(LIBNAME)f90GL.a
+
+install: library
+	cp -f lib*.a ../lib
+	cp -f *.$(MOD) ../include/GL
+
+fwrap.o: fwrap.f90 glkinds.o interf.o
+	$(F90) $(F90FLAGS) -c fwrap.f90
+
+fwrap.f90: fwrap.fpp fppr.inc
+	$(F90PPR) < fwrap.fpp > fwrap.f90
+
+interf.o: interf.f90 glkinds.o
+	$(F90) $(F90FLAGS) -c interf.f90
+
+interf.f90: interf.fpp fppr.inc
+	$(F90PPR) < interf.fpp > interf.f90
+
+glkinds.o: glkinds.f90
+	$(F90) $(F90FLAGS) -c glkinds.f90
+
+glkinds.f90: glkinds.fpp fppr.inc
+	$(F90PPR) < glkinds.fpp > glkinds.f90
+
+cwrap.obj: cwrap.c
+	$(CC) $(CFLAGS) $(OGLINC) -c cwrap.c
+
+fppr.inc: $(F90PPR_INC) defshort
+	cat $(F90PPR_INC) defshort > fppr.inc
+
+defshort: isshort
+	./isshort
+
+isshort: isshort.f90
+	$(F90) $(F90FLAGS) -o isshort isshort.f90
+
+clean:
+	rm -f *.a *.obj *.o *.mod *.M *.d defshort isshort fppr.inc fwrap.f90 interf.f90 \
+	glkinds.f90 ftn00 work.pc work.pcl

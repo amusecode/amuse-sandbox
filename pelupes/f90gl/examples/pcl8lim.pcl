@@ -1,0 +1,4 @@
+work.pc
+../include/GL/gl.pc
+../include/GL/glu.pc
+../include/GL/glut.pc

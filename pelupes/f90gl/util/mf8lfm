@@ -1,0 +1,12 @@
+# Many of the macros are inherited from the makefile in the parent directory
+
+sppr: sppr.f95
+	$(F90) $(F90FLAGS) -o sppr sppr.f95
+
+mkfppinc: mkfppinc.c
+	$(CC) $(CFLAGS) $(OGLINC) -o mkfppinc mkfppinc.c $(OGLLIBDIR) $(OGLLIB) $(X11LIBDIR) $(X11LIB)
+	./mkfppinc
+	cat glopt.h $(F90PPR_INC) > fpprinc.h
+
+clean:
+	rm -f *.o *.mod *.M *.d sppr sppr.exe work.pc work.pcl mkfppinc mkfppinc.exe glopt.h fpprinc.h

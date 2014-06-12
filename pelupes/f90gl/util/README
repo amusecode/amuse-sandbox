@@ -1,0 +1,20 @@
+This directory contains a few utilities.
+
+trans10 -- this is a sed script that converts applications using the "old"
+           Fortran 90 interface to OpenGL (used in f90gl version 1.0) to
+           the "new" interface used in f90gl version 1.1 and later.  Read
+           the file for instructions on using it and what it will and will
+           not do.  See also the Upgrading section of f90gl/USRGUIDE.  And
+           PLEASE backup any files to which you apply trans10.
+
+findsize.c -- this is a short C program that prints the size of the C types
+              interfaced by f90gl.  It can be useful to determine the correct
+              settings for the kind type parameters in glkinds.f90, but there
+              will be very few people that need to do this.
+           
+sppr.f90 -- a simple preprocessor used for conditional compilation in f90gl.
+            This in NOT a general purpose preprocessor.  Do not try to use it
+            for any other purpose -- it'll bite you!
+            If you need a general purpose preprocessor for Fortran 90, get
+            Michel Olagnon's f90ppr from
+            http://www.ifremer.fr/ditigo/molagnon/fortran90/contenu.html

@@ -1,0 +1,230 @@
+This is f90gl Version 1.2.15
+
+f90gl is a public domain implementation of the official Fortran 90 bindings
+for OpenGL and GLU, and the application of those bindings to GLUT.
+
+For installation instructions, see INSTALL.
+
+For user information, see USRGUIDE and examples/README.
+
+NOTE: Both INSTALL and USRGUIDE contain information about exceptions for
+      particular system configurations
+
+For the latest information on f90gl, see the f90gl web page at
+http://math.nist.gov/f90gl
+
+Send inquiries and bug reports to william.mitchell@nist.gov.
+
+William F. Mitchell
+Mathematical and Computational Sciences Division
+100 Bureau Dr. Stop 8910
+National Institute of Standards and Technology
+Gaithersburg, MD 20899-8910
+william.mitchell@nist.gov
+
+-------------------------------------------------------------------------
+
+This Fortran interface for OpenGL, GLUT and Mesa software and documentation
+have been produced as part of work done by the U.S. Government, and are not
+subject to copyright in the United States.
+
+The mention of specific products, trademarks, or brand names in the
+documentation is for purposes of identification only.  Such mention is not to
+be interpreted in any way as an endorsement or certification of such products
+or brands by the National Institute of Standards and Technology.
+All trademarks mentioned herein belong to their respective owners.
+
+-------------------------------------------------------------------------
+
+FORTRAN 77
+
+This version of f90gl is an implementation of the Fortran 90 bindings to
+OpenGL and does not contain the FORTRAN 77 interfaces.  If you need FORTRAN 77
+interfaces, then
+
+  1) If you are using a commercial implementation of OpenGL, see if it contains
+     the FORTRAN 77 interfaces.  Most should.
+
+  2) If you are using MESA or your commercial OpenGL does not contain
+     FORTRAN 77 interfaces, then get f90gl Version 1.0 from the f90gl home
+     page at http://math.nist.gov/f90gl.  This contains FORTRAN 77 interfaces
+     for OpenGL Version 1.0, GLU, and some extensions.  No version of f90gl has
+     FORTRAN 77 interfaces for the additional routines in OpenGL 1.1 and 1.2.
+
+  3) If you need FORTRAN 77 interfaces for GLUT, get f90gl Version 1.0.
+
+  4) If you need either Fortran 90 or FORTRAN 77 interfaces for tk, get
+     f90gl Version 1.0.
+
+In any of these cases, you can build some libraries with f90gl Version 1.0
+and some with the current version of f90gl.
+
+-------------------------------------------------------------------------
+
+HISTORY
+
+December 2009, Version 1.2.15 released
+
+- corrected use of GLUTNULLFUNC with HP-UX
+
+June 2009, Version 1.2.14 released
+
+- bug fix, assign logical values to GL_TRUE and GL_FALSE
+- minor change to mfpxuo
+
+September 2007, Version 1.2.13 released
+
+- change GL_TRUE and GL_FALSE from integer(glenum) to logical(glboolean).  If
+   you use these symbols, you will need to change your program.
+- bug fix in plotfunc; disallowed function calls between begin and end
+- fpp include file for Macintosh/MacOS X/g95/OpenGL
+- copy libs and .mods to lib and include/GL instead of move
+
+September 2006, Version 1.2.12 released
+
+- add support for x86-64/Windows/Intel/OpenGL (thanks to Steve Lionel)
+- bug fix for some 64-bit compilers; glcptr_length and size() were not glint
+
+November 2005, Version 1.2.11 released
+
+- bug fix in mkfppinc.c
+- add support for x86/Linux/pathscale/Mesa
+- add support for x86/Linux/gfortran/Mesa
+
+February 2005, Version 1.2.10 released
+
+- added support for x86/Linux/g95/Mesa
+- added support for Macintosh/MacOS X/g95/OpenGL (thanks to Takeshi Enomoto)
+
+February 2004, Version 1.2.9 released
+
+- added support for x86/Linux/F/Mesa
+
+January 2004, Version 1.2.8 released
+
+- added support for x86/Windows/Intel/OpenGL (thanks to Steve Lionel)
+- added polyoff example
+
+February 2003, Version 1.2.7 released
+
+- fixed support for Macintosh/MacOS X/Absoft/OpenGL
+- added support for Macintosh/MacOS X/NAG/OpenGL
+
+January 2003, Version 1.2.6 released
+
+- added support for x86/Linux/Intel 7.0/Mesa
+- added support for Macintosh/MacOS X/Absoft/OpenGL
+- added eps example (output graphics to postscript)
+- replaced tabs with blanks in checker.f90
+- fixed MatrixMode bug in modview.f90 and plotfunc.f90
+- fixed declaration bug in plotfunc.f90
+- changed fscene.f90 and sphere.f90 to free source form
+- fixed argument bug in colortableext and colorsubtableext in cwrap.c
+- fixed bug in gluTessVertex in cwrapglu.c
+- eliminated need for -DOPENGL_1_x in CFLAGS
+- eliminated need for version and extensions in fpp files
+
+November 2002, Version 1.2.5 released
+
+- added support for x86/Linux/Intel/Mesa
+- added fpp file for NVidia
+
+December 2000, Version 1.2.4 released
+
+- removed use of MESA macro for selection of tesselation routines
+
+August 2000, Version 1.2.3 released
+
+- added extension SGIS_multisample
+
+February 2000, Version 1.2.2 released
+
+- added support for Alpha/Linux/Compaq/Mesa
+- added plotfunc example
+
+December 1999, Version 1.2.1 released
+
+- replace external statements with interface blocks in examples
+- fixed a bug with GLUTNULLFUNC
+- added checker example
+- added support for Sun/Solaris/SunSoft 2.0/[Mesa|OpenGL] (differs from SS 1.2)
+- added/fixed support for x86/Linux/*/MetroLink
+- added support for x86/Linux/Lahey/Mesa
+
+June 1999, Version 1.2.0 released
+
+- extended from OpenGL 1.1 to OpenGL 1.2
+- added support for the new routines in GLUT 3.7
+- bug fixes
+
+April 1999, Version 1.1.4 released
+
+- added support for x86/WinNT/Lahey-Fujitsu/Microsoft
+- added support for x86/WinNT/DVF/Microsoft
+
+March 1999, Version 1.1.3 released
+
+- added support for x86/WinNT/Absoft/Microsoft
+- added support for x86/WinNT/PGI/Microsoft
+
+November 1998, Version 1.1.2 released
+
+- changes in cwrapglt.c to syncronize with GLUT 3.7
+- added support for x86/WinNT/NASoftware/Microsoft
+
+June 1998, Version 1.1.1 released
+
+- fixed support for x86/Linux/NASoftware/[Mesa|MetroLink]
+- replaced the SGI makefiles with two forms, one for -n32 (mfgigm3, etc.)
+  and one for -64 (mfgigm6, etc.)
+- added support for Origin 2000
+- added support for x86/Linux-elf/NAGWare/Mesa
+- changed isshort to ./isshort in gl/mf* (. may not be in path)
+- added stars example
+
+May 1998, Version 1.1 released
+
+ - implements approved revised bindings
+ - Fortran 90 interface for OpenGL 1.1, GLU 1.2, GLUT 3.6, and Mesa 2.5
+ - several additional extensions added
+ - rewritten in F and ELF90 syntax
+ - reorganized directory structure
+ - added support for the following systems (hardware/OS/f90/OpenGL):
+     x86/Linux/Absoft/Mesa
+     x86/Linux/Absoft/MetroLink
+     x86/Linux/PGI/Mesa
+     x86/Linux/PGI/MetroLink
+     x86/WinNT/DVF/Microsoft
+     x86/WinNT/Microsoft/Microsoft
+     DEC Alpha/Digital Unix/Digital Fortran/OpenGL
+     HP/HPUX/HP/Mesa
+     Sun/Solaris/EPC/Mesa (replaces Sun/SunOS4/EPC/Mesa)
+     Sun/Solaris/SunSoft/Mesa
+ - added support for the following systems, but at the time of this release
+   the compilers could not generate usable code:
+     x86/Linux/NASoftware/Mesa
+     x86/Linux/NASoftware/MetroLink
+     x86/Linux/F/Mesa
+     x86/WinNT/ELF90/Microsoft
+     x86/WinNT/Lahey/Microsoft
+     x86/WinNT/Salford/Microsoft
+     RS6K/AIX/F/Mesa
+     RS6K/AIX/F/OpenGL
+     
+February 1998, Fortran 90 bindings for OpenGL approved by OpenGL ARB
+
+September 1997, bindings revised following review by X3J3
+
+October 1996, Version 1.0 released
+
+ - implements the originally proposed Fortran 90 bindings for OpenGL
+ - FORTRAN 77 and Fortran 90 interface for OpenGL 1.0, GLU, GLUT 3.1,
+   tk, Mesa 1.2.8, and the extensions supported by Mesa 1.2.8
+ - support for the following systems (hardware/OS/f90/OpenGL):
+     x86/Linux-a.out/NAGWare/Mesa
+     RS6K/AIX/XLF/Mesa
+     RS6K/AIX/XLF/OpenGL
+     SGI/IRIX/SGI/Mesa
+     SGI/IRIX/SGI/OpenGL
+     Sun/SunOS4/EPC/Mesa
+     Sun/SunOS4/NAGWare/Mesa

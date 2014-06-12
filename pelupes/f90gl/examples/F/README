@@ -1,0 +1,24 @@
+This directory contains the example programs translated to the F and ELF90
+subset language syntax.
+
+You might have to make a symbolic link in this directory to include/GL for ELF
+
+ELF90 notes:
+------------
+
+These were tested using Lahey's precompiled f90gl libraries for LF90.
+
+glutdino crashes.
+
+scube cannot be built because ELF90 does not have 1-byte integers, and
+the precompiled f90gl library for LF90 does.
+
+some of the new examples were translated to F but not checked for ELF90
+
+F notes:
+--------
+
+scube draws in the wrong colors, possibly a mistake in relating one byte
+integers to C's unsigned byte
+
+the postscript file created by eps has a few dark spots due to not sorting

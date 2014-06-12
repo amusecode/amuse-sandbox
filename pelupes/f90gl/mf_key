@@ -1,0 +1,73 @@
+This file describes the naming convention for the makefiles (mf*) and
+include files for the preprocessor (fppincs/fpp*).
+
+In some cases a common makefile handles many systems; this is called mfmost.
+In fppincs, there is a fppmesa that is used by several of the systems with Mesa.
+
+Otherwise, the naming convention for makefiles is mf12345 and preprocessor
+files is fpp12345 where
+
+1 - computer
+  8 x86 or Pentium
+  a alpha
+  g sgi
+  h hp
+  i Itanium (in some cases, 8 may apply to Itanium)
+  o sgi origin
+  p Power Macintosh
+  r rs6000
+  s sun
+  x x64 (x86-64, Intel 64 (Intel EM64T), AMD64)
+
+2 - OS
+  4 SunOS 4
+  5 Windows 95
+  a AIX
+  d Tru64 and other descendents of Digital Unix
+  h HPUX
+  i Irix
+  l Linux
+  n Windows NT
+  s Solaris
+  v OpenVMS
+  x MacOS X
+
+3 - f90 compiler
+  a NASoftware
+  b Absoft
+  c Pacific Sierra
+  d Compaq (formerly Digital) Fortran
+  e EPC
+  f F
+  g SGI
+  h HP
+  i Intel
+  j Fujitsu (including Lahey/Fujitsu on Windows)
+  l Lahey
+  m Microsoft
+  n NAGWare
+  o Salford
+  p PGI
+  s SunSoft
+  t PathScale
+  u Gnu g95 and gfortran (add 2 for gfortran)
+  v CVF (formerly DVF)
+  x xlf90
+
+4 - Opengl
+  m Mesa
+  n NVidia
+  o Native OpenGL
+  t MetroLink OpenGL for Linux
+  s SGI OpenGL for Windows
+
+5 - misc special designations
+  a Linux a.out binaries
+  1 SunSoft versions before 2.0
+  2 SunSoft version 2.0 or later
+  2 Gnu gfortran, as opposed to g95
+  3 SGI -n32
+  6 SGI -64
+  6 Intel ifc versions before 7.0
+  7 Intel ifc or ifort version 7.0 or later
+  b Borland C compiler on Windows

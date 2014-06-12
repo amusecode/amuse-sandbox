@@ -1,0 +1,101 @@
+# This makefile has been tested on
+#   computer: Pentium 4
+#         OS: Linux 2.6.9 (Red Hat Enterprise)
+#   compiler: PGI pgf90 6.0-2.0-1
+#          C: gcc 3.4.3
+#     OpenGL: Mesa 6.3.2, GLUT 3.7.1, f90gl 1.2.10
+
+#------------- User configuration parameters ---------------
+
+# modify these for your system
+
+# the directories containing the OpenGL libraries, f90gl libraries, GLUT
+# libraries, and f90gl GLUT libraries
+OGLLIBDIR = -L../lib -L$(MESAHOME)/lib
+
+# the directory containing the X11 libraries
+X11LIBDIR = -L/usr/X11R6/lib
+
+# the fortran 90 libraries for OpenGL, including GLUT, GLU and OpenGL
+F90GLUTLIB = -lf90glut -lf90GLU -lf90GL -lglut -lGLU -lGL
+
+# the X11 libraries
+X11LIB = -lXaw -lXt -lXmu -lXi -lXext -lX11
+
+# the f90 compiler flag for specifying the location of MOD files
+MODS = -I../include/GL
+
+# fortran 90 compiler and compiler flags
+F90 = pgf90
+F90FLAGS = -O
+
+#----------- end of user configuration parameters ------------
+
+all: blender checker fbitfont fscene glutdino logo molehill olympic scube sphere trivial modview stars plotfunc polyoff eps
+
+blender: blender.f90
+	$(F90) $(F90FLAGS) -o blender $(MODS) blender.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+checker: checker.f90
+	$(F90) $(F90FLAGS) -o checker $(MODS) checker.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+eps: eps.f90
+	$(F90) $(F90FLAGS) -o eps $(MODS) eps.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+fbitfont: fbitfont.f90
+	$(F90) $(F90FLAGS) -o fbitfont $(MODS) fbitfont.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+fscene: fscene.f90
+	$(F90) $(F90FLAGS) -o fscene $(MODS) fscene.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+glutdino: glutdino.f90
+	$(F90) $(F90FLAGS) -o glutdino $(MODS) glutdino.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+logo: logo.f90
+	$(F90) $(F90FLAGS) -o logo $(MODS) logo.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+molehill: molehill.f90
+	$(F90) $(F90FLAGS) -o molehill $(MODS) molehill.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+olympic: olympic.f90
+	$(F90) $(F90FLAGS) -o olympic $(MODS) olympic.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+plotfunc: plotfunc.f90
+	$(F90) $(F90FLAGS) -o plotfunc $(MODS) plotfunc.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+polyoff: polyoff.f90
+	$(F90) $(F90FLAGS) -o polyoff $(MODS) polyoff.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+scube: scube.f90
+	$(F90) $(F90FLAGS) -o scube $(MODS) scube.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+sphere: sphere.f90
+	$(F90) $(F90FLAGS) -o sphere $(MODS) sphere.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+stars: stars.f90
+	$(F90) $(F90FLAGS) -o stars $(MODS) stars.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+trivial: trivial.f90
+	$(F90) $(F90FLAGS) -o trivial $(MODS) trivial.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+modview: modview.f90
+	$(F90) $(F90FLAGS) -o modview $(MODS) modview.f90 \
+	$(OGLLIBDIR) $(F90GLUTLIB) $(X11LIBDIR) $(X11LIB)
+
+clean:
+	rm -f *.o *.mod blender fbitfont fscene glutdino logo molehill olympic scube sphere trivial modview stars checker plotfunc polyoff eps

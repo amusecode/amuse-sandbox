@@ -1,0 +1,9 @@
+#ifdef DONT_PASS_COMMENTS
+/* 
+  This ifdef is just a trick to prevent the preprocessor from passing
+  on these comments.  By enclosing them in /* delimiters, this file
+  can be included  in either Fortran or C programs.
+ 
+  This is an empty file for systems that don't have any additional definitions.
+*/
+#endif

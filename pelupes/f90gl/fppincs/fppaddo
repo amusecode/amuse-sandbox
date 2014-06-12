@@ -1,0 +1,7 @@
+#define PTR8
+#ifdef DONT_PASS_COMMENTS
+/*
+! Version of Digital f90 without this patch (very old)
+!#define DIGITAL_NO_ECO_02
+*/
+#endif

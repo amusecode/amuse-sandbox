@@ -1,0 +1,106 @@
+This directory contains several examples of using OpenGL from Fortran 90.
+Most of these were hand translated to Fortran 90 from the C examples in the
+Glut distribution using the originally proposed binding in f90gl version 1.0,
+and then translated to the new binding with f90gl/util/trans10.
+
+The F directory contains a translation of the examples to the subset
+languages F and ELF90.
+
+To compile the examples, determine the appropriate makefile as described in
+the installation instructions (file f90gl-x.x.x/INSTALL), and edit it to set
+the correct paths, etc., for your system.
+
+Then if your system code is xxxx,
+
+Unix (and PGI on Windows):
+  make -f mfxxxx           # compiles all examples
+  make -f mfxxxx progname  # compiles the example with name "progname"
+
+DOS/Windows:
+  mfxxxx                   # compiles all examples
+  mfxxxx progname          # compiles the example with name "progname"
+
+For NASoftware on Linux, make sure you have <path to f90gl>/f90gl/lib in your
+LIBRARY_PATH environment variable.
+
+The remainder of this file contains a description of the examples, plus an
+indication of what systems they are known to fail on.
+
+blender -- two rotating objects, one red, one green, which fade in and out,
+   plus some text
+
+  ** x86/Linux/*/MetroLink: rotating objects don't show up
+  ** Sun/Solaris/SunSoft/OpenGL: rotating objects don't show up
+
+checker -- draws two black/white checker boards, one straight on and one
+   at an angle, using texture mapping
+
+eps -- save an OpenGL window to an encapsilated postscript file.  The module
+   rendereps in this example is a translation to Fortran of a C program by
+   Mark Kilgard, plus a sorting routine from netlib.  The main program
+   illustrates how to use this module using the fscene program.  The right
+   mouse button brings up a menu from which you can save the image to
+   epsout.eps.  The directory in which epsout.eps is written is system
+   dependent; likely places are the current directory or your home directory.
+
+fbitfont -- some text
+
+fscene -- three 3D objects in red.  The right mouse button brings up a menu.
+   Redraw is really slow in outline mode on some machines.
+
+glutdino -- a green dinosaur.  Rotate with the mouse while holding the left
+   mouse button.  Right mouse button brings up a menu.
+
+  ** x86/WinNT/PGI/Microsoft: program crashes
+  ** x86/WinNT/Absoft/Microsoft: program crashes
+  ** x86/WinNT/Laheyf95/Microsoft: program crashes
+  ** x86/WinNT/Intel/Microsoft: program crashes
+  ** x86/Linux/PGI/MetroLink: segmentation fault
+  ** x86/Linux/Gnu/Mesa: segmentation fault
+
+logo -- the f90gl logo.  Rotate with the mouse while holding the left mouse
+   button.  Right mouse button brings up a menu.  Middle mouse button selects
+   a new value on the color bars (rgb sliders).
+
+  ** Linux Red Hat 5.1/Absoft (probably any system with libm 6 and Absoft 5.0):
+     There is a conflict between the new libm and Absoft's math library in the
+     atan2 function.  The logo is drawn incorrectly.  It works fine with libm 5
+     or Absoft 6.0.
+  ** x86/Linux/Gnu/Mesa: segmentation fault
+
+modview -- this one's my own.  It contains a module for using the mouse and
+   arrow keys to rotate, zoom, pan and scale.  Initially the left button rotates
+   (hold button down while moving mouse), middle button zoom, arrow keys pan,
+   and right button brings up a menu.
+
+molehill -- a four color bumpy surface
+
+  ** Sun/Solaris/EPC/Mesa: segmentation fault
+  ** x86/Linux/Gnu/Mesa: colors are all white
+
+olympic -- the olympic rings come flying into position.  Restart the animation
+   with the space bar; terminate with escape.  On SGI, accepts command line
+   arguments.
+
+plotfunc -- plots a function of two variables as contours, a surface mesh,
+   or a solid surface.  Uses the modview module.  Right button brings up
+   a menu.  You may need to click on the window to draw the initial display.
+
+polyoff -- demonstrates the use of polygon offset.  Left and middle mouse
+   buttons rotate the sphere; right mouse button terminates.
+
+scube -- a rotating cube in front of a background, and it's shadow.
+   Right mouse button brings up a menu.  There are also keyboard keys for the
+   same functions as on the menu (look for keyboard in the source code).
+
+  ** Sun/SunOS 4/NAG/Mesa: Arithmetic exception: Floating divide by zero
+  ** x86/WinNT/*/Microsoft: motion doesn't start up again
+  ** x86/WinNT/DVF/Microsoft: crashes after drawing, but works with "-debug"
+  ** x86/Linux/Gnu/Mesa: segmentation fault
+
+
+sphere -- a red sphere
+
+stars -- a trip through outer space
+
+trivial -- white square on black background

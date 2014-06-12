@@ -1,0 +1,53 @@
+# This is a sed script to translate from the old (Version 1.0) f90gl to
+# the new (Version 1.1) f90gl bindings.
+#
+# PLEASE BACKUP YOUR SOURCE FILES!!!  This script may make unwanted changes.
+#
+# Use as 'sed -f trans10 < version_1.0_file > version_1.1_file
+#
+# New form of module name in USE statements.  Works for gl, glu and glut.
+# Limited number of case conventions covered.
+# If there is more than one space between USE and the module name, it is
+# reduced to one space in the output.
+s/use[ ][ ]*f90gl/use opengl_gl/
+s/USE[ ][ ]*F90GL/USE OPENGL_GL/
+s/Use[ ][ ]*F90gl/Use Opengl_gl/
+#
+# Replace remaining f90gl with gl to change procedure names, kind type parameters,
+# and derived types.
+# THIS MAY MAKE CHANGES YOU DON'T WANT, particularly in comments and character
+# strings, but anywhere that f90gl appears.
+# Limited number of case conventions covered.
+s/f90gl/gl/g
+s/F90GL/GL/g
+s/F90gl/gl/g
+s/f90GL/GL/g
+#
+# Change C pointers from type character to type derived type
+# With or without optional LEN= keyword.
+# Limited number of case conventions covered.
+s/character(glcptr)/type(glcptr)/
+s/CHARACTER(GLCPTR)/TYPE(GLCPTR)/
+s/CHARACTER(glcptr)/TYPE(glcptr)/
+s/character(GLCPTR)/type(GLCPTR)/
+s/character(len=glcptr)/type(glcptr)/
+s/CHARACTER(LEN=GLCPTR)/TYPE(GLCPTR)/
+s/CHARACTER(len=glcptr)/TYPE(glcptr)/
+s/character(LEN=GLCPTR)/type(GLCPTR)/
+s/character*glcptr/type(glcptr)/
+s/CHARACTER*GLCPTR/TYPE(GLCPTR)/
+s/CHARACTER*glcptr/TYPE(glcptr)/
+s/character*GLCPTR/type(GLCPTR)/
+#
+# Does not fix references to glunull and glutnull.  They should no longer be
+# in an external statement, and should be called glunullfunc and glutnullfunc.
+#
+# The GLUT fonts should no longer be declared external.  This must be fixed
+# by hand.
+#
+# Some arrays must persist after the call to the OpenGL routine that uses it
+# (because OpenGL saves a pointer to it and uses it later).  See section 4.2
+# of the bindings.  This is not checked by this translator.  However, what
+# you did in f90gl 1.0 will probably still work, unless you used the trick of
+# passing an array element as the actual argument, which is no longer
+# supported.

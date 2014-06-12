@@ -1,0 +1,11 @@
+f90gl patched 1.2.15
+
+works with freeglut (standard on most linux distributions?)
+
+build with (e.g.): 
+
+make -f mf8lum2f
+
+adapt makefile as necessary
+
+this library is necessary for fi_worker_gl (and others)

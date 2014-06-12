@@ -1,0 +1,39 @@
+# Many of the macros are inherited from the makefile in the parent directory
+
+# the name of the f90GL package
+F90GLPACKAGE = lib$(LIBNAME)f90GL
+
+# extra commands for making a library
+MAKELIB95 = $(F90) -package
+
+library: cwrapglu.o fwrapglu.o
+	$(MAKELIB95) lib$(LIBNAME)f90GLU.a cwrapglu.o fwrapglu.o
+
+install: library
+	\rm -rf ../lib/lib$(LIBNAME)f90GLU
+	cp -f lib* ../lib
+
+fwrapglu.o: fwrapglu.f90 intrfglu.o $(F90GLPACKAGE)
+	$(F90) $(F90FLAGS) $(USEMOD) -c fwrapglu.f90
+
+fwrapglu.f90: fwrapglu.fpp fppr.inc
+	$(F90PPR) < fwrapglu.fpp > fwrapglu.f90
+
+intrfglu.o: intrfglu.f90 $(F90GLPACKAGE)
+	$(F90) $(F90FLAGS) $(USEMOD) -c intrfglu.f90
+
+intrfglu.f90: intrfglu.fpp fppr.inc
+	$(F90PPR) < intrfglu.fpp > intrfglu.f90
+
+cwrapglu.o: cwrapglu.c fppr.inc
+	$(CC) $(CFLAGS) $(OGLINC) -c cwrapglu.c
+
+$(F90GLPACKAGE):
+	$(F90) -use ../lib/$(F90GLPACKAGE)
+
+fppr.inc: ../gl/fppr.inc
+	cp -f ../gl/fppr.inc fppr.inc
+
+clean:
+	rm -f *.a *.o *.mod fppr.inc fwrapglu.f90 intrfglu.f90
+	rm -rf album

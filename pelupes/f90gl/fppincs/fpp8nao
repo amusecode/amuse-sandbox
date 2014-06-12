@@ -1,0 +1,42 @@
+#ifdef DONT_PASS_COMMENTS
+! That ifdef is just a trick to prevent the preprocessor from passing on these
+! comments.
+!
+! The following is a list of OpenGL extensions supported in the current version
+! of f90gl.  You should uncomment those that are supported by your OpenGL
+! installation.  One way to determine which extensions are supported is to
+! look in the file <include path>/GL/gl.h and search for the string GL_EXT
+#endif
+!#define GL_EXT_abgr
+!#define GL_EXT_blend_color
+!#define GL_EXT_blend_logic_op
+!#define GL_EXT_blend_minmax
+!#define GL_EXT_blend_subtract
+!#define GL_EXT_color_table
+#define GL_EXT_paletted_texture
+!#define GL_EXT_point_parameters
+!#define GL_EXT_polygon_offset
+!#define GL_EXT_rescale_normal
+!#define GL_EXT_shared_texture_palette
+!#define GL_EXT_subtexture
+!#define GL_EXT_texture3D
+!#define GL_EXT_texture_object
+!#define GL_EXT_vertex_array
+!#define GL_SGIS_multisample
+!#define GL_MESA_resize_buffers
+!#define GL_MESA_window_pos
+
+#ifdef DONT_PASS_COMMENTS
+! Select the version of OpenGL by uncommenting the version you have and all
+! previous versions, for example for OpenGL 1.1 you should #define both
+! OPENGL_1_0 and OPENGL_1_1
+#endif
+#define OPENGL_1_0
+#define OPENGL_1_1
+!#define OPENGL_1_2
+
+#ifdef DONT_PASS_COMMENTS
+! Macros that are specific to this compiler
+#endif
+#define NASOFTWARE
+#define WIN32

@@ -1,0 +1,31 @@
+# Many of the macros are inherited from the makefile in the parent directory
+
+library: cwrapglt.obj fwrapglt.o intrfglt.o
+	$(MAKELIB) lib$(LIBNAME)f90glut.a cwrapglt.obj fwrapglt.o intrfglt.o
+	$(RANLIB) lib$(LIBNAME)f90glut.a
+
+install: library
+	cp -f lib*.a ../lib
+	cp -f *.$(MOD) ../include/GL
+
+fwrapglt.o: fwrapglt.f90 intrfglt.o
+	$(F90) $(F90FLAGS) $(USEMOD) -c fwrapglt.f90
+
+fwrapglt.f90: fwrapglt.fpp fppr.inc
+	$(F90PPR) < fwrapglt.fpp > fwrapglt.f90
+
+intrfglt.o: intrfglt.f90
+	$(F90) $(F90FLAGS) $(USEMOD) -c intrfglt.f90
+
+intrfglt.f90: intrfglt.fpp fppr.inc
+	$(F90PPR) < intrfglt.fpp > intrfglt.f90
+
+cwrapglt.obj: cwrapglt.c
+	$(CC) $(CFLAGS) $(OGLINC) $(X11INC) -c cwrapglt.c
+
+fppr.inc: $(F90PPR_INC)
+	cp -f $(F90PPR_INC) fppr.inc
+
+clean:
+	rm -f *.a *.obj *.o *.mod *.M *.d fppr.inc fwrapglt.f90 intrfglt.f90 ftn00 \
+	work.pc work.pcl
