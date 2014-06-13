@@ -442,6 +442,14 @@ public :: &
    glpointparameterfvext
 #endif
 
+! ARB_point_parameters (experimental)
+
+#ifdef GL_ARB_point_parameters
+public :: &
+   glpointparameterfarb, &
+   glpointparameterfvarb
+#endif
+
 ! EXT_polygon_offset
 
 #ifdef GL_EXT_polygon_offset
@@ -1042,6 +1050,14 @@ private :: &
 private :: &
    f9xglpointparameterfext, &
    f9xglpointparameterfvext
+#endif
+
+! ARB_point_parameters (experimental)
+
+#ifdef GL_ARB_point_parameters
+private :: &
+   f9xglpointparameterfarb, &
+   f9xglpointparameterfvarb
 #endif
 
 ! EXT_polygon_offset
@@ -1824,6 +1840,15 @@ integer(kind=glenum), parameter, public :: GL_POINT_SIZE_MIN_EXT = 33062
 integer(kind=glenum), parameter, public :: GL_POINT_SIZE_MAX_EXT = 33063
 integer(kind=glenum), parameter, public :: GL_POINT_FADE_THRESHOLD_SIZE_EX=33064
 integer(kind=glenum), parameter, public :: GL_DISTANCE_ATTENUATION_EXT = 33065
+#endif
+
+! ARB_point_parameters (experimental)
+
+#ifdef GL_ARB_point_parameters
+integer(kind=glenum), parameter, public :: GL_POINT_SIZE_MIN_ARB = 33062	    
+integer(kind=glenum), parameter, public :: GL_POINT_SIZE_MAX_ARB = 33063	    
+integer(kind=glenum), parameter, public :: GL_POINT_FADE_THRESHOLD_SIZE_ARB = 33064
+integer(kind=glenum), parameter, public :: GL_POINT_DISTANCE_ATTENUATION_ARB = 33065
 #endif
 
 ! EXT_polygon_offset
@@ -3525,6 +3550,20 @@ end interface
 
 interface glpointparameterfvext
    module procedure f9xglpointparameterfvext
+end interface
+
+#endif
+
+! ARB_point_parameters
+
+#ifdef GL_ARB_point_parameters
+
+interface glpointparameterfarb
+   module procedure f9xglpointparameterfarb
+end interface
+
+interface glpointparameterfvarb
+   module procedure f9xglpointparameterfvarb
 end interface
 
 #endif
@@ -7691,6 +7730,26 @@ real(kind=glfloat), dimension(DEFER_DIM) INTENT_IN params
 call fglpointparameterfvext(pname,params)
 return
 end subroutine f9xglpointparameterfvext
+
+#endif
+
+! ARB_point_parameters
+
+#ifdef GL_ARB_point_parameters
+
+subroutine f9xglpointparameterfarb(pname,param)
+integer(kind=glenum) INTENT_IN pname
+real(kind=glfloat) INTENT_IN param
+call fglpointparameterfarb(pname,param)
+return
+end subroutine f9xglpointparameterfarb
+
+subroutine f9xglpointparameterfvarb(pname,params)
+integer(kind=glenum) INTENT_IN pname
+real(kind=glfloat), dimension(DEFER_DIM) INTENT_IN params
+call fglpointparameterfvarb(pname,params)
+return
+end subroutine f9xglpointparameterfvarb
 
 #endif
 

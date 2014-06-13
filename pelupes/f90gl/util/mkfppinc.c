@@ -34,7 +34,8 @@ char* f90glext[] =
  "GL_EXT_vertex_array",
  "GL_SGIS_multisample",
  "GL_MESA_resize_buffers",
- "GL_MESA_window_pos"
+ "GL_MESA_window_pos",
+ "GL_ARB_point_parameters"
  };
  
  char* Level[] =
@@ -51,7 +52,7 @@ char* f90glext[] =
    "1.9"
  };
  
-int number_of_extensions = 18;
+int number_of_extensions = 19;
 
 int
 main(int argc, char *argv[])

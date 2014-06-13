@@ -1742,6 +1742,21 @@ void exit(int code)
 #endif
 #endif
 
+/* ARB_point_parameters (experimental)*/
+
+#ifdef GL_ARB_point_parameters
+#if FNAME==LOWERCASE
+#define fglPointParameterfARB          fglpointparameterfarb
+#define fglPointParameterfvARB         fglpointparameterfvarb
+#elif FNAME==UNDERSCORE
+#define fglPointParameterfARB          fglpointparameterfarb_
+#define fglPointParameterfvARB         fglpointparameterfvarb_
+#elif FNAME==UPPERCASE
+#define fglPointParameterfARB          FGLPOINTPARAMETERFARB
+#define fglPointParameterfvARB         FGLPOINTPARAMETERFVARB
+#endif
+#endif
+
 /* EXT_polygon_offset */
 
 #ifdef GL_EXT_polygon_offset
@@ -6667,6 +6682,22 @@ void APIENTRY fglPointParameterfEXT( f90glenum pname, f90glfloat param )
 void APIENTRY fglPointParameterfvEXT( f90glenum pname, f90glfloat ARRAY params )
 {
    glPointParameterfvEXT( (GLenum) *pname, (GLfloat *) params ARRAYREF);
+}
+
+#endif
+
+/* ARB_point_parameters */
+
+#ifdef GL_ARB_point_parameters
+
+void APIENTRY fglPointParameterfARB( f90glenum pname, f90glfloat param )
+{
+   glPointParameterfARB( (GLenum) *pname, (GLfloat) *param );
+}
+
+void APIENTRY fglPointParameterfvARB( f90glenum pname, f90glfloat ARRAY params )
+{
+   glPointParameterfvARB( (GLenum) *pname, (GLfloat *) params ARRAYREF);
 }
 
 #endif

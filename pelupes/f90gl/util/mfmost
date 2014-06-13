@@ -7,6 +7,8 @@ mkfppinc: mkfppinc.c
 	$(CC) $(CFLAGS) $(OGLINC) -o mkfppinc mkfppinc.c $(OGLLIBDIR) $(OGLLIB) $(X11LIBDIR) $(X11LIB)
 	./mkfppinc
 	cat glopt.h $(F90PPR_INC) > fpprinc.h
+	cp fpprinc.h ../include/GL/
 
 clean:
 	rm -f *.o *.mod *.M *.d sppr sppr.exe work.pc work.pcl mkfppinc mkfppinc.exe glopt.h fpprinc.h
+	rm -f ../include/GL/fpprinc.h
