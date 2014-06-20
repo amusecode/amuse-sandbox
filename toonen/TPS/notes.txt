@@ -1,0 +1,122 @@
+**********************
+Note number: 1
+Author: Silvia
+Date: 20-06-2014
+Topic: Orbital change
+**********************
+
+The change in the orbit by stellar interaction is calculated within Adrian's code for the secular evolution that solve the differential equations of motion. 
+
+accretion efficiency
+e.g. beta_1->2_wind = the accretion efficiency of the wind of star 1 onto star 2 
+b12w    =   beta_1->2_wind
+b21w    =   beta_2->1_wind
+bin3w   =   beta_in->3_wind
+b3inw   =   beta_3->in_wind  = 0 
+binr    =   beta_in_rlof
+boutr   =   beta_out_rlof    = 0
+
+specific angular momentum loss
+e.g. for a fast isotropic wind gamma = Ma/Md 
+g12w    =   gamma_1->2_wind
+g21w    =   gamma_2->1_wind
+gin3w   =   gamma_in->3_wind
+g3inw   =   gamma_3->in_wind
+ginr    =   gamma_in_rlof
+goutr   =   gamma_out_rlof
+
+Theoretically:
+a_dot   = f(Md, Md_dot, Ma, a, beta, gamma) 
+
+a_in is affected by:
+    - the wind from star 1 that's possible accreted by star 2
+    - the wind from star 2 that's possible accreted by star 1
+    - Roche lobe overflow (mass transfer) in the inner binary
+Not taken into account at the moment are:    
+    - Roche lobe overflow (mass transfer) in the outer binary (THIS SHOULD BE TAKEN INTO ACCOUNT)
+    - the wind from star 3 that's possible accreted by the inner binary (at the moment we assume this wind is completely non-conservatively) 
+    
+a_in_dot = f(M1, M1w_dot, M2, a_in, b12w, g12w) +
+           f(M2, M2w_dot, M1, a_in, b21w, g21w) +
+           f(Md, Min_dot, Ma, a_in, binr, ginr) 
+
+a_out is affected by:
+    - the wind from star 3 that's possible accreted by the inner binary (at the moment we assume this wind is completely non-conservatively) 
+    - the wind from star 1+2 that's possible accreted by star 3
+    - material that is lost from the Roche lobe overflow (mass transfer) in the inner binary affects the outer binary as a wind 
+    - Roche lobe overflow (mass transfer) in the outer binary 
+    
+a_out_dot = f(M3, M3w_dot, M1+M2, a_out, b3inw, g3inw) + 
+            f(M1+M2, M1w_dot*(1-b12w) + Mw2_dot* (1-b21w) + Min_dot*(1-binr), M3, a_out, bin3w, gin3w) +
+            f(M3, Mout_dot, M1+M2, a_out, boutr, goutr)  
+
+
+
+**********************
+Note number: 2
+Author: Silvia
+Date: 20-06-2014
+Topic: Conservativeness of mass transfer
+**********************
+For now we assume that stable mass transfer is conservative. A possibility of mass loss is included in the differential equations. 
+ 
+**********************
+Note number: 3
+Author: Silvia
+Date: 20-06-2014
+Topic: Orbital effect of mass transfer
+**********************
+For now, we assume the following:
+
+Stable mass transfer in the inner binary, affects the outer binary as a wind.
+Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
+
+Unstable mass transfer in the outer binary, simulation stops. 
+Stable mass transfer in the outer binary, affects the inner binary as a sling shot (how exactly?) This occurs in roughly 10% of the triples. 
+ 
+**********************
+Note number: 4
+Author: Silvia
+Date: 20-06-2014
+Topic: Applications
+**********************
+_ Which evolutionary paths are most common in triples? 
+- Which processes are most important in triples?
+- Similar for binaries with planets. 
+ 
+**********************
+Note number: 5
+Author: Silvia
+Date: 20-06-2014
+Topic: Mass transfer in eccentric orbit
+**********************
+For now we assume, that the effect on the orbit from mass transfer in an eccentric orbit is not dependent on the orbital phase. However, we check for Roche lobe overflow at pericenter. 
+
+**********************
+Note number: 6
+Author: Silvia
+Date: 20-06-2014
+Topic: Orbital effects mass transfer + winds
+**********************
+We take into account the effect of these processes on the semi-major axis, but not on other parameters such as the argument of pericenter of the rotation. There is a reference for the effect onto the argument of pericenter from a isotropic fast mass loss (e.g. wind), but a prescription for the effect from mass transfer is lacking. 
+
+**********************
+Note number: 7
+Author: Silvia
+Date: 20-06-2014
+Topic: Connection between parts of the code
+**********************
+What is the best way of supplying Adrian's code with information, such as the accretion efficiency? 
+
+intermezzo: I call it Adian's code as it does not only include the secular evolution anymore. Should we rename it? orbital_evolution?
+
+(good & bad) options are:
+- put the information in parameters. Make sure these parameters are updated when Adrian's code is called. Possible make a function ('update') that is run before Adrian's code, that updates all necessary parameters. 
+- make callable functions that return the nessecary parameters
+
+**********************
+Note number: 8
+Author: 
+Date: 
+Topic: 
+**********************

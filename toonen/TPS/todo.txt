@@ -1,0 +1,137 @@
+**********************
+Note number: 1
+Author: Silvia
+Date: 20-06-2014
+Topic: orbital change: the outer orbit affecting the inner
+**********************
+The effect on the inner orbit of mass transfer in the outer orbit is not included yet.
+Regarding the effect on the inner orbit of wind mass loss of the outer star, it is assumed that no wind mass is accreted by the inner binary. 
+
+**********************
+Note number: 2
+Author: Silvia
+Date: 20-06-2014
+Topic: Roche lobe in an eccentric orbit
+**********************
+The equations for the Roche lobe should be valid for eccentric orbits. 
+Sepinsky et al. 2007 gives a prescription that should be solved numerically. Their fit to this is only valid between 0.1<q<10, 0<e<0.9 and 0<stellar_rotational_angular_velocities/orbital_angular_velocities_at_periastron<15. Adrian is implementing the two presciptions.
+
+ 
+**********************
+Note number: 3
+Author: Silvia
+Date: 20-06-2014
+Topic: Parameters needed for e.g. tides
+**********************
+ A number of parameters of the stars are needed to calculate the tides, that are not available yet. These are:
+    - gyration radius
+    - envelope mass
+    - envelope radius
+    - apsiodal motion constant (we could possibly calculate this ourselves using MESA)
+
+Other necessary parameters are:
+    - wind mass loss rate
+
+**********************
+Note number: 4
+Author: Silvia
+Date: 20-06-2014
+Topic: Initial conditions
+**********************
+Distributions for the initial parameters should be included:
+inner_semimajor_axis, outer_semimajor_axis,
+inner_eccentricity, outer eccentricity,
+mutual_inclination,
+inner argument of pericenter,outer argument of pericenter,
+inner longitude of ascending node, outer longitude of ascending node,
+inner primary mass, inner secondary mass, outer mass,
+
+
+**********************
+Note number: 5
+Author: Silvia
+Date: 20-06-2014
+Topic: Conservativeness of mass transfer
+**********************
+For now it is assumed that stable mass transfer is conservative. 
+
+
+**********************
+Note number: 6
+Author: Silvia
+Date: 20-06-2014
+Topic: Orbital effect of mass transfer in the outer binary
+**********************
+Unstable mass transfer in the outer binary, simulation stops. What should we do here?
+Stable mass transfer in the outer binary, affects the inner binary as a sling shot (how exactly?) 
+
+**********************
+Note number: 7
+Author: Silvia
+Date: 20-06-2014
+Topic: Kill switch secular code
+**********************
+To do on long-term. 
+
+If secular evolution is not significant, it should switch off to accelerate the calculations. Is it possible to switch of the secular evolution, but not orbital evolution due to mass transfer of wind mass loss? 
+This also would be important for simulating the evolution of triples after a merger (when it's a binary). 
+
+**********************
+Note number: 8
+Author: Silvia
+Date: 20-06-2014
+Topic: Stopping conditions
+**********************
+Implement stopping conditions nicely (from within AMUSE framework).
+
+**********************
+Note number: 9
+Author: Silvia
+Date: 20-06-2014
+Topic: Supernova kicks
+**********************
+Implement supernova kicks, see e.g. the work of Dan and Tjibaria. 
+
+**********************
+Note number: 10
+Author: Silvia
+Date: 20-06-2014
+Topic: Timesteps + order of running codes
+**********************
+Implement an adjustable timestep which is dependent on:
+- stellar evolution (we do not want to miss a certain phase e.g. maximum radius at helium flash)
+- binary evolution (if stable mass transfer occurs, the timestep should go down)
+
+Implement the posibility to go back in time:
+- When after a certain timestep a star fills its Roche lobe due to stellar or secular evolution, we want to go back in time, to find accurately the time of Roche lobe filling, and model the mass transfer from that moment onwards. This probably puts a constraint on the order of running codes: first stellar evolution or first secular evolution?
+
+
+**********************
+Note number: 11
+Author: Silvia
+Date: 20-06-2014
+Topic: Mass transfer rates
+**********************
+Implement prescription for estimating the mass transfer rates. How to take into account the dependency on the eccentricity of the orbit?
+
+**********************
+Note number: 12
+Author: Silvia
+Date: 20-06-2014
+Topic: Tests
+**********************
+
+**********************
+Note number: 13
+Author: Silvia
+Date: 20-06-2014
+Topic: Connection with Adrian's code
+**********************
+Build a bridge between triple.py and SecularTriple.
+
+**********************
+Note number: 14
+Author: 
+Date: 
+Topic: 
+**********************
