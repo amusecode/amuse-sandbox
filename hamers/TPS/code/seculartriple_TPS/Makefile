@@ -7,7 +7,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 CXXFLAGS = -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
 LDFLAGS = -lm $(MUSE_LD_FLAGS)
 
-OBJS = code.o cvode.o cvode_dense.o cvode_direct.o cvode_io.o nvector_serial.o sundials_dense.o sundials_direct.o sundials_math.o sundials_nvector.o 
+OBJS = src/main_code.o src/ODE_system.o src/helper_routines.o src/cvode/cvode.o src/cvode/cvode_dense.o src/cvode/cvode_direct.o src/cvode/cvode_io.o src/cvode/nvector_serial.o src/cvode/sundials_dense.o src/cvode/sundials_direct.o src/cvode/sundials_math.o src/cvode/sundials_nvector.o 
 
 
 all: worker_code
