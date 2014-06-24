@@ -1,14 +1,11 @@
 /*	Worker code for SecularTriple, a secular triple gravitational dynamics code taking into account Newtonian, 1PN and 2.5PN terms	*/
+/*  Also included: effects of tidal friction, wind mass loss & mass transfer */
 /*	The relevant ODEs are solved consistently for each user supplied timestep using CVODE (Cohen & Hindmarsh 1996)	*/
 
 #include "main_code.h"
 
-//#include "cvode/cvode.h"				    /* prototypes for CVODE fcts., consts. */
-//#include "cvode/nvector_serial.h"			/* serial N_Vector types, fcts., macros */
-//#include "cvode/cvode_dense.h"			    /* prototype for CVDense */
-//#include "cvode/sundials_dense.h"			/* definitions DlsMat DENSE_ELEM */
-//#include "cvode/sundials_types.h"			/* definition of type realtype */
 
+/* Alternative formulation of the equations of motion based on triad of orbital vectors, not yet fully implemented */
 int fev_triad(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 {
 	
@@ -123,34 +120,9 @@ int fev_triad(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
         de_in_vec_dt[i] = (Z1 + Z2 + Z_1PN_in)*e_in*q_in_vec_unit[i] - (Y1 + Y2)*e_in*h_in_vec_unit[i] - (V1 + V2)*e_in_vec_unit[i] \
             + (1.0/tau1)*( l_in ) ;
     }
-    
-	/*	Some mass combinations	*/
-//	double q_f = m2/m1;
-//	double qinv_f = 1.0/q_f;
-//	double m_prod_inner_f = m1_f*m2_f;
-//	double m_tot_inner_f = m1_f+m2_f;
-//	double m_prod_triple_f = m_prod_inner_f*m3_f;
-//	double m_tot_triple_f = m_tot_inner_f+m3_f;
-//	double m_prod_tot_inner_f = m_prod_inner_f*m_tot_inner_f;
-//	double tildefme1_f = -10.0*m1_f*m1_f + 6.0*m1_f*m2_f - 10.0*m2_f*m2_f;
-
-	/*	Eccentricity functions	*/
-//	double e1_f2 = e1_f*e1_f;
-//	double e1_f4 = e1_f2*e1_f2;
-//	double e1_f2com = 1.0 - e1_f2;		/* 'com' stands for complement */
-
-//	double e2_f2 = e2_f*e2_f;
-//	double e2_f4 = e2_f2*e2_f2;
-//	double e2_f2com = 1.0 - e2_f2;
-
-//	double fme1_f = (2.0 - 5.0*e1_f2)*(m1_f*m1_f + m2_f*m2_f) - 3.0*(2.0 - e1_f2)*m1_f*m2_f;
-//	double f_GR_adot1 = 1.0 + (73.0/24.0)*e1_f2 + (37.0/96.0)*e1_f4;
-//	double f_GR_edot1 = 1.0 + (121.0/304.0)*e1_f2;
-
-//	double f_GR_adot2 = 1.0 + (73.0/24.0)*e2_f2 + (37.0/96.0)*e2_f4;
-//	double f_GR_edot2 = 1.0 + (121.0/304.0)*e2_f2;
-}	
-
+}    
+	
+/* Equations of motion in terms of orbital elements */
 int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 {
     
@@ -833,26 +805,118 @@ int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data_f)
         double f1 = spin_angular_frequency1/spin_angular_frequency_inner_orbit_periapse;
         double f2 = spin_angular_frequency2/spin_angular_frequency_inner_orbit_periapse;
         
-        double R_RLOF_inner_star1 = rp_in*dimensionless_roche_radius_sepinsky_fit(m1/m2,f1,e_in);
-        gout[3] = R1 - R_RLOF_inner_star1;
-        double R_RLOF_inner_star2 = rp_in*dimensionless_roche_radius_sepinsky_fit(m2/m1,f2,e_in);
-        gout[4] = R2 - R_RLOF_inner_star2;
+//        double roche_radius_pericenter_inner_star1 = roche_radius_pericenter_eggleton(rp_in, m1/m2);        
+        double roche_radius_pericenter_inner_star1 = roche_radius_pericenter_sepinsky(rp_in, m1/m2, e_in, f1);
+        gout[3] = R1 - roche_radius_pericenter_inner_star1;
+
+//        double roche_radius_pericenter_inner_star2 = roche_radius_pericenter_eggleton(rp_in, m2/m1);        
+        double roche_radius_pericenter_inner_star2 = roche_radius_pericenter_sepinsky(rp_in, m2/m1, e_in, f2);
+
+        gout[4] = R2 - roche_radius_pericenter_inner_star2;
     }
     if (check_for_outer_RLOF == TRUE)
     {
         double spin_angular_frequency3 = Ith(yev,10);
         double spin_angular_frequency_outer_orbit_periapse = sqrt( CONST_G*(m1+m2+m3)*(1.0+e_out)/(rp_out*rp_out*rp_out) );        
         double f3 = spin_angular_frequency3/spin_angular_frequency_outer_orbit_periapse;
-        double R_RLOF_outer_star3 = rp_out*dimensionless_roche_radius_sepinsky_fit(m3/(m1+m2),f3,e_out);
-        gout[5] = R3 - R_RLOF_outer_star3;
+        
+//        double roche_radius_pericenter_outer_star3 = roche_radius_pericenter_eggleton(rp_out, m3/(m1+m2));        
+        double roche_radius_pericenter_outer_star3 = roche_radius_pericenter_sepinsky(rp_out, m3/(m1+m2), e_out, f3);
+
+        gout[5] = R3 - roche_radius_pericenter_outer_star3;
     }            
     
 	return 0;
 }
 
-double dimensionless_roche_radius_sepinsky_fit(double q, double f, double e)
+double roche_radius_pericenter_eggleton(double rp, double q)
 {
-    /* 2007ApJ...667.1170S Eq. (A15) */
-    double log10_q = log10(q);
-    return 0.529 + 0.213*log10_q - f*f*(0.031 + 0.025*e)*(1.0 + 0.4*log10_q);
+    /* 2007ApJ...660.1624S Eqs. (45) */    
+    /* q is defined as m_primary/m_secondary */
+    double q_pow_one_third = pow(q,c_1div3);
+    double q_pow_two_third = q_pow_one_third*q_pow_one_third;
+    return rp*0.49*q_pow_two_third/(0.6*q_pow_two_third + log(1.0 + q_pow_one_third));
+}
+double roche_radius_pericenter_sepinsky(double rp, double q, double e, double f)
+{
+    /* 2007ApJ...660.1624S Eqs. (47)-(52) */
+    double log_q = log10(q);
+    double A = f*f*(1.0 + e); // assumes pericenter
+    double log_A = log10(A);
+
+    double R_L_pericenter_eggleton = roche_radius_pericenter_eggleton(rp,q);
+    double ratio = 0.0; // this is R_L divided by R_L_pericenter_eggleton
+
+    if (log_q < 0.0)
+    {
+        if (log_A <= -0.1)
+        {
+            double c = 0.5*(1.0+A) + log_q;
+            ratio = 1.0 + 0.11*(1.0-A) - 0.05*(1.0-A)*exp(-c*c);
+        }
+        if ((log_A > -0.1) && (log_A < 0.2))
+        {
+            double g_0 = 0.9978 - 0.1229*log_A - 0.1273*log_A*log_A;
+            double g_1 = 0.001 + 0.02556*log_A;
+            double g_2 = 0.0004 + 0.0021*log_A;
+            ratio = g_0 + g_1*log_q * g_2*log_q*log_q;
+        }
+        if (log_A >= 0.2)
+        {
+            double num_0 = 6.3014*pow(log_A,1.3643);
+            double den_0 = exp(2.3644*pow(log_A,0.70748)) - 1.4413*exp(-0.0000184*pow(log_A,-4.5693));
+            double i_0 = num_0/den_0;
+
+            double den_1 = 0.0015*exp(8.84*pow(log_A,0.282)) + 15.78;
+            double i_1 = log_A/den_1;
+
+            double num_2 = 1.0 + 0.036*exp(8.01*pow(log_A,0.879));
+            double den_2 = 0.105*exp(7.91*pow(log_A,0.879));
+            double i_2 = num_2/den_2;
+
+            double den_3 = 1.38*exp(-0.035*pow(log_A,0.76)) + 23.0*exp(-2.89*pow(log_A,0.76));
+            double i_3 = 0.991/den_3;
+
+            double c = log_q + i_3;
+            ratio = i_0 + i_1*exp(-i_2*c*c);
+        }
+    }
+    if (log_q >= 0.0)
+    {
+        if (log_A <= -0.1)
+        {
+            ratio = 1.226 - 0.21*A - 0.15*(1.0-A)*exp( (0.25*A - 0.3)*pow(log_q,1.55) );
+        }
+        if ((log_A > -0.1) && (log_A < 0.2))
+        {
+            double log_A_p2 = log_A*log_A;
+            double h_0 = 1.0071 - 0.0907*log_A - 0.0495*log_A_p2;
+            double h_1 = -0.004 - 0.163*log_A - 0.214*log_A_p2;
+            double h_2 = 0.00022 - 0.0108*log_A - 0.02718*log_A_p2;
+            ratio = h_0 + h_1*log_q + h_2*log_q*log_q;
+        }
+        if (log_A >= 0.2)
+        {
+            double num_0 = 1.895*pow(log_A,0.837);
+            double den_0 = exp(1.636*pow(log_A,0.789)) - 1.0;
+            double j_0 = num_0/den_0;
+
+            double num_1 = 4.3*pow(log_A,0.98);
+            double den_1 = exp(2.5*pow(log_A,0.66)) + 4.7;
+            double j_1 = num_1/den_1;
+
+            double den_2 = 8.8*exp(-2.95*pow(log_A,0.76)) + 1.64*exp(-0.03*pow(log_A,0.76));
+            double j_2 = 1.0/den_2;
+
+            double j_3 = 0.256*exp(-1.33*pow(log_A,2.9))*( 5.5*exp(1.33*pow(log_A,2.9)) + 1.0 );
+
+            ratio = j_0 + j_1*exp(-j_2*pow(log_q,j_3));
+        }
+    }
+    if (ratio == 0.0)
+    {
+        exit(-1);
+    }
+    
+    return ratio*R_L_pericenter_eggleton;
 }

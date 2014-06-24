@@ -1,7 +1,7 @@
 """
 Interface for SecularTriple
 
-Adrian Hamers 16-06-2014
+Adrian Hamers 24-06-2014
 """
 
 from amuse.community import *

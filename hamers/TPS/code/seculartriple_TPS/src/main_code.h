@@ -18,6 +18,7 @@
 #define CONST_C_LIGHT_P4	(double)	CONST_C_LIGHT_P2*CONST_C_LIGHT_P2
 #define CONST_C_LIGHT_P5	(double)	CONST_C_LIGHT_P4*CONST_C_LIGHT
 #define c_1div2             (double)    1.0/2.0
+#define c_1div3             (double)    1.0/3.0
 #define c_3div2             (double)    3.0/2.0
 #define c_5div2             (double)    5.0/2.0
 #define c_15div2            (double)    15.0/2.0

@@ -10,5 +10,6 @@ double f_25PN_a(double e_p2);
 double f_a_dot_mass_variations(double m_donor, double m_donor_dot, double m_accretor, double a, double beta, double gamma);
 double f_a_dot_mass_variations_fast_and_isotropic_wind(double m_donor, double m_donor_dot, double m_accretor, double a, double beta);
 int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data);
-double dimensionless_roche_radius_sepinsky_fit(double q, double f, double e);
+double roche_radius_pericenter_eggleton(double rp, double q);
+double roche_radius_pericenter_sepinsky(double rp, double q, double e, double f);
 
