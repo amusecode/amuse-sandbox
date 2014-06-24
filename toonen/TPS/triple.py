@@ -84,7 +84,7 @@ class Triple:
         bins[0].accretion_efficiency_wind_child1_to_child2 = 0.0
         bins[0].accretion_efficiency_wind_child2_to_child1 = 0.0
         bins[0].accretion_efficiency_mass_transfer = 1.0
-        bins[0].specific_AM_loss_mass_transfer = 0.0
+        bins[0].specific_AM_loss_mass_transfer = 2.5
 
         bins[1].semimajor_axis = outer_semimajor_axis
         bins[1].eccentricity = outer_eccentricity
@@ -97,7 +97,7 @@ class Triple:
         bins[1].accretion_efficiency_wind_child1_to_child2 = 0.0
         bins[1].accretion_efficiency_wind_child2_to_child1 = 0.0
         bins[1].accretion_efficiency_mass_transfer = 1.0
-        bins[1].specific_AM_loss_mass_transfer = 0.0
+        bins[1].specific_AM_loss_mass_transfer = 2.5
         
         for x in bins:
             x.mass = x.child1.mass + x.child2.mass
