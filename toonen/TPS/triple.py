@@ -156,7 +156,7 @@ class Triple:
         
         #update wind mass loss rate
         timestep = self.previous_time - self.time
-        if timestep > 0|units.yr:
+        if timestep > 0|units.yr: #maybe better to get the rate directly out of seba
             self.particles[0].inner_binary.child1.wind_mass_loss_rate = (self.particles[0].inner_binary.child1.previous_mass - self.particles[0].inner_binary.child1.mass)/timestep
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = (self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.previous_mass)/timestep
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = (self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.previous_mass)/timestep

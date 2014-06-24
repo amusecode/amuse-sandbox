@@ -98,7 +98,7 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Orbital effects mass transfer + winds
 **********************
-We take into account the effect of these processes on the semi-major axis, but not on other parameters such as the argument of pericenter of the rotation. There is a reference for the effect onto the argument of pericenter from a isotropic fast mass loss (e.g. wind), but a prescription for the effect from mass transfer is lacking. 
+We take into account the effect of these processes on the semi-major axis, but not on other parameters such as the argument of pericenter or the rotation. There is a reference for the effect onto the argument of pericenter from a isotropic fast mass loss (e.g. wind), but a prescription for the effect from mass transfer is lacking. 
 
 **********************
 Note number: 7

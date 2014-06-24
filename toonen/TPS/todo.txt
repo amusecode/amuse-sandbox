@@ -82,6 +82,8 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Stopping conditions
 **********************
+To do on long-term. 
+
 Implement stopping conditions nicely (from within AMUSE framework).
 
 **********************
@@ -120,6 +122,10 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Tests
 **********************
+- mass transfer in the inner binary. Do the inner and outer binary behave as desired?
+- wind mass loss in a very wide system. Do the inner and outer binary behave as desired?
+- Are the timesteps given to Adrian's code sufficiently small to validate the assumptions of constant mass in his ccode?
+- Tests do determine where we want the trade-off between speed and accuracy in the Adrian's code (for solving the differential equations)
 
 **********************
 Note number: 13
