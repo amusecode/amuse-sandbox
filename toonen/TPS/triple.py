@@ -35,10 +35,15 @@ class Triple:
         self.is_binary = False
         self.is_triple = True
         self.tend = tend #...
+        self.time = 0.0|units.yr
+        self.previous_time = 0.0|units.yr
 
         self.particles = triples
         self.setup_se_code(metallicity, stars)
         self.setup_secular_code(triples)
+
+#        self.update_previous()
+#        self.update() 
 
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass):
         stars = Particles(3)
@@ -105,7 +110,7 @@ class Triple:
         self.se_code.particles.add_particles(stars)
         self.channel_from_se = self.se_code.particles.new_channel_to(stars)
         self.channel_to_se = stars.new_channel_to(self.se_code.particles)
-        self.channel_from_se.copy_attributes(["mass", "radius", "stellar_type"])
+        self.channel_from_se.copy_attributes(["mass", "radius", "stellar_type", "core_mass"])
     
     def setup_secular_code(self, triples):
         self.secular_code = SecularTriple()
@@ -133,6 +138,38 @@ class Triple:
 
         self.channel_from_secular = self.secular_code.triples.new_channel_to(triples)
         self.channel_to_secular = triples.new_channel_to(self.secular_code.triples)
+
+    def update_previous(self):
+        self.previous_time = self.time
+
+        self.particles[0].inner_binary.child1.previous_mass = self.particles[0].inner_binary.child1.mass 
+        self.particles[0].inner_binary.child2.previous_mass = self.particles[0].inner_binary.child2.mass 
+        self.particles[0].outer_binary.child1.previous_mass = self.particles[0].outer_binary.child1.mass 
+        self.particles[0].outer_binary.child2.previous_mass = self.particles[0].outer_binary.child2.mass 
+
+
+    def update(self):
+        #update envelope mass
+        self.particles[0].inner_binary.child1.envelope_mass = self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.core_mass
+        self.particles[0].inner_binary.child2.envelope_mass = self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.core_mass
+        self.particles[0].outer_binary.child1.envelope_mass = self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.core_mass
+        
+        #update wind mass loss rate
+        timestep = self.previous_time - self.time
+        if timestep > 0|units.yr:
+            self.particles[0].inner_binary.child1.wind_mass_loss_rate = (self.particles[0].inner_binary.child1.previous_mass - self.particles[0].inner_binary.child1.mass)/timestep
+            self.particles[0].inner_binary.child2.wind_mass_loss_rate = (self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.previous_mass)/timestep
+            self.particles[0].outer_binary.child1.wind_mass_loss_rate = (self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.previous_mass)/timestep
+        else:
+            #initialization
+            self.particles[0].inner_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+            self.particles[0].inner_binary.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+            self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+
+        #update gyration radius
+        self.particles[0].inner_binary.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
+        self.particles[0].inner_binary.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
+        self.particles[0].outer_binary.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
 
     
 def evolve_center_of_mass(binary):
@@ -167,10 +204,6 @@ def resolve_triple_interaction(triple):
 
 def evolve_triple(triple):
     
-    time = zero
-    previous_time = zero
-    triple.timestep = time
-
     ### for testing/plotting purposes only ###
     triple.timestep = triple.tend/100.0 
     ##########################################
@@ -183,27 +216,22 @@ def evolve_triple(triple):
     g_in_array = []
     #########################################
 
-    while time<triple.tend:
-        time += triple.timestep
-        triple.time = time
+    while triple.time<triple.tend:
+        triple.time += triple.timestep
         
         if REPORT_TRIPLE_EVOLUTION:
-            print "Dt=", triple.se_code.particles.age, time, triple.se_code.particles.time_step
+            print "Dt=", triple.se_code.particles.age, triple.time, triple.se_code.particles.time_step
 
-        #is there a nicer way of doing this?
-        triple.particles[0].inner_binary.child1.old_mass = triple.particles[0].inner_binary.child1.mass 
-        triple.particles[0].inner_binary.child2.old_mass = triple.particles[0].inner_binary.child2.mass 
-        triple.particles[0].outer_binary.child1.old_mass = triple.particles[0].outer_binary.child1.mass 
-        triple.particles[0].outer_binary.child2.old_mass = triple.particles[0].outer_binary.child2.mass 
-
+        triple.update_previous()
         #eventually adjustable timestep, minimum of stellar and secular evolution        
-        triple.se_code.evolve_model(time)
+        triple.se_code.evolve_model(triple.time)
         triple.channel_from_se.copy()
-#        time = triple.se_code.model_time
+        triple.update()
+
 
         ### do secular triple evolution ###
         if triple.is_triple == True:
-            triple.secular_code.evolve_model(time)
+            triple.secular_code.evolve_model(triple.time)
         else:
             print 'Secular code disabled'
             exit(-1)
@@ -224,7 +252,7 @@ def evolve_triple(triple):
 #        triple.channel_to_se.copy()#masses
         
         ### temporary; only for plotting data ###
-        times_array.append(time)
+        times_array.append(triple.time)
         e_in_array.append(triple.particles[0].inner_binary.eccentricity)
         a_in_array.append(triple.particles[0].inner_binary.semimajor_axis)
         g_in_array.append(triple.particles[0].inner_binary.argument_of_pericenter)    
@@ -326,10 +354,7 @@ def parse_arguments():
     parser.add_option("-n",  unit=units.MSun, 
                       dest="outer_mass", type="float", default = 0.5|units.MSun,
                       help="outer mass [%default]")
-#    parser.add_option("-t", unit=units.Myr, 
-#                      dest="tend", type="float", default = 13500|units.Myr,
-#                      help="end time [%default] %unit")
-    parser.add_option("-T", unit=units.Myr, 
+    parser.add_option("-t", "-T", unit=units.Myr, 
                       dest="tend", type="float", default = 5.0 |units.Myr,
                       help="end time [%default] %unit")
     parser.add_option("-z", unit=units.none, 

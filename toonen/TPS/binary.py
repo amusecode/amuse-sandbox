@@ -76,8 +76,8 @@ def adiabatic_expansion_due_to_mass_loss(a, M0, M1, m0, m1):
 
 def orbital_evolution_due_to_stellar_wind_mass_loss(bs):
     a = adiabatic_expansion_due_to_mass_loss(bs.semimajor_axis, 
-                                             bs.child1.old_mass, bs.child1.mass,
-                                             bs.child2.old_mass, bs.child2.mass)
+                                             bs.child1.previous_mass, bs.child1.mass,
+                                             bs.child2.previous_mass, bs.child2.mass)
     bs.semimajor_axis = a
 
 def detached(bs):
@@ -88,7 +88,7 @@ def detached(bs):
 #    if bs.eccentricity>0 and pericenter < 3.*sum_of_radii :
 #        tidal_circularization(bs)
 
-    orbital_evolution_due_to_stellar_wind_mass_loss(bs)
+#    orbital_evolution_due_to_stellar_wind_mass_loss(bs)
 
 def detached2(bs):
     #at the moment there are 2 functions called detached,
@@ -111,13 +111,13 @@ def resolve_binary_interaction(bs):
    if bs.is_binary and bs.child1.is_star:
         Rl1 = roche_radius(bs, bs.child1)
         if REPORT_BINARY_EVOLUTION:
-            print "Check for RLOF:", bs.child1.mass, bs.child1.old_mass
+            print "Check for RLOF:", bs.child1.mass, bs.child1.previous_mass
             print "Check for RLOF:", Rl1, bs.child1.radius
                 
         if bs.is_binary and bs.child2.is_star:
             Rl2 = roche_radius(bs, bs.child2)
             if REPORT_BINARY_EVOLUTION:
-                print "Check for RLOF:", bs.child2.mass, bs.child2.old_mass
+                print "Check for RLOF:", bs.child2.mass, bs.child2.previous_mass
                 print "Check for RLOF:", Rl2, bs.child2.radius
             if Rl1 < bs.child1.radius: 
                 if Rl2 < bs.child2.radius: 
