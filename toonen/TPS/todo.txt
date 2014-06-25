@@ -137,6 +137,28 @@ Build a bridge between triple.py and SecularTriple.
 
 **********************
 Note number: 14
+Author: Silvia
+Date: 25-06-2014
+Topic: Angular momentum loss from mass transfer
+**********************
+To do on long-term.
+
+Implement options for different angular momentum loss prescriptions: a fraction of the specific angular momentum of the system, the donor star or the accretor star. Parameter to choose the prescription + parameter to determine the fraction. 
+
+**********************
+Note number: 15
+Author: Silvia
+Date: 25-06-2014
+Topic: Data output
+**********************
+How do we organize the data output? Which information do we want to save?
+
+Options:
+- Snapshots of the triple at interesting times (e.g. initially, at t_end, at the beginning and end of mass transfer phases)
+- For now, different flags for when the code stops.
+
+**********************
+Note number: 16
 Author: 
 Date: 
 Topic: 

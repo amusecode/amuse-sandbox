@@ -8,6 +8,9 @@ from amuse.units import quantities
 from matplotlib import pyplot
 #######################
 
+#constants
+timestep_factor = 0.01
+
 REPORT_TRIPLE_EVOLUTION = False
 
 class Triple:
@@ -34,6 +37,7 @@ class Triple:
         self.is_star = False
         self.is_binary = False
         self.is_triple = True
+        self.first_contact = True
         self.tend = tend #...
         self.time = 0.0|units.yr
         self.previous_time = 0.0|units.yr
@@ -42,8 +46,8 @@ class Triple:
         self.setup_se_code(metallicity, stars)
         self.setup_secular_code(triples)
 
-        self.update_previous()
-        self.update() 
+        self.update_previous_se_parameters()
+        self.update_se_parameters() 
 
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass):
         stars = Particles(3)
@@ -81,8 +85,6 @@ class Triple:
         bins[0].longitude_of_ascending_node = inner_longitude_of_ascending_node
         
         bins[0].mass_transfer_rate = 0.0 | units.MSun/units.yr
-        bins[0].accretion_efficiency_wind_child1_to_child2 = 0.0
-        bins[0].accretion_efficiency_wind_child2_to_child1 = 0.0
         bins[0].accretion_efficiency_mass_transfer = 1.0
 
         bins[1].semimajor_axis = outer_semimajor_axis
@@ -93,8 +95,6 @@ class Triple:
         bins[1].longitude_of_ascending_node = outer_longitude_of_ascending_node
         
         bins[1].mass_transfer_rate = 0.0 | units.MSun/units.yr        
-        bins[1].accretion_efficiency_wind_child1_to_child2 = 0.0
-        bins[1].accretion_efficiency_wind_child2_to_child1 = 0.0
         bins[1].accretion_efficiency_mass_transfer = 1.0
 
         # binary evolutionary settings
@@ -142,7 +142,7 @@ class Triple:
         self.channel_from_secular = self.secular_code.triples.new_channel_to(triples)
         self.channel_to_secular = triples.new_channel_to(self.secular_code.triples)
 
-    def update_previous(self):
+    def update_previous_se_parameters(self):
         self.previous_time = self.time
 
         self.particles[0].inner_binary.child1.previous_mass = self.particles[0].inner_binary.child1.mass 
@@ -151,7 +151,7 @@ class Triple:
         self.particles[0].outer_binary.child2.previous_mass = self.particles[0].outer_binary.child2.mass 
 
 
-    def update(self):
+    def update_se_parameters(self):
         #update envelope mass
         self.particles[0].inner_binary.child1.envelope_mass = self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.core_mass
         self.particles[0].inner_binary.child2.envelope_mass = self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.core_mass
@@ -175,6 +175,13 @@ class Triple:
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
 
+        #update accretion efficiency of wind mass loss
+        self.particles[0].inner_binary.accretion_efficiency_wind_child1_to_child2 = 0.0
+        self.particles[0].inner_binary.accretion_efficiency_wind_child2_to_child1 = 0.0
+        self.particles[0].outer_binary.accretion_efficiency_wind_child1_to_child2 = 0.0
+        self.particles[0].outer_binary.accretion_efficiency_wind_child2_to_child1 = 0.0
+
+
         #update gyration radius
         self.particles[0].inner_binary.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
         self.particles[0].inner_binary.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
@@ -192,10 +199,10 @@ def resolve_triple_interaction(triple):
     if REPORT_TRIPLE_EVOLUTION:
         print '\ninner binary'
     if triple.particles[0].inner_binary.is_binary:
-        resolve_binary_interaction(triple.particles[0].inner_binary)
+        resolve_binary_interaction(triple.particles[0].inner_binary, triple)
     elif triple.particles[0].inner_binary.is_star:
 #        'e.g. if system merged'
-        evolve_center_of_mass(triple.particles[0].inner_binary)
+        evolve_center_of_mass(triple.particles[0].inner_binary, triple)
     else:
         print 'resolve triple interaction: type of inner system unknown'
         exit(-1)                    
@@ -203,19 +210,51 @@ def resolve_triple_interaction(triple):
     if REPORT_TRIPLE_EVOLUTION:
         print '\nouter binary'
     if triple.particles[0].outer_binary.is_binary:
-        resolve_binary_interaction(triple.particles[0].outer_binary)
+        resolve_binary_interaction(triple.particles[0].outer_binary, triple)
     elif triple.particles[0].outer_binary.is_star:
 #        'e.g. if there is no outer star?'
-        evolve_center_of_mass(triple.particles[0].outer_binary)
+        evolve_center_of_mass(triple.particles[0].outer_binary, triple)
     else:
         print 'resolve triple interaction: type of outer system unknown'
         exit(-1)                    
 
-def evolve_triple(triple):
+
+
+
     
+def determine_timestep(triple):         
+#class function?       
+    if REPORT_TRIPLE_EVOLUTION:
+        print "Dt=", triple.se_code.particles.time_step,
+        print triple.particles[0].outer_binary.child1.time_step,
+        print triple.particles[0].inner_binary.child1.time_step,
+        print triple.particles[0].inner_binary.child2.time_step,
+        print triple.tend/100.0
+
     ### for testing/plotting purposes only ###
-    triple.timestep = triple.tend/100.0 
+    timestep = triple.tend/100.0 
     ##########################################
+
+    timestep = min(triple.tend/100.0, 
+        triple.particles[0].outer_binary.child1.time_step,
+        triple.particles[0].inner_binary.child1.time_step,
+        triple.particles[0].inner_binary.child2.time_step)
+        
+    #during stable mass transfer     
+    if (triple.particles[0].inner_binary.child1.is_donor):
+        timestep = min(timestep, timestep_factor*triple.particles[0].inner_binary.child1.mass/triple.particles[0].inner_binary.child1.mass_transfer_rate)
+    if (triple.particles[0].inner_binary.child2.is_donor):
+        timestep = min(timestep, timestep_factor*triple.particles[0].inner_binary.child2.mass/triple.particles[0].inner_binary.child2.mass_transfer_rate)
+    if (triple.particles[0].outer_binary.child1.is_donor):
+        timestep = min(timestep, timestep_factor*triple.particles[0].outer_binary.child1.mass/triple.particles[0].outer_binary.child1.mass_transfer_rate)
+        
+    triple.time += timestep
+
+
+
+
+
+def evolve_triple(triple):
     
     ### temporary; only for plotting data ###
     times_array = quantities.AdaptingVectorQuantity() 
@@ -226,19 +265,10 @@ def evolve_triple(triple):
     #########################################
 
     while triple.time<triple.tend:
-        triple.time += triple.timestep
-        
-        if REPORT_TRIPLE_EVOLUTION:
-            print "Dt=", triple.se_code.particles.age, triple.time, triple.se_code.particles.time_step
+        triple.update_previous_se_parameters()
+        determine_timestep(triple)
 
-        triple.update_previous()
-        #eventually adjustable timestep, minimum of stellar and secular evolution        
-        triple.se_code.evolve_model(triple.time)
-        triple.channel_from_se.copy()
-        triple.update()
-
-
-        ### do secular triple evolution ###
+        ### do secular evolution ###
         if triple.is_triple == True:
             triple.secular_code.evolve_model(triple.time)
         else:
@@ -254,11 +284,39 @@ def evolve_triple(triple):
         if triple.secular_code.triples[0].outer_collision == True:
             print "Outer collision at time/Myr = ",time.value_in(units.Myr)
             exit(0)
-        triple.channel_from_secular.copy() ### this updates orbital elements within triple.particles[0] ###
-        ###################################
+        # this updates orbital elements within triple.particles[0] 
+        triple.channel_from_secular.copy() 
+
+
+        #when the secular code finds that mass transfer starts, evolve the stars only until that time
+        if ((triple.particles[0].inner_binary.child1.is_donor or
+            triple.particles[0].inner_binary.child2.is_donor or
+            triple.particles[0].outer_binary.child1.is_donor) and
+            triple.first_contact):
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'Times:', triple.previous_time, triple.time, triple.secular_code.model_time
+                triple.time = triple.secular_code.model_time     
+
+        ### do stellar evolution ###
+        triple.se_code.evolve_model(triple.time)
+        triple.channel_from_se.copy()
+        triple.update_se_parameters()
+        
+        
+        #if !triple.first_contact:
+            #should be only stable mass transfer, but check this
+            #what should be the order, first mass transfer or first stellar evolution?
+            #perform mass transfer
+                #how does amuse handle the type of material that is accreted?
+
 
         resolve_triple_interaction(triple)        
 #        triple.channel_to_se.copy()#masses
+        
+        
+        
+        
+        
         
         ### temporary; only for plotting data ###
         times_array.append(triple.time)
