@@ -55,13 +55,13 @@ class Triple:
         stars[1].mass = inner_secondary_mass
         stars[2].mass = outer_mass
 
-        stars[0].wind_mass_loss_rate = -1.0e-6 | units.MSun/units.yr
-        stars[1].wind_mass_loss_rate = 0.0 | units.MSun/units.yr
-        stars[2].wind_mass_loss_rate = 0.0 | units.MSun/units.yr
-
         stars[0].spin_angular_frequency = 0.0 | 1.0/units.yr
         stars[1].spin_angular_frequency = 0.0 | 1.0/units.yr
         stars[2].spin_angular_frequency = 0.0 | 1.0/units.yr
+
+        stars[0].time_derivative_of_radius = 0.0 | units.RSun/units.yr
+        stars[1].time_derivative_of_radius = 0.0 | units.RSun/units.yr
+        stars[2].time_derivative_of_radius = 0.0 | units.RSun/units.yr
 
         return stars 
          
@@ -171,7 +171,7 @@ class Triple:
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = (self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.previous_mass)/timestep
         else:
             #initialization
-            self.particles[0].inner_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+            self.particles[0].inner_binary.child1.wind_mass_loss_rate = -1.0e-6|units.MSun/units.yr
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
 
