@@ -116,7 +116,17 @@ intermezzo: I call it Adian's code as it does not only include the secular evolu
 
 **********************
 Note number: 8
+Author: Silvia
+Date: 24-06-2014 
+Topic: Gyration radii for MS
+**********************
+The gyration radii for MS in SeBa are based on a fit to Claret & Gimenez 1990, ApSS 196,215. 
+de Mink et al. 2013, 764, 166, have made a more elaborate, but still simple fit based on Onno's stellar evolution models taking into account de evolution along the MS. This could possible be updated when necessary.
+
+**********************
+Note number: 9
 Author: 
 Date: 
 Topic: 
 **********************
+

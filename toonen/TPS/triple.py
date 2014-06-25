@@ -42,8 +42,8 @@ class Triple:
         self.setup_se_code(metallicity, stars)
         self.setup_secular_code(triples)
 
-#        self.update_previous()
-#        self.update() 
+        self.update_previous()
+        self.update() 
 
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass):
         stars = Particles(3)
@@ -84,7 +84,6 @@ class Triple:
         bins[0].accretion_efficiency_wind_child1_to_child2 = 0.0
         bins[0].accretion_efficiency_wind_child2_to_child1 = 0.0
         bins[0].accretion_efficiency_mass_transfer = 1.0
-        bins[0].specific_AM_loss_mass_transfer = 2.5
 
         bins[1].semimajor_axis = outer_semimajor_axis
         bins[1].eccentricity = outer_eccentricity
@@ -97,7 +96,11 @@ class Triple:
         bins[1].accretion_efficiency_wind_child1_to_child2 = 0.0
         bins[1].accretion_efficiency_wind_child2_to_child1 = 0.0
         bins[1].accretion_efficiency_mass_transfer = 1.0
+
+        # binary evolutionary settings
+        bins[0].specific_AM_loss_mass_transfer = 2.5 
         bins[1].specific_AM_loss_mass_transfer = 2.5
+
         
         for x in bins:
             x.mass = x.child1.mass + x.child2.mass
@@ -110,7 +113,7 @@ class Triple:
         self.se_code.particles.add_particles(stars)
         self.channel_from_se = self.se_code.particles.new_channel_to(stars)
         self.channel_to_se = stars.new_channel_to(self.se_code.particles)
-        self.channel_from_se.copy_attributes(["mass", "radius", "stellar_type", "core_mass"])
+        self.channel_from_se.copy()
     
     def setup_secular_code(self, triples):
         self.secular_code = SecularTriple()
@@ -154,6 +157,12 @@ class Triple:
         self.particles[0].inner_binary.child2.envelope_mass = self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.core_mass
         self.particles[0].outer_binary.child1.envelope_mass = self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.core_mass
         
+        #update convective envelope radius
+        #the prescription of Hurley, Tout & Pols 2002 will be implemented in SeBa later
+        self.particles[0].inner_binary.child1.convective_envelope_radius = self.particles[0].inner_binary.child1.radius 
+        self.particles[0].inner_binary.child2.convective_envelope_radius = self.particles[0].inner_binary.child2.radius 
+        self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.radius
+
         #update wind mass loss rate
         timestep = self.previous_time - self.time
         if timestep > 0|units.yr: #maybe better to get the rate directly out of seba
