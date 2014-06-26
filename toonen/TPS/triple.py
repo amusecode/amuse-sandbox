@@ -68,10 +68,6 @@ class Triple:
         stars[1].spin_angular_frequency = corotating_angular_frequency_inner 
         stars[2].spin_angular_frequency = corotating_angular_frequency_outer
 
-        stars[0].time_derivative_of_radius = 0.0 | units.RSun/units.yr
-        stars[1].time_derivative_of_radius = 0.0 | units.RSun/units.yr
-        stars[2].time_derivative_of_radius = 0.0 | units.RSun/units.yr
-
         return stars 
          
     def make_bins(self, stars, inner_semimajor_axis, outer_semimajor_axis,
@@ -155,6 +151,10 @@ class Triple:
         self.particles[0].outer_binary.child1.previous_mass = self.particles[0].outer_binary.child1.mass 
         self.particles[0].outer_binary.child2.previous_mass = self.particles[0].outer_binary.child2.mass 
 
+        self.particles[0].inner_binary.child1.previous_radius = self.particles[0].inner_binary.child1.radius 
+        self.particles[0].inner_binary.child2.previous_radius = self.particles[0].inner_binary.child2.radius 
+        self.particles[0].outer_binary.child1.previous_radius = self.particles[0].outer_binary.child1.radius 
+
 
     def update_se_parameters(self):
         #update envelope mass
@@ -169,9 +169,9 @@ class Triple:
         self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.radius
 
         #update wind mass loss rate
-        timestep = self.previous_time - self.time
+        timestep = self.time - self.previous_time
         if timestep > 0|units.yr: #maybe better to get the rate directly out of seba
-            self.particles[0].inner_binary.child1.wind_mass_loss_rate = (self.particles[0].inner_binary.child1.previous_mass - self.particles[0].inner_binary.child1.mass)/timestep
+            self.particles[0].inner_binary.child1.wind_mass_loss_rate = (self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.previous_mass)/timestep
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = (self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.previous_mass)/timestep
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = (self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.previous_mass)/timestep
         else:
@@ -179,6 +179,17 @@ class Triple:
             self.particles[0].inner_binary.child1.wind_mass_loss_rate = -1.0e-6|units.MSun/units.yr
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+
+        #update time_derivative_of_radius for effect of wind on spin
+        if timestep > 0|units.yr:
+            self.particles[0].inner_binary.child1.time_derivative_of_radius = (self.particles[0].inner_binary.child1.radius - self.particles[0].inner_binary.child1.previous_radius)/timestep
+            self.particles[0].inner_binary.child2.time_derivative_of_radius = (self.particles[0].inner_binary.child2.radius - self.particles[0].inner_binary.child2.previous_radius)/timestep
+            self.particles[0].outer_binary.child1.time_derivative_of_radius = (self.particles[0].outer_binary.child1.radius - self.particles[0].outer_binary.child1.previous_radius)/timestep
+        else:
+            self.particles[0].inner_binary.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+            self.particles[0].inner_binary.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+            self.particles[0].outer_binary.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+
 
         #update accretion efficiency of wind mass loss
         self.particles[0].inner_binary.accretion_efficiency_wind_child1_to_child2 = 0.0
@@ -191,6 +202,10 @@ class Triple:
         self.particles[0].inner_binary.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
         self.particles[0].inner_binary.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
         self.particles[0].outer_binary.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
+        
+        
+
+        
 
     
 def evolve_center_of_mass(binary):
