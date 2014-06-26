@@ -179,13 +179,14 @@ class Triple:
             self.particles[0].inner_binary.child1.wind_mass_loss_rate = -1.0e-6|units.MSun/units.yr
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
-
+            
         #update time_derivative_of_radius for effect of wind on spin
         if timestep > 0|units.yr:
             self.particles[0].inner_binary.child1.time_derivative_of_radius = (self.particles[0].inner_binary.child1.radius - self.particles[0].inner_binary.child1.previous_radius)/timestep
             self.particles[0].inner_binary.child2.time_derivative_of_radius = (self.particles[0].inner_binary.child2.radius - self.particles[0].inner_binary.child2.previous_radius)/timestep
             self.particles[0].outer_binary.child1.time_derivative_of_radius = (self.particles[0].outer_binary.child1.radius - self.particles[0].outer_binary.child1.previous_radius)/timestep
         else:
+            #initialization
             self.particles[0].inner_binary.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].inner_binary.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].outer_binary.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
@@ -286,7 +287,8 @@ def evolve_triple(triple):
 
     while triple.time<triple.tend:
         triple.update_previous_se_parameters()
-        determine_timestep(triple)
+        determine_timestep(triple)        
+
 
         ### do secular evolution ###
         if triple.is_triple == True:
@@ -323,6 +325,43 @@ def evolve_triple(triple):
         triple.update_se_parameters()
         
         
+        #safety check
+        dm_1 = (triple.particles[0].inner_binary.child1.mass - triple.particles[0].inner_binary.child1.previous_mass)/triple.particles[0].inner_binary.child1.mass
+        dm_2 = (triple.particles[0].inner_binary.child2.mass - triple.particles[0].inner_binary.child2.previous_mass)/triple.particles[0].inner_binary.child2.mass
+        dm_3 = (triple.particles[0].outer_binary.child1.mass - triple.particles[0].outer_binary.child1.previous_mass)/triple.particles[0].outer_binary.child1.mass
+                
+        if REPORT_TRIPLE_EVOLUTION:
+            print 'wind mass loss rates:', 
+            print triple.particles[0].inner_binary.child1.wind_mass_loss_rate,
+            print triple.particles[0].inner_binary.child2.wind_mass_loss_rate,
+            print triple.particles[0].outer_binary.child1.wind_mass_loss_rate
+            print 'relative wind mass losses:',
+            print dm_1, dm_2, dm_3
+        error_dm = 0.05
+        if (dm_1 > error_dm) or (dm_2 > error_dm) or (dm_3 > error_dm):
+            print dm_1, dm_2, dm_3
+            print 'Change in mass in a single timestep larger then', error_dm
+            exit(-1)
+
+
+        dr_1 = (triple.particles[0].inner_binary.child1.radius - triple.particles[0].inner_binary.child1.previous_radius)/triple.particles[0].inner_binary.child1.radius
+        dr_2 = (triple.particles[0].inner_binary.child2.radius - triple.particles[0].inner_binary.child2.previous_radius)/triple.particles[0].inner_binary.child2.radius
+        dr_3 = (triple.particles[0].outer_binary.child1.radius - triple.particles[0].outer_binary.child1.previous_radius)/triple.particles[0].outer_binary.child1.radius
+        if REPORT_TRIPLE_EVOLUTION:    
+            print 'change in radius over time:', 
+            print triple.particles[0].inner_binary.child1.time_derivative_of_radius,
+            print triple.particles[0].inner_binary.child2.time_derivative_of_radius,
+            print triple.particles[0].outer_binary.child1.time_derivative_of_radius
+            print 'relavite change in radius:',
+            print dr_1, dr_2, dr_3
+        error_dr = 0.05
+        if (dr_1 > error_dr) or (dr_2 > error_dr) or (dr_3 > error_dr):
+            print dr_1, dr_2, dr_3
+            print 'Change in radius in a single timestep larger then', error_dr
+            exit(-1)
+        
+
+
         if not triple.first_contact:
             print 'perform mass transfer'
             #should be only stable mass transfer, but check this
