@@ -162,6 +162,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 
     bool include_inner_wind_terms = data->include_inner_wind_terms;
     bool include_outer_wind_terms = data->include_outer_wind_terms;
+    bool include_wind_spin_coupling_terms = data->include_wind_spin_coupling_terms;
     bool include_inner_RLOF_terms = data->include_inner_RLOF_terms;
     bool include_outer_RLOF_terms = data->include_outer_RLOF_terms;
     bool star1_is_donor = data->star1_is_donor;
@@ -170,6 +171,9 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double wind_mass_loss_rate_star1 = data->wind_mass_loss_rate_star1;
     double wind_mass_loss_rate_star2 = data->wind_mass_loss_rate_star2;
     double wind_mass_loss_rate_star3 = data->wind_mass_loss_rate_star3;
+    double time_derivative_of_radius_star1 = data->time_derivative_of_radius_star1;
+    double time_derivative_of_radius_star2 = data->time_derivative_of_radius_star2;
+    double time_derivative_of_radius_star3 = data->time_derivative_of_radius_star3;
     double inner_mass_transfer_rate = data->inner_mass_transfer_rate;
     double outer_mass_transfer_rate = data->outer_mass_transfer_rate;
     double inner_accretion_efficiency_wind_child1_to_child2 = data->inner_accretion_efficiency_wind_child1_to_child2;
@@ -618,7 +622,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
         double m_dot_lost_from_inner_binary = wind_mass_loss_rate_star1*(1.0-inner_accretion_efficiency_wind_child1_to_child2) \
             + wind_mass_loss_rate_star2*(1.0-inner_accretion_efficiency_wind_child2_to_child1) \
             + inner_mass_transfer_rate*(1.0-inner_accretion_efficiency_mass_transfer);
-            
+
         double a_out_dot_wind_star3 = f_a_dot_mass_variations_fast_and_isotropic_wind(m3,wind_mass_loss_rate_star3,m1+m2,a_out,outer_accretion_efficiency_wind_child1_to_child2);
         double a_out_dot_wind_inner_binary = f_a_dot_mass_variations_fast_and_isotropic_wind(m1+m2,m_dot_lost_from_inner_binary,m3,a_out,outer_accretion_efficiency_wind_child2_to_child1);
         a_out_dot_wind = a_out_dot_wind_star3 + a_out_dot_wind_inner_binary;
@@ -658,43 +662,63 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
      * spin_angular_frequency1_dot      *
      * **********************************/
 
-	double spin_angular_frequency1_dot=0.0;
+	double spin_angular_frequency1_dot_tides=0.0;
     if (include_inner_tidal_terms == TRUE)
     {
-        spin_angular_frequency1_dot = 3.0*m2_div_m1_times_R1_div_a_in_p6_times_k_div_T_tides_star1*(m2_div_m1/(gyration_radius_star1*gyration_radius_star1)) \
+        spin_angular_frequency1_dot_tides = 3.0*m2_div_m1_times_R1_div_a_in_p6_times_k_div_T_tides_star1*(m2_div_m1/(gyration_radius_star1*gyration_radius_star1)) \
             *(n_in/(l_in_p6*l_in_p6))*(f_tides2_in - l_in_p3*f_tides5_in*spin_angular_frequency1_div_n_in);
     }
-	Ith(ydot,8) = spin_angular_frequency1_dot;
+    double spin_angular_frequency1_dot_wind_spin_coupling=0.0;
+    if (include_wind_spin_coupling_terms == TRUE)
+    {
+        spin_angular_frequency1_dot_wind_spin_coupling = spin_angular_frequency_dot_wind_spin_coupling(spin_angular_frequency1,m1,wind_mass_loss_rate_star1,gyration_radius_star1,R1,time_derivative_of_radius_star1);
+    }
+	Ith(ydot,8) = spin_angular_frequency1_dot_tides + spin_angular_frequency1_dot_wind_spin_coupling;
     
 
     /************************************
      * spin_angular_frequency2_dot      *
      * **********************************/
 
-	double spin_angular_frequency2_dot=0.0;
+	double spin_angular_frequency2_dot_tides=0.0;
     if (include_inner_tidal_terms == TRUE)
     {
-        spin_angular_frequency2_dot = 3.0*m1_div_m2_times_R2_div_a_in_p6_times_k_div_T_tides_star2*(m1_div_m2/(gyration_radius_star2*gyration_radius_star2)) \
+        spin_angular_frequency2_dot_tides = 3.0*m1_div_m2_times_R2_div_a_in_p6_times_k_div_T_tides_star2*(m1_div_m2/(gyration_radius_star2*gyration_radius_star2)) \
             *(n_in/(l_in_p6*l_in_p6))*(f_tides2_in - l_in_p3*f_tides5_in*spin_angular_frequency2_div_n_in);
     }
-	Ith(ydot,9) = spin_angular_frequency2_dot;
+    double spin_angular_frequency2_dot_wind_spin_coupling=0.0;
+    if (include_wind_spin_coupling_terms == TRUE)
+    {
+        spin_angular_frequency2_dot_wind_spin_coupling = spin_angular_frequency_dot_wind_spin_coupling(spin_angular_frequency2,m2,wind_mass_loss_rate_star2,gyration_radius_star2,R2,time_derivative_of_radius_star2);
+    }
+	Ith(ydot,9) = spin_angular_frequency2_dot_tides + spin_angular_frequency2_dot_wind_spin_coupling;
 
 
     /************************************
      * spin_angular_frequency3_dot      *
      * **********************************/
 
-	double spin_angular_frequency3_dot=0.0;
+	double spin_angular_frequency3_dot_tides=0.0;
     if (include_outer_tidal_terms == TRUE)
     {
-        spin_angular_frequency3_dot = 3.0*m1_plus_m2_div_m3_times_R3_div_a_out_p6_times_k_div_T_tides_star3*(m1_plus_m2_div_m3/(gyration_radius_star3*gyration_radius_star3)) \
+        spin_angular_frequency3_dot_tides = 3.0*m1_plus_m2_div_m3_times_R3_div_a_out_p6_times_k_div_T_tides_star3*(m1_plus_m2_div_m3/(gyration_radius_star3*gyration_radius_star3)) \
             *(n_out/(l_out_p6*l_out_p6))*(f_tides2_out - l_out_p3*f_tides5_out*spin_angular_frequency3_div_n_out);
     }
-	Ith(ydot,10) = spin_angular_frequency3_dot;
+    double spin_angular_frequency3_dot_wind_spin_coupling=0.0;
+    if (include_wind_spin_coupling_terms == TRUE)
+    {
+        spin_angular_frequency3_dot_wind_spin_coupling = spin_angular_frequency_dot_wind_spin_coupling(spin_angular_frequency3,m3,wind_mass_loss_rate_star3,gyration_radius_star3,R3,time_derivative_of_radius_star3);
+    }
+	Ith(ydot,10) = spin_angular_frequency3_dot_tides + spin_angular_frequency3_dot_wind_spin_coupling;
     
 	return 0;
 }
 
+/***************************************************
+ * separate smaller functions for right-hand sides *
+ ***************************************************/
+
+/* tides */
 double f_tides1(double e_p2)
 {
     return 1.0 + e_p2*(c_31div2 + e_p2*(c_255div8 + e_p2*(c_185div16 + e_p2*c_25div64)));
@@ -724,6 +748,13 @@ double f_25PN_a(double e_p2)
     return 1.0 + e_p2*(c_73div24 + e_p2*c_37div96);
 }
 
+/* wind-spin coupling */
+double spin_angular_frequency_dot_wind_spin_coupling(double spin_angular_frequency, double mass, double wind_mass_loss_rate, double gyration_radius, double radius, double time_derivative_of_radius)
+{
+    return spin_angular_frequency*( (wind_mass_loss_rate/mass)*(-1.0 + c_2div3/(gyration_radius*gyration_radius)) - 2.0*(time_derivative_of_radius/radius) );
+}
+
+/* effect of mass variations on orbit */
 double f_a_dot_mass_variations(double m_donor, double m_donor_dot, double m_accretor, double a, double beta, double gamma)
 {
     /* Lectore notes on binary evolution by Onno Pols -- chapter 7 Eq. 7.14 */
@@ -738,6 +769,7 @@ double f_a_dot_mass_variations_fast_and_isotropic_wind(double m_donor, double m_
     return a*(-m_total_dot/m_total - 2.0*m_accretor_dot/m_accretor - 2.0*beta*m_donor_dot/m_donor);
 }
 
+/* root finding functions */
 int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data_f)
 {
 	UserData data;
@@ -828,7 +860,6 @@ int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data_f)
     
 	return 0;
 }
-
 double roche_radius_pericenter_eggleton(double rp, double q)
 {
     /* 2007ApJ...660.1624S Eqs. (45) */    

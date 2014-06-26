@@ -37,6 +37,7 @@ bool include_quadrupole_terms,include_octupole_terms;
 bool include_1PN_inner_terms,include_1PN_outer_terms,include_1PN_inner_outer_terms,include_25PN_inner_terms,include_25PN_outer_terms;
 bool include_inner_tidal_terms,include_outer_tidal_terms;
 bool include_inner_wind_terms,include_outer_wind_terms;
+bool include_wind_spin_coupling_terms;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
 double relative_tolerance = 1.0e-10;
 
@@ -188,6 +189,14 @@ int set_include_outer_wind_terms(int value){
     include_outer_wind_terms = value == 1;
     return 0;
 }
+int get_include_wind_spin_coupling_terms(int *value){
+    *value = include_wind_spin_coupling_terms ? 1 : 0;
+    return 0;
+}
+int set_include_wind_spin_coupling_terms(int value){
+    include_wind_spin_coupling_terms = value == 1;
+    return 0;
+}
 int get_include_inner_RLOF_terms(int *value){
     *value = include_inner_RLOF_terms ? 1 : 0;
     return 0;
@@ -217,6 +226,7 @@ int evolve(
     double INCL_in, double INCL_out, double AP_in, double AP_out, double LAN_in, double LAN_out,
     bool star1_is_donor, bool star2_is_donor, bool star3_is_donor,
     double wind_mass_loss_rate_star1, double wind_mass_loss_rate_star2, double wind_mass_loss_rate_star3,
+    double time_derivative_of_radius_star1, double time_derivative_of_radius_star2, double time_derivative_of_radius_star3,
     double inner_mass_transfer_rate, double outer_mass_transfer_rate,
     double inner_accretion_efficiency_wind_child1_to_child2, double inner_accretion_efficiency_wind_child2_to_child1,
     double outer_accretion_efficiency_wind_child1_to_child2,double outer_accretion_efficiency_wind_child2_to_child1,
@@ -279,12 +289,16 @@ int evolve(
     data->include_outer_wind_terms = include_outer_wind_terms;
     data->include_inner_RLOF_terms = include_inner_RLOF_terms;
     data->include_outer_RLOF_terms = include_outer_RLOF_terms;
+    data->include_wind_spin_coupling_terms = include_wind_spin_coupling_terms;
     data->star1_is_donor = star1_is_donor;
     data->star2_is_donor = star2_is_donor;
     data->star3_is_donor = star3_is_donor;
     data->wind_mass_loss_rate_star1 = wind_mass_loss_rate_star1;
     data->wind_mass_loss_rate_star2 = wind_mass_loss_rate_star2;
     data->wind_mass_loss_rate_star3 = wind_mass_loss_rate_star3;
+    data->time_derivative_of_radius_star1 = time_derivative_of_radius_star1;
+    data->time_derivative_of_radius_star2 = time_derivative_of_radius_star2;
+    data->time_derivative_of_radius_star3 = time_derivative_of_radius_star3;
     data->inner_mass_transfer_rate = inner_mass_transfer_rate;
     data->outer_mass_transfer_rate = outer_mass_transfer_rate;
     data->inner_accretion_efficiency_wind_child1_to_child2 = inner_accretion_efficiency_wind_child1_to_child2;

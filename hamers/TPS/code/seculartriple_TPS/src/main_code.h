@@ -19,35 +19,36 @@
 #define CONST_C_LIGHT_P5	(double)	CONST_C_LIGHT_P4*CONST_C_LIGHT
 #define c_1div2             (double)    1.0/2.0
 #define c_1div3             (double)    1.0/3.0
-#define c_3div2             (double)    3.0/2.0
-#define c_5div2             (double)    5.0/2.0
-#define c_15div2            (double)    15.0/2.0
-#define c_31div2            (double)    31.0/2.0
 #define c_1div4             (double)    1.0/4.0
-#define c_15div4            (double)    15.0/4.0
 #define c_1div5             (double)    1.0/5.0
-#define c_3div5             (double)    3.0/5.0
-#define c_8div5             (double)    8.0/5.0
-#define c_64div5            (double)    64.0/5.0
 #define c_1div6             (double)    1.0/6.0
 #define c_1div7             (double)    1.0/7.0
 #define c_1div8             (double)    1.0/8.0
+#define c_1div16            (double)    1.0/16.0
+#define c_2div3             (double)    2.0/3.0
+#define c_3div2             (double)    3.0/2.0
+#define c_3div5             (double)    3.0/5.0
 #define c_3div8             (double)    3.0/8.0
+#define c_5div2             (double)    5.0/2.0
+#define c_5div16            (double)    5.0/16.0
+#define c_5div64            (double)    5.0/64.0
+#define c_8div5             (double)    8.0/5.0
+#define c_9div16            (double)    9.0/16.0
+#define c_11div18           (double)    11.0/18.0
+#define c_15div2            (double)    15.0/2.0
+#define c_15div4            (double)    15.0/4.0
 #define c_15div8            (double)    15.0/8.0
+#define c_15div16           (double)    15.0/16.0
+#define c_25div64           (double)    25.0/64.0
+#define c_31div2            (double)    31.0/2.0
+#define c_37div96           (double)    37.0/96.0
 #define c_45div8            (double)    45.0/8.0
+#define c_64div5            (double)    64.0/5.0
+#define c_73div24           (double)    73.0/24.0
+#define c_121div304         (double)    121.0/304.0
+#define c_185div16          (double)    185.0/16.0
 #define c_255div8           (double)    255.0/8.0
 #define c_304div15          (double)    304.0/15.0
-#define c_1div16            (double)    1.0/16.0
-#define c_5div16            (double)    5.0/16.0
-#define c_9div16            (double)    9.0/16.0
-#define c_15div16           (double)    15.0/16.0
-#define c_185div16          (double)    185.0/16.0
-#define c_11div18           (double)    11.0/18.0
-#define c_73div24           (double)    73.0/24.0
-#define c_5div64            (double)    5.0/64.0
-#define c_25div64           (double)    25.0/64.0
-#define c_37div96           (double)    37.0/96.0
-#define c_121div304         (double)    121.0/304.0
 
 /*	ODE solver related quantities	*/
 #define Ith(v,i)    NV_Ith_S(v,i-1)       		/* Ith numbers components 1..NEQ */
@@ -64,6 +65,7 @@ typedef struct {
     bool include_1PN_inner_terms,include_1PN_outer_terms,include_1PN_inner_outer_terms,include_25PN_inner_terms,include_25PN_outer_terms;
     bool include_inner_tidal_terms,include_outer_tidal_terms;
     bool include_inner_wind_terms,include_outer_wind_terms;
+    bool include_wind_spin_coupling_terms;
     bool include_inner_RLOF_terms,include_outer_RLOF_terms;
     bool check_for_dynamical_stability;
     bool check_for_inner_collision,check_for_outer_collision;
@@ -75,6 +77,7 @@ typedef struct {
     
     bool star1_is_donor,star2_is_donor,star3_is_donor;
     double wind_mass_loss_rate_star1,wind_mass_loss_rate_star2,wind_mass_loss_rate_star3;
+    double time_derivative_of_radius_star1,time_derivative_of_radius_star2,time_derivative_of_radius_star3;
     double inner_mass_transfer_rate,outer_mass_transfer_rate;
     double inner_accretion_efficiency_wind_child1_to_child2,inner_accretion_efficiency_wind_child2_to_child1;
     double outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1;
@@ -95,6 +98,7 @@ int evolve(
     double INCL_in, double INCL_out, double AP_in, double AP_out, double LAN_in, double LAN_out,
     bool star1_is_donor, bool star2_is_donor, bool star3_is_donor,
     double wind_mass_loss_rate_star1, double wind_mass_loss_rate_star2, double wind_mass_loss_rate_star3,
+    double time_derivative_of_radius_star1, double time_derivative_of_radius_star2, double time_derivative_of_radius_star3,    
     double inner_mass_transfer_rate, double outer_mass_transfer_rate,
     double inner_accretion_efficiency_wind_child1_to_child2, double inner_accretion_efficiency_wind_child2_to_child1,
     double outer_accretion_efficiency_wind_child1_to_child2,double outer_accretion_efficiency_wind_child2_to_child1,
@@ -144,6 +148,8 @@ int get_include_inner_wind_terms(int *value);
 int set_include_inner_wind_terms(int value);
 int get_include_outer_wind_terms(int *value);
 int set_include_outer_wind_terms(int value);
+int get_include_wind_spin_coupling_terms(int *value);
+int set_include_wind_spin_coupling_terms(int value);
 int get_include_inner_RLOF_terms(int *value);
 int set_include_inner_RLOF_terms(int value);
 int get_include_outer_RLOF_terms(int *value);

@@ -5,13 +5,13 @@ Adrian Hamers 24-06-2014
 """
 
 from amuse.community import *
-from amuse.units import units
+from amuse.units import units,constants
 import tidal_friction_constant
 cm = 1e-2*units.m
 g = 1e-3*units.kg
 
 class SecularTripleInterface(CodeInterface):
-    include_headers = ['src/main_code.h']
+    include_headers = ['src/main_code.h','src/ODE_system.h']
 
     def __init__(self):
          CodeInterface.__init__(self)
@@ -53,20 +53,19 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('wind_mass_loss_rate_star1', dtype='float64', direction=function.IN)
         function.addParameter('wind_mass_loss_rate_star2', dtype='float64', direction=function.IN)
         function.addParameter('wind_mass_loss_rate_star3', dtype='float64', direction=function.IN)
+        function.addParameter('time_derivative_of_radius_star1', dtype='float64', direction=function.IN)
+        function.addParameter('time_derivative_of_radius_star2', dtype='float64', direction=function.IN)
+        function.addParameter('time_derivative_of_radius_star3', dtype='float64', direction=function.IN)        
         function.addParameter('inner_mass_transfer_rate', dtype='float64', direction=function.IN)
         function.addParameter('outer_mass_transfer_rate', dtype='float64', direction=function.IN)
         function.addParameter('inner_accretion_efficiency_wind_child1_to_child2', dtype='float64', direction=function.IN)
         function.addParameter('inner_accretion_efficiency_wind_child2_to_child1', dtype='float64', direction=function.IN)
         function.addParameter('outer_accretion_efficiency_wind_child1_to_child2', dtype='float64', direction=function.IN)
         function.addParameter('outer_accretion_efficiency_wind_child2_to_child1', dtype='float64', direction=function.IN)
-#        function.addParameter('inner_specific_AM_loss_wind_child1_to_child2', dtype='bool', direction=function.IN)
-#        function.addParameter('inner_specific_AM_loss_wind_child2_to_child1', dtype='float64', direction=function.IN)
-#        function.addParameter('outer_specific_AM_loss_wind_child1_to_child2', dtype='bool', direction=function.IN)
-#        function.addParameter('outer_specific_AM_loss_wind_child2_to_child1', dtype='bool', direction=function.IN)        
         function.addParameter('inner_accretion_efficiency_mass_transfer', dtype='float64', direction=function.IN)        
-        function.addParameter('outer_accretion_efficiency_mass_transfer', dtype='float64', direction=function.IN)                        
+        function.addParameter('outer_accretion_efficiency_mass_transfer', dtype='float64', direction=function.IN)                      
         function.addParameter('inner_specific_AM_loss_mass_transfer', dtype='float64', direction=function.IN)                        
-        function.addParameter('outer_specific_AM_loss_mass_transfer', dtype='float64', direction=function.IN)                                        
+        function.addParameter('outer_specific_AM_loss_mass_transfer', dtype='float64', direction=function.IN)
         function.addParameter('t', dtype='float64', direction=function.IN)        
         function.addParameter('dt', dtype='float64', direction=function.IN)        
         function.addParameter('m1_output', dtype='float64', direction=function.OUT) 
@@ -93,6 +92,16 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('output_flag', dtype='int32', direction=function.OUT)
         function.addParameter('error_flag', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def roche_radius_pericenter_sepinsky():
+        function = LegacyFunctionSpecification()
+        function.addParameter('rp', dtype='float64', direction=function.IN)
+        function.addParameter('q', dtype='float64', direction=function.IN)
+        function.addParameter('e', dtype='float64', direction=function.IN)
+        function.addParameter('f', dtype='float64', direction=function.IN)
+        function.result_type = 'float64'
         return function
 
     @legacy_function
@@ -343,6 +352,20 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
+    def set_include_wind_spin_coupling_terms():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_wind_spin_coupling_terms', dtype='bool',direction=function.IN,description = "..")
+        function.result_type = 'int32'
+        return function    
+        
+    @legacy_function
+    def get_include_wind_spin_coupling_terms():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_wind_spin_coupling_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def set_include_inner_RLOF_terms():
         function = LegacyFunctionSpecification()
         function.addParameter('include_inner_RLOF_terms', dtype='bool',direction=function.IN,description = "..")
@@ -379,10 +402,10 @@ class SecularTriple(InCodeComponentImplementation):
     def define_parameters(self, object):
         
         object.add_method_parameter(
-            "get_time",
-            "set_time",
-            "time",
-            "model time",
+            "get_model_time",
+            "set_model_time",
+            "model_time",
+            "model_time",
             default_value = 0.0 | units.Myr
         )
         
@@ -520,6 +543,13 @@ class SecularTriple(InCodeComponentImplementation):
             default_value = False
         )
         object.add_method_parameter(
+            "get_include_wind_spin_coupling_terms",
+            "set_include_wind_spin_coupling_terms",
+            "include_wind_spin_coupling_terms",
+            "..", 
+            default_value = False
+        )        
+        object.add_method_parameter(
             "get_include_inner_RLOF_terms",
             "set_include_inner_RLOF_terms",
             "include_inner_RLOF_terms",
@@ -572,16 +602,15 @@ class SecularTriple(InCodeComponentImplementation):
                 g/units.s,                  ### wind_mass_loss_rate_star1
                 g/units.s,                  ### wind_mass_loss_rate_star2
                 g/units.s,                  ### wind_mass_loss_rate_star3                                
+                cm/units.s,                 ### time_derivative_of_radius_star1
+                cm/units.s,                 ### time_derivative_of_radius_star2
+                cm/units.s,                 ### time_derivative_of_radius_star3                                
                 g/units.s,                  ### inner_mass_transfer_rate                                
                 g/units.s,                  ### outer_mass_transfer_rate                                                
                 object.NO_UNIT,             ### inner_accretion_efficiency_wind_child1_to_child2
                 object.NO_UNIT,             ### inner_accretion_efficiency_wind_child2_to_child1
                 object.NO_UNIT,             ### outer_accretion_efficiency_wind_child1_to_child2
                 object.NO_UNIT,             ### outer_accretion_efficiency_wind_child2_to_child1
-#                object.NO_UNIT,             ### inner_specific_AM_loss_wind_child1_to_child2
-#                object.NO_UNIT,             ### inner_specific_AM_loss_wind_child2_to_child1
-#                object.NO_UNIT,             ### outer_specific_AM_loss_wind_child1_to_child2
-#                object.NO_UNIT,             ### outer_specific_AM_loss_wind_child2_to_child1
                 object.NO_UNIT,             ### inner_accretion_efficiency_mass_transfer
                 object.NO_UNIT,             ### outer_accretion_efficiency_mass_transfer
                 object.NO_UNIT,             ### inner_specific_AM_loss_mass_transfer
@@ -612,10 +641,23 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### LAN_out_output                                
                 units.s,                    ### t_output
                 object.NO_UNIT,             ### output_flag
-                object.NO_UNIT,           ### error_flag
+                object.NO_UNIT,             ### error_flag
                 object.ERROR_CODE,
             )
         )
+        object.add_method(
+            "roche_radius_pericenter_sepinsky",
+            (
+                cm,                         ### rp
+                object.NO_UNIT,             ### q
+                object.NO_UNIT,             ### e
+                object.NO_UNIT,             ### f
+            ),
+            (
+                cm,                         ### Roche radius
+            )
+        )
+
         """
         object.add_method(
             "get_time",
@@ -751,106 +793,29 @@ class SecularTriple(InCodeComponentImplementation):
 
     def define_particle_sets(self,object):
         object.define_inmemory_set('triples')
-        
+
     def evolve_model(self,end_time):
         if end_time is None:
             print 'Please specify end time!'
             return
 
-        ### extract data from binaries ###
+        parameters = self.parameters
         triples = self.triples
-
-        for index_triple, triple in enumerate(triples):
-            inner_binary = triple.inner_binary
-            outer_binary = triple.outer_binary
-
-            star1 = inner_binary.child1
-            star2 = inner_binary.child2
-            star3 = outer_binary.child1
-
-            m1 = star1.mass
-            m2 = star2.mass
-            m3 = star3.mass
-
-            R1 = star1.radius
-            R2 = star2.radius
-            R3 = star3.radius
-                    
-            a_in = inner_binary.semimajor_axis
-            e_in = inner_binary.eccentricity
-            a_out = outer_binary.semimajor_axis
-            e_out = outer_binary.eccentricity
         
-            INCL_in = triple.mutual_inclination
-            INCL_out = 0.0
-            AP_in = inner_binary.argument_of_pericenter
-            AP_out = outer_binary.argument_of_pericenter
-            LAN_in = inner_binary.longitude_of_ascending_node
-            LAN_out = outer_binary.longitude_of_ascending_node        
+        for index_triple, triple in enumerate(triples):
 
-            parameters = self.parameters
-            
-            star1_is_donor,star2_is_donor,star3_is_donor, \
-            wind_mass_loss_rate_star1,wind_mass_loss_rate_star2,wind_mass_loss_rate_star3, \
-            inner_mass_transfer_rate,outer_mass_transfer_rate, \
-            inner_accretion_efficiency_wind_child1_to_child2,inner_accretion_efficiency_wind_child2_to_child1, \
-            outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1, \
-            inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer, \
-            inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer = extract_mass_variation_parameters(parameters,star1,star2,star3,inner_binary,outer_binary)
-
-            spin_angular_frequency1=spin_angular_frequency2=spin_angular_frequency3 = 0.0 | 1.0/units.s
-            if parameters.check_for_inner_RLOF == True:
-                try:
-                    spin_angular_frequency1 = star1.spin_angular_frequency
-                    spin_angular_frequency2 = star2.spin_angular_frequency
-                except AttributeError:
-                    print "More attributes required for inner RLOF check"
-                    return
-            if parameters.check_for_outer_RLOF == True:
-                try:
-                    spin_angular_frequency3 = star3.spin_angular_frequency
-                except AttributeError:
-                    print "More attributes required for outer RLOF check"
-                    return
-
-            AMC_star1 = AMC_star2 = AMC_star3 = 0.0
-            gyration_radius_star1 = gyration_radius_star2 = gyration_radius_star3 = 0.0
-            k_div_T_tides_star1 = k_div_T_tides_star2 = k_div_T_tides_star3 = 0.0 | 1.0/units.s
-    
-            include_inner_tidal_terms = parameters.include_inner_tidal_terms
-            if include_inner_tidal_terms == True:
-                try:
-                    stellar_type1 = star1.stellar_type
-                    stellar_type2 = star2.stellar_type
-                    stellar_type3 = star3.stellar_type                
-                    m1_envelope = star1.envelope_mass
-                    m2_envelope = star2.envelope_mass
-                    m3_envelope = star3.envelope_mass
-                    R1_envelope = star1.envelope_radius
-                    R2_envelope = star2.envelope_radius
-                    R3_envelope = star3.envelope_radius                
-                    luminosity_star1 = star1.luminosity
-                    luminosity_star2 = star2.luminosity
-                    luminosity_star3 = star3.luminosity
-                    AMC_star1 = star1.apsidal_motion_constant
-                    AMC_star2 = star2.apsidal_motion_constant
-                    AMC_star3 = star3.apsidal_motion_constant
-                    gyration_radius_star1 = star1.gyration_radius
-                    gyration_radius_star2 = star2.gyration_radius
-                    gyration_radius_star3 = star3.gyration_radius
-                    spin_angular_frequency1 = star1.spin_angular_frequency
-                    spin_angular_frequency2 = star2.spin_angular_frequency
-                    spin_angular_frequency3 = star3.spin_angular_frequency
-                
-                    k_div_T_tides_star1 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1)
-                    k_div_T_tides_star2 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m2,m1,a_in,R2,m2_envelope,R2_envelope,luminosity_star2,spin_angular_frequency2,gyration_radius_star2)
-                    k_div_T_tides_star3 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m3,m1+m2,a_out,R3,m3_envelope,R3_envelope,luminosity_star3,spin_angular_frequency3,gyration_radius_star3)              
-                except AttributeError:
-                    print "More attributes required for tides"
-                    return
+            ### extract data from triple ###
+            self.time_step = end_time - self.model_time            
+            args = extract_data_from_triple(self,triple)
 
             ### solve system of ODEs ###
-            time_step = end_time - self.model_time
+            m1,m2,m3,R1,R2,R3, \
+            spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3, \
+            a_in,a_out,e_in,e_out, \
+            INCL_in,INCL_out,INCL_in_out, \
+            AP_in,AP_out,LAN_in,LAN_out, \
+            end_time_dummy,flag,error = self.evolve(*args)
+            """
             m1,m2,m3,R1,R2,R3, \
             spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3, \
             a_in,a_out,e_in,e_out, \
@@ -869,13 +834,15 @@ class SecularTriple(InCodeComponentImplementation):
                 AP_in,AP_out,LAN_in,LAN_out,
                 star1_is_donor,star2_is_donor,star3_is_donor,
                 wind_mass_loss_rate_star1,wind_mass_loss_rate_star2,wind_mass_loss_rate_star3,
+                time_derivative_of_radius_star1,time_derivative_of_radius_star2,time_derivative_of_radius_star3,
                 inner_mass_transfer_rate,outer_mass_transfer_rate,
                 inner_accretion_efficiency_wind_child1_to_child2,inner_accretion_efficiency_wind_child2_to_child1,
                 outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1,
                 inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer,
                 inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer,
                 self.model_time,time_step)
-
+            """
+            
             ### dynamical instability ###
             triple.dynamical_instability = False
             if flag==1: 
@@ -910,12 +877,17 @@ class SecularTriple(InCodeComponentImplementation):
             self.model_time = end_time
 
             ### update triple particle ###
-            if include_inner_tidal_terms == True:
+            if parameters.include_inner_tidal_terms == True:
+                triple.inner_binary.child1.spin_angular_frequency = spin_angular_frequency1
+                triple.inner_binary.child2.spin_angular_frequency = spin_angular_frequency2
+            if parameters.include_outer_tidal_terms == True:
+                triple.outer_binary.child1.spin_angular_frequency = spin_angular_frequency3
+
+            if parameters.include_wind_spin_coupling_terms == True:
                 triple.inner_binary.child1.spin_angular_frequency = spin_angular_frequency1
                 triple.inner_binary.child2.spin_angular_frequency = spin_angular_frequency2
                 triple.outer_binary.child1.spin_angular_frequency = spin_angular_frequency3
-
-            print 'a_in/AU',a_in.value_in(units.AU)
+                                                
             triple.inner_binary.semimajor_axis = a_in
             triple.inner_binary.eccentricity = e_in
             triple.outer_binary.semimajor_axis = a_out
@@ -926,15 +898,105 @@ class SecularTriple(InCodeComponentImplementation):
             triple.inner_binary.longitude_of_ascending_node = LAN_in
             triple.outer_binary.longitude_of_ascending_node = LAN_out
 
-def extract_mass_variation_parameters(parameters,star1,star2,star3,inner_binary,outer_binary):
+    def give_roche_radii(self,triple):
+        if triple is None:
+            print 'Please give triple particle'
+            return
 
-    star1_is_donor=star2_is_donor=star3_is_donor=False
-    wind_mass_loss_rate_star1=wind_mass_loss_rate_star2=wind_mass_loss_rate_star3=0.0 | units.MSun/units.yr
-    inner_mass_transfer_rate=outer_mass_transfer_rate=0.0 | units.MSun/units.yr
-    inner_accretion_efficiency_wind_child1_to_child2=inner_accretion_efficiency_wind_child2_to_child1=0.0
-    outer_accretion_efficiency_wind_child1_to_child2=outer_accretion_efficiency_wind_child2_to_child1=0.0
-    inner_accretion_efficiency_mass_transfer=outer_accretion_efficiency_mass_transfer=0.0
-    inner_specific_AM_loss_mass_transfer=outer_specific_AM_loss_mass_transfer=0.0
+        inner_binary = triple.inner_binary
+        outer_binary = triple.outer_binary
+
+        star1 = inner_binary.child1
+        star2 = inner_binary.child2
+        star3 = outer_binary.child1
+
+        m1 = star1.mass
+        m2 = star2.mass
+        m3 = star3.mass
+
+        R1 = star1.radius
+        R2 = star2.radius
+        R3 = star3.radius
+                    
+        a_in = inner_binary.semimajor_axis
+        e_in = inner_binary.eccentricity
+        a_out = outer_binary.semimajor_axis
+        e_out = outer_binary.eccentricity
+
+        spin_angular_frequency1 = star1.spin_angular_frequency
+        spin_angular_frequency2 = star2.spin_angular_frequency
+        spin_angular_frequency3 = star3.spin_angular_frequency
+
+        rp_in = a_in*(1.0-e_in)
+        rp_out = a_out*(1.0-e_out)
+
+        spin_angular_frequency_inner_orbit_periapse = numpy.sqrt( constants.G*(m1+m2)*(1.0+e_in)/(rp_in**3) ) 
+        spin_angular_frequency_outer_orbit_periapse = numpy.sqrt( constants.G*(m1+m2+m3)*(1.0+e_out)/(rp_out**3) ) 
+
+        f1 = spin_angular_frequency1/spin_angular_frequency_inner_orbit_periapse
+        f2 = spin_angular_frequency2/spin_angular_frequency_inner_orbit_periapse
+        f3 = spin_angular_frequency3/spin_angular_frequency_outer_orbit_periapse      
+        
+        R_L_star1 = self.roche_radius_pericenter_sepinsky(rp_in,m1/m2,e_in,f1)
+        R_L_star2 = self.roche_radius_pericenter_sepinsky(rp_in,m2/m1,e_in,f2)
+        R_L_star3 = self.roche_radius_pericenter_sepinsky(rp_out,m3/(m1+m2),e_out,f3)
+                        
+        if 1==0: ### test with circular & synchronous orbits: compare to Eggleton
+            f1=f2=f3=1.0
+            e_in=e_out=0.0
+            rp_in = a_in*(1.0-e_in)
+            rp_out = a_out*(1.0-e_out)
+            
+            print 'R_Ls',R_L_star1,R_L_star2,R_L_star3
+            print 'Egg',R_L_eggleton(a_in,m1/m2),R_L_eggleton(a_in,m2/m1),R_L_eggleton(a_out,m3/(m1+m2))
+            print 'ratios',R_L_star1/R_L_eggleton(a_in,m1/m2),R_L_star2/R_L_eggleton(a_in,m2/m1),R_L_star3/R_L_eggleton(a_out,m3/(m1+m2))
+        
+        return R_L_star1,R_L_star2,R_L_star3
+
+def R_L_eggleton(a,q):
+    q_pow_one_third = pow(q,1.0/3.0)
+    q_pow_two_third = q_pow_one_third*q_pow_one_third
+    return a*0.49*q_pow_two_third/(0.6*q_pow_two_third + numpy.log(1.0 + q_pow_one_third))
+
+def extract_data_from_triple(self,triple):
+    parameters = self.parameters
+    
+    ### general parameters ###
+    inner_binary = triple.inner_binary
+    outer_binary = triple.outer_binary
+
+    star1 = inner_binary.child1
+    star2 = inner_binary.child2
+    star3 = outer_binary.child1
+
+    m1 = star1.mass
+    m2 = star2.mass
+    m3 = star3.mass
+
+    R1 = star1.radius
+    R2 = star2.radius
+    R3 = star3.radius
+                    
+    a_in = inner_binary.semimajor_axis
+    e_in = inner_binary.eccentricity
+    a_out = outer_binary.semimajor_axis
+    e_out = outer_binary.eccentricity
+        
+    INCL_in = triple.mutual_inclination
+    INCL_out = 0.0
+    AP_in = inner_binary.argument_of_pericenter
+    AP_out = outer_binary.argument_of_pericenter
+    LAN_in = inner_binary.longitude_of_ascending_node
+    LAN_out = outer_binary.longitude_of_ascending_node        
+
+    ### mass variation parameters ###
+    star1_is_donor = star2_is_donor = star3_is_donor = False
+    wind_mass_loss_rate_star1 = wind_mass_loss_rate_star2 = wind_mass_loss_rate_star3 = 0.0 | units.MSun/units.yr
+    inner_mass_transfer_rate = outer_mass_transfer_rate = 0.0 | units.MSun/units.yr
+    inner_accretion_efficiency_wind_child1_to_child2 = inner_accretion_efficiency_wind_child2_to_child1 = 0.0
+    outer_accretion_efficiency_wind_child1_to_child2 = outer_accretion_efficiency_wind_child2_to_child1 = 0.0
+    inner_accretion_efficiency_mass_transfer = outer_accretion_efficiency_mass_transfer = 0.0
+    inner_specific_AM_loss_mass_transfer = outer_specific_AM_loss_mass_transfer = 0.0
 
     if parameters.include_inner_wind_terms == True:
         try:
@@ -947,7 +1009,7 @@ def extract_mass_variation_parameters(parameters,star1,star2,star3,inner_binary,
             return
     if parameters.include_outer_wind_terms == True:
         try:
-            wind_mass_loss_rate_star3 = star2.wind_mass_loss_rate                    
+            wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate                    
             outer_accretion_efficiency_wind_child1_to_child2 = outer_binary.accretion_efficiency_wind_child1_to_child2
             outer_accretion_efficiency_wind_child2_to_child1 = outer_binary.accretion_efficiency_wind_child2_to_child1
         except AttributeError:
@@ -972,10 +1034,93 @@ def extract_mass_variation_parameters(parameters,star1,star2,star3,inner_binary,
         except AttributeError:
             print "More attributes required for outer RLOF"
             return
-    return star1_is_donor,star2_is_donor,star3_is_donor, \
-        wind_mass_loss_rate_star1,wind_mass_loss_rate_star2,wind_mass_loss_rate_star3, \
-        inner_mass_transfer_rate,outer_mass_transfer_rate, \
-        inner_accretion_efficiency_wind_child1_to_child2,inner_accretion_efficiency_wind_child2_to_child1, \
-        outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1, \
-        inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer, \
-        inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer
+
+    ### RLOF checks ###
+    spin_angular_frequency1 = spin_angular_frequency2 = spin_angular_frequency3 = 0.0 | 1.0/units.s
+    gyration_radius_star1 = gyration_radius_star2 = gyration_radius_star3 = 0.0
+    if parameters.check_for_inner_RLOF == True:
+        try:
+            spin_angular_frequency1 = star1.spin_angular_frequency
+            spin_angular_frequency2 = star2.spin_angular_frequency
+        except AttributeError:
+            print "More attributes required for inner RLOF check"
+            return
+    if parameters.check_for_outer_RLOF == True:
+        try:
+            spin_angular_frequency3 = star3.spin_angular_frequency
+        except AttributeError:
+            print "More attributes required for outer RLOF check"
+            return
+
+    ### wind-spin coupling ###
+    time_derivative_of_radius_star1=time_derivative_of_radius_star2=time_derivative_of_radius_star3 = 0.0 | units.RSun/units.s
+    if parameters.include_wind_spin_coupling_terms == True:
+        try:
+            spin_angular_frequency1 = star1.spin_angular_frequency
+            spin_angular_frequency2 = star2.spin_angular_frequency
+            spin_angular_frequency3 = star3.spin_angular_frequency
+            time_derivative_of_radius_star1 = star1.time_derivative_of_radius
+            time_derivative_of_radius_star2 = star2.time_derivative_of_radius
+            time_derivative_of_radius_star3 = star3.time_derivative_of_radius
+            gyration_radius_star1 = star1.gyration_radius
+            gyration_radius_star2 = star2.gyration_radius                    
+            gyration_radius_star3 = star3.gyration_radius                    
+        except AttributeError:
+            print "More attributes required for wind-spin coupling terms"
+            return
+
+    ### tides ###
+    AMC_star1 = AMC_star2 = AMC_star3 = 0.0
+    k_div_T_tides_star1 = k_div_T_tides_star2 = k_div_T_tides_star3 = 0.0 | 1.0/units.s
+    
+    if parameters.include_inner_tidal_terms == True:
+        try:
+            stellar_type1 = star1.stellar_type
+            stellar_type2 = star2.stellar_type
+            stellar_type3 = star3.stellar_type                
+            m1_envelope = star1.envelope_mass
+            m2_envelope = star2.envelope_mass
+            m3_envelope = star3.envelope_mass
+            R1_envelope = star1.envelope_radius
+            R2_envelope = star2.envelope_radius
+            R3_envelope = star3.envelope_radius                
+            luminosity_star1 = star1.luminosity
+            luminosity_star2 = star2.luminosity
+            luminosity_star3 = star3.luminosity
+            AMC_star1 = star1.apsidal_motion_constant
+            AMC_star2 = star2.apsidal_motion_constant
+            AMC_star3 = star3.apsidal_motion_constant
+            gyration_radius_star1 = star1.gyration_radius
+            gyration_radius_star2 = star2.gyration_radius
+            gyration_radius_star3 = star3.gyration_radius
+            spin_angular_frequency1 = star1.spin_angular_frequency
+            spin_angular_frequency2 = star2.spin_angular_frequency
+            spin_angular_frequency3 = star3.spin_angular_frequency
+                
+            k_div_T_tides_star1 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1)
+            k_div_T_tides_star2 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m2,m1,a_in,R2,m2_envelope,R2_envelope,luminosity_star2,spin_angular_frequency2,gyration_radius_star2)
+            k_div_T_tides_star3 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m3,m1+m2,a_out,R3,m3_envelope,R3_envelope,luminosity_star3,spin_angular_frequency3,gyration_radius_star3)              
+        except AttributeError:
+            print "More attributes required for tides"
+            return
+
+    args = [m1,m2,m3,
+        R1,R2,R3,
+        spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3,
+        AMC_star1,AMC_star2,AMC_star3,
+        gyration_radius_star1,gyration_radius_star2,gyration_radius_star3,
+        k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
+        a_in,a_out,
+        e_in,e_out,
+        INCL_in,INCL_out,
+        AP_in,AP_out,LAN_in,LAN_out,
+        star1_is_donor,star2_is_donor,star3_is_donor,
+        wind_mass_loss_rate_star1,wind_mass_loss_rate_star2,wind_mass_loss_rate_star3,
+        time_derivative_of_radius_star1,time_derivative_of_radius_star2,time_derivative_of_radius_star3,
+        inner_mass_transfer_rate,outer_mass_transfer_rate,
+        inner_accretion_efficiency_wind_child1_to_child2,inner_accretion_efficiency_wind_child2_to_child1,
+        outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1,
+        inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer,
+        inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer,
+        self.model_time,self.time_step]
+    return args
