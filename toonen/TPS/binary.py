@@ -1,8 +1,9 @@
 from amuse.lab import *
 import numpy as np
+from math import sqrt
 
 REPORT_BINARY_EVOLUTION = False
-REPORT_FUNCTION_NAMES = True
+REPORT_FUNCTION_NAMES = False
 
 def roche_radius_dimensionless(M, m) :
     # Assure that the q is calculated in identical units.
@@ -24,7 +25,7 @@ def roche_radius(bin, primary):
 
 
 
-def common_envelope_phase(bs):
+def common_envelope_phase(bs, donor, accretor, tr):
     if REPORT_FUNCTION_NAMES:
         print 'Common envelope phase'
 
@@ -35,11 +36,13 @@ def common_envelope_phase(bs):
     
     #outer binary
     #adiabatic_expansion_due_to_mass_loss ->instantaneous effect
-    #tr.channel_to_secular.copy()    
-    #is_donor = False
+
+    donor.is_donor = False
+    # update orbital parameters in the secular code
+    tr.channel_to_secular.copy()    
     
 
-def stable_mass_transfer(bs, tr):
+def stable_mass_transfer(bs, donor, accretor, tr):
     if REPORT_FUNCTION_NAMES:
         print 'Stable mass transfer'
 
@@ -48,34 +51,72 @@ def stable_mass_transfer(bs, tr):
 
     #where
     #set timestep
-    #tr.channel_to_secular.copy()    
+    #tr.channel_to_secular.copy()    ?? volgens mij niet
 
-def semi_detached(bs, donor, tr):
+
+def orbital_angular_momentum(bs):
+
+    M = bs.child1.mass
+    m = bs.child2.mass
+    a = bs.semimajor_axis
+    e = bs.eccentricity
+    J = M*m * np.sqrt(constants.G*a*(1-e**2)/(M+m))
+
+    if REPORT_BINARY_EVOLUTION:
+        print 'Jorb:', M, m, a, e, J
+
+    return J
+
+def stellar_angular_momentum(ss, Porb):
+
+    moment_of_inertia = ss.gyration_radius**2 * ss.mass * ss.radius**2
+    Jstar = moment_of_inertia * ss.spin_angular_frequency
+    return Jstar
+
+
+def orbital_period(bs):
+
+    Porb = 2*np.pi * np.sqrt(bs.semimajor_axis**3/constants.G / (bs.child1.mass + bs.child2.mass))
+    return Porb
+
+
+def mass_transfer_stability(bs, donor, accretor, tr):
+#For now only check on dynamical instability... how would this come out of adrians code?
+
+    if REPORT_FUNCTION_NAMES:
+        print 'Mass transfer stability'
+
+    print 'donor'
+    print donor
+    print ''
+    
+    Porb = orbital_period(bs)
+    Js = stellar_angular_momentum(donor, Porb)#accretor ook? check this
+    Jb = orbital_angular_momentum(bs)
+    
+    if REPORT_BINARY_EVOLUTION:
+        print "Darwin Riemann instability?:", Js, Jb, Jb/3.
+    
+    if Js >= Jb/3. :
+        if REPORT_BINARY_EVOLUTION:
+            print "Darwin Riemann instability"
+        common_envelope(bs, donor, accretor, tr)
+    else :
+        stable_mass_transfer(bs, donor, accretor, tr)
+#        accretor = companion_star(bs, donor)
+#        rochelobe_overflow(bs, donor, accretor)
+
+
+
+
+def semi_detached(bs, donor, accretor, tr):
     if REPORT_FUNCTION_NAMES:
         print 'Semi detached'
 
     print "Roche-lobe overflow by star with mass:", donor.mass
+    mass_transfer_stability(bs, donor, accretor, tr)
+
     exit(0)
-
-    #mass transfer stability
-    #common_envelope_phase(bs)
-    #stable_mass_transfer(bs)
-
-
-
-#    rstar = min(donor.radius, roche_radius(bs, donor))
-#    Porb = orbital_period(bs)
-#    mdc = donor.core_mass
-#    Js = stellar_angular_momentum(donor, Porb)
-#    Jb = binary_angular_momentum(bs)
-#    print "Semi-detached:", Js, Jb, Jb/3.
-#    if Js >= Jb/3. :
-#        print "Darwin Riemann instability"
-#        common_envelope(bs, donor)
-#    else :
-#        accretor = companion_star(bs, donor)
-#        rochelobe_overflow(bs, donor, accretor)
-
 
 
 
@@ -118,7 +159,7 @@ def contact_binary():
 #                                             bs.child2.previous_mass, bs.child2.mass)
 #    bs.semimajor_axis = a
 
-def detached(bs, tr):
+def detached(tr):
     # orbital evolution is being taken into account in secular_code        
     if REPORT_FUNCTION_NAMES:
         print 'Detached'
@@ -140,94 +181,43 @@ def triple_mass_transfer():
     exit(0)
 
 
-#def resolve_binary_interaction(bs):
-#   if bs.is_binary and bs.child1.is_star:
-#        Rl1 = roche_radius(bs, bs.child1)
-#        if REPORT_BINARY_EVOLUTION:
-#            print "Check for RLOF:", bs.child1.mass, bs.child1.previous_mass
-#            print "Check for RLOF:", Rl1, bs.child1.radius
-#                
-#        if bs.is_binary and bs.child2.is_star:
-#            Rl2 = roche_radius(bs, bs.child2)
-#            if REPORT_BINARY_EVOLUTION:
-#                print "Check for RLOF:", bs.child2.mass, bs.child2.previous_mass
-#                print "Check for RLOF:", Rl2, bs.child2.radius
-#            if Rl1 < bs.child1.radius: 
-#                if Rl2 < bs.child2.radius: 
-#                    contact_binary()
-#                else :
-#                    semi_detached(bs, bs.child1)
-#            else:
-#                if Rl2 < bs.child2.radius: 
-#                    semi_detached(bs, bs.child2)
-#                else:
-#                    detached(bs)
-#                                        
-#        elif bs.is_binary and bs.child2.is_binary:
-#            if REPORT_BINARY_EVOLUTION:
-#                print bs.mass, bs.child1.mass, bs.child2.mass
-#            if Rl1 < bs.child1.radius: 
-#                triple_mass_transfer()
-#            else:
-#                detached2(bs)
-#                
-#        else:
-#            print 'resolve binary interaction: type of system unknown'
-#            print bs.is_binary, 
-#            print bs.child1.is_binary, bs.child1.is_star, 
-#            print bs.child2.is_binary, bs.child2.is_star
-#            exit(-1) 
-#                               
-#   else:
-#        print 'resolve binary interaction: type of system unknown'
-#        print bs.is_binary, 
-#        print bs.child1.is_binary, bs.child1.is_star
-##        print bs.child2.is_binary, bs.child2.is_star
-#        exit(-1)                    
-#                        
-
-
-
-
 
 
 def resolve_binary_interaction(bs, tr):
-
+   if REPORT_FUNCTION_NAMES:
+        print 'Resolve binary interaction'
+    
    if bs.is_binary and bs.child1.is_star:
-        Rl1 = roche_radius(bs, bs.child1)
         if REPORT_BINARY_EVOLUTION:
+            Rl1 = roche_radius(bs, bs.child1)
             print "Check for RLOF:", bs.child1.mass, bs.child1.previous_mass
             print "Check for RLOF:", Rl1, bs.child1.radius
                 
         if bs.is_binary and bs.child2.is_star:
-            Rl2 = roche_radius(bs, bs.child2)
             if REPORT_BINARY_EVOLUTION:
+                Rl2 = roche_radius(bs, bs.child2)
                 print "Check for RLOF:", bs.child2.mass, bs.child2.previous_mass
                 print "Check for RLOF:", Rl2, bs.child2.radius
 
-
             if bs.child1.is_donor:
                 if bs.child2.is_donor:
-#            if Rl1 < bs.child1.radius: 
-#                if Rl2 < bs.child2.radius: 
                     contact_binary()
                 else :
-                    semi_detached(bs, bs.child1, tr)
+                    semi_detached(bs, bs.child1, bs.child2, tr)
             else:
-                if bs.child2.is_donor:
-                #Rl2 < bs.child2.radius: 
-                    semi_detached(bs, bs.child2)
+                if bs.child2.is_donor: 
+                    semi_detached(bs, bs.child2, bs.chil1, tr)
                 else:
-                    detached(bs, tr)
+                    detached(tr)
+                              
                                         
         elif bs.is_binary and bs.child2.is_binary:
             if REPORT_BINARY_EVOLUTION:
                 print bs.mass, bs.child1.mass, bs.child2.mass
             if bs.child1.is_donor:
-#            Rl1 < bs.child1.radius: 
                 triple_mass_transfer()
             else:
-                detached(bs, tr)
+                detached(tr)
                 
         else:
             print 'resolve binary interaction: type of system unknown'

@@ -1,9 +1,10 @@
 from amuse.lab import *
 from binary import *
+from math import sqrt
 
 ### added by Adrian ###
 from amuse.community.seculartriple_TPS.interface import SecularTriple
-import numpy
+import numpy as np
 from amuse.units import quantities
 from matplotlib import pyplot
 #######################
@@ -23,7 +24,8 @@ class Triple:
             metallicity,
             tend):
 
-        stars = self.make_stars(inner_primary_mass, inner_secondary_mass, outer_mass)
+        stars = self.make_stars(inner_primary_mass, inner_secondary_mass, outer_mass,
+            inner_semimajor_axis, outer_semimajor_axis)
         bins = self.make_bins(stars, inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
@@ -49,7 +51,7 @@ class Triple:
         self.update_previous_se_parameters()
         self.update_se_parameters() 
 
-    def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass):
+    def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass, inner_semimajor_axis, outer_semimajor_axis):
         stars = Particles(3)
         stars.is_star = True
         stars.is_binary = False 
@@ -59,9 +61,12 @@ class Triple:
         stars[1].mass = inner_secondary_mass
         stars[2].mass = outer_mass
 
-        stars[0].spin_angular_frequency = 0.0 | 1.0/units.yr
-        stars[1].spin_angular_frequency = 0.0 | 1.0/units.yr
-        stars[2].spin_angular_frequency = 0.0 | 1.0/units.yr
+        # default now corotating
+        corotating_angular_frequency_inner = 1./np.sqrt(inner_semimajor_axis**3/constants.G / (stars[0].mass + stars[1].mass))
+        corotating_angular_frequency_outer = 1./np.sqrt(outer_semimajor_axis**3/constants.G / (stars[0].mass + stars[1].mass + stars[2].mass))
+        stars[0].spin_angular_frequency = corotating_angular_frequency_inner 
+        stars[1].spin_angular_frequency = corotating_angular_frequency_inner 
+        stars[2].spin_angular_frequency = corotating_angular_frequency_outer
 
         stars[0].time_derivative_of_radius = 0.0 | units.RSun/units.yr
         stars[1].time_derivative_of_radius = 0.0 | units.RSun/units.yr
@@ -303,15 +308,15 @@ def evolve_triple(triple):
         triple.update_se_parameters()
         
         
-        #if !triple.first_contact:
+        if not triple.first_contact:
+            print 'perform mass transfer'
             #should be only stable mass transfer, but check this
-            #what should be the order, first mass transfer or first stellar evolution?
+            ##what should be the order, first mass transfer or first stellar evolution?
             #perform mass transfer
                 #how does amuse handle the type of material that is accreted?
 
 
         resolve_triple_interaction(triple)        
-#        triple.channel_to_se.copy()#masses
         
         
         
@@ -327,9 +332,9 @@ def evolve_triple(triple):
         #########################################
         
     ### temporary; only for plotting data ###
-    e_in_array = numpy.array(e_in_array)
-    g_in_array = numpy.array(g_in_array)
-    i_mutual_array = numpy.array(i_mutual_array)
+    e_in_array = np.array(e_in_array)
+    g_in_array = np.array(g_in_array)
+    i_mutual_array = np.array(i_mutual_array)
     triple.plot_data = plot_data_container()
     triple.plot_data.times_array = times_array
     triple.plot_data.a_in_array = a_in_array
@@ -360,14 +365,14 @@ def plot_function(triple):
     e_in_array = triple.plot_data.e_in_array
     i_mutual_array = triple.plot_data.i_mutual_array
     plot_e_in.plot(times_array_Myr,e_in_array)
-    plot_i_mutual.plot(times_array_Myr,i_mutual_array*180.0/numpy.pi)
-    plot_e_in_g_in.plot(numpy.cos(g_in_array),e_in_array)
+    plot_i_mutual.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
+    plot_e_in_g_in.plot(np.cos(g_in_array),e_in_array)
     plot_a_in.plot(times_array_Myr,a_in_array_AU)
 
     t_max_Myr = max(times_array_Myr)
     plot_e_in.set_xlim(0,t_max_Myr)
     plot_i_mutual.set_xlim(0,t_max_Myr)
-    plot_i_mutual.set_ylim(0.9*min(i_mutual_array*180.0/numpy.pi),1.1*max(i_mutual_array*180.0/numpy.pi))
+    plot_i_mutual.set_ylim(0.9*min(i_mutual_array*180.0/np.pi),1.1*max(i_mutual_array*180.0/np.pi))
 
     plot_e_in.set_xlabel('$t/\mathrm{Myr}$')
     plot_i_mutual.set_xlabel('$t/\mathrm{Myr}$')
@@ -398,7 +403,7 @@ def parse_arguments():
                       dest="outer_eccentricity", type="float", default = 0.5,
                       help="outer eccentricity [%default]")
     parser.add_option("-i",
-                      dest="mutual_inclination", type="float", default = 80.0*numpy.pi/180.0,
+                      dest="mutual_inclination", type="float", default = 80.0*np.pi/180.0,
                       help="mutual inclination [rad] [%default]")
     parser.add_option("-g",
                       dest="inner_argument_of_pericenter", type="float", default = 0.1,
