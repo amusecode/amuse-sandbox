@@ -192,7 +192,8 @@ class Triple:
         self.update_wind_mass_loss_rate()
         self.update_time_derivative_of_radius()
         self.update_accretion_efficiency_wind()
-            
+        self.update_envelope_mass()
+                    
     def update_wind_mass_loss_rate(self):
         #update wind mass loss rate
         #note wind mass loss rate < 0

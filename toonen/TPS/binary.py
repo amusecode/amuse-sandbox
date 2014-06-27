@@ -46,17 +46,18 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
     #update star / se code
     #change inner orbit
 
+#Following Webbink 1984
 def common_envelope_energy_balance(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:
         print 'Common envelope energy balance'
 
     alpha_lambda = common_envelope_efficiency(donor, accretor) * envelope_structure_parameter(donor)
     Rl_donor = roche_radius(bs, donor)
-    radius = min(donor.radius, Rl_donor)
-    a_new = bs.semi_major_axis * (donor.core_radius/donor.mass) / (1. + (2.*donor.envelope_mass/(alpha_lambda*radius*accretor.mass)))
+    donor_radius = min(donor.radius, Rl_donor)
+    a_new = bs.semi_major_axis * (donor.core_radius/donor.mass) / (1. + (2.*donor.envelope_mass/(alpha_lambda*donor_radius*accretor.mass)))
     
-    Rl_donor_new = roche_radius_dimensionless(donor.mass, accretor.mass)*a_new
-    Rl_accretor_new = roche_radius_dimensionless(accretor.mass, donor.mass)*a_new    
+    Rl_donor_new = roche_radius_dimensionless(donor.core_mass, accretor.mass)*a_new
+    Rl_accretor_new = roche_radius_dimensionless(accretor.mass, donor.core_mass)*a_new    
     
     if (donor.core_radius > Rl_donor_new) or (accretor.radius > Rl_accretor_new):
         print 'Merger in inner binary through common envelope phase (energy balance)'
@@ -79,10 +80,37 @@ def double_common_envelope_energy_balance(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:
         print 'Double common envelope energy balance'
 
-    #inner binary
-    #remove mass
-    #update star / se code
-    #change inner orbit
+    alpha_lambda_lambda = common_envelope_efficiency(donor, accretor) * envelope_structure_parameter(donor) * envelope_structure_parameter(accretor)
+
+    Rl_donor = roche_radius(bs, donor)
+    donor_radius = min(donor.radius, Rl_donor)
+    accretor_radius = accretor.radius
+    orb_energy_new = donor.mass * donor.envelope_mass / (alpha_lambda_lambda * donor_radius) +
+                    accretor.mass * accretor.envelope_mass / (alpha_lambda_lambda * accretor_radius) +
+                    donor.mass * accretor.mass/2/bs.semi_major_axis
+    a_new = donor.core_mass * accretor.core_mass / 2 / orb_energy_new
+
+
+    Rl_donor_new = roche_radius_dimensionless(donor.core_mass, accretor.core_mass)*a_new
+    Rl_accretor_new = roche_radius_dimensionless(accretor.core_mass, donor.core_mass)*a_new    
+    
+    if (donor.core_radius > Rl_donor_new) or (accretor.core_radius > Rl_accretor_new):
+        print 'Merger in inner binary through common envelope phase (double common envelope)'
+        exit(0)
+    else:
+        bs.semi_major_axis = a_new
+        bs.eccentricity = zero
+#        bs.argument_of_pericenter = 
+#        bs.inner_longitude_of_ascending_node =  
+#        donor.spin_angular_frequency = 
+#        accretor.spin_angular_frequency = 
+        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
+        accretor_in_se_code = accretor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        #accretor_in_se_code.change_mass(-1*accretor.envelope_mass)    reduce_mass not subtrac mass     
+
+        triple.channel_from_se.copy()
+
 
 def common_envelope_phase(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:
