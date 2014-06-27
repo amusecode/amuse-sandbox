@@ -5,6 +5,15 @@ from math import sqrt
 REPORT_BINARY_EVOLUTION = False
 REPORT_FUNCTION_NAMES = False
 
+#constants
+which_common_envelope = 0
+common_envelope_efficiency = 1.0
+envelope_structure_parameter = 0.5
+
+stellar_types_giants = [2,3,4,5,6,8,9]
+stellar_types_remnants = [10,11,12,13,14]
+
+
 def roche_radius_dimensionless(M, m) :
     # Assure that the q is calculated in identical units.
     unit = M.unit
@@ -22,35 +31,94 @@ def roche_radius(bin, primary):
     exit(1)
 
 
+def common_envelope_efficiency(donor, accretor):
+    return common_envelope_efficiency
 
+def envelope_structure_parameter(donor):
+    return envelope_structure_parameter
 
+def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
+    if REPORT_FUNCTION_NAMES:
+        print 'Common envelope angular momentum balance'
 
-#def common_envelope_angular_momentum_balance(bs, donor, accretor):
     #inner binary
     #remove mass
     #update star / se code
     #change inner orbit
 
-#def common_envelope_energy_balance(bs, donor, accretor):
+def common_envelope_energy_balance(bs, donor, accretor, triple):
+    if REPORT_FUNCTION_NAMES:
+        print 'Common envelope energy balance'
+
+    alpha_lambda = common_envelope_efficiency(donor, accretor) * envelope_structure_parameter(donor)
+    Rl_donor = roche_radius(bs, donor)
+    radius = min(donor.radius, Rl_donor)
+    a_new = bs.semi_major_axis * (donor.core_radius/donor.mass) / (1. + (2.*donor.envelope_mass/(alpha_lambda*radius*accretor.mass)))
+    
+    Rl_donor_new = roche_radius_dimensionless(donor.mass, accretor.mass)*a_new
+    Rl_accretor_new = roche_radius_dimensionless(accretor.mass, donor.mass)*a_new    
+    
+    if (donor.core_radius > Rl_donor_new) or (accretor.radius > Rl_accretor_new):
+        print 'Merger in inner binary through common envelope phase (energy balance)'
+        exit(0)
+    else:
+        bs.semi_major_axis = a_new
+        bs.eccentricity = zero
+#        bs.argument_of_pericenter = 
+#        bs.inner_longitude_of_ascending_node =  
+#        donor.spin_angular_frequency = 
+#        accretor.spin_angular_frequency = 
+        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
+        
+        triple.channel_from_se.copy()
+
+
+
+def double_common_envelope_energy_balance(bs, donor, accretor, triple):
+    if REPORT_FUNCTION_NAMES:
+        print 'Double common envelope energy balance'
+
     #inner binary
     #remove mass
     #update star / se code
     #change inner orbit
 
-#def double_common_envelope_energy_balance(bs, donor, accretor):
-    #inner binary
-    #remove mass
-    #update star / se code
-    #change inner orbit
-
-def common_envelope_phase(bs, donor, accretor):
+def common_envelope_phase(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:
         print 'Common envelope phase'
 
+    if donor.stellar_type not in stellar_types_giants and accretor.stellar_type not in stellar_types_giants:
+#        possible options: MS+MS, MS+remnant, remnant+remnant,
+#                          HeMS+HeMS, HeMS+MS, HeMS+remnant
+        print donor.stellar_type, accretor_stellar_type
+        print 'Merger in inner binary through common envelope phase (stellar types)'
+        exit(0)
+        
+    
+    if which_common_envelope == 0:
+        if donor.stellar_type in stellar_types_giants and accretor.stellar_type in stellar_types_giants:
+            double_common_envelope(bs, donor, accretor, triple)
+        else:
+            common_envelope_energy_balance(bs, donor, accretor, triple)
+    elif which_common_envelope == 1:
+        if donor.stellar_type in stellar_types_giants and accretor.stellar_type in stellar_types_giants:
+            double_common_envelope(bs, donor, accretor, triple)
+        else:
+            common_envelope_angular_momentum_balance(bs, donor, accretor, triple)
+    elif which_common_envelope == 2:
+        if donor.stellar_type in stellar_types_giants and accretor.stellar_type in stellar_types_giants:
+            #giant+giant
+            double_common_envelope(bs, donor, accretor, triple)
+        elif donor.stellar_type in stellar_types_remnants and accretor.stellar_type in stellar_types_remnants:
+            #giant+remnant
+            common_envelope_energy_balance(bs, donor, accretor, triple)
+        else:
+            #giant+normal(non-giant, non-remnant)
+            common_envelope_angular_momentum_balance(bs, donor, accretor, triple)
 
-#    common_envelope_energy_balance()
-#    common_envelope_angular_momentum_balance()
-#    double_common_envelope
+
+        
     
     #outer binary
     #adiabatic_expansion_due_to_mass_loss ->instantaneous effect
@@ -58,7 +126,7 @@ def common_envelope_phase(bs, donor, accretor):
     donor.is_donor = False
     
 
-def stable_mass_transfer(bs, donor, accretor):
+def stable_mass_transfer(bs, donor, accretor, triple):
     # orbital evolution is being taken into account in secular_code        
     if REPORT_FUNCTION_NAMES:
         print 'Stable mass transfer'
