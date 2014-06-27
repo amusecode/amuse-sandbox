@@ -25,14 +25,32 @@ def roche_radius(bin, primary):
 
 
 
-def common_envelope_phase(bs, donor, accretor, tr):
-    if REPORT_FUNCTION_NAMES:
-        print 'Common envelope phase'
-
+#def common_envelope_angular_momentum_balance(bs, donor, accretor):
     #inner binary
     #remove mass
     #update star / se code
     #change inner orbit
+
+#def common_envelope_energy_balance(bs, donor, accretor):
+    #inner binary
+    #remove mass
+    #update star / se code
+    #change inner orbit
+
+#def double_common_envelope_energy_balance(bs, donor, accretor):
+    #inner binary
+    #remove mass
+    #update star / se code
+    #change inner orbit
+
+def common_envelope_phase(bs, donor, accretor, tr):
+    if REPORT_FUNCTION_NAMES:
+        print 'Common envelope phase'
+
+
+#    common_envelope_energy_balance()
+#    common_envelope_angular_momentum_balance()
+#    double_common_envelope
     
     #outer binary
     #adiabatic_expansion_due_to_mass_loss ->instantaneous effect
@@ -46,17 +64,17 @@ def stable_mass_transfer(bs, donor, accretor, tr):
         print 'Stable mass transfer'
 
     #set mass transfer rate
+    
     dt = tr.timestep
     dm = bs.mass_transfer_rate * dt
 #    donor->self.se_code.particles[x].change_mass(dm, dt)
-    
     
     Md = donor.mass
     Ma = accretor.mass
     print Md, Ma, 
     print donor.previous_mass, accretor.previous_mass
     # there is an implicit assumption in change_mass that the accreted mass is of solar composition (hydrogen)
-#    accretor->self.se_code.particles[x].change_mass(-1*dm, dt)
+#    donor->self.se_code.particles[x].change_mass(-1*dm, dt)
     # for now, only conservative mass transfer   
 #    accretor->self.se_code.particles[x].change_mass(-1*dm, -1*dt)
     triple.channel_from_se.copy()
@@ -68,6 +86,7 @@ def stable_mass_transfer(bs, donor, accretor, tr):
     accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
     print accretion_efficiency
 #    bins[0].accretion_efficiency_mass_transfer = accretion_efficiency
+
 
 def orbital_angular_momentum(bs):
 
@@ -204,7 +223,7 @@ def resolve_binary_interaction(bs, tr):
             print "Check for RLOF:", bs.child1.mass, bs.child1.previous_mass
             print "Check for RLOF:", Rl1, bs.child1.radius
                 
-        if bs.is_binary and bs.child2.is_star:
+        if bs.child2.is_star:
             if REPORT_BINARY_EVOLUTION:
                 Rl2 = roche_radius(bs, bs.child2)
                 print "Check for RLOF:", bs.child2.mass, bs.child2.previous_mass
@@ -214,15 +233,15 @@ def resolve_binary_interaction(bs, tr):
                 if bs.child2.is_donor:
                     contact_binary()
                 else :
-                    semi_detached(bs, bs.child1, bs.child2, tr)
+                    semi_detached(bs, bs.child1, bs.child2, outer_binary)
             else:
                 if bs.child2.is_donor: 
-                    semi_detached(bs, bs.child2, bs.chil1, tr)
+                    semi_detached(bs, bs.child2, bs.child1, tr)
                 else:
                     detached(tr)
                               
                                         
-        elif bs.is_binary and bs.child2.is_binary:
+        elif bs.child2.is_binary:
             if REPORT_BINARY_EVOLUTION:
                 print bs.mass, bs.child1.mass, bs.child2.mass
             if bs.child1.is_donor:
