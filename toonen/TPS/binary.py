@@ -38,20 +38,42 @@ def common_envelope_phase(bs, donor, accretor, tr):
     #adiabatic_expansion_due_to_mass_loss ->instantaneous effect
 
     donor.is_donor = False
-    # update orbital parameters in the secular code
+    # update stellar and orbital parameters in the secular code
     tr.channel_to_secular.copy()    
     
 
 def stable_mass_transfer(bs, donor, accretor, tr):
+    # orbital evolution is being taken into account in secular_code        
     if REPORT_FUNCTION_NAMES:
         print 'Stable mass transfer'
 
     #set mass transfer rate
-    #set accretion efficiency
+    dt = tr.timestep
+    dm = bs.mass_transfer_rate * dt
+#    donor->self.se_code.particles[x].change_mass(dm, dt)
+    
+    
+    Md = donor.mass
+    Ma = accretor.mass
+    print Md, Ma, 
+    print donor.previous_mass, accretor.previous_mass
+    # there is an implicit assumption in change_mass that the accreted mass is of solar composition (hydrogen)
+#    accretor->self.se_code.particles[x].change_mass(-1*dm, dt)
+    # for now, only conservative mass transfer   
+#    accretor->self.se_code.particles[x].change_mass(-1*dm, -1*dt)
+    triple.channel_from_se.copy()
 
-    #where
-    #set timestep
-    #tr.channel_to_secular.copy()    ?? volgens mij niet
+    Md_new = donor.mass
+    Ma_new = accretor.mass
+    print Md_new, Ma_new, Md-Md_new, Ma-Ma_new
+    print 'check if this is indeed conservative'
+    accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
+    print accretion_efficiency
+#    bins[0].accretion_efficiency_mass_transfer = accretion_efficiency
+    
+    # update stellar parameters in the secular code
+    print 'hmm where should info to secular code be updated?'
+    tr.channel_to_secular.copy()   
 
 
 def orbital_angular_momentum(bs):
@@ -81,15 +103,10 @@ def orbital_period(bs):
 
 
 def mass_transfer_stability(bs, donor, accretor, tr):
-#For now only check on dynamical instability... how would this come out of adrians code?
 
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer stability'
 
-    print 'donor'
-    print donor
-    print ''
-    
     Porb = orbital_period(bs)
     Js = stellar_angular_momentum(donor, Porb)#accretor ook? check this
     Jb = orbital_angular_momentum(bs)
@@ -199,7 +216,7 @@ def resolve_binary_interaction(bs, tr):
                 print "Check for RLOF:", bs.child2.mass, bs.child2.previous_mass
                 print "Check for RLOF:", Rl2, bs.child2.radius
 
-            if bs.child1.is_donor:
+            if bs.child1.is_donor:            
                 if bs.child2.is_donor:
                     contact_binary()
                 else :

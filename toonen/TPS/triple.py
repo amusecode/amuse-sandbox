@@ -11,6 +11,8 @@ from matplotlib import pyplot
 
 #constants
 timestep_factor = 0.01
+#error_dm
+#error_dr
 
 REPORT_TRIPLE_EVOLUTION = False
 
@@ -169,6 +171,7 @@ class Triple:
         self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.radius
 
         #update wind mass loss rate
+        #note wind mass loss rate < 0
         timestep = self.time - self.previous_time
         if timestep > 0|units.yr: #maybe better to get the rate directly out of seba
             self.particles[0].inner_binary.child1.wind_mass_loss_rate = (self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.previous_mass)/timestep
@@ -181,6 +184,7 @@ class Triple:
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             
         #update time_derivative_of_radius for effect of wind on spin
+        #radius change due to stellar evolution, not mass transfer
         if timestep > 0|units.yr:
             self.particles[0].inner_binary.child1.time_derivative_of_radius = (self.particles[0].inner_binary.child1.radius - self.particles[0].inner_binary.child1.previous_radius)/timestep
             self.particles[0].inner_binary.child2.time_derivative_of_radius = (self.particles[0].inner_binary.child2.radius - self.particles[0].inner_binary.child2.previous_radius)/timestep
@@ -247,27 +251,23 @@ def determine_timestep(triple):
 #class function?       
     if REPORT_TRIPLE_EVOLUTION:
         print "Dt=", triple.se_code.particles.time_step,
-        print triple.particles[0].outer_binary.child1.time_step,
-        print triple.particles[0].inner_binary.child1.time_step,
-        print triple.particles[0].inner_binary.child2.time_step,
         print triple.tend/100.0
 
     ### for testing/plotting purposes only ###
     timestep = triple.tend/100.0 
-    ##########################################
 
-    timestep = min(triple.tend/100.0, 
+    timestep = min(timestep, 
         triple.particles[0].outer_binary.child1.time_step,
         triple.particles[0].inner_binary.child1.time_step,
         triple.particles[0].inner_binary.child2.time_step)
         
     #during stable mass transfer     
     if (triple.particles[0].inner_binary.child1.is_donor):
-        timestep = min(timestep, timestep_factor*triple.particles[0].inner_binary.child1.mass/triple.particles[0].inner_binary.child1.mass_transfer_rate)
+        timestep = min(timestep, abs(timestep_factor*triple.particles[0].inner_binary.child1.mass/triple.particles[0].inner_binary.child1.mass_transfer_rate))
     if (triple.particles[0].inner_binary.child2.is_donor):
-        timestep = min(timestep, timestep_factor*triple.particles[0].inner_binary.child2.mass/triple.particles[0].inner_binary.child2.mass_transfer_rate)
+        timestep = min(timestep, abs(timestep_factor*triple.particles[0].inner_binary.child2.mass/triple.particles[0].inner_binary.child2.mass_transfer_rate))
     if (triple.particles[0].outer_binary.child1.is_donor):
-        timestep = min(timestep, timestep_factor*triple.particles[0].outer_binary.child1.mass/triple.particles[0].outer_binary.child1.mass_transfer_rate)
+        timestep = min(timestep, abs(timestep_factor*triple.particles[0].outer_binary.child1.mass/triple.particles[0].outer_binary.child1.mass_transfer_rate))
         
     triple.time += timestep
 
@@ -277,20 +277,20 @@ def determine_timestep(triple):
 
 def evolve_triple(triple):
     
-    ### temporary; only for plotting data ###
+    # for plotting data
     times_array = quantities.AdaptingVectorQuantity() 
     a_in_array = quantities.AdaptingVectorQuantity()
     e_in_array = []
     i_mutual_array = []
     g_in_array = []
-    #########################################
+
+
 
     while triple.time<triple.tend:
         triple.update_previous_se_parameters()
         determine_timestep(triple)        
 
-
-        ### do secular evolution ###
+        # do secular evolution
         if triple.is_triple == True:
             triple.secular_code.evolve_model(triple.time)
         else:
@@ -310,16 +310,22 @@ def evolve_triple(triple):
         triple.channel_from_secular.copy() 
 
 
-        #when the secular code finds that mass transfer starts, evolve the stars only until that time
+        # when the secular code finds that mass transfer starts, evolve the stars only until that time
         if ((triple.particles[0].inner_binary.child1.is_donor or
             triple.particles[0].inner_binary.child2.is_donor or
             triple.particles[0].outer_binary.child1.is_donor) and
             triple.first_contact):
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Times:', triple.previous_time, triple.time, triple.secular_code.model_time
-                triple.time = triple.secular_code.model_time     
+                triple.time = triple.secular_code.model_time 
+                
+                # mass should not be transferred just yet -> check if this works ok
+                # do not overwrite this parameter in the secular code    
+                triple.particles[0].inner_binary.child1.is_donor = False
+                triple.particles[0].inner_binary.child2.is_donor = False
+                triple.particles[0].outer_binary.child1.is_donor = False
 
-        ### do stellar evolution ###
+        #do stellar evolution 
         triple.se_code.evolve_model(triple.time)
         triple.channel_from_se.copy()
         triple.update_se_parameters()
@@ -339,8 +345,11 @@ def evolve_triple(triple):
             print dm_1, dm_2, dm_3
         error_dm = 0.05
         if (dm_1 > error_dm) or (dm_2 > error_dm) or (dm_3 > error_dm):
-            print dm_1, dm_2, dm_3
             print 'Change in mass in a single timestep larger then', error_dm
+            print dm_1, dm_2, dm_3
+            print triple.particles[0].inner_binary.child1.stellar_type
+            print triple.particles[0].inner_binary.child2.stellar_type
+            print triple.particles[0].outer_binary.child1.stellar_type
             exit(-1)
 
 
@@ -352,40 +361,32 @@ def evolve_triple(triple):
             print triple.particles[0].inner_binary.child1.time_derivative_of_radius,
             print triple.particles[0].inner_binary.child2.time_derivative_of_radius,
             print triple.particles[0].outer_binary.child1.time_derivative_of_radius
-            print 'relavite change in radius:',
+            print 'relative change in radius:',
             print dr_1, dr_2, dr_3
         error_dr = 0.05
         if (dr_1 > error_dr) or (dr_2 > error_dr) or (dr_3 > error_dr):
-            print dr_1, dr_2, dr_3
             print 'Change in radius in a single timestep larger then', error_dr
+            print dr_1, dr_2, dr_3
+            print triple.particles[0].inner_binary.child1.stellar_type
+            print triple.particles[0].inner_binary.child2.stellar_type
+            print triple.particles[0].outer_binary.child1.stellar_type
             exit(-1)
         
-
-
-        if not triple.first_contact:
-            print 'perform mass transfer'
-            #should be only stable mass transfer, but check this
-            ##what should be the order, first mass transfer or first stellar evolution?
-            #perform mass transfer
-                #how does amuse handle the type of material that is accreted?
-
-
+        ##what should be the order, first mass transfer or first stellar evolution?
         resolve_triple_interaction(triple)        
+#        Rl1, Rl2, Rl3 = triple.secular_code.give_roche_radii(triple.particles[0])
         
         
         
         
-        
-        
-        ### temporary; only for plotting data ###
+        # for plotting data
         times_array.append(triple.time)
         e_in_array.append(triple.particles[0].inner_binary.eccentricity)
         a_in_array.append(triple.particles[0].inner_binary.semimajor_axis)
         g_in_array.append(triple.particles[0].inner_binary.argument_of_pericenter)    
         i_mutual_array.append(triple.particles[0].mutual_inclination)        
-        #########################################
         
-    ### temporary; only for plotting data ###
+    # for plotting data
     e_in_array = np.array(e_in_array)
     g_in_array = np.array(g_in_array)
     i_mutual_array = np.array(i_mutual_array)
@@ -438,6 +439,9 @@ def plot_function(triple):
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
 
     pyplot.show()
+
+
+
 
 def parse_arguments():
     from amuse.units.optparse import OptionParser
