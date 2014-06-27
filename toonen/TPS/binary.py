@@ -301,21 +301,19 @@ def resolve_binary_interaction(bs, tr):
                 print "Check for RLOF:", bs.child2.mass, bs.child2.previous_mass
                 print "Check for RLOF:", Rl2, bs.child2.radius
 
-            if bs.child1.is_donor:            
-                if bs.child2.is_donor:
-                    contact_binary()
-                else :
-                    semi_detached(bs, bs.child1, bs.child2, outer_binary)
+            if bs.child1.is_donor and bs.child2.is_donor:
+                contact_binary()
+            elif bs.child1.is_donor and not bs.child2.is_donor:
+                semi_detached(bs, bs.child1, bs.child2, outer_binary)
+            elif not bs.child1.is_donor and bs.child2.is_donor:
+                semi_detached(bs, bs.child2, bs.child1, tr)
             else:
-                if bs.child2.is_donor: 
-                    semi_detached(bs, bs.child2, bs.child1, tr)
-                else:
-                    detached(tr)
-                              
+                detached(tr)
                                         
         elif bs.child2.is_binary:
             if REPORT_BINARY_EVOLUTION:
                 print bs.mass, bs.child1.mass, bs.child2.mass
+
             if bs.child1.is_donor:
                 triple_mass_transfer()
             else:
