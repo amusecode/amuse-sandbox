@@ -38,8 +38,6 @@ def common_envelope_phase(bs, donor, accretor, tr):
     #adiabatic_expansion_due_to_mass_loss ->instantaneous effect
 
     donor.is_donor = False
-    # update stellar and orbital parameters in the secular code
-    tr.channel_to_secular.copy()    
     
 
 def stable_mass_transfer(bs, donor, accretor, tr):
@@ -70,11 +68,6 @@ def stable_mass_transfer(bs, donor, accretor, tr):
     accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
     print accretion_efficiency
 #    bins[0].accretion_efficiency_mass_transfer = accretion_efficiency
-    
-    # update stellar parameters in the secular code
-    print 'hmm where should info to secular code be updated?'
-    tr.channel_to_secular.copy()   
-
 
 def orbital_angular_momentum(bs):
 
@@ -191,6 +184,7 @@ def detached(tr):
 
 
 def triple_mass_transfer():
+    # orbital evolution is being taken into account in secular_code        
     if REPORT_FUNCTION_NAMES:
         print 'Triple mass transfer'
 

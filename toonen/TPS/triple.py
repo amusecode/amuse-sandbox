@@ -158,30 +158,20 @@ class Triple:
         self.particles[0].outer_binary.child1.previous_radius = self.particles[0].outer_binary.child1.radius 
 
 
-    def update_se_parameters(self):
-        #update envelope mass
-        self.particles[0].inner_binary.child1.envelope_mass = self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.core_mass
-        self.particles[0].inner_binary.child2.envelope_mass = self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.core_mass
-        self.particles[0].outer_binary.child1.envelope_mass = self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.core_mass
-        
-        #update convective envelope radius
-        #the prescription of Hurley, Tout & Pols 2002 will be implemented in SeBa later
-        self.particles[0].inner_binary.child1.convective_envelope_radius = self.particles[0].inner_binary.child1.radius 
-        self.particles[0].inner_binary.child2.convective_envelope_radius = self.particles[0].inner_binary.child2.radius 
-        self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.radius
-
+    def update_se_wind_parameters(self):
         #update wind mass loss rate
         #note wind mass loss rate < 0
         timestep = self.time - self.previous_time
-        if timestep > 0|units.yr: #maybe better to get the rate directly out of seba
+        if timestep > 0|units.yr: 
             self.particles[0].inner_binary.child1.wind_mass_loss_rate = (self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.previous_mass)/timestep
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = (self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.previous_mass)/timestep
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = (self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.previous_mass)/timestep
         else:
             #initialization
-            self.particles[0].inner_binary.child1.wind_mass_loss_rate = -1.0e-6|units.MSun/units.yr
+            self.particles[0].inner_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+            
             
         #update time_derivative_of_radius for effect of wind on spin
         #radius change due to stellar evolution, not mass transfer
@@ -201,6 +191,22 @@ class Triple:
         self.particles[0].inner_binary.accretion_efficiency_wind_child2_to_child1 = 0.0
         self.particles[0].outer_binary.accretion_efficiency_wind_child1_to_child2 = 0.0
         self.particles[0].outer_binary.accretion_efficiency_wind_child2_to_child1 = 0.0
+
+
+
+
+    def update_se_parameters(self):
+        #update envelope mass
+        self.particles[0].inner_binary.child1.envelope_mass = self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.core_mass
+        self.particles[0].inner_binary.child2.envelope_mass = self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.core_mass
+        self.particles[0].outer_binary.child1.envelope_mass = self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.core_mass
+        
+        #update convective envelope radius
+        #the prescription of Hurley, Tout & Pols 2002 will be implemented in SeBa later
+        self.particles[0].inner_binary.child1.convective_envelope_radius = self.particles[0].inner_binary.child1.radius 
+        self.particles[0].inner_binary.child2.convective_envelope_radius = self.particles[0].inner_binary.child2.radius 
+        self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.radius
+
 
 
         #update gyration radius
@@ -245,93 +251,7 @@ def resolve_triple_interaction(triple):
 
 
 
-
-    
-def determine_timestep(triple):         
-#class function?       
-    if REPORT_TRIPLE_EVOLUTION:
-        print "Dt=", triple.se_code.particles.time_step,
-        print triple.tend/100.0
-
-    ### for testing/plotting purposes only ###
-    timestep = triple.tend/100.0 
-
-    timestep = min(timestep, 
-        triple.particles[0].outer_binary.child1.time_step,
-        triple.particles[0].inner_binary.child1.time_step,
-        triple.particles[0].inner_binary.child2.time_step)
-        
-    #during stable mass transfer     
-    if (triple.particles[0].inner_binary.child1.is_donor):
-        timestep = min(timestep, abs(timestep_factor*triple.particles[0].inner_binary.child1.mass/triple.particles[0].inner_binary.child1.mass_transfer_rate))
-    if (triple.particles[0].inner_binary.child2.is_donor):
-        timestep = min(timestep, abs(timestep_factor*triple.particles[0].inner_binary.child2.mass/triple.particles[0].inner_binary.child2.mass_transfer_rate))
-    if (triple.particles[0].outer_binary.child1.is_donor):
-        timestep = min(timestep, abs(timestep_factor*triple.particles[0].outer_binary.child1.mass/triple.particles[0].outer_binary.child1.mass_transfer_rate))
-        
-    triple.time += timestep
-
-
-
-
-
-def evolve_triple(triple):
-    
-    # for plotting data
-    times_array = quantities.AdaptingVectorQuantity() 
-    a_in_array = quantities.AdaptingVectorQuantity()
-    e_in_array = []
-    i_mutual_array = []
-    g_in_array = []
-
-
-
-    while triple.time<triple.tend:
-        triple.update_previous_se_parameters()
-        determine_timestep(triple)        
-
-        # do secular evolution
-        if triple.is_triple == True:
-            triple.secular_code.evolve_model(triple.time)
-        else:
-            print 'Secular code disabled'
-            exit(-1)
-
-        if triple.secular_code.triples[0].dynamical_instability == True:
-            print "Dynamical instability at time/Myr = ",time.value_in(units.Myr)
-            exit(0)
-        if triple.secular_code.triples[0].inner_collision == True:
-            print "Inner collision at time/Myr = ",time.value_in(units.Myr)
-            exit(0)
-        if triple.secular_code.triples[0].outer_collision == True:
-            print "Outer collision at time/Myr = ",time.value_in(units.Myr)
-            exit(0)
-        # this updates orbital elements within triple.particles[0] 
-        triple.channel_from_secular.copy() 
-
-
-        # when the secular code finds that mass transfer starts, evolve the stars only until that time
-        if ((triple.particles[0].inner_binary.child1.is_donor or
-            triple.particles[0].inner_binary.child2.is_donor or
-            triple.particles[0].outer_binary.child1.is_donor) and
-            triple.first_contact):
-                if REPORT_TRIPLE_EVOLUTION:
-                    print 'Times:', triple.previous_time, triple.time, triple.secular_code.model_time
-                triple.time = triple.secular_code.model_time 
-                
-                # mass should not be transferred just yet -> check if this works ok
-                # do not overwrite this parameter in the secular code    
-                triple.particles[0].inner_binary.child1.is_donor = False
-                triple.particles[0].inner_binary.child2.is_donor = False
-                triple.particles[0].outer_binary.child1.is_donor = False
-
-        #do stellar evolution 
-        triple.se_code.evolve_model(triple.time)
-        triple.channel_from_se.copy()
-        triple.update_se_parameters()
-        
-        
-        #safety check
+def safety_check_timestep(triple):
         dm_1 = (triple.particles[0].inner_binary.child1.mass - triple.particles[0].inner_binary.child1.previous_mass)/triple.particles[0].inner_binary.child1.mass
         dm_2 = (triple.particles[0].inner_binary.child2.mass - triple.particles[0].inner_binary.child2.previous_mass)/triple.particles[0].inner_binary.child2.mass
         dm_3 = (triple.particles[0].outer_binary.child1.mass - triple.particles[0].outer_binary.child1.previous_mass)/triple.particles[0].outer_binary.child1.mass
@@ -372,11 +292,102 @@ def evolve_triple(triple):
             print triple.particles[0].outer_binary.child1.stellar_type
             exit(-1)
         
+
+    
+def determine_timestep(triple):         
+#class function?       
+    if REPORT_TRIPLE_EVOLUTION:
+        print "Dt=", triple.se_code.particles.time_step,
+        print triple.tend/100.0
+
+    ### for testing/plotting purposes only ###
+    timestep = triple.tend/100.0 
+
+    timestep = min(timestep, 
+        triple.particles[0].outer_binary.child1.time_step,
+        triple.particles[0].inner_binary.child1.time_step,
+        triple.particles[0].inner_binary.child2.time_step)
+        
+    #during stable mass transfer     
+    if (triple.particles[0].inner_binary.child1.is_donor):
+        timestep = min(timestep, abs(timestep_factor*triple.particles[0].inner_binary.child1.mass/triple.particles[0].inner_binary.child1.mass_transfer_rate))
+    if (triple.particles[0].inner_binary.child2.is_donor):
+        timestep = min(timestep, abs(timestep_factor*triple.particles[0].inner_binary.child2.mass/triple.particles[0].inner_binary.child2.mass_transfer_rate))
+    if (triple.particles[0].outer_binary.child1.is_donor):
+        timestep = min(timestep, abs(timestep_factor*triple.particles[0].outer_binary.child1.mass/triple.particles[0].outer_binary.child1.mass_transfer_rate))
+        
+    triple.time += timestep
+
+
+
+
+
+def evolve_triple(triple):
+    
+    # for plotting data
+    times_array = quantities.AdaptingVectorQuantity() 
+    a_in_array = quantities.AdaptingVectorQuantity()
+    e_in_array = []
+    i_mutual_array = []
+    g_in_array = []
+
+
+    while triple.time<triple.tend:
+        triple.update_previous_se_parameters()
+        determine_timestep(triple)        
+
+        # update stellar parameters in the secular code
+        tr.channel_to_secular.copy()   
+        
+        # do secular evolution
+        if triple.is_triple == True:
+            triple.secular_code.evolve_model(triple.time)
+        else:
+            print 'Secular code disabled'
+            exit(-1)
+
+        if triple.secular_code.triples[0].dynamical_instability == True:
+            print "Dynamical instability at time/Myr = ",time.value_in(units.Myr)
+            exit(0)
+        if triple.secular_code.triples[0].inner_collision == True:
+            print "Inner collision at time/Myr = ",time.value_in(units.Myr)
+            exit(0)
+        if triple.secular_code.triples[0].outer_collision == True:
+            print "Outer collision at time/Myr = ",time.value_in(units.Myr)
+            exit(0)
+        # this updates orbital elements within triple.particles[0] 
+        triple.channel_from_secular.copy() 
+
+
+        # when the secular code finds that mass transfer starts, evolve the stars only until that time
+        if ((triple.particles[0].inner_binary.child1.is_donor or
+            triple.particles[0].inner_binary.child2.is_donor or
+            triple.particles[0].outer_binary.child1.is_donor) and
+            triple.first_contact):
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'Times:', triple.previous_time, triple.time, triple.secular_code.model_time
+                triple.time = triple.secular_code.model_time 
+                
+                # mass should not be transferred just yet -> check if this works ok
+                # do not overwrite this parameter in the secular code    
+                triple.particles[0].inner_binary.child1.is_donor = False
+                triple.particles[0].inner_binary.child2.is_donor = False
+                triple.particles[0].outer_binary.child1.is_donor = False
+
+
+        #do stellar evolution 
+        triple.se_code.evolve_model(triple.time)
+        triple.channel_from_se.copy()
+        triple.update_se_wind_parameters()
+        
+        safety_check_timesteps(triple)
+        
         ##what should be the order, first mass transfer or first stellar evolution?
         resolve_triple_interaction(triple)        
 #        Rl1, Rl2, Rl3 = triple.secular_code.give_roche_radii(triple.particles[0])
+        triple.update_se_parameters()
         
-        
+        #should also do safety check timesteps here
         
         
         # for plotting data
