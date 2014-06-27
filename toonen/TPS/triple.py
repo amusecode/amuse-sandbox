@@ -17,6 +17,7 @@ timestep_factor = 0.01
 REPORT_TRIPLE_EVOLUTION = False
 
 class Triple:
+    #-------
     def __init__(self, inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
@@ -109,7 +110,9 @@ class Triple:
             x.mass = x.child1.mass + x.child2.mass
 
         return bins
-        
+    #-------
+            
+    #-------
     def setup_se_code(self, metallicity, stars):
         self.se_code = SeBa()
         self.se_code.parameters.metallicity = metallicity
@@ -144,7 +147,33 @@ class Triple:
 
         self.channel_from_secular = self.secular_code.triples.new_channel_to(triples)
         self.channel_to_secular = triples.new_channel_to(self.secular_code.triples)
+    #-------
 
+
+
+    def determine_timestep(self):         
+        if REPORT_TRIPLE_EVOLUTION:
+            print "Dt=", self.se_code.particles.time_step, self.tend/100.0
+    
+        ### for testing/plotting purposes only ###
+        timestep = self.tend/100.0 
+    
+        timestep = min(timestep, 
+            self.particles[0].outer_binary.child1.time_step,
+            self.particles[0].inner_binary.child1.time_step,
+            self.particles[0].inner_binary.child2.time_step)
+            
+        #during stable mass transfer     
+        if (self.particles[0].inner_binary.child1.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child1.mass/self.particles[0].inner_binary.child1.mass_transfer_rate))
+        if (self.particles[0].inner_binary.child2.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child2.mass/self.particles[0].inner_binary.child2.mass_transfer_rate))
+        if (self.particles[0].outer_binary.child1.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].outer_binary.child1.mass/self.particles[0].outer_binary.child1.mass_transfer_rate))
+            
+        self.time += timestep
+    
+    #-------
     def update_previous_se_parameters(self):
         self.previous_time = self.time
 
@@ -156,9 +185,15 @@ class Triple:
         self.particles[0].inner_binary.child1.previous_radius = self.particles[0].inner_binary.child1.radius 
         self.particles[0].inner_binary.child2.previous_radius = self.particles[0].inner_binary.child2.radius 
         self.particles[0].outer_binary.child1.previous_radius = self.particles[0].outer_binary.child1.radius 
+    #-------
 
-
+    #-------
     def update_se_wind_parameters(self):
+        self.update_wind_mass_loss_rate()
+        self.update_time_derivative_of_radius()
+        self.update_accretion_efficiency_wind()
+            
+    def update_wind_mass_loss_rate(self):
         #update wind mass loss rate
         #note wind mass loss rate < 0
         timestep = self.time - self.previous_time
@@ -172,9 +207,10 @@ class Triple:
             self.particles[0].inner_binary.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             
-            
+    def update_time_derivative_of_radius(self):
         #update time_derivative_of_radius for effect of wind on spin
         #radius change due to stellar evolution, not mass transfer
+        timestep = self.time - self.previous_time
         if timestep > 0|units.yr:
             self.particles[0].inner_binary.child1.time_derivative_of_radius = (self.particles[0].inner_binary.child1.radius - self.particles[0].inner_binary.child1.previous_radius)/timestep
             self.particles[0].inner_binary.child2.time_derivative_of_radius = (self.particles[0].inner_binary.child2.radius - self.particles[0].inner_binary.child2.previous_radius)/timestep
@@ -185,34 +221,39 @@ class Triple:
             self.particles[0].inner_binary.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].outer_binary.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
 
-
+    def update_accretion_efficiency_wind(self):
         #update accretion efficiency of wind mass loss
         self.particles[0].inner_binary.accretion_efficiency_wind_child1_to_child2 = 0.0
         self.particles[0].inner_binary.accretion_efficiency_wind_child2_to_child1 = 0.0
         self.particles[0].outer_binary.accretion_efficiency_wind_child1_to_child2 = 0.0
         self.particles[0].outer_binary.accretion_efficiency_wind_child2_to_child1 = 0.0
+    #-------
 
-
-
-
+    #-------
     def update_se_parameters(self):
+        self.update_envelope_mass()
+        self.update_convective_envelope_radius()
+        self.update_gyration_radius()
+        
+    def update_envelope_mass(self):
         #update envelope mass
         self.particles[0].inner_binary.child1.envelope_mass = self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.core_mass
         self.particles[0].inner_binary.child2.envelope_mass = self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.core_mass
         self.particles[0].outer_binary.child1.envelope_mass = self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.core_mass
         
+    def update_convective_envelope_radius(self):
         #update convective envelope radius
         #the prescription of Hurley, Tout & Pols 2002 will be implemented in SeBa later
         self.particles[0].inner_binary.child1.convective_envelope_radius = self.particles[0].inner_binary.child1.radius 
         self.particles[0].inner_binary.child2.convective_envelope_radius = self.particles[0].inner_binary.child2.radius 
         self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.radius
 
-
-
+    def update_gyration_radius(self):
         #update gyration radius
         self.particles[0].inner_binary.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
         self.particles[0].inner_binary.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
         self.particles[0].outer_binary.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
+    #-------
         
         
 
@@ -294,34 +335,6 @@ def safety_check_timestep(triple):
         
 
     
-def determine_timestep(triple):         
-#class function?       
-    if REPORT_TRIPLE_EVOLUTION:
-        print "Dt=", triple.se_code.particles.time_step,
-        print triple.tend/100.0
-
-    ### for testing/plotting purposes only ###
-    timestep = triple.tend/100.0 
-
-    timestep = min(timestep, 
-        triple.particles[0].outer_binary.child1.time_step,
-        triple.particles[0].inner_binary.child1.time_step,
-        triple.particles[0].inner_binary.child2.time_step)
-        
-    #during stable mass transfer     
-    if (triple.particles[0].inner_binary.child1.is_donor):
-        timestep = min(timestep, abs(timestep_factor*triple.particles[0].inner_binary.child1.mass/triple.particles[0].inner_binary.child1.mass_transfer_rate))
-    if (triple.particles[0].inner_binary.child2.is_donor):
-        timestep = min(timestep, abs(timestep_factor*triple.particles[0].inner_binary.child2.mass/triple.particles[0].inner_binary.child2.mass_transfer_rate))
-    if (triple.particles[0].outer_binary.child1.is_donor):
-        timestep = min(timestep, abs(timestep_factor*triple.particles[0].outer_binary.child1.mass/triple.particles[0].outer_binary.child1.mass_transfer_rate))
-        
-    triple.time += timestep
-
-
-
-
-
 def evolve_triple(triple):
     
     # for plotting data
@@ -334,7 +347,7 @@ def evolve_triple(triple):
 
     while triple.time<triple.tend:
         triple.update_previous_se_parameters()
-        determine_timestep(triple)        
+        triple.determine_timestep()        
 
         # update stellar parameters in the secular code
         triple.channel_to_secular.copy()   
