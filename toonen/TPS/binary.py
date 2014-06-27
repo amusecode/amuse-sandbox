@@ -43,7 +43,7 @@ def roche_radius(bin, primary):
     #update star / se code
     #change inner orbit
 
-def common_envelope_phase(bs, donor, accretor, tr):
+def common_envelope_phase(bs, donor, accretor):
     if REPORT_FUNCTION_NAMES:
         print 'Common envelope phase'
 
@@ -58,25 +58,30 @@ def common_envelope_phase(bs, donor, accretor, tr):
     donor.is_donor = False
     
 
-def stable_mass_transfer(bs, donor, accretor, tr):
+def stable_mass_transfer(bs, donor, accretor):
     # orbital evolution is being taken into account in secular_code        
     if REPORT_FUNCTION_NAMES:
         print 'Stable mass transfer'
+
+    Md = donor.mass
+    Ma = accretor.mass
+    print Md, Ma, 
+    print donor.previous_mass, accretor.previous_mass
 
     #set mass transfer rate
     
     dt = tr.timestep
     dm = bs.mass_transfer_rate * dt
-#    donor->self.se_code.particles[x].change_mass(dm, dt)
+    print 'check sign of dm:', dm, 'presumably dm >0'
+    donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+    donor_in_se_code.change_mass(-1*dm, dt)
     
-    Md = donor.mass
-    Ma = accretor.mass
-    print Md, Ma, 
-    print donor.previous_mass, accretor.previous_mass
     # there is an implicit assumption in change_mass that the accreted mass is of solar composition (hydrogen)
-#    donor->self.se_code.particles[x].change_mass(-1*dm, dt)
+    accretor_in_se_code = accretor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#    accretor_in_se_code.change_mass(dm, dt)
     # for now, only conservative mass transfer   
-#    accretor->self.se_code.particles[x].change_mass(-1*dm, -1*dt)
+    accretor_in_se_code.change_mass(dm, -1*dt)
+
     triple.channel_from_se.copy()
 
     Md_new = donor.mass
@@ -85,7 +90,7 @@ def stable_mass_transfer(bs, donor, accretor, tr):
     print 'check if this is indeed conservative'
     accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
     print accretion_efficiency
-#    bins[0].accretion_efficiency_mass_transfer = accretion_efficiency
+#    bs.accretion_efficiency_mass_transfer = accretion_efficiency
 
 
 def orbital_angular_momentum(bs):
@@ -101,7 +106,7 @@ def orbital_angular_momentum(bs):
 
     return J
 
-def stellar_angular_momentum(ss, Porb):
+def stellar_angular_momentum(ss):
 
     moment_of_inertia = ss.gyration_radius**2 * ss.mass * ss.radius**2
     Jstar = moment_of_inertia * ss.spin_angular_frequency
@@ -119,8 +124,7 @@ def mass_transfer_stability(bs, donor, accretor, tr):
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer stability'
 
-    Porb = orbital_period(bs)
-    Js = stellar_angular_momentum(donor, Porb)#accretor ook? check this
+    Js = stellar_angular_momentum(donor)#accretor ook? check this
     Jb = orbital_angular_momentum(bs)
     
     if REPORT_BINARY_EVOLUTION:

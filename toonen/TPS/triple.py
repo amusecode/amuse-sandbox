@@ -337,7 +337,7 @@ def evolve_triple(triple):
         determine_timestep(triple)        
 
         # update stellar parameters in the secular code
-        tr.channel_to_secular.copy()   
+        triple.channel_to_secular.copy()   
         
         # do secular evolution
         if triple.is_triple == True:
@@ -380,14 +380,14 @@ def evolve_triple(triple):
         triple.channel_from_se.copy()
         triple.update_se_wind_parameters()
         
-        safety_check_timesteps(triple)
+        safety_check_timestep(triple)
         
         ##what should be the order, first mass transfer or first stellar evolution?
         resolve_triple_interaction(triple)        
 #        Rl1, Rl2, Rl3 = triple.secular_code.give_roche_radii(triple.particles[0])
         triple.update_se_parameters()
         
-        #should also do safety check timesteps here
+        #should also do safety check timestep here
         
         
         # for plotting data
