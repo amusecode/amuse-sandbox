@@ -15,6 +15,23 @@ stellar_types_giants = [2,3,4,5,6,8,9]
 stellar_types_remnants = [10,11,12,13,14]
 
 
+def print_star(star):
+    print star.age, star.stellar_type, star.mass, star.radius, star.core_mass, star.spin_angular_frequency,
+
+def print_binary(bs):
+    print binary.semi_major_axis, binary.eccentricity, binary.argument_of_pericenter, binary.longitude_of_ascending_node
+    print '\t'
+    print_star(bs.child1)
+    print '\t'
+    print_star(bs.child2)
+    print '\n'
+    
+    
+def print_triple(tr):
+    print tr.mutual_inclination
+    print_binary(tr.inner_binary)
+    print_binary(tr.outer_binary)
+    
 def roche_radius_dimensionless(M, m) :
     # Assure that the q is calculated in identical units.
     unit = M.unit
@@ -48,8 +65,15 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:
         print 'Common envelope angular momentum balance'
 
+    if REPORT_BINARY_EVOLUTION:
+        if bs.eccentricity > 0.05:
+            print 'gamma common envelope in eccentric binary'
+            exit(-1)
+        print 'Before common envelope angular momentum balance' 
+        print_binary(bs) 
+
     gamma = common_envelope_efficiency_gamma(donor, accretor)
-    J_init = sqrt(bs.semi_major_axis) * (donor.mass * accretor.mass) / sqrt(donor.mass + accretor.mass)
+    J_init = sqrt(bs.semi_major_axis) * (donor.mass * accretor.mass) / sqrt(donor.mass + accretor.mass) * sqrt(1-bs.eccentricity**2)
     J_f_over_sqrt_a_new = (donor.core_mass * accretor.mass) / sqrt(donor.core_mass + accretor.mass)
     J_lost = gamma * donor.envelope_mass * J_i/(donor.mass + accretor.mass)
     sqrt_a_new = max(0, (J_i -J_lost)/J_f_over_sqrt_a_new)
@@ -72,6 +96,10 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
         #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
         
         triple.channel_from_se.copy()
+        if REPORT_BINARY_EVOLUTION:
+            print 'After common envelope angular momentum balance' 
+            print_binary(bs) 
+        
 
 
 #Following Webbink 1984
@@ -79,10 +107,19 @@ def common_envelope_energy_balance(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:
         print 'Common envelope energy balance'
 
-    alpha_lambda = common_envelope_efficiency(donor, accretor) * envelope_structure_parameter(donor)
+    if REPORT_BINARY_EVOLUTION:
+        print 'Before common envelope angular momentum balance' 
+        print_binary(bs) 
+
+    alpha = common_envelope_efficiency(donor, accretor) 
+    lambda_donor = envelope_structure_parameter(donor)
+
     Rl_donor = roche_radius(bs, donor)
     donor_radius = min(donor.radius, Rl_donor)
-    a_new = bs.semi_major_axis * (donor.core_radius/donor.mass) / (1. + (2.*donor.envelope_mass/(alpha_lambda*donor_radius*accretor.mass)))
+
+    orb_energy_new = donor.mass * donor.envelope_mass / (alpha * lambda_donor * donor_radius) + donor.mass * accretor.mass/2/bs.semi_major_axis
+    a_new = donor.core_mass * accretor.mass / 2 / orb_energy_new
+#    a_new = bs.semi_major_axis * (donor.core_mass/donor.mass) / (1. + (2.*donor.envelope_mass*bs.semi_major_axis/(alpha_lambda*donor_radius*accretor.mass)))
     
     Rl_donor_new = roche_radius_dimensionless(donor.core_mass, accretor.mass)*a_new
     Rl_accretor_new = roche_radius_dimensionless(accretor.mass, donor.core_mass)*a_new    
@@ -101,20 +138,29 @@ def common_envelope_energy_balance(bs, donor, accretor, triple):
         #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
         
         triple.channel_from_se.copy()
+        if REPORT_BINARY_EVOLUTION:
+            print 'After common envelope energy balance' 
+            print_binary(bs) 
 
 
 # See appendix of Nelemans YPZV 2001, 365, 491 A&A
-
 def double_common_envelope_energy_balance(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:
         print 'Double common envelope energy balance'
 
-    alpha_lambda_lambda = common_envelope_efficiency(donor, accretor) * envelope_structure_parameter(donor) * envelope_structure_parameter(accretor)
+    if REPORT_BINARY_EVOLUTION:
+        print 'Before common envelope angular momentum balance' 
+        print_binary(bs) 
+
+    alpha = common_envelope_efficiency(donor, accretor)
+    lambda_donor = envelope_structure_parameter(donor) 
+    lambda_accretor = envelope_structure_parameter(accretor)
 
     Rl_donor = roche_radius(bs, donor)
     donor_radius = min(donor.radius, Rl_donor)
     accretor_radius = accretor.radius
-    orb_energy_new = donor.mass * donor.envelope_mass / (alpha_lambda_lambda * donor_radius) + accretor.mass * accretor.envelope_mass / (alpha_lambda_lambda * accretor_radius) + donor.mass * accretor.mass/2/bs.semi_major_axis
+    
+    orb_energy_new = donor.mass * donor.envelope_mass / (alpha * lambda_donor * donor_radius) + accretor.mass * accretor.envelope_mass / (alpha * lambda_accretor * accretor_radius) + donor.mass * accretor.mass/2/bs.semi_major_axis
     a_new = donor.core_mass * accretor.core_mass / 2 / orb_energy_new
 
     Rl_donor_new = roche_radius_dimensionless(donor.core_mass, accretor.core_mass)*a_new
@@ -136,6 +182,9 @@ def double_common_envelope_energy_balance(bs, donor, accretor, triple):
         #accretor_in_se_code.change_mass(-1*accretor.envelope_mass)    reduce_mass not subtrac mass     
 
         triple.channel_from_se.copy()
+        if REPORT_BINARY_EVOLUTION:
+            print 'After double common envelope energy balance' 
+            print_binary(bs) 
 
 
 def common_envelope_phase(bs, donor, accretor, triple):
