@@ -55,7 +55,10 @@ def make_secondaries(all_single_stars, Nbin):
     resulting_binaries = Particles()
     singles_in_binaries = Particles()
     mmin = all_single_stars.mass.min()
-    binaries = all_single_stars.random_sample(Nbin)
+    if Nbin>0:
+        binaries = all_single_stars.random_sample(Nbin)
+    else:
+        binaries = Particles()
     for bi in binaries:
         mp = bi.mass
         ms = mmin + (mp-mmin)*numpy.random.random()
@@ -70,7 +73,6 @@ def make_secondaries(all_single_stars, Nbin):
         nb = singles_in_binaries.add_particles(nb)
         nb.radius = 0.01 * a 
         bi.radius = 3*a 
-#        print "mas=", nb.mass, nb.key
         binary_particle = bi.copy()
         binary_particle.child1 = nb[0]
         binary_particle.child2 = nb[1]
@@ -99,16 +101,22 @@ def construct_orbital_elements(bi, converter):
     kep.stop()
     return a, e
 
+def crossing_time(code):
+    return 0|units.Myr
+    M = code.particles.mass.sum()
+    E = code.get_total_energy()
+    tcross = numpy.sqrt(E**3)/(constants.G*M)
+    return tcross
+
 def kira(tend, N, R, W, Nbin):
     logging.basicConfig(level=logging.ERROR)
-    #encounters.LOG_ENERGY.setLevel(logging.DEBUG)
+
+#    single_stars, binary_stars, singles_in_binaries = generate_initial_conditions(N, R, W, Nbin)
 
     mass = new_scalo_mass_distribution(N, mass_max=10|units.MSun)
     mass[0] = 100 | units.MSun
+    mass[1] = 80 | units.MSun
     converter = nbody_system.nbody_to_si(mass.sum(), R)
-#    code = ph4(converter,redirection="none")
-#    code = Huayno(converter)
-    code = Hermite(converter)
     stars = new_king_model(N, W, convert_nbody=converter)
     stars.mass = mass
     stars.radius = 0.01/len(stars) | R.unit
@@ -119,14 +127,20 @@ def kira(tend, N, R, W, Nbin):
     single_stars, binary_stars, singles_in_binaries = make_secondaries(stars, Nbin)
 #    print binary_stars
 
+#    code = ph4(converter,redirection="none")
+#    code = Huayno(converter)
+    code = Hermite(converter)
+
 #    stellar = BSE()
-    stellar = SeBa(redirection="none")
+#    stellar = SSE()
+#    stellar = SeBa(redirection="none")
+    stellar = SeBa()
     stellar.particles.add_particles(single_stars)
     stellar.particles.add_particles(singles_in_binaries)
     stellar.binaries.add_particles(binary_stars)
     channel_to_stars = stellar.particles.new_channel_to(stars)
 
-    stellar.stopping_conditions.supernova_detection.enable()
+###    stellar.stopping_conditions.supernova_detection.enable()
 
     seba_kepler = new_kepler(converter)
 
@@ -154,12 +168,22 @@ def kira(tend, N, R, W, Nbin):
 #    for ti in t:
 
     t = zero
-    dt = tend/10.
+    dt_init = tend/10.
+    E0 = multiples_code.get_total_energy()
     while t<tend:
-        print "t, Energy=", t, multiples_code.particles.mass.sum(), multiples_code.get_total_energy()
+
+        print "Instantaneous crossing time:", crossing_time(multiples_code)
+        # Check the minimal safe stellar evolution
+        dt = min(dt_init, min(stellar.particles.time_step))
+        print "dt=", dt
+        print "stars:", stellar.particles.stellar_type
+
+        Et = multiples_code.get_total_energy()
+        print "t, M, Energy=", t, multiples_code.particles.mass.sum(), multiples_code.get_total_energy(), "de=", (E0-Et)/Et
         multiples_code.evolve_model(t+dt)
+        dEenc = (multiples_code.get_total_energy()-Et)/Et
         t = multiples_code.model_time
-        print "at t=", multiples_code.model_time, "N-multiples:", len(multiples_code.multiples)
+        print "at t=", t, "N-multiples:", len(multiples_code.multiples)
 
         if stopping_condition.is_set():
             new_binaries = stopping_condition.particles(0)
@@ -188,13 +212,19 @@ def kira(tend, N, R, W, Nbin):
                 print "Modivide binary parameters", a, e
 #                print bs
 
+        Epse = multiples_code.get_total_energy()
+        print "evolve stars to t=", t
         stellar.evolve_model(t)
+        print "stars evolved to:", stellar.model_time
+        """
         if stellar.stopping_conditions.supernova_detection.is_set():
             print "Stellar supernova stopping condition is set"
             print t, stellar.model_time
             print stellar.particles.age
             xxxx
+        """
         channel_from_stars_to_particles.copy_attributes(["mass", "radius"])
+        dEse = (multiples_code.get_total_energy()-Epse)/Epse
 
         #Kepler orientation vectors should be set by the binary particle set
 #        seba_kepler.set_longitudinal_unit_vector(1.0,0.0, 0.0)
@@ -221,11 +251,37 @@ def kira(tend, N, R, W, Nbin):
 
 #            print "semi_major_axis=", t, bi.semi_major_axis, total_mass, bi.child1.mass, bi.child2.mass, bi.eccentricity
 
-        print "Lagrangian radii:", multiples_code.all_singles.LagrangianRadii(converter)
+        if len(multiples_code.all_singles)>10:
+            print "Lagrangian radii:", multiples_code.all_singles.LagrangianRadii(converter)
 #        print "MC.particles", multiples_code.particles
-        print "Lagrangian radii:", multiples_code.particles.LagrangianRadii(converter)
-        print "t, Energy=", t, multiples_code.get_total_energy()
+        if len(multiples_code.particles)>10:
+            print "Lagrangian radii:", multiples_code.particles.LagrangianRadii(converter)
+        ddE = Et-multiples_code.get_total_energy()
+        print "t, Energy=", t, multiples_code.get_total_energy(), "ddE=", ddE/Et, dEenc, dEse
+        print "M=", multiples_code.particles.mass.sum()
+
     seba_kepler.stop()
+
+from amuse.test.amusetest import TestWithMPI
+class Testkira(TestWithMPI):
+    def test1(self):
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = BHTree(convert_nbody)
+        instance.commit_parameters()
+        
+        index = instance.new_particle(
+            15.0 | units.kg,
+            10.0 | units.m, 20.0 | units.m, 30.0 | units.m,
+            #1.0 | units.m/units.s, 1.0 | units.m/units.s, 3.0 | units.m/units.s
+            0.0 | units.m/units.s, 0.0 | units.m/units.s, 0.0 | units.m/units.s,
+            10.0 | units.m
+        )
+        instance.commit_particles()
+        self.assertEquals(instance.get_mass(index), 15.0| units.kg)
+        self.assertEquals(instance.get_radius(index), 10.0| units.m)
+        instance.cleanup_code()
+        instance.stop()
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser
@@ -239,7 +295,7 @@ def new_option_parser():
     result.add_option("-N", 
                       dest="N",type="float",default=2048)
     result.add_option("--Nbin", 
-                      dest="Nbin",type="int",default=1024)
+                      dest="Nbin",type="int",default=0)
     result.add_option("--seed", 
                       dest="seed",type="int",default=-1)
     return result
@@ -247,7 +303,7 @@ def new_option_parser():
 if __name__ == "__main__":
     set_printing_strategy("custom", 
                       preferred_units = [units.MSun, units.RSun, units.Myr], 
-                      precision = 6, prefix = "", 
+                      precision = 15, prefix = "", 
                       separator = " [", suffix = "]")
 
     options, arguments  = new_option_parser().parse_args()
