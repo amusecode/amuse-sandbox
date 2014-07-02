@@ -99,6 +99,7 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope angular momentum balance' 
             print_binary(bs) 
+        donor.is_donor = False
         
 
 
@@ -141,6 +142,8 @@ def common_envelope_energy_balance(bs, donor, accretor, triple):
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope energy balance' 
             print_binary(bs) 
+
+        donor.is_donor = False
 
 
 # See appendix of Nelemans YPZV 2001, 365, 491 A&A
@@ -186,6 +189,9 @@ def double_common_envelope_energy_balance(bs, donor, accretor, triple):
             print 'After double common envelope energy balance' 
             print_binary(bs) 
 
+        donor.is_donor = False
+
+
 
 def common_envelope_phase(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:
@@ -219,14 +225,6 @@ def common_envelope_phase(bs, donor, accretor, triple):
         else:
             #giant+normal(non-giant, non-remnant)
             common_envelope_angular_momentum_balance(bs, donor, accretor, triple)
-
-
-        
-    
-    #outer binary
-    #adiabatic_expansion_due_to_mass_loss ->instantaneous effect
-
-    donor.is_donor = False
     
 
 def stable_mass_transfer(bs, donor, accretor, triple):
@@ -264,6 +262,7 @@ def stable_mass_transfer(bs, donor, accretor, triple):
 #    bs.accretion_efficiency_mass_transfer = accretion_efficiency
 
 
+
 def orbital_angular_momentum(bs):
 
     M = bs.child1.mass
@@ -290,7 +289,7 @@ def orbital_period(bs):
     return Porb
 
 
-def mass_transfer_stability(bs, donor, accretor, tr):
+def mass_transfer_stability(bs, donor, accretor, other_bs, tr):
 
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer stability'
@@ -305,24 +304,52 @@ def mass_transfer_stability(bs, donor, accretor, tr):
         if REPORT_BINARY_EVOLUTION:
             print "Darwin Riemann instability"
         common_envelope(bs, donor, accretor, tr)
+        adjust_triple_after_ce_in_inner_binary(other_bs, bs, tr)
     else :
         stable_mass_transfer(bs, donor, accretor, tr)
-#        accretor = companion_star(bs, donor)
-#        rochelobe_overflow(bs, donor, accretor)
+        #adjusting triple is done in detached
 
 
-
-
-def semi_detached(bs, donor, accretor, tr):
+def adjust_triple_after_ce_in_inner_binary(bs, ce_binary, tr):
+# Assumption:
+# Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
+# Instanteneous effect
+   
     if REPORT_FUNCTION_NAMES:
-        print 'Semi detached'
-
-    print "Roche-lobe overflow by star with mass:", donor.mass
-    mass_transfer_stability(bs, donor, accretor, tr)
-
-    exit(0)
+        print 'Adjust triple after ce in inner_binary'
 
 
+    M_com_after_ce = ce_binary.mass
+    M_com_before_ce = ce_binary.previous_mass
+    print M_com_after_ce, M_com_before_ce
+    
+    # accretion_efficiency
+    M_accretor_before_ce = bs.child1.mass #niet zo mooi
+    M_accretor_after_ce = bs.child1.mass #niet zo mooi
+    
+    adiabatic_expansion_due_to_mass_loss(bs.semi_major_axis, M_com_after_ce, M_com_before_ce, M_accretor_after_ce, M_accretor_before_ce)
+#    bs.eccentricity = zero
+#    bs.argument_of_pericenter = 
+#    bs.inner_longitude_of_ascending_node =  
+#    bs.child1.spin_angular_frequency = 
+
+
+def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
+
+    d_Md = Md_f - Md_i #negative mass loss rate
+    d_Ma = Ma_f - Ma_i #positive mass accretion rate
+    print "Stellar wind primary:", d_Md, d_Ma    
+
+    Mt_f = Md_f + Ma_f
+    Mt_i = Md_i + Ma_i
+
+    if d_Md < 0 and d_Ma => 0:
+        eta = d_Ma / d_Md
+        a_f = a_i * ((Md_f/Md_i)**eta * (Ma_f/Ma_i))**-2 * Mt_i/Mt_f
+        return a_f
+
+    return a_i
+   
 
 def contact_binary():
     if REPORT_FUNCTION_NAMES:
@@ -394,16 +421,30 @@ def detached(bs, tr):
         #        dt = tr.timestep
         
 #        mtr_w_in1_1 =  bs.child2.child1.wind_mass_loss_rate * (1-bs.child2.accretion_efficiency_wind_child1_to_child2)       
-#        beta_in1_1 = 0.0
-#        dm_in1_1 = -1 * mtr_w_in1_1 * beta_in1_1 * dt
+#        beta_w_in1_1 = 0.0
+#        dm_in1_1 = -1 * mtr_w_in1_1 * beta_w_in1_1 * dt
 #        
 #        mtr_w_in2_1 =  bs.child2.child2.wind_mass_loss_rate * (1-bs.child2.accretion_efficiency_wind_child2_to_child1)       
-#        beta_in2_1 = 0.0
-#        dm_in2_1 = -1 * mtr_w_in2_1 * beta_in2_1 * dt
+#        beta_w_in2_1 = 0.0
+#        dm_in2_1 = -1 * mtr_w_in2_1 * beta_w_in2_1 * dt
 #                    
-#        bs.accretion_efficiency_wind_child2_to_child1 = (dm_in1_1 + dm_in2_1) / ((mtr_w_in1_1 + mtr_w_in2_1) * -1 * dt)
+#        dm = dm_in1_1 + dm_in2_1  
+#        mtr = mtr_w_in1_1 + mtr_w_in2_1)
+#        if bs.child2.child1.is_donor and bs.child2.child2.is_donor:
+#            print 'contact binary in detached...'
+#        elif bs.child2.child1.is_donor or bs.child2.child2.is_donor:
+#            Assumption:
+#            Stable mass transfer in the inner binary, affects the outer binary as a wind.
+#            mtr_rlof_in_1 = bs.child2.mass_transfer_rate * (1-bs.child2.accretion_efficiency_mass_transfer)
+#            beta_rlof_in_1 = 0.0
+#            dm_rlof_in_1 = -1 * mtr_rlof_in_1 * beta_rlof_in_1 * dt
+#            dm += dm_rlof_in_1
+#            mtr += mtr_rlof_in_1 
+#        bs.accretion_efficiency_wind_child2_to_child1 = dm / ( mtr* -1 * dt)
+            
 
-#        child1_in_se_code.change_mass(dm_in1_1 + dm_in2_1, dt)
+
+#        child1_in_se_code.change_mass(dm, dt)
 # check if this indeed is accreted conservatively        
 
     else:
@@ -452,9 +493,9 @@ def resolve_binary_interaction(bs, tr):
             if bs.child1.is_donor and bs.child2.is_donor:
                 contact_binary()
             elif bs.child1.is_donor and not bs.child2.is_donor:
-                semi_detached(bs, bs.child1, bs.child2, outer_binary)
+                semi_detached(bs, bs.child1, bs.child2, outer_binary, tr)
             elif not bs.child1.is_donor and bs.child2.is_donor:
-                semi_detached(bs, bs.child2, bs.child1, tr)
+                semi_detached(bs, bs.child2, bs.child1, outer_binary, tr)
             else:
                 detached(bs, tr)
                                         
