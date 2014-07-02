@@ -192,7 +192,6 @@ class Triple:
         self.update_wind_mass_loss_rate()
         self.update_time_derivative_of_radius()
         self.update_envelope_mass()
-        self.update_accretion_efficiency_wind()
                     
     def update_wind_mass_loss_rate(self):
         #update wind mass loss rate
@@ -222,13 +221,6 @@ class Triple:
             self.particles[0].inner_binary.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].outer_binary.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
 
-
-    def update_accretion_efficiency_wind(self):
-        #update accretion efficiency of wind mass loss
-        self.particles[0].inner_binary.accretion_efficiency_wind_child1_to_child2 = 0.0
-        self.particles[0].inner_binary.accretion_efficiency_wind_child2_to_child1 = 0.0
-        self.particles[0].outer_binary.accretion_efficiency_wind_child1_to_child2 = 0.0
-        self.particles[0].outer_binary.accretion_efficiency_wind_child2_to_child1 = 0.0
     #-------
 
     #-------

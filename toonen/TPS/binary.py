@@ -332,41 +332,86 @@ def contact_binary():
     exit(0)
 
 
-#def adiabatic_expansion_due_to_mass_loss(a, M0, M1, m0, m1):
-#    dmd = M1-M0
-#    dma = m1-m0
-#    print "\nStellar wind primary:", dmd, dma
-#    # Note that mass loss rates are negative..
-#    mdf = M1
-#    maf = m1
-#    mtf = mdf+maf
-#    md = M0
-#    ma = m0
-#    mt = md+ma
-#    dm  = mt-mtf
-#    if dmd<zero:
-#        alpha = dm/dmd
-#        print "MT:", mt, mtf, md, mdf, ma, maf
-##        fa = (((mdf/md) * (maf/ma))**(1/(1-alpha)) )**(-2) * (mt/mtf)
-#        eta =  dma/dmd
-#        a_new = a * pow(pow(mdf/md, eta)*maf/ma, -2)*mt/mtf
-#        print "New a:", a, a_new
-#        a = a_new
-#        print "I'm not sure this is the correct use of the wind angular momentum loss equation"
-#        #This equation is for one star loses mass in a wind and the other star accreting a fraction
-#        #If a star loses wind mass, and the companion does not accrete: a_new = a * mt/mtf
-#    return a
-#
-#def orbital_evolution_due_to_stellar_wind_mass_loss(bs):
-#    a = adiabatic_expansion_due_to_mass_loss(bs.semimajor_axis, 
-#                                             bs.child1.previous_mass, bs.child1.mass,
-#                                             bs.child2.previous_mass, bs.child2.mass)
-#    bs.semimajor_axis = a
 
-def detached(tr):
+
+## Calculates stellar wind velocoty.
+## Steller wind velocity is 2.5 times stellar escape velocity
+#def wind_velocity(star):
+#    v_esc2 = constants.G * star.mass / star.radius
+#    return 2.5*sqrt(v_esc2)
+#}
+#
+#
+## Bondi, H., and Hoyle, F., 1944, MNRAS 104, 273 (wind accretion.
+## Livio, M., Warner, B., 1984, The Observatory 104, 152.
+#def accretion_efficiency_from_stellar_wind(accretor, donor):
+#velocity needs to be determined -> velocity average?
+# why is BH dependent on ecc as 1/sqrt(1-e**2)
+
+#    alpha_wind = 0.5
+#    v_wind = wind_velocity(donor)
+#    acc_radius = (constants.G*accretor.mass)**2/v_wind**4
+#    
+#    wind_acc = alpha_wind/sqrt(1-bs.eccentricity**2) / bs.semi_major_axis**2
+#    v_factor = 1/((1+(velocity/v_wind)**2)**3./2.)
+#    mass_fraction = acc_radius*wind_acc*v_factor
+#
+#    print 'mass_fraction:', mass_fraction
+##    mass_fraction = min(0.9, mass_fraction)
+#
+
+
+
+def detached(bs, tr):
     # orbital evolution is being taken into account in secular_code        
     if REPORT_FUNCTION_NAMES:
         print 'Detached'
+    
+    # wind mass loss is done by se_code
+    # wind accretion here:
+    # update accretion efficiency of wind mass loss
+    if bs.child1.is_star() and bs.child2.is_star():
+        bs.accretion_efficiency_wind_child1_to_child2 = 0.0
+        bs.accretion_efficiency_wind_child2_to_child1 = 0.0
+
+#        child1_in_se_code = bs.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#        child2_in_se_code = bs.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#
+#        dt = tr.timestep
+#        dm_child1_to_child2 = -1 * child1.wind_mass_loss_rate * bs.accretion_efficiency_wind_child1_to_child2 * dt
+#        child2_in_se_code.change_mass(dm_child1_to_child2, dt)
+#        dm_child12to_child1 = -1 * child2.wind_mass_loss_rate * bs.accretion_efficiency_wind_child2_to_child1 * dt
+#        child1_in_se_code.change_mass(dm_child2_to_child1, dt)
+# check if this indeed is accreted conservatively        
+
+
+    elif bs.child1.is_star() and bs.child2.is_binary() and bs.child2.child1.is_star() and bs.child2.child2.is_star():
+        #Assumption: an inner binary is not effected by wind from an outer star
+        bs.accretion_efficiency_wind_child1_to_child2 = 0.0
+        bs.accretion_efficiency_wind_child2_to_child1 = 0.0
+        
+        #        child1_in_se_code = bs.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        #        dt = tr.timestep
+        
+#        mtr_w_in1_1 =  bs.child2.child1.wind_mass_loss_rate * (1-bs.child2.accretion_efficiency_wind_child1_to_child2)       
+#        beta_in1_1 = 0.0
+#        dm_in1_1 = -1 * mtr_w_in1_1 * beta_in1_1 * dt
+#        
+#        mtr_w_in2_1 =  bs.child2.child2.wind_mass_loss_rate * (1-bs.child2.accretion_efficiency_wind_child2_to_child1)       
+#        beta_in2_1 = 0.0
+#        dm_in2_1 = -1 * mtr_w_in2_1 * beta_in2_1 * dt
+#                    
+#        bs.accretion_efficiency_wind_child2_to_child1 = (dm_in1_1 + dm_in2_1) / ((mtr_w_in1_1 + mtr_w_in2_1) * -1 * dt)
+
+#        child1_in_se_code.change_mass(dm_in1_1 + dm_in2_1, dt)
+# check if this indeed is accreted conservatively        
+
+    else:
+        print 'detached: type of system unknown'
+        print bs.child1.is_binary, bs.child1.is_star
+        print bs.child2.is_binary, bs.child2.is_star
+        exit(-1)                    
+        
         
     #reset parameters after mass transfer
     tr.first_contact = True
@@ -411,7 +456,7 @@ def resolve_binary_interaction(bs, tr):
             elif not bs.child1.is_donor and bs.child2.is_donor:
                 semi_detached(bs, bs.child2, bs.child1, tr)
             else:
-                detached(tr)
+                detached(bs, tr)
                                         
         elif bs.child2.is_binary:
             if REPORT_BINARY_EVOLUTION:
@@ -420,7 +465,7 @@ def resolve_binary_interaction(bs, tr):
             if bs.child1.is_donor:
                 triple_mass_transfer()
             else:
-                detached(tr)
+                detached(bs, tr)
                 
         else:
             print 'resolve binary interaction: type of system unknown'
