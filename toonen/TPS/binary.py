@@ -51,8 +51,8 @@ def roche_radius(bin, primary):
     exit(1)
 
 
-def corotating_angular_frequency_binary(semi, m1, m2):
-    return 1./np.sqrt(semi**3/constants.G / (m1+ms))
+def corotating_spin_angular_frequency_binary(semi, m1, m2):
+    return 1./np.sqrt(semi**3/constants.G / (m1+m2))
 
 def common_envelope_efficiency(donor, accretor):
     return common_envelope_efficiency
@@ -91,16 +91,19 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
         print 'Merger in inner binary through common envelope phase (energy balance)'
         exit(0)
     else:
+        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
+        triple.channel_from_se.copy()
+
         bs.semi_major_axis = a_new
         bs.eccentricity = zero
 #        bs.argument_of_pericenter = 
 #        bs.inner_longitude_of_ascending_node =  
-#        donor.spin_angular_frequency = 
-#        accretor.spin_angular_frequency = 
-        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
+
+        corotating_frequency = corotating_spin_angular_frequency_binary(a_new, donor.mass, accretor.mass)
+        donor.spin_angular_frequency = corotating_frequency
+        accretor.spin_angular_frequency = corotating_frequency
         
-        triple.channel_from_se.copy()
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope angular momentum balance' 
             print_binary(bs) 
@@ -134,16 +137,19 @@ def common_envelope_energy_balance(bs, donor, accretor, triple):
         print 'Merger in inner binary through common envelope phase (energy balance)'
         exit(0)
     else:
+        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
+        triple.channel_from_se.copy()
+
         bs.semi_major_axis = a_new
         bs.eccentricity = zero
 #        bs.argument_of_pericenter = 
 #        bs.inner_longitude_of_ascending_node =  
-#        donor.spin_angular_frequency = 
-#        accretor.spin_angular_frequency = 
-        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
-        
-        triple.channel_from_se.copy()
+
+        corotating_frequency = corotating_spin_angular_frequency_binary(a_new, donor.mass, accretor.mass)
+        donor.spin_angular_frequency = corotating_frequency
+        accretor.spin_angular_frequency = corotating_frequency
+
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope energy balance' 
             print_binary(bs) 
@@ -178,24 +184,26 @@ def double_common_envelope_energy_balance(bs, donor, accretor, triple):
         print 'Merger in inner binary through common envelope phase (double common envelope)'
         exit(0)
     else:
-        bs.semi_major_axis = a_new
-        bs.eccentricity = zero
-#        bs.argument_of_pericenter = 
-#        bs.inner_longitude_of_ascending_node =  
-#        donor.spin_angular_frequency = 
-#        accretor.spin_angular_frequency = 
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
         #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
         accretor_in_se_code = accretor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
         #accretor_in_se_code.change_mass(-1*accretor.envelope_mass)    reduce_mass not subtrac mass     
-
         triple.channel_from_se.copy()
+
+        bs.semi_major_axis = a_new
+        bs.eccentricity = zero
+#        bs.argument_of_pericenter = 
+#        bs.inner_longitude_of_ascending_node =  
+
+        corotating_frequency = corotating_spin_angular_frequency_binary(a_new, donor.mass, accretor.mass)
+        donor.spin_angular_frequency = corotating_frequency
+        accretor.spin_angular_frequency = corotating_frequency
+
         if REPORT_BINARY_EVOLUTION:
             print 'After double common envelope energy balance' 
             print_binary(bs) 
 
         donor.is_donor = False
-
 
 
 def common_envelope_phase(bs, donor, accretor, triple):
