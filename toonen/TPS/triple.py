@@ -251,18 +251,14 @@ class Triple:
         self.particles[0].inner_binary.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
         self.particles[0].outer_binary.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
     #-------
-        
-        
 
-        
-
-    
 def evolve_center_of_mass(binary):
     print "evolve center of mass"
     exit(-1)
     return
 
 
+        
 def resolve_triple_interaction(triple):
 
     if REPORT_TRIPLE_EVOLUTION:
@@ -287,6 +283,7 @@ def resolve_triple_interaction(triple):
         print 'resolve triple interaction: type of outer system unknown'
         exit(-1)                    
 
+    
 
 
 def safety_check_timestep(triple):

@@ -289,7 +289,7 @@ def orbital_period(bs):
     return Porb
 
 
-def mass_transfer_stability(bs, donor, accretor, other_bs, tr):
+def mass_transfer_stability_binary(bs, donor, accretor, outer_bs, tr):
 
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer stability'
@@ -300,11 +300,23 @@ def mass_transfer_stability(bs, donor, accretor, other_bs, tr):
     if REPORT_BINARY_EVOLUTION:
         print "Darwin Riemann instability?:", Js, Jb, Jb/3.
     
+    
+    #which outer_bs.child is bs..?
+    if outer_bs.child1.is_star and outer_bs.child1.is_donor:
+        print 'RLOF in inner and outer binary'
+        exit(0)
+    if outer_bs.child2.is_star and outer_bs.child2.is_donor:
+        print 'RLOF in inner and outer binary'
+        exit(0)
+        
+    
     if Js >= Jb/3. :
         if REPORT_BINARY_EVOLUTION:
             print "Darwin Riemann instability"
         common_envelope(bs, donor, accretor, tr)
-        adjust_triple_after_ce_in_inner_binary(other_bs, bs, tr)
+        # heb ik zeker een triple?
+        adjust_triple_after_ce_in_inner_binary(outer_bs, bs, tr)
+        
     else :
         stable_mass_transfer(bs, donor, accretor, tr)
         #adjusting triple is done in detached
@@ -333,6 +345,10 @@ def adjust_triple_after_ce_in_inner_binary(bs, ce_binary, tr):
 #    bs.inner_longitude_of_ascending_node =  
 #    bs.child1.spin_angular_frequency = 
 
+    Rl1, Rl2, Rl3 = triple.secular_code.give_roche_radii(triple.particles[0])
+    if bs.child1.radius > Rl3: # niet zo mooi
+        bs.child1.is_donor = True
+    
 
 def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
 
@@ -354,6 +370,15 @@ def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
 def contact_binary():
     if REPORT_FUNCTION_NAMES:
         print "Contact binary"
+
+    #which outer_bs.child is bs..?
+    if outer_bs.child1.is_star and outer_bs.child1.is_donor:
+        print 'RLOF in inner and outer binary'
+        exit(0)
+    if outer_bs.child2.is_star and outer_bs.child2.is_donor:
+        print 'RLOF in inner and outer binary'
+        exit(0)
+
 
     print "Contact binary "
     exit(0)
@@ -493,17 +518,22 @@ def resolve_binary_interaction(bs, tr):
             if bs.child1.is_donor and bs.child2.is_donor:
                 contact_binary()
             elif bs.child1.is_donor and not bs.child2.is_donor:
-                semi_detached(bs, bs.child1, bs.child2, outer_binary, tr)
+                mass_transfer_stability_binary(bs, bs.child1, bs.child2, outer_binary, tr)
             elif not bs.child1.is_donor and bs.child2.is_donor:
-                semi_detached(bs, bs.child2, bs.child1, outer_binary, tr)
+                mass_transfer_stability_binary(bs, bs.child2, bs.child1, outer_binary, tr)
             else:
                 detached(bs, tr)
                                         
         elif bs.child2.is_binary:
             if REPORT_BINARY_EVOLUTION:
                 print bs.mass, bs.child1.mass, bs.child2.mass
+    
 
             if bs.child1.is_donor:
+                if bs.child2.child1.is_donor or bs.child2.child2.is_donor:
+                    print 'rlof in inner and outer binary'
+                    exit(-1)
+    
                 triple_mass_transfer()
             else:
                 detached(bs, tr)
@@ -521,3 +551,6 @@ def resolve_binary_interaction(bs, tr):
         print bs.child1.is_binary, bs.child1.is_star, bs.child1.is_donor
         exit(-1)                    
                         
+
+
+
