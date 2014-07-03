@@ -289,7 +289,7 @@ def orbital_period(bs):
     return Porb
 
 
-def mass_transfer_stability_binary(bs, donor, accretor, outer_bs, tr):
+def mass_transfer_stability_binary(bs, donor, accretor, tr):
 
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer stability'
@@ -300,8 +300,9 @@ def mass_transfer_stability_binary(bs, donor, accretor, outer_bs, tr):
     if REPORT_BINARY_EVOLUTION:
         print "Darwin Riemann instability?:", Js, Jb, Jb/3.
     
-    
+        
     #which outer_bs.child is bs..?
+    outer_bs = tr.outer_binary # niet mooi
     if outer_bs.child1.is_star and outer_bs.child1.is_donor:
         print 'RLOF in inner and outer binary'
         exit(0)
@@ -359,7 +360,7 @@ def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
     Mt_f = Md_f + Ma_f
     Mt_i = Md_i + Ma_i
 
-    if d_Md < 0 and d_Ma => 0:
+    if d_Md < 0 and d_Ma >= 0:
         eta = d_Ma / d_Md
         a_f = a_i * ((Md_f/Md_i)**eta * (Ma_f/Ma_i))**-2 * Mt_i/Mt_f
         return a_f
@@ -422,7 +423,7 @@ def detached(bs, tr):
     # wind mass loss is done by se_code
     # wind accretion here:
     # update accretion efficiency of wind mass loss
-    if bs.child1.is_star() and bs.child2.is_star():
+    if bs.child1.is_star and bs.child2.is_star:
         bs.accretion_efficiency_wind_child1_to_child2 = 0.0
         bs.accretion_efficiency_wind_child2_to_child1 = 0.0
 
@@ -437,38 +438,44 @@ def detached(bs, tr):
 # check if this indeed is accreted conservatively        
 
 
-    elif bs.child1.is_star() and bs.child2.is_binary() and bs.child2.child1.is_star() and bs.child2.child2.is_star():
+    elif bs.child1.is_star and bs.child2.is_binary and bs.child2.child1.is_star and bs.child2.child2.is_star:
         #Assumption: an inner binary is not effected by wind from an outer star
         bs.accretion_efficiency_wind_child1_to_child2 = 0.0
+
         bs.accretion_efficiency_wind_child2_to_child1 = 0.0
         
-        #        child1_in_se_code = bs.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        #        dt = tr.timestep
+#        child1_in_se_code = bs.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#        dt = tr.timestep
         
+         #effect of wind from bs.child2.child1 onto bs.child1
 #        mtr_w_in1_1 =  bs.child2.child1.wind_mass_loss_rate * (1-bs.child2.accretion_efficiency_wind_child1_to_child2)       
 #        beta_w_in1_1 = 0.0
 #        dm_in1_1 = -1 * mtr_w_in1_1 * beta_w_in1_1 * dt
 #        
+         #effect of wind from bs.child2.child2 onto bs.child1
 #        mtr_w_in2_1 =  bs.child2.child2.wind_mass_loss_rate * (1-bs.child2.accretion_efficiency_wind_child2_to_child1)       
 #        beta_w_in2_1 = 0.0
 #        dm_in2_1 = -1 * mtr_w_in2_1 * beta_w_in2_1 * dt
 #                    
 #        dm = dm_in1_1 + dm_in2_1  
 #        mtr = mtr_w_in1_1 + mtr_w_in2_1)
+
+
+         #effect of mass transfer in the binary bs.child2 onto bs.child1
 #        if bs.child2.child1.is_donor and bs.child2.child2.is_donor:
 #            print 'contact binary in detached...'
+#            exit(-1)
 #        elif bs.child2.child1.is_donor or bs.child2.child2.is_donor:
-#            Assumption:
-#            Stable mass transfer in the inner binary, affects the outer binary as a wind.
+#            #Assumption:
+#            #Stable mass transfer in the inner binary, affects the outer binary as a wind.
 #            mtr_rlof_in_1 = bs.child2.mass_transfer_rate * (1-bs.child2.accretion_efficiency_mass_transfer)
 #            beta_rlof_in_1 = 0.0
 #            dm_rlof_in_1 = -1 * mtr_rlof_in_1 * beta_rlof_in_1 * dt
 #            dm += dm_rlof_in_1
 #            mtr += mtr_rlof_in_1 
+
 #        bs.accretion_efficiency_wind_child2_to_child1 = dm / ( mtr* -1 * dt)
             
-
-
 #        child1_in_se_code.change_mass(dm, dt)
 # check if this indeed is accreted conservatively        
 
@@ -518,9 +525,9 @@ def resolve_binary_interaction(bs, tr):
             if bs.child1.is_donor and bs.child2.is_donor:
                 contact_binary()
             elif bs.child1.is_donor and not bs.child2.is_donor:
-                mass_transfer_stability_binary(bs, bs.child1, bs.child2, outer_binary, tr)
+                mass_transfer_stability_binary(bs, bs.child1, bs.child2, tr)
             elif not bs.child1.is_donor and bs.child2.is_donor:
-                mass_transfer_stability_binary(bs, bs.child2, bs.child1, outer_binary, tr)
+                mass_transfer_stability_binary(bs, bs.child2, bs.child1, tr)
             else:
                 detached(bs, tr)
                                         

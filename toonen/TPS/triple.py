@@ -191,7 +191,6 @@ class Triple:
     def update_se_wind_parameters(self):
         self.update_wind_mass_loss_rate()
         self.update_time_derivative_of_radius()
-        self.update_envelope_mass()
                     
     def update_wind_mass_loss_rate(self):
         #update wind mass loss rate
@@ -233,17 +232,17 @@ class Triple:
     def update_convective_envelope_mass(self):
         #update convective envelope radius
         #the prescription of Hurley, Pols & Tout 2000 is implemented in SeBa, however note that the prescription in BSE is different
-        self.particles[0].inner_binary.child1.convective_envelope_mass = self.particles[0].inner_binary.child1.get_convective_envelope_mass()
-        self.particles[0].inner_binary.child2.convective_envelope_mass = self.particles[0].inner_binary.child2.get_convective_envelope_mass()
-        self.particles[0].outer_binary.child1.convective_envelope_mass = self.particles[0].outer_binary.child1.get_convective_envelope_mass()
+        self.particles[0].inner_binary.child1.convective_envelope_mass = self.particles[0].inner_binary.child1.convective_envelope_mass
+        self.particles[0].inner_binary.child2.convective_envelope_mass = self.particles[0].inner_binary.child2.convective_envelope_mass
+        self.particles[0].outer_binary.child1.convective_envelope_mass = self.particles[0].outer_binary.child1.convective_envelope_mass
 
         
     def update_convective_envelope_radius(self):
         #update convective envelope radius
         #the prescription of Hurley, Tout & Pols 2002 is implemented in SeBa, , however note that the prescription in BSE is different 
-        self.particles[0].inner_binary.child1.convective_envelope_radius = self.particles[0].inner_binary.child1.get_convective_envelope_radius() 
-        self.particles[0].inner_binary.child2.convective_envelope_radius = self.particles[0].inner_binary.child2.get_convective_envelope_radius() 
-        self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.get_convective_envelope_radius()
+        self.particles[0].inner_binary.child1.convective_envelope_radius = self.particles[0].inner_binary.child1.convective_envelope_radius
+        self.particles[0].inner_binary.child2.convective_envelope_radius = self.particles[0].inner_binary.child2.convective_envelope_radius
+        self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.convective_envelope_radius
 
     def update_gyration_radius(self):
         #update gyration radius
