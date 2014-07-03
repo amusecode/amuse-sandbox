@@ -13,6 +13,7 @@ from matplotlib import pyplot
 timestep_factor = 0.01
 #error_dm
 #error_dr
+minimum_timestep = 1.e-9 |units.Myr
 
 REPORT_TRIPLE_EVOLUTION = False
 
@@ -171,6 +172,11 @@ class Triple:
             timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child2.mass/self.particles[0].inner_binary.child2.mass_transfer_rate))
         if (self.particles[0].outer_binary.child1.is_donor):
             timestep = min(timestep, abs(timestep_factor*self.particles[0].outer_binary.child1.mass/self.particles[0].outer_binary.child1.mass_transfer_rate))
+            
+            
+        #first step of mass transfer, posible CE -> instantaneous reaction
+        if not self.first_contact and not self.particles[0].inner_binary.child1.is_donor and not self.particles[0].inner_binary.child2.is_donor and not self.particles[0].outer_binary.child1.is_donor:
+            timestep = minimum_timestep   
             
         self.time += timestep
     
@@ -349,7 +355,7 @@ def evolve_triple(triple):
         # do secular evolution
         if triple.is_triple == True:
             triple.secular_code.evolve_model(triple.time)
-        else:
+        else:# e.g. binaries
             print 'Secular code disabled'
             exit(-1)
 
@@ -380,6 +386,9 @@ def evolve_triple(triple):
                 triple.particles[0].inner_binary.child1.is_donor = False
                 triple.particles[0].inner_binary.child2.is_donor = False
                 triple.particles[0].outer_binary.child1.is_donor = False
+                
+                triple.first_contact = False
+                
 
 
         #do stellar evolution 
@@ -395,6 +404,10 @@ def evolve_triple(triple):
         triple.update_se_parameters()
         
         #should also do safety check timestep here
+        
+        
+        
+        
         
         
         # for plotting data
