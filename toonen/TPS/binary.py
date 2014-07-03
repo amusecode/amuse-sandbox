@@ -15,6 +15,8 @@ stellar_types_giants = [2,3,4,5,6,8,9]
 stellar_types_remnants = [10,11,12,13,14]
 
 
+
+
 def print_star(star):
     print star.age, star.stellar_type, star.mass, star.radius, star.core_mass, star.spin_angular_frequency,
 
@@ -48,6 +50,9 @@ def roche_radius(bin, primary):
     print 'Error: Roche radius can only be determined in a binary'
     exit(1)
 
+
+def corotating_angular_frequency_binary(semi, m1, m2):
+    return 1./np.sqrt(semi**3/constants.G / (m1+ms))
 
 def common_envelope_efficiency(donor, accretor):
     return common_envelope_efficiency

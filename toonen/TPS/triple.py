@@ -67,6 +67,13 @@ class Triple:
         # default now corotating
         corotating_angular_frequency_inner = 1./np.sqrt(inner_semimajor_axis**3/constants.G / (stars[0].mass + stars[1].mass))
         corotating_angular_frequency_outer = 1./np.sqrt(outer_semimajor_axis**3/constants.G / (stars[0].mass + stars[1].mass + stars[2].mass))
+
+        print corotating_angular_frequency_inner,
+        print corotating_angular_frequency_outer
+        print corotating_angular_frequency_binary(inner_semimajor_axis, stars[0].mass, stars[1].mass),
+        print corotating_angular_frequency_binary(outer_semimajor_axis, stars[0].mass+stars[1].mass, stars[2].mass)
+
+        
         stars[0].spin_angular_frequency = corotating_angular_frequency_inner 
         stars[1].spin_angular_frequency = corotating_angular_frequency_inner 
         stars[2].spin_angular_frequency = corotating_angular_frequency_outer
