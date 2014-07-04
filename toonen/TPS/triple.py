@@ -159,10 +159,10 @@ class Triple:
             print "Dt=", self.se_code.particles.time_step, self.tend/100.0
     
         #during unstable mass transfer or other instantaneous interactions
-        if not outer_binary.is_stable:
+        if not self.particles[0].outer_binary.is_stable:
             #no step in time
             return
-        if not inner_binary.is_stable:
+        if not self.particles[0].inner_binary.is_stable:
             # no step in time
             return
             
@@ -171,11 +171,11 @@ class Triple:
         timestep = self.tend/100.0 
     
         # timestep of stellar evolution
-        if outer_binary.child1.is_star:
+        if self.particles[0].outer_binary.child1.is_star:
             timestep = min(timestep, self.particles[0].outer_binary.child1.time_step)
-        if inner_binary.child1.is_star:
+        if self.particles[0].inner_binary.child1.is_star:
             timestep = min(timestep, self.particles[0].inner_binary.child1.time_step)
-        if inner_binary.child2.is_star:
+        if self.particles[0].inner_binary.child2.is_star:
             timestep = min(timestep, self.particles[0].inner_binary.child2.time_step)
                 
             
