@@ -387,6 +387,9 @@ def evolve_triple(triple):
         # do secular evolution
         if triple.is_triple == True:
             triple.secular_code.evolve_model(triple.time)
+            print 'dt = 0'
+            triple.secular_code.evolve_model(triple.time)
+            print 'jeeh'
         else:# e.g. binaries
             print 'Secular code disabled'
             exit(-1)
@@ -424,7 +427,10 @@ def evolve_triple(triple):
 
 
         #do stellar evolution 
+        print 'dt = 0 se'
         triple.se_code.evolve_model(triple.time)
+        print 'jeeh'
+
         triple.channel_from_se.copy()
         triple.update_se_wind_parameters()
         
