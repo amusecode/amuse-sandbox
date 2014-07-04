@@ -107,9 +107,6 @@ Date: 20-06-2014
 Topic: Connection between parts of the code
 **********************
 What is the best way of supplying Adrian's code with information, such as the accretion efficiency? 
-
-intermezzo: I call it Adian's code as it does not only include the secular evolution anymore. Should we rename it? orbital_evolution?
-
 (good & bad) options are:
 - put the information in parameters. Make sure these parameters are updated when Adrian's code is called. Possible make a function ('update') that is run before Adrian's code, that updates all necessary parameters. 
 - make callable functions that return the nessecary parameters

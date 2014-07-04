@@ -82,6 +82,7 @@ class Triple:
         bins = Particles(2)
         bins.is_star = False
         bins.is_binary = True
+        bins.is_stable = True
         
         bins[0].child1 = stars[0]
         bins[0].child2 = stars[1]
@@ -173,10 +174,11 @@ class Triple:
         if (self.particles[0].outer_binary.child1.is_donor):
             timestep = min(timestep, abs(timestep_factor*self.particles[0].outer_binary.child1.mass/self.particles[0].outer_binary.child1.mass_transfer_rate))
             
-            
+        timestep = max(timestep, minimum_timestep)            
+
         #first step of mass transfer, posible CE -> instantaneous reaction
         if not self.first_contact and not self.particles[0].inner_binary.child1.is_donor and not self.particles[0].inner_binary.child2.is_donor and not self.particles[0].outer_binary.child1.is_donor:
-            timestep = minimum_timestep   
+            timestep = zero # ik wil eigenlijk een timestep van nul maken  
             
         self.time += timestep
     
@@ -200,7 +202,6 @@ class Triple:
         self.update_time_derivative_of_radius()
                     
     def update_wind_mass_loss_rate(self):
-        #update wind mass loss rate
         #note wind mass loss rate < 0
         timestep = self.time - self.previous_time
         if timestep > 0|units.yr: 
@@ -237,7 +238,6 @@ class Triple:
         
 
     def update_convective_envelope_mass(self):
-        #update convective envelope radius
         #the prescription of Hurley, Pols & Tout 2000 is implemented in SeBa, however note that the prescription in BSE is different
         self.particles[0].inner_binary.child1.convective_envelope_mass = self.particles[0].inner_binary.child1.convective_envelope_mass
         self.particles[0].inner_binary.child2.convective_envelope_mass = self.particles[0].inner_binary.child2.convective_envelope_mass
@@ -245,18 +245,19 @@ class Triple:
 
         
     def update_convective_envelope_radius(self):
-        #update convective envelope radius
         #the prescription of Hurley, Tout & Pols 2002 is implemented in SeBa, , however note that the prescription in BSE is different 
         self.particles[0].inner_binary.child1.convective_envelope_radius = self.particles[0].inner_binary.child1.convective_envelope_radius
         self.particles[0].inner_binary.child2.convective_envelope_radius = self.particles[0].inner_binary.child2.convective_envelope_radius
         self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.convective_envelope_radius
 
     def update_gyration_radius(self):
-        #update gyration radius
         self.particles[0].inner_binary.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
         self.particles[0].inner_binary.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
         self.particles[0].outer_binary.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
+        
     #-------
+    
+
 
 def evolve_center_of_mass(binary):
     print "evolve center of mass"
@@ -290,6 +291,36 @@ def resolve_triple_interaction(triple):
         exit(-1)                    
 
     
+
+def determine_mass_transfer_timescale(triple):
+
+    if triple.particles[0].outer_binary.child1.is_donor:
+        if triple.particles[0].inner_binary.child1.is_donor or triple.particles[0].inner_binary.child2.is_donor:
+            print 'RLOF in inner and outer binary'
+            exit(0)
+
+    if REPORT_TRIPLE_EVOLUTION:
+        print '\ninner binary'
+    if triple.particles[0].inner_binary.is_binary:
+        mass_transfer_stability(triple.particles[0].inner_binary)
+    elif triple.particles[0].inner_binary.is_star:
+        print 'do nothing'
+    else:
+        print 'determine_mass_transfer_timescale: type of inner system unknown'
+        exit(-1)                    
+
+    if REPORT_TRIPLE_EVOLUTION:
+        print '\nouter binary'
+    if triple.particles[0].outer_binary.is_binary:
+        mass_transfer_stability(triple.particles[0].outer_binary)
+    elif triple.particles[0].outer_binary.is_star:
+#        'e.g. if there is no outer star?'
+        print 'do nothing'
+    else:
+        print 'determine_mass_transfer_timescale: type of outer system unknown'
+        exit(-1)           
+        
+
 
 
 def safety_check_timestep(triple):
@@ -347,11 +378,12 @@ def evolve_triple(triple):
 
     while triple.time<triple.tend:
         triple.update_previous_se_parameters()
+        determine_mass_transfer_timescale(triple)
         triple.determine_timestep()        
+
 
         # update stellar parameters in the secular code
         triple.channel_to_secular.copy()   
-        
         # do secular evolution
         if triple.is_triple == True:
             triple.secular_code.evolve_model(triple.time)

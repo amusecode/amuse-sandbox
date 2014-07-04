@@ -13,9 +13,12 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Roche lobe in an eccentric orbit
 **********************
+Done
+
 The equations for the Roche lobe should be valid for eccentric orbits. 
 Sepinsky et al. 2007 gives a prescription that should be solved numerically. Their fit to this is only valid between 0.1<q<10, 0<e<0.9 and 0<stellar_rotational_angular_velocities/orbital_angular_velocities_at_periastron<15. Adrian is implementing the two presciptions.
 
+Update: There is another prescription from Sepinsky that is valid in a large range. It's implemented.
  
 **********************
 Note number: 3
@@ -23,6 +26,11 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Parameters needed for e.g. tides
 **********************
+Done, except for:
+    - apsiodal motion constant (we could possibly calculate this ourselves using MESA)
+--
+
+
  A number of parameters of the stars are needed to calculate the tides, that are not available yet. These are:
     - gyration radius
     - envelope mass
@@ -133,6 +141,7 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Connection with Adrian's code
 **********************
+Done:
 Build a bridge between triple.py and SecularTriple.
 
 **********************

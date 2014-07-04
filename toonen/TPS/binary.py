@@ -107,6 +107,7 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope angular momentum balance' 
             print_binary(bs) 
+
         donor.is_donor = False
         
 
@@ -302,40 +303,24 @@ def orbital_period(bs):
     return Porb
 
 
-def mass_transfer_stability_binary(bs, donor, accretor, tr):
+def semi_detached(bs, donor, accretor, tr):
 
     if REPORT_FUNCTION_NAMES:
-        print 'Mass transfer stability'
+        print 'Semi-detached'
 
-    Js = stellar_angular_momentum(donor)#accretor ook? check this
-    Jb = orbital_angular_momentum(bs)
-    
-    if REPORT_BINARY_EVOLUTION:
-        print "Darwin Riemann instability?:", Js, Jb, Jb/3.
-    
-        
-    #which outer_bs.child is bs..?
-    outer_bs = tr.outer_binary # niet mooi
-    if outer_bs.child1.is_star and outer_bs.child1.is_donor:
-        print 'RLOF in inner and outer binary'
-        exit(0)
-    if outer_bs.child2.is_star and outer_bs.child2.is_donor:
-        print 'RLOF in inner and outer binary'
-        exit(0)
-        
-    
-    if Js >= Jb/3. :
-        if REPORT_BINARY_EVOLUTION:
-            print "Darwin Riemann instability"
-        common_envelope(bs, donor, accretor, tr)
-        # heb ik zeker een triple?
-        adjust_triple_after_ce_in_inner_binary(outer_bs, bs, tr)
-        
-    else :
+    if bs.is_stable:
         stable_mass_transfer(bs, donor, accretor, tr)
         #adjusting triple is done in detached
-
-
+    else:        
+        common_envelope(bs, donor, accretor, tr)
+        # heb ik zeker een triple?
+        outer_bs = outer_bs = tr.particles[0].outer_binary
+        if outer_bs.child1.is_star and outer_bs.child2.is_binary:    
+            adjust_triple_after_ce_in_inner_binary(outer_bs, bs, tr)
+        else:
+            print 'semi_detached: type of system unknown'
+            exit(-1)
+            
 def adjust_triple_after_ce_in_inner_binary(bs, ce_binary, tr):
 # Assumption:
 # Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
@@ -538,9 +523,9 @@ def resolve_binary_interaction(bs, tr):
             if bs.child1.is_donor and bs.child2.is_donor:
                 contact_binary()
             elif bs.child1.is_donor and not bs.child2.is_donor:
-                mass_transfer_stability_binary(bs, bs.child1, bs.child2, tr)
+                semi_detached(bs, bs.child1, bs.child2, tr)
             elif not bs.child1.is_donor and bs.child2.is_donor:
-                mass_transfer_stability_binary(bs, bs.child2, bs.child1, tr)
+                semi_detached(bs, bs.child2, bs.child1, tr)
             else:
                 detached(bs, tr)
                                         
@@ -572,5 +557,61 @@ def resolve_binary_interaction(bs, tr):
         exit(-1)                    
                         
 
+        
+
+def mass_transfer_stability(binary):
+    if REPORT_FUNCTION_NAMES:
+        print 'Mass transfer stability'
+
+    if binary.child1.is_star and binary.child2.is_star:
+        Js_1 = stellar_angular_momentum(binary.child1)#accretor ook? check this
+        Js_2 = stellar_angular_momentum(binary.child2)#accretor ook? check this
+        Jb = orbital_angular_momentum(binary)
+        
+        if REPORT_BINARY_EVOLUTION:
+            print "Darwin Riemann instability?:", Js_1, Js_2, Jb, Jb/3.
+
+        Js = min(Js_1, Js_2)
+        if Js >= Jb/3. :
+            if REPORT_BINARY_EVOLUTION:
+                print "Darwin Riemann instability"
+            binary.mass_transfer_timescale = 0     
+            binary.is_stable = False          
+        else :
+            binary.mass_transfer_timescale = mass_transfer_timescale(binary)         
+            binary.is_stable = True
 
 
+    elif binary.child1.is_star and binary.child2.is_binary:
+        Js = stellar_angular_momentum(binary.child1)
+        Jb = orbital_angular_momentum(binary)
+        
+        if REPORT_BINARY_EVOLUTION:
+            print "Darwin Riemann instability?:", Js, Jb, Jb/3.
+        
+        if Js >= Jb/3. :
+            if REPORT_BINARY_EVOLUTION:
+                print "Darwin Riemann instability"
+            binary.mass_transfer_timescale = 0  
+            binary.is_stable = False          
+        else :
+            binary.mass_transfer_timescale = mass_transfer_timescale(binary)                    
+            binary.is_stable = True
+            
+    else:
+        print 'resolve binary interaction: type of system unknown'
+        print bs.is_binary, 
+        print bs.child1.is_binary, bs.child1.is_star, 
+        print bs.child2.is_binary, bs.child2.is_star
+        exit(-1) 
+            
+            
+       
+       
+def mass_transfer_timescale(binary):
+    if REPORT_FUNCTION_NAMES:
+        print 'Mass transfer timescale'
+
+    print 'Mass transfer timescale to be determined'
+
+    
