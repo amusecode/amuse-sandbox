@@ -109,7 +109,8 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
             print_binary(bs) 
 
         donor.is_donor = False
-        
+        bs.is_stable = True
+
 
 
 #Following Webbink 1984
@@ -156,6 +157,7 @@ def common_envelope_energy_balance(bs, donor, accretor, triple):
             print_binary(bs) 
 
         donor.is_donor = False
+        bs.is_stable = True
 
 
 # See appendix of Nelemans YPZV 2001, 365, 491 A&A
@@ -205,7 +207,7 @@ def double_common_envelope_energy_balance(bs, donor, accretor, triple):
             print_binary(bs) 
 
         donor.is_donor = False
-
+        bs.is_stable = True
 
 def common_envelope_phase(bs, donor, accretor, triple):
     if REPORT_FUNCTION_NAMES:

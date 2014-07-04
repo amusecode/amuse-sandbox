@@ -158,13 +158,26 @@ class Triple:
         if REPORT_TRIPLE_EVOLUTION:
             print "Dt=", self.se_code.particles.time_step, self.tend/100.0
     
+        #during unstable mass transfer or other instantaneous interactions
+        if not outer_binary.is_stable:
+            #no step in time
+            return
+        if not inner_binary.is_stable:
+            # no step in time
+            return
+            
+            
         ### for testing/plotting purposes only ###
         timestep = self.tend/100.0 
     
-        timestep = min(timestep, 
-            self.particles[0].outer_binary.child1.time_step,
-            self.particles[0].inner_binary.child1.time_step,
-            self.particles[0].inner_binary.child2.time_step)
+        # timestep of stellar evolution
+        if outer_binary.child1.is_star:
+            timestep = min(timestep, self.particles[0].outer_binary.child1.time_step)
+        if inner_binary.child1.is_star:
+            timestep = min(timestep, self.particles[0].inner_binary.child1.time_step)
+        if inner_binary.child2.is_star:
+            timestep = min(timestep, self.particles[0].inner_binary.child2.time_step)
+                
             
         #during stable mass transfer     
         if (self.particles[0].inner_binary.child1.is_donor):
@@ -175,10 +188,6 @@ class Triple:
             timestep = min(timestep, abs(timestep_factor*self.particles[0].outer_binary.child1.mass/self.particles[0].outer_binary.child1.mass_transfer_rate))
             
         timestep = max(timestep, minimum_timestep)            
-
-        #first step of mass transfer, posible CE -> instantaneous reaction
-        if not self.first_contact and not self.particles[0].inner_binary.child1.is_donor and not self.particles[0].inner_binary.child2.is_donor and not self.particles[0].outer_binary.child1.is_donor:
-            timestep = zero # ik wil eigenlijk een timestep van nul maken  
             
         self.time += timestep
     
@@ -387,9 +396,7 @@ def evolve_triple(triple):
         # do secular evolution
         if triple.is_triple == True:
             triple.secular_code.evolve_model(triple.time)
-            print 'dt = 0'
             triple.secular_code.evolve_model(triple.time)
-            print 'jeeh'
         else:# e.g. binaries
             print 'Secular code disabled'
             exit(-1)
@@ -427,10 +434,7 @@ def evolve_triple(triple):
 
 
         #do stellar evolution 
-        print 'dt = 0 se'
         triple.se_code.evolve_model(triple.time)
-        print 'jeeh'
-
         triple.channel_from_se.copy()
         triple.update_se_wind_parameters()
         
