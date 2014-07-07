@@ -122,8 +122,9 @@ de Mink et al. 2013, 764, 166, have made a more elaborate, but still simple fit 
 
 **********************
 Note number: 9
-Author: 
-Date: 
-Topic: 
+Author: Silvia
+Date: 7-07-2014 
+Topic: Stability of mass transfer
 **********************
-
+For now mass transfer is unstable if the Darwin-Riemann instability occurs or when the mass ratio of donor/accretor > 1. 
+This last assume is extremely crude. 

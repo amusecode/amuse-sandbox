@@ -15,18 +15,50 @@ stellar_types_giants = [2,3,4,5,6,8,9]
 stellar_types_remnants = [10,11,12,13,14]
 
 
-
-
 def print_star(star):
-    print star.age, star.stellar_type, star.mass, star.radius, star.core_mass, star.spin_angular_frequency,
+    if star.is_star:
+        print star.age, 
+        print star.stellar_type, 
+        print star.mass, 
+        print star.radius, 
+        print star.core_mass, 
+        print star.core_radius,
+        print star.envelope_mass,
+        print star.convective_envelope_mass,
+        print star.convective_envelope_radius,
+        print star.CO_core_mass,
+        print star.luminosity,
+        print star.temperature,
+        print star.wind_mass_loss_rate
+        print star.spin_angular_frequency,
+        print star.is_donor
+    else:
+        print 'print_star needs a star'        
+        exit(-1)
+    
 
-def print_binary(bs):
-    print binary.semi_major_axis, binary.eccentricity, binary.argument_of_pericenter, binary.longitude_of_ascending_node
-    print '\t'
-    print_star(bs.child1)
-    print '\t'
-    print_star(bs.child2)
-    print '\n'
+def print_binary(binary):
+    if binary.is_binary and binary.child1.is_star and binary.child2.is_star:
+        print binary.semimajor_axis, 
+        print binary.eccentricity, 
+        print binary.argument_of_pericenter, 
+        print binary.longitude_of_ascending_node,
+        print binary.mass_transfer_rate,
+        print binary.mass_transfer_timescale,
+        print binary.accretion_efficiency_mass_transfer,
+        print binary.accretion_efficiency_wind_child1_to_child2,
+        print binary.accretion_efficiency_wind_child2_to_child1,
+        print binary.specific_AM_loss_mass_transfer,
+        print binary.is_stable
+        
+        print '\t'
+        print_star(binary.child1)
+        print '\t'
+        print_star(binary.child2)
+        print '\n'
+    else:
+        print 'print_binary needs a binary with two stars'        
+        exit(-1)
     
     
 def print_triple(tr):
@@ -504,9 +536,8 @@ def detached(bs, tr):
         
     #reset parameters after mass transfer
     tr.first_contact = True
-    tr.particles[0].inner_binary.child1.mass_transfer_rate = 0.0 | units.MSun/units.yr
-    tr.particles[0].inner_binary.child2.mass_transfer_rate = 0.0 | units.MSun/units.yr
-    tr.particles[0].outer_binary.child1.mass_transfer_rate = 0.0 | units.MSun/units.yr
+    tr.particles[0].inner_binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+    tr.particles[0].outer_binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
 
 
 

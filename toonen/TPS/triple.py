@@ -1,13 +1,12 @@
 from amuse.lab import *
 from binary import *
 from math import sqrt
-
-### added by Adrian ###
-from amuse.community.seculartriple_TPS.interface import SecularTriple
 import numpy as np
+
+from amuse.community.seculartriple_TPS.interface import SecularTriple
+
 from amuse.units import quantities
 from matplotlib import pyplot
-#######################
 
 #constants
 timestep_factor = 0.01
@@ -38,7 +37,11 @@ class Triple:
         triples = Particles(1)
         triples[0].inner_binary = bins[0]
         triples[0].outer_binary = bins[1]
+        triples[0].outer_binary.parent = triples[0]
+#       The parent of the inner binary is the outer binary, do not do this:
+#        triples[0].inner_binary.parent = triples[0]
         triples[0].mutual_inclination = mutual_inclination
+
 
         self.is_star = False
         self.is_binary = False
@@ -84,8 +87,12 @@ class Triple:
         bins.is_binary = True
         bins.is_stable = True
         
+
         bins[0].child1 = stars[0]
         bins[0].child2 = stars[1]
+        bins[0].child1.parent = bins[0]
+        bins[0].child2.parent = bins[0]
+
         bins[0].semimajor_axis = inner_semimajor_axis
         bins[0].eccentricity = inner_eccentricity
         bins[0].argument_of_pericenter = inner_argument_of_pericenter
@@ -93,16 +100,24 @@ class Triple:
         
         bins[0].mass_transfer_rate = 0.0 | units.MSun/units.yr
         bins[0].accretion_efficiency_mass_transfer = 1.0
+        bins[0].accretion_efficiency_wind_child1_to_child2 = 0.0
+        bins[0].accretion_efficiency_wind_child2_to_child1 = 0.0
 
-        bins[1].semimajor_axis = outer_semimajor_axis
-        bins[1].eccentricity = outer_eccentricity
         bins[1].child1 = stars[2]
         bins[1].child2 = bins[0]
+        bins[1].child1.parent = bins[1]
+        bins[1].child2.parent = bins[1]
+        
+        bins[1].semimajor_axis = outer_semimajor_axis
+        bins[1].eccentricity = outer_eccentricity
         bins[1].argument_of_pericenter = outer_argument_of_pericenter                
         bins[1].longitude_of_ascending_node = outer_longitude_of_ascending_node
         
         bins[1].mass_transfer_rate = 0.0 | units.MSun/units.yr        
         bins[1].accretion_efficiency_mass_transfer = 1.0
+        bins[1].accretion_efficiency_wind_child1_to_child2 = 0.0
+        bins[1].accretion_efficiency_wind_child2_to_child1 = 0.0
+
 
         # binary evolutionary settings
         bins[0].specific_AM_loss_mass_transfer = 2.5 
@@ -181,11 +196,11 @@ class Triple:
             
         #during stable mass transfer     
         if (self.particles[0].inner_binary.child1.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child1.mass/self.particles[0].inner_binary.child1.mass_transfer_rate))
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child1.mass/self.particles[0].inner_binary.mass_transfer_rate))
         if (self.particles[0].inner_binary.child2.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child2.mass/self.particles[0].inner_binary.child2.mass_transfer_rate))
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child2.mass/self.particles[0].inner_binary.mass_transfer_rate))
         if (self.particles[0].outer_binary.child1.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].outer_binary.child1.mass/self.particles[0].outer_binary.child1.mass_transfer_rate))
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].outer_binary.child1.mass/self.particles[0].outer_binary.mass_transfer_rate))
             
         timestep = max(timestep, minimum_timestep)            
             
