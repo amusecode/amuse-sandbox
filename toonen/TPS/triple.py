@@ -35,8 +35,8 @@ class Triple:
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)
 
         triples = Particles(1)
-        triples[0].inner_binary = bins[0]
-        triples[0].outer_binary = bins[1]
+        triples[0].child1 = bins[0]
+        triples[0].child2 = bins[1]
         triples[0].mutual_inclination = mutual_inclination
 
 
@@ -171,10 +171,10 @@ class Triple:
             print "Dt=", self.se_code.particles.time_step, self.tend/100.0
     
         #during unstable mass transfer or other instantaneous interactions
-        if not self.particles[0].outer_binary.is_stable:
+        if not self.particles[0].child2.is_stable:
             #no step in time
             return
-        if not self.particles[0].inner_binary.is_stable:
+        if not self.particles[0].child1.is_stable:
             # no step in time
             return
             
@@ -183,21 +183,21 @@ class Triple:
         timestep = self.tend/100.0 
     
         # timestep of stellar evolution
-        if self.particles[0].outer_binary.child1.is_star:
-            timestep = min(timestep, self.particles[0].outer_binary.child1.time_step)
-        if self.particles[0].inner_binary.child1.is_star:
-            timestep = min(timestep, self.particles[0].inner_binary.child1.time_step)
-        if self.particles[0].inner_binary.child2.is_star:
-            timestep = min(timestep, self.particles[0].inner_binary.child2.time_step)
+        if self.particles[0].child2.child1.is_star:
+            timestep = min(timestep, self.particles[0].child2.child1.time_step)
+        if self.particles[0].child1.child1.is_star:
+            timestep = min(timestep, self.particles[0].child1.child1.time_step)
+        if self.particles[0].child1.child2.is_star:
+            timestep = min(timestep, self.particles[0].child1.child2.time_step)
                 
             
         #during stable mass transfer     
-        if (self.particles[0].inner_binary.child1.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child1.mass/self.particles[0].inner_binary.mass_transfer_rate))
-        if (self.particles[0].inner_binary.child2.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].inner_binary.child2.mass/self.particles[0].inner_binary.mass_transfer_rate))
-        if (self.particles[0].outer_binary.child1.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].outer_binary.child1.mass/self.particles[0].outer_binary.mass_transfer_rate))
+        if (self.particles[0].child1.child1.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child1.mass/self.particles[0].child1.mass_transfer_rate))
+        if (self.particles[0].child1.child2.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child2.mass/self.particles[0].child1.mass_transfer_rate))
+        if (self.particles[0].child2.child1.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate))
             
         timestep = max(timestep, minimum_timestep)            
             
@@ -207,14 +207,14 @@ class Triple:
     def update_previous_se_parameters(self):
         self.previous_time = self.time
 
-        self.particles[0].inner_binary.child1.previous_mass = self.particles[0].inner_binary.child1.mass 
-        self.particles[0].inner_binary.child2.previous_mass = self.particles[0].inner_binary.child2.mass 
-        self.particles[0].outer_binary.child1.previous_mass = self.particles[0].outer_binary.child1.mass 
-        self.particles[0].outer_binary.child2.previous_mass = self.particles[0].outer_binary.child2.mass 
+        self.particles[0].child1.child1.previous_mass = self.particles[0].child1.child1.mass 
+        self.particles[0].child1.child2.previous_mass = self.particles[0].child1.child2.mass 
+        self.particles[0].child2.child1.previous_mass = self.particles[0].child2.child1.mass 
+        self.particles[0].child2.child2.previous_mass = self.particles[0].child2.child2.mass 
 
-        self.particles[0].inner_binary.child1.previous_radius = self.particles[0].inner_binary.child1.radius 
-        self.particles[0].inner_binary.child2.previous_radius = self.particles[0].inner_binary.child2.radius 
-        self.particles[0].outer_binary.child1.previous_radius = self.particles[0].outer_binary.child1.radius 
+        self.particles[0].child1.child1.previous_radius = self.particles[0].child1.child1.radius 
+        self.particles[0].child1.child2.previous_radius = self.particles[0].child1.child2.radius 
+        self.particles[0].child2.child1.previous_radius = self.particles[0].child2.child1.radius 
     #-------
 
     #-------
@@ -226,28 +226,28 @@ class Triple:
         #note wind mass loss rate < 0
         timestep = self.time - self.previous_time
         if timestep > 0|units.yr: 
-            self.particles[0].inner_binary.child1.wind_mass_loss_rate = (self.particles[0].inner_binary.child1.mass - self.particles[0].inner_binary.child1.previous_mass)/timestep
-            self.particles[0].inner_binary.child2.wind_mass_loss_rate = (self.particles[0].inner_binary.child2.mass - self.particles[0].inner_binary.child2.previous_mass)/timestep
-            self.particles[0].outer_binary.child1.wind_mass_loss_rate = (self.particles[0].outer_binary.child1.mass - self.particles[0].outer_binary.child1.previous_mass)/timestep
+            self.particles[0].child1.child1.wind_mass_loss_rate = (self.particles[0].child1.child1.mass - self.particles[0].child1.child1.previous_mass)/timestep
+            self.particles[0].child1.child2.wind_mass_loss_rate = (self.particles[0].child1.child2.mass - self.particles[0].child1.child2.previous_mass)/timestep
+            self.particles[0].child2.child1.wind_mass_loss_rate = (self.particles[0].child2.child1.mass - self.particles[0].child2.child1.previous_mass)/timestep
         else:
             #initialization
-            self.particles[0].inner_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
-            self.particles[0].inner_binary.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
-            self.particles[0].outer_binary.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+            self.particles[0].child1.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+            self.particles[0].child1.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+            self.particles[0].child2.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             
     def update_time_derivative_of_radius(self):
         #update time_derivative_of_radius for effect of wind on spin
         #radius change due to stellar evolution, not mass transfer
         timestep = self.time - self.previous_time
         if timestep > 0|units.yr:
-            self.particles[0].inner_binary.child1.time_derivative_of_radius = (self.particles[0].inner_binary.child1.radius - self.particles[0].inner_binary.child1.previous_radius)/timestep
-            self.particles[0].inner_binary.child2.time_derivative_of_radius = (self.particles[0].inner_binary.child2.radius - self.particles[0].inner_binary.child2.previous_radius)/timestep
-            self.particles[0].outer_binary.child1.time_derivative_of_radius = (self.particles[0].outer_binary.child1.radius - self.particles[0].outer_binary.child1.previous_radius)/timestep
+            self.particles[0].child1.child1.time_derivative_of_radius = (self.particles[0].child1.child1.radius - self.particles[0].child1.child1.previous_radius)/timestep
+            self.particles[0].child1.child2.time_derivative_of_radius = (self.particles[0].child1.child2.radius - self.particles[0].child1.child2.previous_radius)/timestep
+            self.particles[0].child2.child1.time_derivative_of_radius = (self.particles[0].child2.child1.radius - self.particles[0].child2.child1.previous_radius)/timestep
         else:
             #initialization
-            self.particles[0].inner_binary.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
-            self.particles[0].inner_binary.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
-            self.particles[0].outer_binary.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+            self.particles[0].child1.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+            self.particles[0].child1.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+            self.particles[0].child2.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
 
     #-------
 
@@ -260,21 +260,21 @@ class Triple:
 
     def update_convective_envelope_mass(self):
         #the prescription of Hurley, Pols & Tout 2000 is implemented in SeBa, however note that the prescription in BSE is different
-        self.particles[0].inner_binary.child1.convective_envelope_mass = self.particles[0].inner_binary.child1.convective_envelope_mass
-        self.particles[0].inner_binary.child2.convective_envelope_mass = self.particles[0].inner_binary.child2.convective_envelope_mass
-        self.particles[0].outer_binary.child1.convective_envelope_mass = self.particles[0].outer_binary.child1.convective_envelope_mass
+        self.particles[0].child1.child1.convective_envelope_mass = self.particles[0].child1.child1.convective_envelope_mass
+        self.particles[0].child1.child2.convective_envelope_mass = self.particles[0].child1.child2.convective_envelope_mass
+        self.particles[0].child2.child1.convective_envelope_mass = self.particles[0].child2.child1.convective_envelope_mass
 
         
     def update_convective_envelope_radius(self):
         #the prescription of Hurley, Tout & Pols 2002 is implemented in SeBa, , however note that the prescription in BSE is different 
-        self.particles[0].inner_binary.child1.convective_envelope_radius = self.particles[0].inner_binary.child1.convective_envelope_radius
-        self.particles[0].inner_binary.child2.convective_envelope_radius = self.particles[0].inner_binary.child2.convective_envelope_radius
-        self.particles[0].outer_binary.child1.convective_envelope_radius = self.particles[0].outer_binary.child1.convective_envelope_radius
+        self.particles[0].child1.child1.convective_envelope_radius = self.particles[0].child1.child1.convective_envelope_radius
+        self.particles[0].child1.child2.convective_envelope_radius = self.particles[0].child1.child2.convective_envelope_radius
+        self.particles[0].child2.child1.convective_envelope_radius = self.particles[0].child2.child1.convective_envelope_radius
 
     def update_gyration_radius(self):
-        self.particles[0].inner_binary.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
-        self.particles[0].inner_binary.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
-        self.particles[0].outer_binary.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
+        self.particles[0].child1.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
+        self.particles[0].child1.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
+        self.particles[0].child2.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
         
     #-------
     #whether or not a binary system consists of just two stars
@@ -297,22 +297,22 @@ def resolve_triple_interaction(triple):
 
     if REPORT_TRIPLE_EVOLUTION:
         print '\ninner binary'
-    if triple.is_double_star(triple.particles[0].inner_binary):
-        resolve_binary_interaction(triple.particles[0].inner_binary, triple)
-    elif triple.particles[0].inner_binary.is_star:
+    if triple.is_double_star(triple.particles[0].child1):
+        resolve_binary_interaction(triple.particles[0].child1, triple)
+    elif triple.particles[0].child1.is_star:
 #        'e.g. if system merged'
-        evolve_center_of_mass(triple.particles[0].inner_binary, triple)
+        evolve_center_of_mass(triple.particles[0].child1, triple)
     else:
         print 'resolve triple interaction: type of inner system unknown'
         exit(-1)                    
 
     if REPORT_TRIPLE_EVOLUTION:
         print '\nouter binary'
-    elif triple.particles[0].outer_binary.is_binary:
-        resolve_binary_interaction(triple.particles[0].outer_binary, triple)
-    elif triple.particles[0].outer_binary.is_star:
+    elif triple.particles[0].child2.is_binary:
+        resolve_binary_interaction(triple.particles[0].child2, triple)
+    elif triple.particles[0].child2.is_star:
 #        'e.g. if there is no outer star?'
-        evolve_center_of_mass(triple.particles[0].outer_binary, triple)
+        evolve_center_of_mass(triple.particles[0].child2, triple)
     else:
         print 'resolve triple interaction: type of outer system unknown'
         exit(-1)                    
@@ -321,16 +321,16 @@ def resolve_triple_interaction(triple):
 
 def determine_mass_transfer_timescale(triple):
 
-    if triple.particles[0].outer_binary.child1.is_donor:
-        if triple.particles[0].inner_binary.child1.is_donor or triple.particles[0].inner_binary.child2.is_donor:
+    if triple.particles[0].child2.child1.is_donor:
+        if triple.particles[0].child1.child1.is_donor or triple.particles[0].child1.child2.is_donor:
             print 'RLOF in inner and outer binary'
             exit(0)
 
     if REPORT_TRIPLE_EVOLUTION:
         print '\ninner binary'
-    if triple.is_double_star(triple.particles[0].inner_binary):
-        mass_transfer_stability(triple.particles[0].inner_binary)
-    elif triple.particles[0].inner_binary.is_star:
+    if triple.is_double_star(triple.particles[0].child1):
+        mass_transfer_stability(triple.particles[0].child1)
+    elif triple.particles[0].child1.is_star:
         print 'do nothing'
     else:
         print 'determine_mass_transfer_timescale: type of inner system unknown'
@@ -338,9 +338,9 @@ def determine_mass_transfer_timescale(triple):
 
     if REPORT_TRIPLE_EVOLUTION:
         print '\nouter binary'
-    if triple.particles[0].outer_binary.is_binary:
-        mass_transfer_stability(triple.particles[0].outer_binary)
-    elif triple.particles[0].outer_binary.is_star:
+    if triple.particles[0].child2.is_binary:
+        mass_transfer_stability(triple.particles[0].child2)
+    elif triple.particles[0].child2.is_star:
 #        'e.g. if there is no outer star?'
         print 'do nothing'
     else:
@@ -351,44 +351,44 @@ def determine_mass_transfer_timescale(triple):
 
 
 def safety_check_timestep(triple):
-        dm_1 = (triple.particles[0].inner_binary.child1.mass - triple.particles[0].inner_binary.child1.previous_mass)/triple.particles[0].inner_binary.child1.mass
-        dm_2 = (triple.particles[0].inner_binary.child2.mass - triple.particles[0].inner_binary.child2.previous_mass)/triple.particles[0].inner_binary.child2.mass
-        dm_3 = (triple.particles[0].outer_binary.child1.mass - triple.particles[0].outer_binary.child1.previous_mass)/triple.particles[0].outer_binary.child1.mass
+        dm_1 = (triple.particles[0].child1.child1.mass - triple.particles[0].child1.child1.previous_mass)/triple.particles[0].child1.child1.mass
+        dm_2 = (triple.particles[0].child1.child2.mass - triple.particles[0].child1.child2.previous_mass)/triple.particles[0].child1.child2.mass
+        dm_3 = (triple.particles[0].child2.child1.mass - triple.particles[0].child2.child1.previous_mass)/triple.particles[0].child2.child1.mass
                 
         if REPORT_TRIPLE_EVOLUTION:
             print 'wind mass loss rates:', 
-            print triple.particles[0].inner_binary.child1.wind_mass_loss_rate,
-            print triple.particles[0].inner_binary.child2.wind_mass_loss_rate,
-            print triple.particles[0].outer_binary.child1.wind_mass_loss_rate
+            print triple.particles[0].child1.child1.wind_mass_loss_rate,
+            print triple.particles[0].child1.child2.wind_mass_loss_rate,
+            print triple.particles[0].child2.child1.wind_mass_loss_rate
             print 'relative wind mass losses:',
             print dm_1, dm_2, dm_3
         error_dm = 0.05
         if (dm_1 > error_dm) or (dm_2 > error_dm) or (dm_3 > error_dm):
             print 'Change in mass in a single timestep larger then', error_dm
             print dm_1, dm_2, dm_3
-            print triple.particles[0].inner_binary.child1.stellar_type
-            print triple.particles[0].inner_binary.child2.stellar_type
-            print triple.particles[0].outer_binary.child1.stellar_type
+            print triple.particles[0].child1.child1.stellar_type
+            print triple.particles[0].child1.child2.stellar_type
+            print triple.particles[0].child2.child1.stellar_type
             exit(-1)
 
 
-        dr_1 = (triple.particles[0].inner_binary.child1.radius - triple.particles[0].inner_binary.child1.previous_radius)/triple.particles[0].inner_binary.child1.radius
-        dr_2 = (triple.particles[0].inner_binary.child2.radius - triple.particles[0].inner_binary.child2.previous_radius)/triple.particles[0].inner_binary.child2.radius
-        dr_3 = (triple.particles[0].outer_binary.child1.radius - triple.particles[0].outer_binary.child1.previous_radius)/triple.particles[0].outer_binary.child1.radius
+        dr_1 = (triple.particles[0].child1.child1.radius - triple.particles[0].child1.child1.previous_radius)/triple.particles[0].child1.child1.radius
+        dr_2 = (triple.particles[0].child1.child2.radius - triple.particles[0].child1.child2.previous_radius)/triple.particles[0].child1.child2.radius
+        dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
         if REPORT_TRIPLE_EVOLUTION:    
             print 'change in radius over time:', 
-            print triple.particles[0].inner_binary.child1.time_derivative_of_radius,
-            print triple.particles[0].inner_binary.child2.time_derivative_of_radius,
-            print triple.particles[0].outer_binary.child1.time_derivative_of_radius
+            print triple.particles[0].child1.child1.time_derivative_of_radius,
+            print triple.particles[0].child1.child2.time_derivative_of_radius,
+            print triple.particles[0].child2.child1.time_derivative_of_radius
             print 'relative change in radius:',
             print dr_1, dr_2, dr_3
         error_dr = 0.05
         if (dr_1 > error_dr) or (dr_2 > error_dr) or (dr_3 > error_dr):
             print 'Change in radius in a single timestep larger then', error_dr
             print dr_1, dr_2, dr_3
-            print triple.particles[0].inner_binary.child1.stellar_type
-            print triple.particles[0].inner_binary.child2.stellar_type
-            print triple.particles[0].outer_binary.child1.stellar_type
+            print triple.particles[0].child1.child1.stellar_type
+            print triple.particles[0].child1.child2.stellar_type
+            print triple.particles[0].child2.child1.stellar_type
             exit(-1)
         
 
@@ -433,9 +433,9 @@ def evolve_triple(triple):
 
 
         # when the secular code finds that mass transfer starts, evolve the stars only until that time
-        if ((triple.particles[0].inner_binary.child1.is_donor or
-            triple.particles[0].inner_binary.child2.is_donor or
-            triple.particles[0].outer_binary.child1.is_donor) and
+        if ((triple.particles[0].child1.child1.is_donor or
+            triple.particles[0].child1.child2.is_donor or
+            triple.particles[0].child2.child1.is_donor) and
             triple.first_contact):
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Times:', triple.previous_time, triple.time, triple.secular_code.model_time
@@ -443,9 +443,9 @@ def evolve_triple(triple):
                 
                 # mass should not be transferred just yet -> check if this works ok
                 # do not overwrite this parameter in the secular code    
-                triple.particles[0].inner_binary.child1.is_donor = False
-                triple.particles[0].inner_binary.child2.is_donor = False
-                triple.particles[0].outer_binary.child1.is_donor = False
+                triple.particles[0].child1.child1.is_donor = False
+                triple.particles[0].child1.child2.is_donor = False
+                triple.particles[0].child2.child1.is_donor = False
                 
                 triple.first_contact = False
                 
@@ -460,7 +460,6 @@ def evolve_triple(triple):
         
         ##what should be the order, first mass transfer or first stellar evolution?
         resolve_triple_interaction(triple)        
-#        Rl1, Rl2, Rl3 = triple.secular_code.give_roche_radii(triple.particles[0])
         triple.update_se_parameters()
         
         #should also do safety check timestep here
@@ -472,9 +471,9 @@ def evolve_triple(triple):
         
         # for plotting data
         times_array.append(triple.time)
-        e_in_array.append(triple.particles[0].inner_binary.eccentricity)
-        a_in_array.append(triple.particles[0].inner_binary.semimajor_axis)
-        g_in_array.append(triple.particles[0].inner_binary.argument_of_pericenter)    
+        e_in_array.append(triple.particles[0].child1.eccentricity)
+        a_in_array.append(triple.particles[0].child1.semimajor_axis)
+        g_in_array.append(triple.particles[0].child1.argument_of_pericenter)    
         i_mutual_array.append(triple.particles[0].mutual_inclination)        
         
     # for plotting data

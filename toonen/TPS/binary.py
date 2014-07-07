@@ -63,8 +63,8 @@ def print_binary(binary):
     
 def print_triple(tr):
     print tr.mutual_inclination
-    print_binary(tr.inner_binary)
-    print_binary(tr.outer_binary)
+    print_binary(tr.child1)
+    print_binary(tr.child2)
     
 def roche_radius_dimensionless(M, m) :
     # Assure that the q is calculated in identical units.
@@ -544,8 +544,8 @@ def detached(bs, tr):
         
     #reset parameters after mass transfer
     tr.first_contact = True
-    tr.particles[0].inner_binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
-    tr.particles[0].outer_binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+    tr.particles[0].child1.mass_transfer_rate = 0.0 | units.MSun/units.yr
+    tr.particles[0].child2.mass_transfer_rate = 0.0 | units.MSun/units.yr
 
 
 
