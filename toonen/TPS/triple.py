@@ -297,7 +297,7 @@ def resolve_triple_interaction(triple):
 
     if REPORT_TRIPLE_EVOLUTION:
         print '\ninner binary'
-    if triple.particles[0].inner_binary.is_binary:
+    if triple.is_double_star(triple.particles[0].inner_binary):
         resolve_binary_interaction(triple.particles[0].inner_binary, triple)
     elif triple.particles[0].inner_binary.is_star:
 #        'e.g. if system merged'
@@ -308,7 +308,7 @@ def resolve_triple_interaction(triple):
 
     if REPORT_TRIPLE_EVOLUTION:
         print '\nouter binary'
-    if triple.particles[0].outer_binary.is_binary:
+    elif triple.particles[0].outer_binary.is_binary:
         resolve_binary_interaction(triple.particles[0].outer_binary, triple)
     elif triple.particles[0].outer_binary.is_star:
 #        'e.g. if there is no outer star?'
@@ -328,7 +328,7 @@ def determine_mass_transfer_timescale(triple):
 
     if REPORT_TRIPLE_EVOLUTION:
         print '\ninner binary'
-    if triple.particles[0].inner_binary.is_binary:
+    if triple.is_double_star(triple.particles[0].inner_binary):
         mass_transfer_stability(triple.particles[0].inner_binary)
     elif triple.particles[0].inner_binary.is_star:
         print 'do nothing'

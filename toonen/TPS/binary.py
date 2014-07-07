@@ -494,7 +494,7 @@ def detached(bs, tr):
 # check if this indeed is accreted conservatively        
 
 
-    elif bs.child1.is_star and bs.child2.is_binary and bs.child2.child1.is_star and bs.child2.child2.is_star:
+    elif bs.child1.is_star and tr.is_double_star(bs.child2):
         #Assumption: an inner binary is not effected by wind from an outer star
         bs.accretion_efficiency_wind_child1_to_child2 = 0.0
 
