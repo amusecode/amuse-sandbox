@@ -566,19 +566,25 @@ def mass_transfer_stability(binary):
         print 'Mass transfer stability'
 
     if binary.child1.is_star and binary.child2.is_star:
-        Js_1 = stellar_angular_momentum(binary.child1)#accretor ook? check this
-        Js_2 = stellar_angular_momentum(binary.child2)#accretor ook? check this
+        Js_1 = stellar_angular_momentum(binary.child1)
+        Js_2 = stellar_angular_momentum(binary.child2)        
         Jb = orbital_angular_momentum(binary)
         
         if REPORT_BINARY_EVOLUTION:
             print "Darwin Riemann instability?:", Js_1, Js_2, Jb, Jb/3.
 
-        Js = min(Js_1, Js_2)
+        Js = max(Js_1, Js_2)
         if Js >= Jb/3. :
             if REPORT_BINARY_EVOLUTION:
                 print "Darwin Riemann instability"
             binary.mass_transfer_timescale = 0     
-            binary.is_stable = False          
+            binary.is_stable = False
+        elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass:
+            binary.mass_transfer_timescale = 0
+            binary.is_stable = False
+        elif binary.child2.is_donor and binary.child2.mass > binary.child1.mass:
+            binary.mass_transfer_timescale = 0
+            binary.is_stable = False
         else :
             binary.mass_transfer_timescale = mass_transfer_timescale(binary)         
             binary.is_stable = True
@@ -596,6 +602,9 @@ def mass_transfer_stability(binary):
                 print "Darwin Riemann instability"
             binary.mass_transfer_timescale = 0  
             binary.is_stable = False          
+        elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass:
+            binary.mass_transfer_timescale = 0
+            binary.is_stable = False
         else :
             binary.mass_transfer_timescale = mass_transfer_timescale(binary)                    
             binary.is_stable = True
