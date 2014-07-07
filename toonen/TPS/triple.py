@@ -37,9 +37,6 @@ class Triple:
         triples = Particles(1)
         triples[0].inner_binary = bins[0]
         triples[0].outer_binary = bins[1]
-        triples[0].outer_binary.parent = triples[0]
-#       The parent of the inner binary is the outer binary, do not do this:
-#        triples[0].inner_binary.parent = triples[0]
         triples[0].mutual_inclination = mutual_inclination
 
 
@@ -280,8 +277,14 @@ class Triple:
         self.particles[0].outer_binary.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
         
     #-------
-    
+    #whether or not a binary system consists of just two stars
+    def is_double_star(self, particles):
+        if particles.is_binary and particles.child1.is_star and particles.child2.is_star:
+            return True
+        else:
+            return False
 
+    #-------
 
 def evolve_center_of_mass(binary):
     print "evolve center of mass"

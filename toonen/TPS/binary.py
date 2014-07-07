@@ -363,13 +363,21 @@ def semi_detached(bs, donor, accretor, tr):
         #adjusting triple is done in detached
     else:        
         common_envelope(bs, donor, accretor, tr)
-        # heb ik zeker een triple?
-        outer_bs = outer_bs = tr.particles[0].outer_binary
-        if outer_bs.child1.is_star and outer_bs.child2.is_binary:    
-            adjust_triple_after_ce_in_inner_binary(outer_bs, bs, tr)
-        else:
-            print 'semi_detached: type of system unknown'
-            exit(-1)
+
+        print 'is double star:', tr.is_double_star(bs)
+        #depending on how the structure is when we implement mergers..
+        if bs.parent.is_binary:
+            if bs.parent.child1 == bs and bs.parent.child2.is_star:
+                adjust_triple_after_ce_in_inner_binary(bs.parent, bs, tr)                
+            elif bs.parent.child2 == bs and bs.parent.child1.is_star:
+                adjust_triple_after_ce_in_inner_binary(bs.parent, bs, tr)                            
+            else:
+                print 'semi_detached: type of system unknown'
+                exit(-1)
+            
+        print 'check on parent of parent in semi_detached not implemented yet'            
+
+            
             
 def adjust_triple_after_ce_in_inner_binary(bs, ce_binary, tr):
 # Assumption:
