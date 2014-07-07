@@ -92,8 +92,12 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
         exit(0)
     else:
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
+        #reduce_mass not subtrac mass, want geen adjust_donor_radius
+        #check if star changes type     
+        print 'donor stellar type before: ', donor.stellar_type
+        donor_in_se_code.change_mass(-1*donor.envelope_mass)    
         triple.channel_from_se.copy()
+        print 'donor stellar type after: ', donor.stellar_type
 
         bs.semi_major_axis = a_new
         bs.eccentricity = zero
@@ -140,8 +144,12 @@ def common_envelope_energy_balance(bs, donor, accretor, triple):
         exit(0)
     else:
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
+        #reduce_mass not subtrac mass, want geen adjust_donor_radius
+        #check if star changes type     
+        print 'donor stellar type before: ', donor.stellar_type
+        donor_in_se_code.change_mass(-1*donor.envelope_mass)    
         triple.channel_from_se.copy()
+        print 'donor stellar type after: ', donor.stellar_type
 
         bs.semi_major_axis = a_new
         bs.eccentricity = zero
@@ -187,11 +195,19 @@ def double_common_envelope_energy_balance(bs, donor, accretor, triple):
         print 'Merger in inner binary through common envelope phase (double common envelope)'
         exit(0)
     else:
+        #reduce_mass not subtrac mass, want geen adjust_donor_radius
+        #check if star changes type     
+
+        print 'donor stellar type before: ', donor.stellar_type
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        #donor_in_se_code.change_mass(-1*donor.envelope_mass)    reduce_mass not subtrac mass     
+        donor_in_se_code.change_mass(-1*donor.envelope_mass)    
+        print 'accretor stellar type before: ', accretor.stellar_type
         accretor_in_se_code = accretor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        #accretor_in_se_code.change_mass(-1*accretor.envelope_mass)    reduce_mass not subtrac mass     
+        accretor_in_se_code.change_mass(-1*accretor.envelope_mass)    
         triple.channel_from_se.copy()
+        print 'donor stellar type after: ', donor.stellar_type
+        print 'accretor stellar type after: ', accretor.stellar_type
+
 
         bs.semi_major_axis = a_new
         bs.eccentricity = zero

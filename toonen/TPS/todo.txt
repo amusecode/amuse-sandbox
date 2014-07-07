@@ -135,6 +135,9 @@ Topic: Tests
 - Are the timesteps given to Adrian's code sufficiently small to validate the assumptions of constant mass in his ccode?
 - Tests do determine where we want the trade-off between speed and accuracy in the Adrian's code (for solving the differential equations)
 
+- is there enough mass removed in the ce? does the star change type?
+
+
 **********************
 Note number: 13
 Author: Silvia
