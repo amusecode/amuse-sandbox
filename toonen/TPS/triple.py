@@ -285,68 +285,147 @@ class Triple:
             return False
 
     #-------
-
-def evolve_center_of_mass(binary):
-    print "evolve center of mass"
-    exit(-1)
-    return
-
-
-        
-def resolve_triple_interaction(triple):
-
-    if REPORT_TRIPLE_EVOLUTION:
-        print '\ninner binary'
-    if triple.is_double_star(triple.particles[0].child1):
-        resolve_binary_interaction(triple.particles[0].child1, triple)
-    elif triple.particles[0].child1.is_star:
-#        'e.g. if system merged'
-        evolve_center_of_mass(triple.particles[0].child1, triple)
-    else:
-        print 'resolve triple interaction: type of inner system unknown'
-        exit(-1)                    
-
-    if REPORT_TRIPLE_EVOLUTION:
-        print '\nouter binary'
-    elif triple.particles[0].child2.is_binary:
-        resolve_binary_interaction(triple.particles[0].child2, triple)
-    elif triple.particles[0].child2.is_star:
-#        'e.g. if there is no outer star?'
-        evolve_center_of_mass(triple.particles[0].child2, triple)
-    else:
-        print 'resolve triple interaction: type of outer system unknown'
-        exit(-1)                    
-
+    def resolve_triple_interaction(self):
     
+        if REPORT_TRIPLE_EVOLUTION:
+            print '\ninner binary'
+        if self.is_double_star(self.particles[0].child1):
+            resolve_binary_interaction(self.particles[0].child1, self)
+        elif self.particles[0].child1.is_star:
+    #        'e.g. if system merged'
+            print 'do nothing'
+        else:
+            print 'resolve triple interaction: type of inner system unknown'
+            exit(-1)                    
+    
+    
+        if REPORT_TRIPLE_EVOLUTION:
+            print '\nouter binary'
+        elif self.particles[0].child2.is_binary:
+            resolve_binary_interaction(self.particles[0].child2, self)
+        else:
+            print 'resolve triple interaction: type of outer system unknown'
+            exit(-1)  
+            
+            
+    def determine_mass_transfer_timescale(self):
+    
+        if self.particles[0].child2.child1.is_donor:
+            if self.particles[0].child1.child1.is_donor or self.particles[0].child1.child2.is_donor:
+                print 'RLOF in inner and outer binary'
+                exit(0)
+    
+        if REPORT_TRIPLE_EVOLUTION:
+            print '\ninner binary'
+        if self.is_double_star(self.particles[0].child1):
+            mass_transfer_stability(self.particles[0].child1)
+        elif self.particles[0].child1.is_star:
+            print 'do nothing'
+        else:
+            print 'determine_mass_transfer_timescale: type of inner system unknown'
+            exit(-1)                    
+    
+        if REPORT_TRIPLE_EVOLUTION:
+            print '\nouter binary'
+        if self.particles[0].child2.is_binary:
+            mass_transfer_stability(self.particles[0].child2)
+        else:
+            print 'determine_mass_transfer_timescale: type of outer system unknown'
+            exit(-1)           
 
-def determine_mass_transfer_timescale(triple):
 
-    if triple.particles[0].child2.child1.is_donor:
-        if triple.particles[0].child1.child1.is_donor or triple.particles[0].child1.child2.is_donor:
-            print 'RLOF in inner and outer binary'
-            exit(0)
 
-    if REPORT_TRIPLE_EVOLUTION:
-        print '\ninner binary'
-    if triple.is_double_star(triple.particles[0].child1):
-        mass_transfer_stability(triple.particles[0].child1)
-    elif triple.particles[0].child1.is_star:
-        print 'do nothing'
-    else:
-        print 'determine_mass_transfer_timescale: type of inner system unknown'
-        exit(-1)                    
-
-    if REPORT_TRIPLE_EVOLUTION:
-        print '\nouter binary'
-    if triple.particles[0].child2.is_binary:
-        mass_transfer_stability(triple.particles[0].child2)
-    elif triple.particles[0].child2.is_star:
-#        'e.g. if there is no outer star?'
-        print 'do nothing'
-    else:
-        print 'determine_mass_transfer_timescale: type of outer system unknown'
-        exit(-1)           
+    def evolve_triple(self):
         
+        # for plotting data
+        times_array = quantities.AdaptingVectorQuantity() 
+        a_in_array = quantities.AdaptingVectorQuantity()
+        e_in_array = []
+        i_mutual_array = []
+        g_in_array = []
+    
+    
+        while self.time<self.tend:
+            self.update_previous_se_parameters()
+            self.determine_mass_transfer_timescale()
+            self.determine_timestep()        
+    
+    
+            # do secular evolution
+            self.channel_to_secular.copy()   
+            if self.is_triple == True:
+                self.secular_code.evolve_model(self.time)
+                self.secular_code.evolve_model(self.time)
+            else:# e.g. binaries
+                print 'Secular code disabled'
+                exit(-1)
+    
+            if self.secular_code.triples[0].dynamical_instability == True:
+                print "Dynamical instability at time/Myr = ",time.value_in(units.Myr)
+                exit(0)
+            if self.secular_code.triples[0].inner_collision == True:
+                print "Inner collision at time/Myr = ",time.value_in(units.Myr)
+                exit(0)
+            if self.secular_code.triples[0].outer_collision == True:
+                print "Outer collision at time/Myr = ",time.value_in(units.Myr)
+                exit(0)
+            self.channel_from_secular.copy() 
+    
+    
+            # when the secular code finds that mass transfer starts, evolve the stars only until that time
+            if ((self.particles[0].child1.child1.is_donor or
+                self.particles[0].child1.child2.is_donor or
+                self.particles[0].child2.child1.is_donor) and
+                self.first_contact):
+                    if REPORT_TRIPLE_EVOLUTION:
+                        print 'Times:', self.previous_time, self.time, self.secular_code.model_time
+                    self.time = self.secular_code.model_time 
+                    
+                    # mass should not be transferred just yet -> check if this works ok
+                    # do not overwrite this parameter in the secular code    
+                    self.particles[0].child1.child1.is_donor = False
+                    self.particles[0].child1.child2.is_donor = False
+                    self.particles[0].child2.child1.is_donor = False
+                    
+                    self.first_contact = False
+                    
+    
+    
+            #do stellar evolution 
+            self.se_code.evolve_model(self.time)
+            self.channel_from_se.copy()
+            self.update_se_wind_parameters()
+            
+            safety_check_timestep(self)
+            
+            ##what should be the order, first mass transfer or first stellar evolution?
+            self.resolve_triple_interaction()        
+            self.update_se_parameters()
+            
+            #should also do safety check timestep here
+            
+            
+            # for plotting data
+            times_array.append(self.time)
+            e_in_array.append(self.particles[0].child1.eccentricity)
+            a_in_array.append(self.particles[0].child1.semimajor_axis)
+            g_in_array.append(self.particles[0].child1.argument_of_pericenter)    
+            i_mutual_array.append(self.particles[0].mutual_inclination)        
+            
+        # for plotting data
+        e_in_array = np.array(e_in_array)
+        g_in_array = np.array(g_in_array)
+        i_mutual_array = np.array(i_mutual_array)
+        triple.plot_data = plot_data_container()
+        triple.plot_data.times_array = times_array
+        triple.plot_data.a_in_array = a_in_array
+        triple.plot_data.e_in_array = e_in_array
+        triple.plot_data.i_mutual_array = i_mutual_array
+        triple.plot_data.g_in_array = g_in_array
+        #########################################
+        
+                            
+    #-------
 
 
 
@@ -393,101 +472,7 @@ def safety_check_timestep(triple):
         
 
     
-def evolve_triple(triple):
-    
-    # for plotting data
-    times_array = quantities.AdaptingVectorQuantity() 
-    a_in_array = quantities.AdaptingVectorQuantity()
-    e_in_array = []
-    i_mutual_array = []
-    g_in_array = []
 
-
-    while triple.time<triple.tend:
-        triple.update_previous_se_parameters()
-        determine_mass_transfer_timescale(triple)
-        triple.determine_timestep()        
-
-
-        # update stellar parameters in the secular code
-        triple.channel_to_secular.copy()   
-        # do secular evolution
-        if triple.is_triple == True:
-            triple.secular_code.evolve_model(triple.time)
-            triple.secular_code.evolve_model(triple.time)
-        else:# e.g. binaries
-            print 'Secular code disabled'
-            exit(-1)
-
-        if triple.secular_code.triples[0].dynamical_instability == True:
-            print "Dynamical instability at time/Myr = ",time.value_in(units.Myr)
-            exit(0)
-        if triple.secular_code.triples[0].inner_collision == True:
-            print "Inner collision at time/Myr = ",time.value_in(units.Myr)
-            exit(0)
-        if triple.secular_code.triples[0].outer_collision == True:
-            print "Outer collision at time/Myr = ",time.value_in(units.Myr)
-            exit(0)
-        # this updates orbital elements within triple.particles[0] 
-        triple.channel_from_secular.copy() 
-
-
-        # when the secular code finds that mass transfer starts, evolve the stars only until that time
-        if ((triple.particles[0].child1.child1.is_donor or
-            triple.particles[0].child1.child2.is_donor or
-            triple.particles[0].child2.child1.is_donor) and
-            triple.first_contact):
-                if REPORT_TRIPLE_EVOLUTION:
-                    print 'Times:', triple.previous_time, triple.time, triple.secular_code.model_time
-                triple.time = triple.secular_code.model_time 
-                
-                # mass should not be transferred just yet -> check if this works ok
-                # do not overwrite this parameter in the secular code    
-                triple.particles[0].child1.child1.is_donor = False
-                triple.particles[0].child1.child2.is_donor = False
-                triple.particles[0].child2.child1.is_donor = False
-                
-                triple.first_contact = False
-                
-
-
-        #do stellar evolution 
-        triple.se_code.evolve_model(triple.time)
-        triple.channel_from_se.copy()
-        triple.update_se_wind_parameters()
-        
-        safety_check_timestep(triple)
-        
-        ##what should be the order, first mass transfer or first stellar evolution?
-        resolve_triple_interaction(triple)        
-        triple.update_se_parameters()
-        
-        #should also do safety check timestep here
-        
-        
-        
-        
-        
-        
-        # for plotting data
-        times_array.append(triple.time)
-        e_in_array.append(triple.particles[0].child1.eccentricity)
-        a_in_array.append(triple.particles[0].child1.semimajor_axis)
-        g_in_array.append(triple.particles[0].child1.argument_of_pericenter)    
-        i_mutual_array.append(triple.particles[0].mutual_inclination)        
-        
-    # for plotting data
-    e_in_array = np.array(e_in_array)
-    g_in_array = np.array(g_in_array)
-    i_mutual_array = np.array(i_mutual_array)
-    triple.plot_data = plot_data_container()
-    triple.plot_data.times_array = times_array
-    triple.plot_data.a_in_array = a_in_array
-    triple.plot_data.e_in_array = e_in_array
-    triple.plot_data.i_mutual_array = i_mutual_array
-    triple.plot_data.g_in_array = g_in_array
-    #########################################
-    
 class plot_data_container():
     def __init__(self):
         return
@@ -593,6 +578,5 @@ if __name__ == '__main__':
                           separator = " [", suffix = "]")
   
     triple = Triple(**options)   
-    evolve_triple(triple)
-
+    triple.evolve_triple()
     plot_function(triple)
