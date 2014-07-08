@@ -1,6 +1,5 @@
 from amuse.community.seba.interface import SeBa
-from amuse.units import units
-from amuse.units import constants
+from amuse.units import units, constants
 from amuse.datamodel import Particles
 
 from binary import *
@@ -225,7 +224,9 @@ class Triple:
         
     def update_binary_mass(self):
         print 'a loop would be better in update_binary_mass'
-        print self.particles[0].child1.mass, self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass
+        print self.particles[0].child1.mass, self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass, self.particles[0].child1.child1.mass, self.particles[0].child1.child2.mass,
+        print self.particles[0].child2.mass, self.particles[0].child2.child1.mass + self.particles[0].child2.child2.mass, self.particles[0].child2.child1.mass, self.particles[0].child2.child2.mass
+
         if self.particles[0].child1.is_binary:
             self.particles[0].child1.mass = self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass
         if self.particles[0].child2.is_binary:
@@ -461,20 +462,20 @@ class Triple:
         o_out_array = np.array(o_out_array)
         i_mutual_array = np.array(i_mutual_array)
 
-        triple.plot_data = plot_data_container()
-        triple.plot_data.times_array = times_array
-        triple.plot_data.a_in_array = a_in_array
-        triple.plot_data.e_in_array = e_in_array
-        triple.plot_data.g_in_array = g_in_array
-        triple.plot_data.o_in_array = o_in_array        
-        triple.plot_data.a_out_array = a_out_array
-        triple.plot_data.e_out_array = e_out_array
-        triple.plot_data.g_out_array = g_out_array
-        triple.plot_data.o_out_array = o_out_array        
-        triple.plot_data.i_mutual_array = i_mutual_array
-        triple.plot_data.m1_array = m1_array
-        triple.plot_data.m3_array = m2_array
-        triple.plot_data.m2_array = m3_array
+        self.plot_data = plot_data_container()
+        self.plot_data.times_array = times_array
+        self.plot_data.a_in_array = a_in_array
+        self.plot_data.e_in_array = e_in_array
+        self.plot_data.g_in_array = g_in_array
+        self.plot_data.o_in_array = o_in_array        
+        self.plot_data.a_out_array = a_out_array
+        self.plot_data.e_out_array = e_out_array
+        self.plot_data.g_out_array = g_out_array
+        self.plot_data.o_out_array = o_out_array        
+        self.plot_data.i_mutual_array = i_mutual_array
+        self.plot_data.m1_array = m1_array
+        self.plot_data.m3_array = m2_array
+        self.plot_data.m2_array = m3_array
     #-------
 
 
@@ -565,6 +566,8 @@ def plot_function(triple):
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
     plt.show()
 
+    return
+    
     plt.plot(times_array_Myr, g_in_array*180.0/np.pi%360)
     plt.xlim(0, t_max_Myr)
     plt.xlabel('$t/\mathrm{Myr}$')
@@ -660,6 +663,38 @@ def plot_function(triple):
 
 
 
+#-----
+#for running triple.py from other routines
+def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSun, outer_mass= 0.5|units.MSun,
+            inner_semimajor_axis= 1.0 |units.AU, outer_semimajor_axis= 100.0 |units.AU,
+            inner_eccentricity= 0.1, outer_eccentricity= 0.5,
+            mutual_inclination= 80.0*np.pi/180.0,
+            inner_argument_of_pericenter= 0.1, outer_argument_of_pericenter= 0.5,
+            inner_longitude_of_ascending_node= 0, outer_longitude_of_ascending_node= 0,
+            metallicity= 0.02|units.none,
+            tend= 5.0 |units.Myr):
+
+    set_printing_strategy("custom", 
+                          preferred_units = [units.MSun, units.RSun, units.Myr], 
+                          precision = 11, prefix = "", 
+                          separator = " [", suffix = "]")
+
+
+    triple = Triple(inner_primary_mass, inner_secondary_mass, outer_mass,
+            inner_semimajor_axis, outer_semimajor_axis,
+            inner_eccentricity, outer_eccentricity,
+            mutual_inclination,
+            inner_argument_of_pericenter, outer_argument_of_pericenter,
+            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
+            metallicity,
+            tend)
+
+    triple.evolve_triple()
+    plot_function(triple)
+#-----
+
+#-----
+#for running triple.py from the commandline
 def parse_arguments():
     from amuse.units.optparse import OptionParser
     parser = OptionParser()
@@ -711,6 +746,10 @@ def parse_arguments():
     options, args = parser.parse_args()
     return options.__dict__
 
+
+
+
+
 if __name__ == '__main__':
     options = parse_arguments()
 
@@ -718,7 +757,7 @@ if __name__ == '__main__':
                           preferred_units = [units.MSun, units.RSun, units.Myr], 
                           precision = 11, prefix = "", 
                           separator = " [", suffix = "]")
-  
-    triple = Triple(**options)   
+
+    triple = Triple(**options)
     triple.evolve_triple()
     plot_function(triple)
