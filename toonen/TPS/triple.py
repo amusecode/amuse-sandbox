@@ -6,7 +6,8 @@ import numpy as np
 from amuse.community.seculartriple_TPS.interface import SecularTriple
 
 from amuse.units import quantities
-from matplotlib import pyplot
+import matplotlib.pyplot as plt
+import amuse.plot as aplt
 
 #constants
 timestep_factor = 0.01
@@ -164,45 +165,6 @@ class Triple:
         self.channel_to_secular = triples.new_channel_to(self.secular_code.triples)
     #-------
 
-
-
-    def determine_timestep(self):         
-        if REPORT_TRIPLE_EVOLUTION:
-            print "Dt=", self.se_code.particles.time_step, self.tend/100.0
-    
-        #during unstable mass transfer or other instantaneous interactions
-        if not self.particles[0].child2.is_stable:
-            #no step in time
-            return
-        if not self.particles[0].child1.is_stable:
-            # no step in time
-            return
-            
-            
-        ### for testing/plotting purposes only ###
-        timestep = self.tend/100.0 
-    
-        # timestep of stellar evolution
-        if self.particles[0].child2.child1.is_star:
-            timestep = min(timestep, self.particles[0].child2.child1.time_step)
-        if self.particles[0].child1.child1.is_star:
-            timestep = min(timestep, self.particles[0].child1.child1.time_step)
-        if self.particles[0].child1.child2.is_star:
-            timestep = min(timestep, self.particles[0].child1.child2.time_step)
-                
-            
-        #during stable mass transfer     
-        if (self.particles[0].child1.child1.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child1.mass/self.particles[0].child1.mass_transfer_rate))
-        if (self.particles[0].child1.child2.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child2.mass/self.particles[0].child1.mass_transfer_rate))
-        if (self.particles[0].child2.child1.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate))
-            
-        timestep = max(timestep, minimum_timestep)            
-            
-        self.time += timestep
-    
     #-------
     def update_previous_se_parameters(self):
         self.previous_time = self.time
@@ -248,16 +210,23 @@ class Triple:
             self.particles[0].child1.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].child1.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].child2.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
-
     #-------
 
     #-------
     def update_se_parameters(self):
+        self.update_binary_mass()
         self.update_convective_envelope_mass()
         self.update_convective_envelope_radius()
         self.update_gyration_radius()
         
-
+    def update_binary_mass(self):
+        print 'a loop would be better in update_binary_mass'
+        print self.particles[0].child1.mass, self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass
+        if self.particles[0].child1.is_binary:
+            self.particles[0].child1.mass = self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass
+        if self.particles[0].child2.is_binary:
+            self.particles[0].child2.mass = self.particles[0].child2.child1.mass + self.particles[0].child2.child2.mass
+    
     def update_convective_envelope_mass(self):
         #the prescription of Hurley, Pols & Tout 2000 is implemented in SeBa, however note that the prescription in BSE is different
         self.particles[0].child1.child1.convective_envelope_mass = self.particles[0].child1.child1.convective_envelope_mass
@@ -275,7 +244,8 @@ class Triple:
         self.particles[0].child1.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
         self.particles[0].child1.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
         self.particles[0].child2.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
-        
+    #-------
+
     #-------
     #whether or not a binary system consists of just two stars
     def is_double_star(self, particles):
@@ -284,7 +254,55 @@ class Triple:
         else:
             return False
 
+    #Kozai 1962, Michaealy & Perets 2014        
+    def kozai_timescale(self):
+        if self.is_triple and self.is_double_star(self.particles[0].child1):
+            P_in = orbital_period(self.particles[0].child1) #period inner binary 
+            P_out = orbital_period(self.particles[0].child2)#period outer binary 
+            return P_out**2 / P_in * (self.particles[0].child1.mass / self.particles[0].child2.mass)
+        else:
+            return zero                                
     #-------
+            
+    #-------
+    def determine_timestep(self):         
+        if REPORT_TRIPLE_EVOLUTION:
+            print "Dt=", self.se_code.particles.time_step, self.tend/100.0
+    
+        #during unstable mass transfer or other instantaneous interactions
+        if not self.particles[0].child2.is_stable:
+            #no step in time
+            return
+        if not self.particles[0].child1.is_stable:
+            # no step in time
+            return
+            
+            
+        ### for testing/plotting purposes only ###
+        timestep = self.tend/100.0 
+    
+        # timestep of stellar evolution
+        if self.particles[0].child2.child1.is_star:
+            timestep = min(timestep, self.particles[0].child2.child1.time_step)
+        if self.particles[0].child1.child1.is_star:
+            timestep = min(timestep, self.particles[0].child1.child1.time_step)
+        if self.particles[0].child1.child2.is_star:
+            timestep = min(timestep, self.particles[0].child1.child2.time_step)
+                
+            
+        #during stable mass transfer     
+        if (self.particles[0].child1.child1.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child1.mass/self.particles[0].child1.mass_transfer_rate))
+        if (self.particles[0].child1.child2.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child2.mass/self.particles[0].child1.mass_transfer_rate))
+        if (self.particles[0].child2.child1.is_donor):
+            timestep = min(timestep, abs(timestep_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate))
+            
+        timestep = max(timestep, minimum_timestep)            
+            
+        self.time += timestep
+    
+
     def resolve_triple_interaction(self):
     
         if REPORT_TRIPLE_EVOLUTION:
@@ -341,14 +359,23 @@ class Triple:
         times_array = quantities.AdaptingVectorQuantity() 
         a_in_array = quantities.AdaptingVectorQuantity()
         e_in_array = []
-        i_mutual_array = []
         g_in_array = []
+        o_in_array = []
+        a_out_array = quantities.AdaptingVectorQuantity()
+        e_out_array = []
+        g_out_array = []
+        o_out_array = []
+        i_mutual_array = []
+        m1_array = []
+        m2_array = []
+        m3_array = []
     
     
         while self.time<self.tend:
             self.update_previous_se_parameters()
             self.determine_mass_transfer_timescale()
-            self.determine_timestep()        
+            self.determine_timestep()  
+            print 'kozai timescale:', self.kozai_timescale()      
     
     
             # do secular evolution
@@ -409,22 +436,41 @@ class Triple:
             times_array.append(self.time)
             e_in_array.append(self.particles[0].child1.eccentricity)
             a_in_array.append(self.particles[0].child1.semimajor_axis)
-            g_in_array.append(self.particles[0].child1.argument_of_pericenter)    
+            g_in_array.append(self.particles[0].child1.argument_of_pericenter) 
+            o_in_array.append(self.particles[0].child1.longitude_of_ascending_node)               
+            e_out_array.append(self.particles[0].child2.eccentricity)
+            a_out_array.append(self.particles[0].child2.semimajor_axis)
+            g_out_array.append(self.particles[0].child2.argument_of_pericenter) 
+            o_out_array.append(self.particles[0].child2.longitude_of_ascending_node)               
             i_mutual_array.append(self.particles[0].mutual_inclination)        
+            m1_array.append(self.particles[0].child1.child1.mass)
+            m2_array.append(self.particles[0].child1.child2.mass)
+            m3_array.append(self.particles[0].child2.child1.mass)
+            
             
         # for plotting data
         e_in_array = np.array(e_in_array)
         g_in_array = np.array(g_in_array)
+        o_in_array = np.array(o_in_array)
+        e_out_array = np.array(e_out_array)
+        g_out_array = np.array(g_out_array)
+        o_out_array = np.array(o_out_array)
         i_mutual_array = np.array(i_mutual_array)
+
         triple.plot_data = plot_data_container()
         triple.plot_data.times_array = times_array
         triple.plot_data.a_in_array = a_in_array
         triple.plot_data.e_in_array = e_in_array
-        triple.plot_data.i_mutual_array = i_mutual_array
         triple.plot_data.g_in_array = g_in_array
-        #########################################
-        
-                            
+        triple.plot_data.o_in_array = o_in_array        
+        triple.plot_data.a_out_array = a_out_array
+        triple.plot_data.e_out_array = e_out_array
+        triple.plot_data.g_out_array = g_out_array
+        triple.plot_data.o_out_array = o_out_array        
+        triple.plot_data.i_mutual_array = i_mutual_array
+        triple.plot_data.m1_array = m1_array
+        triple.plot_data.m3_array = m2_array
+        triple.plot_data.m2_array = m3_array
     #-------
 
 
@@ -481,7 +527,7 @@ def plot_function(triple):
     ### plots to test secular code ###
     ##################################
     
-    figure = pyplot.figure(figsize=(10,13))
+    figure = plt.figure(figsize=(10,13))
     N_subplots = 4
 
     plot_e_in = figure.add_subplot(N_subplots,1,1)
@@ -494,6 +540,7 @@ def plot_function(triple):
     g_in_array = triple.plot_data.g_in_array
     e_in_array = triple.plot_data.e_in_array
     i_mutual_array = triple.plot_data.i_mutual_array
+
     plot_e_in.plot(times_array_Myr,e_in_array)
     plot_i_mutual.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
     plot_e_in_g_in.plot(np.cos(g_in_array),e_in_array)
@@ -512,9 +559,100 @@ def plot_function(triple):
     plot_i_mutual.set_ylabel('$i_\mathrm{mutual} ({}^\circ)$')
     plot_e_in_g_in.set_ylabel('$e_\mathrm{in}$')
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
+    plt.show()
 
-    pyplot.show()
+    plt.plot(times_array_Myr, g_in_array*180.0/np.pi%360)
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$g_\mathrm{in}$')
+    plt.show()
+    plt.plot(times_array_Myr, np.cos(g_in_array))
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$\cos(g_\mathrm{in})$')
+    plt.show()
 
+    o_in_array = triple.plot_data.o_in_array
+    plt.plot(times_array_Myr, o_in_array*180.0/np.pi%360)
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$o_\mathrm{in}$')
+    plt.show()
+    plt.plot(times_array_Myr, np.cos(o_in_array))
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$\cos(o_\mathrm{in})$')
+    plt.show()
+
+
+    #outer binary
+    figure = plt.figure(figsize=(10,13))
+    N_subplots = 4
+
+    plot_e_out = figure.add_subplot(N_subplots,1,1)
+    plot_i_mutual2 = figure.add_subplot(N_subplots,1,2)
+    plot_e_out_g_out = figure.add_subplot(N_subplots,1,3)
+    plot_a_out = figure.add_subplot(N_subplots,1,4)
+
+    times_array_Myr = triple.plot_data.times_array.value_in(units.Myr)
+    a_out_array_AU = triple.plot_data.a_out_array.value_in(units.AU)
+    g_out_array = triple.plot_data.g_out_array
+    e_out_array = triple.plot_data.e_out_array
+#    i_mutual_array = triple.plot_data.i_mutual_array
+
+    plot_e_out.plot(times_array_Myr,e_out_array)
+    plot_i_mutual2.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
+    plot_e_out_g_out.plot(np.cos(g_out_array),e_out_array)
+    plot_a_out.plot(times_array_Myr,a_out_array_AU)
+
+#    t_max_Myr = max(times_array_Myr)
+    plot_e_out.set_xlim(0,t_max_Myr)
+    plot_i_mutual2.set_xlim(0,t_max_Myr)
+    plot_i_mutual2.set_ylim(0.9*min(i_mutual_array*180.0/np.pi),1.1*max(i_mutual_array*180.0/np.pi))
+
+    plot_e_out.set_xlabel('$t/\mathrm{Myr}$')
+    plot_i_mutual2.set_xlabel('$t/\mathrm{Myr}$')
+    plot_e_out_g_out.set_xlabel('$\cos(g_\mathrm{out})$')
+
+    plot_e_out.set_ylabel('$e_\mathrm{out}$')
+    plot_i_mutual2.set_ylabel('$i_\mathrm{mutual} ({}^\circ)$')
+    plot_e_out_g_out.set_ylabel('$e_\mathrm{out}$')
+    figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
+    plt.show()
+
+
+    plt.plot(np.cos(g_out_array), e_in_array)
+    plt.xlabel('$\cos(g_\mathrm{out})$')
+    plt.ylabel('$e_\mathrm{in}$')
+    plt.show()
+
+    plt.plot(np.cos(g_in_array), np.cos(g_out_array))
+    plt.xlabel('$\cos(g_\mathrm{in})$')
+    plt.ylabel('$\cos(g_\mathrm{out})$')
+    plt.show()
+
+    plt.plot(times_array_Myr, g_out_array*180.0/np.pi%360)
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$g_\mathrm{out}$')
+    plt.show()
+    plt.plot(times_array_Myr, np.cos(g_out_array))
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$\cos(g_\mathrm{out})$')
+    plt.show()
+
+    o_out_array = triple.plot_data.o_out_array
+    plt.plot(times_array_Myr, o_out_array*180.0/np.pi%360)
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$o_\mathrm{out}$')
+    plt.show()
+    plt.plot(times_array_Myr, np.cos(o_out_array))
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$\cos(o_\mathrm{out})$')
+    plt.show()
 
 
 
