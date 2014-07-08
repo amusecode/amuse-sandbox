@@ -1,4 +1,8 @@
-from amuse.lab import *
+from amuse.community.seba.interface import SeBa
+from amuse.units import units
+from amuse.units import constants
+from amuse.datamodel import Particles
+
 from binary import *
 from math import sqrt
 import numpy as np
