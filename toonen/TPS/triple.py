@@ -259,12 +259,15 @@ class Triple:
         else:
             return False
 
-    #Kozai 1962, Michaealy & Perets 2014        
     def kozai_timescale(self):
         if self.is_triple and self.is_double_star(self.particles[0].child1):
             P_in = orbital_period(self.particles[0].child1) #period inner binary 
             P_out = orbital_period(self.particles[0].child2)#period outer binary 
-            return P_out**2 / P_in * (self.particles[0].child1.mass / self.particles[0].child2.mass)
+            #Kozai 1962, Michaealy & Perets 2014        
+#            return P_out**2 / P_in * (self.particles[0].child1.mass / self.particles[0].child2.child1.mass)
+            #Kinoshita & Nakai 1999, Hamers et al 2014
+            alpha_kozai = 1.
+            return alpha_kozai * P_out**2 / P_in * (self.particles[0].child2.mass / self.particles[0].child2.child1.mass) * (1-self.particles[0].child2.eccentricity**2)**1.5       
         else:
             return zero                                
     #-------
@@ -371,17 +374,29 @@ class Triple:
         g_out_array = []
         o_out_array = []
         i_mutual_array = []
-        m1_array = []
-        m2_array = []
-        m3_array = []
+        m1_array = quantities.AdaptingVectorQuantity()
+        m2_array = quantities.AdaptingVectorQuantity()
+        m3_array = quantities.AdaptingVectorQuantity()
     
-    
+        times_array.append(self.time)
+        e_in_array.append(self.particles[0].child1.eccentricity)
+        a_in_array.append(self.particles[0].child1.semimajor_axis)
+        g_in_array.append(self.particles[0].child1.argument_of_pericenter) 
+        o_in_array.append(self.particles[0].child1.longitude_of_ascending_node)               
+        e_out_array.append(self.particles[0].child2.eccentricity)
+        a_out_array.append(self.particles[0].child2.semimajor_axis)
+        g_out_array.append(self.particles[0].child2.argument_of_pericenter) 
+        o_out_array.append(self.particles[0].child2.longitude_of_ascending_node)               
+        i_mutual_array.append(self.particles[0].mutual_inclination)        
+        m1_array.append(self.particles[0].child1.child1.mass)
+        m2_array.append(self.particles[0].child1.child2.mass)
+        m3_array.append(self.particles[0].child2.child1.mass)
+
         while self.time<self.tend:
             self.update_previous_se_parameters()
             self.determine_mass_transfer_timescale()
             self.determine_timestep()  
             print 'kozai timescale:', self.kozai_timescale()      
-    
     
             # do secular evolution
             self.channel_to_secular.copy()   
@@ -393,16 +408,15 @@ class Triple:
                 exit(-1)
     
             if self.secular_code.triples[0].dynamical_instability == True:
-                print "Dynamical instability at time/Myr = ",time.value_in(units.Myr)
+                print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
                 exit(0)
             if self.secular_code.triples[0].inner_collision == True:
-                print "Inner collision at time/Myr = ",time.value_in(units.Myr)
+                print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
                 exit(0)
             if self.secular_code.triples[0].outer_collision == True:
-                print "Outer collision at time/Myr = ",time.value_in(units.Myr)
+                print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
                 exit(0)
-            self.channel_from_secular.copy() 
-    
+            self.channel_from_secular.copy()     
     
             # when the secular code finds that mass transfer starts, evolve the stars only until that time
             if ((self.particles[0].child1.child1.is_donor or
@@ -421,7 +435,6 @@ class Triple:
                     
                     self.first_contact = False
                     
-    
     
             #do stellar evolution 
             self.se_code.evolve_model(self.time)
@@ -474,8 +487,8 @@ class Triple:
         self.plot_data.o_out_array = o_out_array        
         self.plot_data.i_mutual_array = i_mutual_array
         self.plot_data.m1_array = m1_array
-        self.plot_data.m3_array = m2_array
-        self.plot_data.m2_array = m3_array
+        self.plot_data.m2_array = m2_array
+        self.plot_data.m3_array = m3_array
     #-------
 
 
@@ -530,7 +543,21 @@ class plot_data_container():
 
 def plot_function(triple):
     ### plots to test secular code ###
-    ##################################
+
+    times_array_Myr = triple.plot_data.times_array.value_in(units.Myr)
+    t_max_Myr = max(times_array_Myr)
+    a_in_array_AU = triple.plot_data.a_in_array.value_in(units.AU)
+    g_in_array = triple.plot_data.g_in_array
+    e_in_array = triple.plot_data.e_in_array
+    i_mutual_array = triple.plot_data.i_mutual_array
+    o_in_array = triple.plot_data.o_in_array
+    a_out_array_AU = triple.plot_data.a_out_array.value_in(units.AU)
+    g_out_array = triple.plot_data.g_out_array
+    e_out_array = triple.plot_data.e_out_array
+    o_out_array = triple.plot_data.o_out_array
+    m1_array = triple.plot_data.m1_array.value_in(units.MSun)
+    m2_array = triple.plot_data.m2_array.value_in(units.MSun)
+    m3_array = triple.plot_data.m3_array.value_in(units.MSun)
     
     figure = plt.figure(figsize=(10,13))
     N_subplots = 4
@@ -540,33 +567,32 @@ def plot_function(triple):
     plot_e_in_g_in = figure.add_subplot(N_subplots,1,3)
     plot_a_in = figure.add_subplot(N_subplots,1,4)
 
-    times_array_Myr = triple.plot_data.times_array.value_in(units.Myr)
-    a_in_array_AU = triple.plot_data.a_in_array.value_in(units.AU)
-    g_in_array = triple.plot_data.g_in_array
-    e_in_array = triple.plot_data.e_in_array
-    i_mutual_array = triple.plot_data.i_mutual_array
 
     plot_e_in.plot(times_array_Myr,e_in_array)
-    plot_i_mutual.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
-    plot_e_in_g_in.plot(np.cos(g_in_array),e_in_array)
-    plot_a_in.plot(times_array_Myr,a_in_array_AU)
-
-    t_max_Myr = max(times_array_Myr)
     plot_e_in.set_xlim(0,t_max_Myr)
+    plot_e_in.set_xlabel('$t/\mathrm{Myr}$')
+    plot_e_in.set_ylabel('$e_\mathrm{in}$')
+
+    plot_i_mutual.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
     plot_i_mutual.set_xlim(0,t_max_Myr)
     plot_i_mutual.set_ylim(0.9*min(i_mutual_array*180.0/np.pi),1.1*max(i_mutual_array*180.0/np.pi))
-
-    plot_e_in.set_xlabel('$t/\mathrm{Myr}$')
     plot_i_mutual.set_xlabel('$t/\mathrm{Myr}$')
-    plot_e_in_g_in.set_xlabel('$\cos(g_\mathrm{in})$')
-
-    plot_e_in.set_ylabel('$e_\mathrm{in}$')
     plot_i_mutual.set_ylabel('$i_\mathrm{mutual} ({}^\circ)$')
+
+    plot_e_in_g_in.plot(np.cos(g_in_array),e_in_array)
+    plot_e_in_g_in.set_xlabel('$\cos(g_\mathrm{in})$')
     plot_e_in_g_in.set_ylabel('$e_\mathrm{in}$')
+
+    plot_a_in.plot(times_array_Myr,a_in_array_AU)
+    plot_a_in.set_xlabel('$t/\mathrm{Myr}$')
+    plot_a_in.set_ylabel('$a_\mathrm{in}$')
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
+
+    plot_name_inner = 'TPS_inner_orbit_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_mutual_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr)
+    plt.savefig('plots/orbit/'+plot_name_inner+'.pdf')
     plt.show()
 
-    return
+
     
     plt.plot(times_array_Myr, g_in_array*180.0/np.pi%360)
     plt.xlim(0, t_max_Myr)
@@ -579,7 +605,7 @@ def plot_function(triple):
     plt.ylabel('$\cos(g_\mathrm{in})$')
     plt.show()
 
-    o_in_array = triple.plot_data.o_in_array
+
     plt.plot(times_array_Myr, o_in_array*180.0/np.pi%360)
     plt.xlim(0, t_max_Myr)
     plt.xlabel('$t/\mathrm{Myr}$')
@@ -601,30 +627,32 @@ def plot_function(triple):
     plot_e_out_g_out = figure.add_subplot(N_subplots,1,3)
     plot_a_out = figure.add_subplot(N_subplots,1,4)
 
-    times_array_Myr = triple.plot_data.times_array.value_in(units.Myr)
-    a_out_array_AU = triple.plot_data.a_out_array.value_in(units.AU)
-    g_out_array = triple.plot_data.g_out_array
-    e_out_array = triple.plot_data.e_out_array
+#    times_array_Myr = triple.plot_data.times_array.value_in(units.Myr)
+#    t_max_Myr = max(times_array_Myr)
 #    i_mutual_array = triple.plot_data.i_mutual_array
 
     plot_e_out.plot(times_array_Myr,e_out_array)
-    plot_i_mutual2.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
-    plot_e_out_g_out.plot(np.cos(g_out_array),e_out_array)
-    plot_a_out.plot(times_array_Myr,a_out_array_AU)
-
-#    t_max_Myr = max(times_array_Myr)
     plot_e_out.set_xlim(0,t_max_Myr)
+    plot_e_out.set_xlabel('$t/\mathrm{Myr}$')
+    plot_e_out.set_ylabel('$e_\mathrm{out}$')
+
+    plot_i_mutual2.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
     plot_i_mutual2.set_xlim(0,t_max_Myr)
     plot_i_mutual2.set_ylim(0.9*min(i_mutual_array*180.0/np.pi),1.1*max(i_mutual_array*180.0/np.pi))
-
-    plot_e_out.set_xlabel('$t/\mathrm{Myr}$')
     plot_i_mutual2.set_xlabel('$t/\mathrm{Myr}$')
-    plot_e_out_g_out.set_xlabel('$\cos(g_\mathrm{out})$')
-
-    plot_e_out.set_ylabel('$e_\mathrm{out}$')
     plot_i_mutual2.set_ylabel('$i_\mathrm{mutual} ({}^\circ)$')
+
+    plot_e_out_g_out.plot(np.cos(g_out_array),e_out_array)
+    plot_e_out_g_out.set_xlabel('$\cos(g_\mathrm{out})$')
     plot_e_out_g_out.set_ylabel('$e_\mathrm{out}$')
+
+    plot_a_out.plot(times_array_Myr,a_out_array_AU)
+    plot_a_out.set_xlabel('$t/\mathrm{Myr}$')
+    plot_a_out.set_ylabel('$a_\mathrm{out}$')
+
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
+    plot_name_outer = 'TPS_outer_orbit_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_mutual_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr)
+    plt.savefig('plots/orbit/'+plot_name_outer+'.pdf')
     plt.show()
 
 
@@ -649,7 +677,6 @@ def plot_function(triple):
     plt.ylabel('$\cos(g_\mathrm{out})$')
     plt.show()
 
-    o_out_array = triple.plot_data.o_out_array
     plt.plot(times_array_Myr, o_out_array*180.0/np.pi%360)
     plt.xlim(0, t_max_Myr)
     plt.xlabel('$t/\mathrm{Myr}$')
@@ -661,8 +688,16 @@ def plot_function(triple):
     plt.ylabel('$\cos(o_\mathrm{out})$')
     plt.show()
 
-
-
+    print m1_array
+    aplt.plot(times_array_Myr, m1_array)
+    aplt.plot(times_array_Myr, m2_array)
+    aplt.plot(times_array_Myr, m3_array)
+    plt.xlim(0, t_max_Myr)
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$M/\mathrm{MSun}$')
+    plt.show()
+    
+    
 #-----
 #for running triple.py from other routines
 def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSun, outer_mass= 0.5|units.MSun,
@@ -670,7 +705,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             inner_eccentricity= 0.1, outer_eccentricity= 0.5,
             mutual_inclination= 80.0*np.pi/180.0,
             inner_argument_of_pericenter= 0.1, outer_argument_of_pericenter= 0.5,
-            inner_longitude_of_ascending_node= 0, outer_longitude_of_ascending_node= 0,
+            inner_longitude_of_ascending_node= 0.0, outer_longitude_of_ascending_node= 0.0,
             metallicity= 0.02|units.none,
             tend= 5.0 |units.Myr):
 
@@ -722,10 +757,10 @@ def parse_arguments():
                       dest="outer_argument_of_pericenter", type="float", default = 0.5,
                       help="outer argument of pericenter [rad] [%default]")
     parser.add_option("-o",
-                      dest="inner_longitude_of_ascending_node", type="float", default = 0,
+                      dest="inner_longitude_of_ascending_node", type="float", default = 0.0,
                       help="inner longitude of ascending node [rad] [%default]")
     parser.add_option("-O",
-                      dest="outer_longitude_of_ascending_node", type="float", default = 0,
+                      dest="outer_longitude_of_ascending_node", type="float", default = 0.0,
                       help="outer longitude of ascending node [rad] [%default]")
     parser.add_option("-M", unit=units.MSun, 
                       dest="inner_primary_mass", type="float", default = 1.3|units.MSun,
