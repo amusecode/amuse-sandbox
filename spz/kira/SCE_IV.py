@@ -216,13 +216,14 @@ def kira(tend, N, R, W, Nbin):
         print "evolve stars to t=", t
         stellar.evolve_model(t)
         print "stars evolved to:", stellar.model_time
-        """
+
         if stellar.stopping_conditions.supernova_detection.is_set():
             print "Stellar supernova stopping condition is set"
             print t, stellar.model_time
             print stellar.particles.age
+            print "Natal kick velocity:", stellar.stopping_conditions.supernova_detection.particle(0).natal_kick_velocity
             xxxx
-        """
+
         channel_from_stars_to_particles.copy_attributes(["mass", "radius"])
         dEse = (multiples_code.get_total_energy()-Epse)/Epse
 
