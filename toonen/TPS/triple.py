@@ -14,6 +14,7 @@ import amuse.plot as aplt
 
 #constants
 timestep_factor = 0.01
+maximum_wind_mass_loss = 0.005 
 error_dm = 0.05
 error_dr = 0.75
 minimum_timestep = 1.e-9 |units.Myr
@@ -149,8 +150,8 @@ class Triple:
         self.secular_code.parameters.include_octupole_terms = True        
         self.secular_code.parameters.include_inner_tidal_terms = False
         self.secular_code.parameters.include_outer_tidal_terms = False
-        self.secular_code.parameters.include_inner_wind_terms = False
-        self.secular_code.parameters.include_outer_wind_terms = False
+        self.secular_code.parameters.include_inner_wind_terms = True
+        self.secular_code.parameters.include_outer_wind_terms = True
         self.secular_code.parameters.include_inner_RLOF_terms = False
         self.secular_code.parameters.include_outer_RLOF_terms = False
         self.secular_code.parameters.include_1PN_inner_terms = False
@@ -234,8 +235,6 @@ class Triple:
         
     def update_binary_mass(self):
         print 'a loop would be better in update_binary_mass'
-        print self.particles[0].child1.mass, self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass, self.particles[0].child1.child1.mass, self.particles[0].child1.child2.mass,
-        print self.particles[0].child2.mass, self.particles[0].child2.child1.mass + self.particles[0].child2.child2.mass, self.particles[0].child2.child1.mass, self.particles[0].child2.child2.mass
 
         if self.particles[0].child1.is_binary:
             self.particles[0].child1.mass = self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass
@@ -297,8 +296,9 @@ class Triple:
             
             
         ### for testing/plotting purposes only ###
-        timestep = self.tend/100.0 
+#        timestep = self.tend/100.0 
     
+        timestep = self.particles[0].child1.child1.time_step
         # timestep of stellar evolution
         if self.particles[0].child2.child1.is_star:
             timestep = min(timestep, self.particles[0].child2.child1.time_step)
@@ -308,7 +308,29 @@ class Triple:
             timestep = min(timestep, self.particles[0].child1.child2.time_step)
                 
             
+        # small timestep during heavy wind mass losses
+        if REPORT_TRIPLE_EVOLUTION:
+            print "DTwind =", timestep, 
+            print maximum_wind_mass_loss*self.particles[0].child1.child1.mass / self.particles[0].child1.child1.wind_mass_loss_rate*-1,
+            print maximum_wind_mass_loss*self.particles[0].child1.child2.mass / self.particles[0].child1.child2.wind_mass_loss_rate*-1,
+            print maximum_wind_mass_loss*self.particles[0].child2.child1.mass / self.particles[0].child2.child1.wind_mass_loss_rate*-1
+            
+        if -1*self.particles[0].child1.child1.wind_mass_loss_rate * timestep / self.particles[0].child1.child1.mass > maximum_wind_mass_loss:
+            timestep = min(timestep, maximum_wind_mass_loss*self.particles[0].child1.child1.mass / self.particles[0].child1.child1.wind_mass_loss_rate*-1)
+        if -1*self.particles[0].child1.child2.wind_mass_loss_rate * timestep / self.particles[0].child1.child2.mass > maximum_wind_mass_loss:
+            timestep = min(timestep, maximum_wind_mass_loss*self.particles[0].child1.child2.mass / self.particles[0].child1.child2.wind_mass_loss_rate*-1)
+        if -1*self.particles[0].child2.child1.wind_mass_loss_rate * timestep / self.particles[0].child2.child1.mass > maximum_wind_mass_loss:
+            timestep = min(timestep, maximum_wind_mass_loss*self.particles[0].child2.child1.mass / self.particles[0].child2.child1.wind_mass_loss_rate*-1)
+                         
+            
+            
         #during stable mass transfer     
+        if REPORT_TRIPLE_EVOLUTION:
+            print "DTmt =", timestep, 
+            print abs(timestep_factor*self.particles[0].child1.child1.mass/self.particles[0].child1.mass_transfer_rate),
+            print abs(timestep_factor*self.particles[0].child1.child2.mass/self.particles[0].child1.mass_transfer_rate),
+            print abs(timestep_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate)
+
         if (self.particles[0].child1.child1.is_donor):
             timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child1.mass/self.particles[0].child1.mass_transfer_rate))
         if (self.particles[0].child1.child2.is_donor):
@@ -316,8 +338,11 @@ class Triple:
         if (self.particles[0].child2.child1.is_donor):
             timestep = min(timestep, abs(timestep_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate))
             
-        timestep = max(timestep, minimum_timestep)            
             
+        if timestep < minimum_timestep:
+            print 'error small timestep'
+            exit(-1)    
+        timestep = max(timestep, minimum_timestep)            
         self.time += timestep
     
 
@@ -406,7 +431,6 @@ class Triple:
             self.update_previous_se_parameters()
             self.determine_mass_transfer_timescale()
             self.determine_timestep()  
-            print 'kozai timescale:', self.kozai_timescale()      
     
             # do secular evolution
             self.channel_to_secular.copy()   
@@ -504,9 +528,9 @@ class Triple:
 
 
 def safety_check_timestep(triple):
-        dm_1 = (triple.particles[0].child1.child1.mass - triple.particles[0].child1.child1.previous_mass)/triple.particles[0].child1.child1.mass
-        dm_2 = (triple.particles[0].child1.child2.mass - triple.particles[0].child1.child2.previous_mass)/triple.particles[0].child1.child2.mass
-        dm_3 = (triple.particles[0].child2.child1.mass - triple.particles[0].child2.child1.previous_mass)/triple.particles[0].child2.child1.mass
+        dm_1 = (triple.particles[0].child1.child1.previous_mass - triple.particles[0].child1.child1.mass)/triple.particles[0].child1.child1.mass
+        dm_2 = (triple.particles[0].child1.child2.previous_mass - triple.particles[0].child1.child2.mass)/triple.particles[0].child1.child2.mass
+        dm_3 = (triple.particles[0].child2.child1.previous_mass - triple.particles[0].child2.child1.mass)/triple.particles[0].child2.child1.mass
                 
         if REPORT_TRIPLE_EVOLUTION:
             print 'wind mass loss rates:', 
@@ -616,28 +640,57 @@ def plot_function(triple):
     plt.savefig('plots/orbit/semi_inner'+generic_plot_name+'.pdf')
     plt.show()
     
-    plt.plot(times_array_Myr, g_in_array*180.0/np.pi%360)
-    plt.xlim(0, t_max_Myr)
+    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot/a_in_array_AU)
+    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot/a_in_array_AU, '.')
+    plt.ylabel('$relative error a_\mathrm{in}$')
     plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$g_\mathrm{in}$')
-    plt.show()
-    plt.plot(times_array_Myr, np.cos(g_in_array))
-    plt.xlim(0, t_max_Myr)
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$\cos(g_\mathrm{in})$')
+    plt.savefig('plots/orbit/semi_inner_rel'+generic_plot_name+'.pdf')
     plt.show()
 
+    dm = (m1_array[1:] - m1_array[:-1] )
+    dt = (times_array_Myr[1:] - times_array_Myr[:-1])
+    dmdt = (m1_array[1:] - m1_array[:-1] )/(times_array_Myr[1:] - times_array_Myr[:-1])
 
-    plt.plot(times_array_Myr, o_in_array*180.0/np.pi%360)
-    plt.xlim(0, t_max_Myr)
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$o_\mathrm{in}$')
+
+    plt.plot(dmdt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
+    plt.plot(dmdt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
     plt.show()
-    plt.plot(times_array_Myr, np.cos(o_in_array))
-    plt.xlim(0, t_max_Myr)
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$\cos(o_\mathrm{in})$')
+
+    plt.plot(dm, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
+    plt.plot(dm, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
     plt.show()
+
+    plt.plot(dt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
+    plt.plot(dt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
+    plt.show()
+
+    
+    
+    
+    
+    
+#    plt.plot(times_array_Myr, g_in_array*180.0/np.pi%360)
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$g_\mathrm{in}$')
+#    plt.show()
+#    plt.plot(times_array_Myr, np.cos(g_in_array))
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$\cos(g_\mathrm{in})$')
+#    plt.show()
+#
+#
+#    plt.plot(times_array_Myr, o_in_array*180.0/np.pi%360)
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$o_\mathrm{in}$')
+#    plt.show()
+#    plt.plot(times_array_Myr, np.cos(o_in_array))
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$\cos(o_\mathrm{in})$')
+#    plt.show()
 
 
     #outer binary
@@ -689,50 +742,73 @@ def plot_function(triple):
     plt.savefig('plots/orbit/semi_outer'+generic_plot_name+'.pdf')
     plt.show()
 
-
-    plt.plot(np.cos(g_out_array), e_in_array)
-    plt.xlabel('$\cos(g_\mathrm{out})$')
-    plt.ylabel('$e_\mathrm{in}$')
-    plt.show()
-
-    plt.plot(np.cos(g_in_array), np.cos(g_out_array))
-    plt.xlabel('$\cos(g_\mathrm{in})$')
-    plt.ylabel('$\cos(g_\mathrm{out})$')
+    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU)
+    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU, '.')
+    plt.ylabel('$relative error a_\mathrm{out}$')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.savefig('plots/orbit/semi_outer_rel'+generic_plot_name+'.pdf')
     plt.show()
 
-    plt.plot(times_array_Myr, g_out_array*180.0/np.pi%360)
-    plt.xlim(0, t_max_Myr)
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$g_\mathrm{out}$')
-    plt.show()
-    plt.plot(times_array_Myr, np.cos(g_out_array))
-    plt.xlim(0, t_max_Myr)
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$\cos(g_\mathrm{out})$')
+    dm = (m3_array[1:] - m3_array[:-1] )
+    dmdt = (m3_array[1:] - m3_array[:-1] )/(times_array_Myr[1:] - times_array_Myr[:-1])
+
+    plt.plot(dmdt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
+    plt.plot(dmdt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
     plt.show()
 
-    plt.plot(times_array_Myr, o_out_array*180.0/np.pi%360)
-    plt.xlim(0, t_max_Myr)
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$o_\mathrm{out}$')
-    plt.show()
-    plt.plot(times_array_Myr, np.cos(o_out_array))
-    plt.xlim(0, t_max_Myr)
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$\cos(o_\mathrm{out})$')
+    plt.plot(dm, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
+    plt.plot(dm, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
     plt.show()
 
-    aplt.plot(times_array_Myr, m1_array)
-    aplt.plot(times_array_Myr, m1_array, '.')
-    aplt.plot(times_array_Myr, m2_array)
-    aplt.plot(times_array_Myr, m2_array, '.')
-    aplt.plot(times_array_Myr, m3_array)
-    aplt.plot(times_array_Myr, m3_array, '.')
-    plt.xlim(0, t_max_Myr)
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$M/\mathrm{MSun}$')
+    plt.plot(dt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
+    plt.plot(dt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
     plt.show()
-    
+
+
+
+#    plt.plot(np.cos(g_out_array), e_in_array)
+#    plt.xlabel('$\cos(g_\mathrm{out})$')
+#    plt.ylabel('$e_\mathrm{in}$')
+#    plt.show()
+#
+#    plt.plot(np.cos(g_in_array), np.cos(g_out_array))
+#    plt.xlabel('$\cos(g_\mathrm{in})$')
+#    plt.ylabel('$\cos(g_\mathrm{out})$')
+#    plt.show()
+#
+#    plt.plot(times_array_Myr, g_out_array*180.0/np.pi%360)
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$g_\mathrm{out}$')
+#    plt.show()
+#    plt.plot(times_array_Myr, np.cos(g_out_array))
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$\cos(g_\mathrm{out})$')
+#    plt.show()
+#
+#    plt.plot(times_array_Myr, o_out_array*180.0/np.pi%360)
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$o_\mathrm{out}$')
+#    plt.show()
+#    plt.plot(times_array_Myr, np.cos(o_out_array))
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$\cos(o_\mathrm{out})$')
+#    plt.show()
+#
+#    aplt.plot(times_array_Myr, m1_array)
+#    aplt.plot(times_array_Myr, m1_array, '.')
+#    aplt.plot(times_array_Myr, m2_array)
+#    aplt.plot(times_array_Myr, m2_array, '.')
+#    aplt.plot(times_array_Myr, m3_array)
+#    aplt.plot(times_array_Myr, m3_array, '.')
+#    plt.xlim(0, t_max_Myr)
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$M/\mathrm{MSun}$')
+#    plt.show()
+#    
     
 #-----
 #for running triple.py from other routines
