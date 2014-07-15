@@ -14,8 +14,8 @@ import amuse.plot as aplt
 
 #constants
 timestep_factor = 0.01
-#error_dm
-#error_dr
+error_dm = 0.05
+error_dr = 0.75
 minimum_timestep = 1.e-9 |units.Myr
 
 REPORT_TRIPLE_EVOLUTION = False
@@ -30,7 +30,7 @@ class Triple:
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity,
             tend):
-
+            
         stars = self.make_stars(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis)
         bins = self.make_bins(stars, inner_semimajor_axis, outer_semimajor_axis,
@@ -58,6 +58,7 @@ class Triple:
 
         self.update_previous_se_parameters()
         self.update_se_parameters() 
+        self.update_se_wind_parameters()
 
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass, inner_semimajor_axis, outer_semimajor_axis):
         stars = Particles(3)
@@ -188,17 +189,26 @@ class Triple:
         self.update_time_derivative_of_radius()
                     
     def update_wind_mass_loss_rate(self):
-        #note wind mass loss rate < 0
-        timestep = self.time - self.previous_time
-        if timestep > 0|units.yr: 
-            self.particles[0].child1.child1.wind_mass_loss_rate = (self.particles[0].child1.child1.mass - self.particles[0].child1.child1.previous_mass)/timestep
-            self.particles[0].child1.child2.wind_mass_loss_rate = (self.particles[0].child1.child2.mass - self.particles[0].child1.child2.previous_mass)/timestep
-            self.particles[0].child2.child1.wind_mass_loss_rate = (self.particles[0].child2.child1.mass - self.particles[0].child2.child1.previous_mass)/timestep
-        else:
-            #initialization
-            self.particles[0].child1.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
-            self.particles[0].child1.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
-            self.particles[0].child2.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+        #note: wind mass loss rate < 0
+        
+        ch1ch1_in_se_code = self.particles[0].child1.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        ch1ch2_in_se_code = self.particles[0].child1.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        ch2ch1_in_se_code = self.particles[0].child2.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+            
+        self.particles[0].child1.child1.wind_mass_loss_rate = ch1ch1_in_se_code.get_wind_mass_loss_rate()
+        self.particles[0].child1.child2.wind_mass_loss_rate = ch1ch2_in_se_code.get_wind_mass_loss_rate()
+        self.particles[0].child2.child1.wind_mass_loss_rate = ch2ch1_in_se_code.get_wind_mass_loss_rate()
+
+#        timestep = self.time - self.previous_time
+#        if timestep > 0|units.yr: 
+#            self.particles[0].child1.child1.wind_mass_loss_rate = (self.particles[0].child1.child1.mass - self.particles[0].child1.child1.previous_mass)/timestep
+#            self.particles[0].child1.child2.wind_mass_loss_rate = (self.particles[0].child1.child2.mass - self.particles[0].child1.child2.previous_mass)/timestep
+#            self.particles[0].child2.child1.wind_mass_loss_rate = (self.particles[0].child2.child1.mass - self.particles[0].child2.child1.previous_mass)/timestep
+#        else:
+#            #initialization
+#            self.particles[0].child1.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+#            self.particles[0].child1.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
+#            self.particles[0].child2.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
             
     def update_time_derivative_of_radius(self):
         #update time_derivative_of_radius for effect of wind on spin
@@ -275,7 +285,7 @@ class Triple:
     #-------
     def determine_timestep(self):         
         if REPORT_TRIPLE_EVOLUTION:
-            print "Dt=", self.se_code.particles.time_step, self.tend/100.0
+            print "Dt = ", self.se_code.particles.time_step, self.tend/100.0
     
         #during unstable mass transfer or other instantaneous interactions
         if not self.particles[0].child2.is_stable:
@@ -505,13 +515,13 @@ def safety_check_timestep(triple):
             print triple.particles[0].child2.child1.wind_mass_loss_rate
             print 'relative wind mass losses:',
             print dm_1, dm_2, dm_3
-        error_dm = 0.05
         if (dm_1 > error_dm) or (dm_2 > error_dm) or (dm_3 > error_dm):
             print 'Change in mass in a single timestep larger then', error_dm
             print dm_1, dm_2, dm_3
             print triple.particles[0].child1.child1.stellar_type
             print triple.particles[0].child1.child2.stellar_type
             print triple.particles[0].child2.child1.stellar_type
+#            print 'WARNING'
             exit(-1)
 
 
@@ -525,13 +535,13 @@ def safety_check_timestep(triple):
             print triple.particles[0].child2.child1.time_derivative_of_radius
             print 'relative change in radius:',
             print dr_1, dr_2, dr_3
-        error_dr = 0.05
         if (dr_1 > error_dr) or (dr_2 > error_dr) or (dr_3 > error_dr):
             print 'Change in radius in a single timestep larger then', error_dr
             print dr_1, dr_2, dr_3
             print triple.particles[0].child1.child1.stellar_type
             print triple.particles[0].child1.child2.stellar_type
             print triple.particles[0].child2.child1.stellar_type
+#            print 'WARNING'
             exit(-1)
         
 
@@ -588,11 +598,23 @@ def plot_function(triple):
     plot_a_in.set_ylabel('$a_\mathrm{in}$')
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
 
-    plot_name_inner = 'TPS_inner_orbit_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_mutual_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr)
-    plt.savefig('plots/orbit/'+plot_name_inner+'.pdf')
+    generic_plot_name = '_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_mutual_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr)
+    plt.savefig('plots/orbit/TPS_inner_orbit'+generic_plot_name+'.pdf')
     plt.show()
 
 
+
+    Mtot = m1_array+m2_array    
+    plt.plot(times_array_Myr,a_in_array_AU)
+    plt.plot(times_array_Myr,a_in_array_AU, '.')
+    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot)
+    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot, '.')
+    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*Mtot[:-1]/Mtot[1:])
+    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*Mtot[:-1]/Mtot[1:], '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$a_\mathrm{in}$')
+    plt.savefig('plots/orbit/semi_inner'+generic_plot_name+'.pdf')
+    plt.show()
     
     plt.plot(times_array_Myr, g_in_array*180.0/np.pi%360)
     plt.xlim(0, t_max_Myr)
@@ -651,8 +673,20 @@ def plot_function(triple):
     plot_a_out.set_ylabel('$a_\mathrm{out}$')
 
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
-    plot_name_outer = 'TPS_outer_orbit_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_mutual_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr)
-    plt.savefig('plots/orbit/'+plot_name_outer+'.pdf')
+    plt.savefig('plots/orbit/TPS_outer_orbit'+generic_plot_name+'.pdf')
+    plt.show()
+
+
+    Mtott = m1_array+m2_array+m3_array    
+    plt.plot(times_array_Myr,a_out_array_AU)
+    plt.plot(times_array_Myr,a_out_array_AU, '.')
+    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott)
+    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott, '.')
+    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:])
+    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:], '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$a_\mathrm{out}$')
+    plt.savefig('plots/orbit/semi_outer'+generic_plot_name+'.pdf')
     plt.show()
 
 
@@ -688,10 +722,12 @@ def plot_function(triple):
     plt.ylabel('$\cos(o_\mathrm{out})$')
     plt.show()
 
-    print m1_array
     aplt.plot(times_array_Myr, m1_array)
+    aplt.plot(times_array_Myr, m1_array, '.')
     aplt.plot(times_array_Myr, m2_array)
+    aplt.plot(times_array_Myr, m2_array, '.')
     aplt.plot(times_array_Myr, m3_array)
+    aplt.plot(times_array_Myr, m3_array, '.')
     plt.xlim(0, t_max_Myr)
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$M/\mathrm{MSun}$')
@@ -714,6 +750,16 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
                           precision = 11, prefix = "", 
                           separator = " [", suffix = "]")
 
+            
+
+
+    inner_eccentricity = float(inner_eccentricity)
+    outer_eccentricity = float(outer_eccentricity)
+    mutual_inclination = float(mutual_inclination)
+    inner_argument_of_pericenter = float(inner_argument_of_pericenter)
+    outer_argument_of_pericenter = float(outer_argument_of_pericenter)
+    inner_longitude_of_ascending_node = float(inner_longitude_of_ascending_node)
+    outer_longitude_of_ascending_node = float(outer_longitude_of_ascending_node)
 
     triple = Triple(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
@@ -792,6 +838,7 @@ if __name__ == '__main__':
                           preferred_units = [units.MSun, units.RSun, units.Myr], 
                           precision = 11, prefix = "", 
                           separator = " [", suffix = "]")
+
 
     triple = Triple(**options)
     triple.evolve_triple()
