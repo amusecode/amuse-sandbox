@@ -14,7 +14,9 @@ import amuse.plot as aplt
 
 #constants
 timestep_factor = 0.01
-maximum_wind_mass_loss = 0.005 
+# lowering this to 0.05 makes the code twice as slow
+# 0.01 -> error in the semi-major axis of about 0.5%
+maximum_wind_mass_loss = 0.01 
 error_dm = 0.05
 error_dr = 0.75
 minimum_timestep = 1.e-9 |units.Myr
@@ -427,10 +429,20 @@ class Triple:
         m2_array.append(self.particles[0].child1.child2.mass)
         m3_array.append(self.particles[0].child2.child1.mass)
 
+        print 'kozai timescale:', self.kozai_timescale()      
         while self.time<self.tend:
             self.update_previous_se_parameters()
             self.determine_mass_transfer_timescale()
             self.determine_timestep()  
+    
+    
+           #do stellar evolution 
+            self.se_code.evolve_model(self.time)
+            self.channel_from_se.copy()
+            self.update_se_wind_parameters()
+            self.update_se_parameters()        
+            safety_check_timestep(self)
+    
     
             # do secular evolution
             self.channel_to_secular.copy()   
@@ -452,35 +464,30 @@ class Triple:
                 exit(0)
             self.channel_from_secular.copy()     
     
-            # when the secular code finds that mass transfer starts, evolve the stars only until that time
+            # when the secular code finds that mass transfer starts, go back in time
             if ((self.particles[0].child1.child1.is_donor or
                 self.particles[0].child1.child2.is_donor or
                 self.particles[0].child2.child1.is_donor) and
                 self.first_contact):
                     if REPORT_TRIPLE_EVOLUTION:
                         print 'Times:', self.previous_time, self.time, self.secular_code.model_time
-                    self.time = self.secular_code.model_time 
-                    
-                    # mass should not be transferred just yet -> check if this works ok
-                    # do not overwrite this parameter in the secular code    
-                    self.particles[0].child1.child1.is_donor = False
-                    self.particles[0].child1.child2.is_donor = False
-                    self.particles[0].child2.child1.is_donor = False
-                    
-                    self.first_contact = False
-                    
+                    print 'RLOF not yet'
+                    exit(-1);
+
+                        
+#                    self.time = self.secular_code.model_time 
+#                    
+#                    # mass should not be transferred just yet -> check if this works ok
+#                    # do not overwrite this parameter in the secular code    
+#                    self.particles[0].child1.child1.is_donor = False
+#                    self.particles[0].child1.child2.is_donor = False
+#                    self.particles[0].child2.child1.is_donor = False
+#                    
+#                    self.first_contact = False
+#                    
     
-            #do stellar evolution 
-            self.se_code.evolve_model(self.time)
-            self.channel_from_se.copy()
-            self.update_se_wind_parameters()
-            
-            safety_check_timestep(self)
-            
-            ##what should be the order, first mass transfer or first stellar evolution?
+           
             self.resolve_triple_interaction()        
-            self.update_se_parameters()
-            
             #should also do safety check timestep here
             
             
