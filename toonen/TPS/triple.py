@@ -34,6 +34,11 @@ class Triple:
             metallicity,
             tend):
             
+        if inner_semimajor_axis >= outer_semimajor_axis:
+            print 'error input parameters, should be:'
+            print 'inner_semimajor_axis < outer_semimajor_axis' 
+            exit(-1)            
+            
         stars = self.make_stars(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis)
         bins = self.make_bins(stars, inner_semimajor_axis, outer_semimajor_axis,
@@ -297,9 +302,6 @@ class Triple:
             return
             
             
-        ### for testing/plotting purposes only ###
-#        timestep = self.tend/100.0 
-    
         timestep = self.particles[0].child1.child1.time_step
         # timestep of stellar evolution
         if self.particles[0].child2.child1.is_star:
@@ -339,6 +341,11 @@ class Triple:
             timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child2.mass/self.particles[0].child1.mass_transfer_rate))
         if (self.particles[0].child2.child1.is_donor):
             timestep = min(timestep, abs(timestep_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate))
+            
+            
+        ### for testing/plotting purposes only ###
+        timestep = min(timestep, self.tend/100.0)
+    
             
             
         if timestep < minimum_timestep:
