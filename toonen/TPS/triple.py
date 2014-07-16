@@ -301,8 +301,10 @@ class Triple:
             # no step in time
             return
             
-            
-        timestep = self.particles[0].child1.child1.time_step
+        #maximum timestep            
+        timestep = self.tend - self.time
+
+
         # timestep of stellar evolution
         if self.particles[0].child2.child1.is_star:
             timestep = min(timestep, self.particles[0].child2.child1.time_step)
@@ -344,14 +346,14 @@ class Triple:
             
             
         ### for testing/plotting purposes only ###
-        timestep = min(timestep, self.tend/100.0)
+#        timestep = min(timestep, self.tend/100.0)
     
             
             
         if timestep < minimum_timestep:
             print 'error small timestep'
             exit(-1)    
-        timestep = max(timestep, minimum_timestep)            
+        timestep = max(timestep, minimum_timestep)                
         self.time += timestep
     
 
@@ -454,7 +456,6 @@ class Triple:
             # do secular evolution
             self.channel_to_secular.copy()   
             if self.is_triple == True:
-                self.secular_code.evolve_model(self.time)
                 self.secular_code.evolve_model(self.time)
             else:# e.g. binaries
                 print 'Secular code disabled'
@@ -861,7 +862,8 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend)
 
     triple.evolve_triple()
-    plot_function(triple)
+#    plot_function(triple)
+    return triple
 #-----
 
 #-----
