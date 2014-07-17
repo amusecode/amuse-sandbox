@@ -15,56 +15,6 @@ stellar_types_giants = [2,3,4,5,6,8,9]
 stellar_types_remnants = [10,11,12,13,14]
 
 
-def print_star(star):
-    if star.is_star:
-        print star.age, 
-        print star.stellar_type, 
-        print star.mass, 
-        print star.radius, 
-        print star.core_mass, 
-        print star.core_radius,
-        print star.envelope_mass,
-        print star.convective_envelope_mass,
-        print star.convective_envelope_radius,
-        print star.CO_core_mass,
-        print star.luminosity,
-        print star.temperature,
-        print star.wind_mass_loss_rate
-        print star.spin_angular_frequency,
-        print star.is_donor
-    else:
-        print 'print_star needs a star'        
-        exit(-1)
-    
-
-def print_binary(binary):
-    if binary.is_binary and binary.child1.is_star and binary.child2.is_star:
-        print binary.semimajor_axis, 
-        print binary.eccentricity, 
-        print binary.argument_of_pericenter, 
-        print binary.longitude_of_ascending_node,
-        print binary.mass_transfer_rate,
-        print binary.mass_transfer_timescale,
-        print binary.accretion_efficiency_mass_transfer,
-        print binary.accretion_efficiency_wind_child1_to_child2,
-        print binary.accretion_efficiency_wind_child2_to_child1,
-        print binary.specific_AM_loss_mass_transfer,
-        print binary.is_stable
-        
-        print '\t'
-        print_star(binary.child1)
-        print '\t'
-        print_star(binary.child2)
-        print '\n'
-    else:
-        print 'print_binary needs a binary with two stars'        
-        exit(-1)
-    
-    
-def print_triple(tr):
-    print tr.mutual_inclination
-    print_binary(tr.child1)
-    print_binary(tr.child2)
     
 def roche_radius_dimensionless(M, m) :
     # Assure that the q is calculated in identical units.
@@ -632,16 +582,17 @@ def mass_transfer_stability(binary):
         if Js >= Jb/3. :
             if REPORT_BINARY_EVOLUTION:
                 print "Darwin Riemann instability"
-            binary.mass_transfer_timescale = 0     
+            binary.mass_transfer_rate = 0     
             binary.is_stable = False
         elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass:
-            binary.mass_transfer_timescale = 0
+            binary.mass_transfer_rate = 0
             binary.is_stable = False
         elif binary.child2.is_donor and binary.child2.mass > binary.child1.mass:
-            binary.mass_transfer_timescale = 0
+            binary.mass_transfer_rate= 0
             binary.is_stable = False
         else :
-            binary.mass_transfer_timescale = mass_transfer_timescale(binary)         
+            print 'incorrect'
+            binary.mass_transfer_rate = mass_transfer_timescale(binary)         
             binary.is_stable = True
 
 
@@ -655,13 +606,14 @@ def mass_transfer_stability(binary):
         if Js >= Jb/3. :
             if REPORT_BINARY_EVOLUTION:
                 print "Darwin Riemann instability"
-            binary.mass_transfer_timescale = 0  
+            binary.mass_transfer_rate = 0  
             binary.is_stable = False          
         elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass:
-            binary.mass_transfer_timescale = 0
+            binary.mass_transfer_rate = 0
             binary.is_stable = False
         else :
-            binary.mass_transfer_timescale = mass_transfer_timescale(binary)                    
+            print 'incorrect..'
+            binary.mass_transfer_rate = mass_transfer_timescale(binary)                    
             binary.is_stable = True
             
     else:

@@ -50,11 +50,10 @@ class Triple:
         triples[0].child1 = bins[0]
         triples[0].child2 = bins[1]
         triples[0].mutual_inclination = mutual_inclination
-
-
-        self.is_star = False
-        self.is_binary = False
-        self.is_triple = True
+        triples[0].is_star = False
+        triples[0].is_binary = True # True if there are 2 children
+        triples[0].is_triple = True 
+        
         self.first_contact = True
         self.tend = tend #...
         self.time = 0.0|units.yr
@@ -72,6 +71,7 @@ class Triple:
         stars = Particles(3)
         stars.is_star = True
         stars.is_binary = False 
+        stars.is_triple = False
         stars.is_donor = False
 
         stars[0].mass = inner_primary_mass
@@ -95,6 +95,7 @@ class Triple:
         bins = Particles(2)
         bins.is_star = False
         bins.is_binary = True
+        bins.is_triple = False
         bins.is_stable = True
         
 
@@ -170,7 +171,7 @@ class Triple:
         self.secular_code.parameters.check_for_dynamical_stability = True
         self.secular_code.parameters.check_for_inner_collision = True
         self.secular_code.parameters.check_for_outer_collision = False
-        self.secular_code.parameters.check_for_inner_RLOF = False ### work in progress
+        self.secular_code.parameters.check_for_inner_RLOF = True ### work in progress
         self.secular_code.parameters.check_for_outer_RLOF = False ### work in progress
 
         self.channel_from_secular = self.secular_code.triples.new_channel_to(triples)
@@ -276,7 +277,7 @@ class Triple:
             return False
 
     def kozai_timescale(self):
-        if self.is_triple and self.is_double_star(self.particles[0].child1):
+        if self.is_double_star(self.particles[0].child1):
             P_in = orbital_period(self.particles[0].child1) #period inner binary 
             P_out = orbital_period(self.particles[0].child2)#period outer binary 
             #Kozai 1962, Michaealy & Perets 2014        
@@ -287,7 +288,76 @@ class Triple:
         else:
             return zero                                
     #-------
+
+    #-------
+    # to print 
+    def print_star(self, star):
+        if star.is_star:
+            print 'star:'
+            print star.age, 
+            print star.stellar_type, 
+            print star.mass, 
+            print star.radius, 
+            print star.core_mass, 
+            print star.core_radius,
+            print star.envelope_mass,
+            print star.convective_envelope_mass,
+            print star.convective_envelope_radius,
+            print star.CO_core_mass,
+            print star.luminosity,
+            print star.temperature,
+            print star.wind_mass_loss_rate
+            print star.spin_angular_frequency,
+            print star.is_donor
+            print '\t'             
+        else:
+            print 'print_star needs a star'        
+            exit(-1)
+    
+    
+    def print_binary(self, binary):
+        if binary.is_binary:
+            print binary.semimajor_axis, 
+            print binary.eccentricity, 
+            print binary.argument_of_pericenter, 
+            print binary.longitude_of_ascending_node,
+            print binary.mass_transfer_rate,
+#            print binary.mass_transfer_timescale,
+            print binary.accretion_efficiency_mass_transfer,
+            print binary.accretion_efficiency_wind_child1_to_child2,
+            print binary.accretion_efficiency_wind_child2_to_child1,
+            print binary.specific_AM_loss_mass_transfer,
+            print binary.is_stable
+            print '\t'
+        else:
+            print 'print_binary needs a binary'        
+            exit(-1)
+    
+    
+    def print_stellar_system(self, stellar_system):
+        if stellar_system.is_triple:
+            print '\t'
+            print 'stellar system: '
+            print stellar_system.mutual_inclination
+            print '\t'
+            self.print_stellar_system(stellar_system.child2)
+        elif self.is_double_star(stellar_system):
+            print 'binary star (double star): '
+            self.print_binary(stellar_system)
+            self.print_star(stellar_system.child1)
+            self.print_star(stellar_system.child2)
+        elif stellar_system.is_binary:
+            self.print_stellar_system(stellar_system.child1)
+            self.print_stellar_system(stellar_system.child2)
+        elif stellar_system.is_star:
+            self.print_star(stellar_system)
+        else:
+            print 'print_stellar_sytem: structure stellar system unknown'        
+            exit(-1)
+        print '\t'            
             
+    #-------
+        
     #-------
     def determine_timestep(self):         
         if REPORT_TRIPLE_EVOLUTION:
@@ -357,7 +427,7 @@ class Triple:
         self.time += timestep
     
 
-    def resolve_triple_interaction(self):
+    def resolve_interaction_in_stellar_system(self):
     
         if REPORT_TRIPLE_EVOLUTION:
             print '\ninner binary'
@@ -441,7 +511,7 @@ class Triple:
         print 'kozai timescale:', self.kozai_timescale()      
         while self.time<self.tend:
             self.update_previous_se_parameters()
-            self.determine_mass_transfer_timescale()
+#            self.determine_mass_transfer_timescale()
             self.determine_timestep()  
     
     
@@ -455,7 +525,7 @@ class Triple:
     
             # do secular evolution
             self.channel_to_secular.copy()   
-            if self.is_triple == True:
+            if self.particles[0].is_triple == True:
                 self.secular_code.evolve_model(self.time)
             else:# e.g. binaries
                 print 'Secular code disabled'
@@ -480,6 +550,8 @@ class Triple:
                     if REPORT_TRIPLE_EVOLUTION:
                         print 'Times:', self.previous_time, self.time, self.secular_code.model_time
                     print 'RLOF not yet'
+#                    self.determine_mass_transfer_timescale()
+                    
                     exit(-1);
 
                         
@@ -495,7 +567,7 @@ class Triple:
 #                    
     
            
-            self.resolve_triple_interaction()        
+            self.resolve_interaction_in_stellar_system()        
             #should also do safety check timestep here
             
             
@@ -863,6 +935,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
 
     triple.evolve_triple()
 #    plot_function(triple)
+    triple.print_stellar_system(triple.particles[0])
     return triple
 #-----
 
