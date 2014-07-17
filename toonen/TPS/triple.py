@@ -13,13 +13,13 @@ import matplotlib.pyplot as plt
 import amuse.plot as aplt
 
 #constants
-timestep_factor = 0.01
+time_step_factor = 0.01
 # lowering this to 0.05 makes the code twice as slow
 # 0.01 -> error in the semi-major axis of about 0.5%
 maximum_wind_mass_loss = 0.01 
 error_dm = 0.05
 error_dr = 0.75
-minimum_timestep = 1.e-9 |units.Myr
+minimum_time_step = 1.e-9 |units.Myr
 
 REPORT_TRIPLE_EVOLUTION = False
 
@@ -49,10 +49,12 @@ class Triple:
         triples = Particles(1)
         triples[0].child1 = bins[0]
         triples[0].child2 = bins[1]
-        triples[0].mutual_inclination = mutual_inclination
+        triples[0].mass = triples[0].child1.mass + triples[0].child2.mass
+        #when going to quadruples, mutual_inclination should be a characteristic of a bin 
+        triples[0].mutual_inclination = mutual_inclination 
         triples[0].is_star = False
         triples[0].is_binary = True # True if there are 2 children
-        triples[0].is_triple = True 
+        triples[0].is_triple = True # Upper level
         
         self.first_contact = True
         self.tend = tend #...
@@ -179,17 +181,40 @@ class Triple:
     #-------
 
     #-------
-    def update_previous_se_parameters(self):
+    def update_previous_se_parameters(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+
         self.previous_time = self.time
 
-        self.particles[0].child1.child1.previous_mass = self.particles[0].child1.child1.mass 
-        self.particles[0].child1.child2.previous_mass = self.particles[0].child1.child2.mass 
-        self.particles[0].child2.child1.previous_mass = self.particles[0].child2.child1.mass 
-        self.particles[0].child2.child2.previous_mass = self.particles[0].child2.child2.mass 
+        if stellar_system.is_triple:
+            self.update_previous_se_parameters(stellar_system.child2)
+            stellar_system.previous_mass = stellar_system.mass 
+        elif stellar_system.is_star:
+            stellar_system.previous_mass = stellar_system.mass      
+            stellar_system.previous_radius = stellar_system.radius
+        elif self.is_double_star(stellar_system):
+            stellar_system.child1.previous_mass = stellar_system.child1.mass 
+            stellar_system.child2.previous_mass = stellar_system.child2.mass 
+            stellar_system.child1.previous_radius = stellar_system.child1.radius 
+            stellar_system.child2.previous_radius = stellar_system.child2.radius
+            stellar_system.previous_mass = stellar_system.mass 
+        elif stellar_system.is_binary:
+            self.update_previous_se_parameters(stellar_system.child1)        
+            self.update_previous_se_parameters(stellar_system.child2)
+            stellar_system.previous_mass = stellar_system.mass 
+        else:
+            print 'update_previous_se_parameters: structure stellar system unknown'        
+            exit(-1)
+            
+#        self.particles[0].child1.child1.previous_mass = self.particles[0].child1.child1.mass 
+#        self.particles[0].child1.child2.previous_mass = self.particles[0].child1.child2.mass 
+#        self.particles[0].child2.child1.previous_mass = self.particles[0].child2.child1.mass 
+#        self.particles[0].child2.child2.previous_mass = self.particles[0].child2.child2.mass 
 
-        self.particles[0].child1.child1.previous_radius = self.particles[0].child1.child1.radius 
-        self.particles[0].child1.child2.previous_radius = self.particles[0].child1.child2.radius 
-        self.particles[0].child2.child1.previous_radius = self.particles[0].child2.child1.radius 
+#        self.particles[0].child1.child1.previous_radius = self.particles[0].child1.child1.radius 
+#        self.particles[0].child1.child2.previous_radius = self.particles[0].child1.child2.radius 
+#        self.particles[0].child2.child1.previous_radius = self.particles[0].child2.child1.radius 
     #-------
 
     #-------
@@ -197,75 +222,143 @@ class Triple:
         self.update_wind_mass_loss_rate()
         self.update_time_derivative_of_radius()
                     
-    def update_wind_mass_loss_rate(self):
+    def update_wind_mass_loss_rate(self, stellar_system = None):
         #note: wind mass loss rate < 0
-        
-        ch1ch1_in_se_code = self.particles[0].child1.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        ch1ch2_in_se_code = self.particles[0].child1.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        ch2ch1_in_se_code = self.particles[0].child2.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-            
-        self.particles[0].child1.child1.wind_mass_loss_rate = ch1ch1_in_se_code.get_wind_mass_loss_rate()
-        self.particles[0].child1.child2.wind_mass_loss_rate = ch1ch2_in_se_code.get_wind_mass_loss_rate()
-        self.particles[0].child2.child1.wind_mass_loss_rate = ch2ch1_in_se_code.get_wind_mass_loss_rate()
+        if stellar_system == None:
+            stellar_system = self.particles[0]
 
-#        timestep = self.time - self.previous_time
-#        if timestep > 0|units.yr: 
-#            self.particles[0].child1.child1.wind_mass_loss_rate = (self.particles[0].child1.child1.mass - self.particles[0].child1.child1.previous_mass)/timestep
-#            self.particles[0].child1.child2.wind_mass_loss_rate = (self.particles[0].child1.child2.mass - self.particles[0].child1.child2.previous_mass)/timestep
-#            self.particles[0].child2.child1.wind_mass_loss_rate = (self.particles[0].child2.child1.mass - self.particles[0].child2.child1.previous_mass)/timestep
-#        else:
-#            #initialization
-#            self.particles[0].child1.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
-#            self.particles[0].child1.child2.wind_mass_loss_rate = 0.0|units.MSun/units.yr
-#            self.particles[0].child2.child1.wind_mass_loss_rate = 0.0|units.MSun/units.yr
-            
-    def update_time_derivative_of_radius(self):
+        if stellar_system.is_triple:
+            self.update_wind_mass_loss_rate(stellar_system.child2)
+        elif stellar_system.is_star:
+            star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+            stellar_system.wind_mass_loss_rate = star_in_se_code.get_wind_mass_loss_rate() 
+        elif self.is_double_star(stellar_system):
+            star1_in_se_code = stellar_system.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+            star2_in_se_code = stellar_system.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+            stellar_system.child1.wind_mass_loss_rate = star1_in_se_code.get_wind_mass_loss_rate() 
+            stellar_system.child2.wind_mass_loss_rate = star2_in_se_code.get_wind_mass_loss_rate() 
+        elif stellar_system.is_binary:
+            self.update_wind_mass_loss_rate(stellar_system.child1)        
+            self.update_wind_mass_loss_rate(stellar_system.child2)
+        else:
+            print 'update_wind_mass_loss_rate: structure stellar system unknown'        
+            exit(-1)
+        
+#        ch1ch1_in_se_code = self.particles[0].child1.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#        ch1ch2_in_se_code = self.particles[0].child1.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#        ch2ch1_in_se_code = self.particles[0].child2.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#            
+#        self.particles[0].child1.child1.wind_mass_loss_rate = ch1ch1_in_se_code.get_wind_mass_loss_rate()
+#        self.particles[0].child1.child2.wind_mass_loss_rate = ch1ch2_in_se_code.get_wind_mass_loss_rate()
+#        self.particles[0].child2.child1.wind_mass_loss_rate = ch2ch1_in_se_code.get_wind_mass_loss_rate()
+
+           
+    def update_time_derivative_of_radius(self, stellar_system = None):
         #update time_derivative_of_radius for effect of wind on spin
         #radius change due to stellar evolution, not mass transfer
-        timestep = self.time - self.previous_time
-        if timestep > 0|units.yr:
-            self.particles[0].child1.child1.time_derivative_of_radius = (self.particles[0].child1.child1.radius - self.particles[0].child1.child1.previous_radius)/timestep
-            self.particles[0].child1.child2.time_derivative_of_radius = (self.particles[0].child1.child2.radius - self.particles[0].child1.child2.previous_radius)/timestep
-            self.particles[0].child2.child1.time_derivative_of_radius = (self.particles[0].child2.child1.radius - self.particles[0].child2.child1.previous_radius)/timestep
-        else:
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+                
+        time_step = self.time - self.previous_time
+
+        if self.time == zero:
             #initialization
             self.particles[0].child1.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].child1.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].child2.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+        else:    
+            if stellar_system.is_triple:
+                self.update_time_derivative_of_radius(stellar_system.child2)
+            elif stellar_system.is_star:
+                stellar_system.time_derivative_of_radius = (stellar_system.radius - stellar_system.previous_radius)/time_step
+            elif self.is_double_star(stellar_system):
+                stellar_system.child1.time_derivative_of_radius = (stellar_system.child1.radius - stellar_system.child1.previous_radius)/time_step
+                stellar_system.child2.time_derivative_of_radius = (stellar_system.child1.radius - stellar_system.child2.previous_radius)/time_step
+            elif stellar_system.is_binary:
+                self.update_time_derivative_of_radius(stellar_system.child1)        
+                self.update_time_derivative_of_radius(stellar_system.child2)
+            else:
+                print 'update_time_derivative_of_radius: structure stellar system unknown'        
+                exit(-1)
+
+
+#        if time_step > 0|units.yr:
+#            self.particles[0].child1.child1.time_derivative_of_radius = (self.particles[0].child1.child1.radius - self.particles[0].child1.child1.previous_radius)/time_step
+#            self.particles[0].child1.child2.time_derivative_of_radius = (self.particles[0].child1.child2.radius - self.particles[0].child1.child2.previous_radius)/time_step
+#            self.particles[0].child2.child1.time_derivative_of_radius = (self.particles[0].child2.child1.radius - self.particles[0].child2.child1.previous_radius)/time_step
+#        else:
+            #initialization
+#            self.particles[0].child1.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+#            self.particles[0].child1.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
+#            self.particles[0].child2.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
     #-------
 
     #-------
     def update_se_parameters(self):
         self.update_binary_mass()
-        self.update_convective_envelope_mass()
-        self.update_convective_envelope_radius()
-        self.update_gyration_radius()
+        self.update_stellar_parameters()
         
-    def update_binary_mass(self):
-        print 'a loop would be better in update_binary_mass'
+    def update_binary_mass(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
 
-        if self.particles[0].child1.is_binary:
-            self.particles[0].child1.mass = self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass
-        if self.particles[0].child2.is_binary:
-            self.particles[0].child2.mass = self.particles[0].child2.child1.mass + self.particles[0].child2.child2.mass
-    
-    def update_convective_envelope_mass(self):
-        #the prescription of Hurley, Pols & Tout 2000 is implemented in SeBa, however note that the prescription in BSE is different
-        self.particles[0].child1.child1.convective_envelope_mass = self.particles[0].child1.child1.convective_envelope_mass
-        self.particles[0].child1.child2.convective_envelope_mass = self.particles[0].child1.child2.convective_envelope_mass
-        self.particles[0].child2.child1.convective_envelope_mass = self.particles[0].child2.child1.convective_envelope_mass
+        if stellar_system.is_triple:
+            self.update_binary_mass(stellar_system.child2)
+            stellar_system.mass = stellar_system.child1.mass + stellar_system.child2.mass
+        elif stellar_system.is_star:
+            return
+        elif stellar_system.is_binary:
+            self.update_binary_mass(stellar_system.child1)        
+            self.update_binary_mass(stellar_system.child2)
+            stellar_system.mass = stellar_system.child1.mass + stellar_system.child2.mass
+        else:
+            print 'update_binary_mass: structure stellar system unknown'        
+            exit(-1)
+      
+#        if self.particles[0].child1.is_binary:
+#            self.particles[0].child1.mass = self.particles[0].child1.child1.mass + self.particles[0].child1.child2.mass
+#        if self.particles[0].child2.is_binary:
+#            self.particles[0].child2.mass = self.particles[0].child2.child1.mass + self.particles[0].child2.child2.mass
+#    
 
+    def update_stellar_parameters(self, stellar_system = None):
+        # for the convective envelope mass:
+        # the prescription of Hurley, Pols & Tout 2000 is implemented in SeBa, however note that the prescription in BSE is different
+        # for the convective envelope radius:
+        # the prescription of Hurley, Tout & Pols 2002 is implemented in SeBa, however note that the prescription in BSE is different
+        # both parameters don't need to be updated manually anymore
         
-    def update_convective_envelope_radius(self):
-        #the prescription of Hurley, Tout & Pols 2002 is implemented in SeBa, , however note that the prescription in BSE is different 
-        self.particles[0].child1.child1.convective_envelope_radius = self.particles[0].child1.child1.convective_envelope_radius
-        self.particles[0].child1.child2.convective_envelope_radius = self.particles[0].child1.child2.convective_envelope_radius
-        self.particles[0].child2.child1.convective_envelope_radius = self.particles[0].child2.child1.convective_envelope_radius
+        if stellar_system == None:
+            stellar_system = self.particles[0]
 
-    def update_gyration_radius(self):
-        self.particles[0].child1.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
-        self.particles[0].child1.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
-        self.particles[0].child2.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
+        if stellar_system.is_triple:
+            self.update_stellar_parameters(stellar_system.child2)
+        elif stellar_system.is_star:
+            star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+            stellar_system.gyration_radius = star_in_se_code.get_gyration_radius_sq()**0.5     
+        elif self.is_double_star(stellar_system):
+            star1_in_se_code = stellar_system.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+            star2_in_se_code = stellar_system.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+            stellar_system.child1.gyration_radius = star1_in_se_code.get_gyration_radius_sq()**0.5     
+            stellar_system.child2.gyration_radius = star2_in_se_code.get_gyration_radius_sq()**0.5
+        elif stellar_system.is_binary:
+            self.update_stellar_parameters(stellar_system.child1)        
+            self.update_stellar_parameters(stellar_system.child2)
+        else:
+            print 'update_previous_se_parameters: structure stellar system unknown'        
+            exit(-1)
+        
+#        self.particles[0].child1.child1.convective_envelope_mass = self.particles[0].child1.child1.convective_envelope_mass
+#        self.particles[0].child1.child2.convective_envelope_mass = self.particles[0].child1.child2.convective_envelope_mass
+#        self.particles[0].child2.child1.convective_envelope_mass = self.particles[0].child2.child1.convective_envelope_mass
+#
+#        self.particles[0].child1.child1.convective_envelope_radius = self.particles[0].child1.child1.convective_envelope_radius
+#        self.particles[0].child1.child2.convective_envelope_radius = self.particles[0].child1.child2.convective_envelope_radius
+#        self.particles[0].child2.child1.convective_envelope_radius = self.particles[0].child2.child1.convective_envelope_radius
+#
+#        self.particles[0].child1.child1.gyration_radius = self.se_code.particles[0].get_gyration_radius_sq()**0.5
+#        self.particles[0].child1.child2.gyration_radius = self.se_code.particles[1].get_gyration_radius_sq()**0.5
+#        self.particles[0].child2.child1.gyration_radius = self.se_code.particles[2].get_gyration_radius_sq()**0.5
     #-------
 
     #-------
@@ -277,16 +370,16 @@ class Triple:
             return False
 
     def kozai_timescale(self):
-        if self.is_double_star(self.particles[0].child1):
-            P_in = orbital_period(self.particles[0].child1) #period inner binary 
+        if self.particles[0].is_binary and self.particles[0].child2.is_binary and self.is_double_star(self.particles[0].child2.child2):
+            P_in = orbital_period(self.particles[0].child2.child2) #period inner binary 
             P_out = orbital_period(self.particles[0].child2)#period outer binary 
             #Kozai 1962, Michaealy & Perets 2014        
-#            return P_out**2 / P_in * (self.particles[0].child1.mass / self.particles[0].child2.child1.mass)
+#            return P_out**2 / P_in * (self.particles[0].child2.child2.mass / self.particles[0].child2.child1.mass)
             #Kinoshita & Nakai 1999, Hamers et al 2014
             alpha_kozai = 1.
             return alpha_kozai * P_out**2 / P_in * (self.particles[0].child2.mass / self.particles[0].child2.child1.mass) * (1-self.particles[0].child2.eccentricity**2)**1.5       
         else:
-            return zero                                
+            return np.nan                                
     #-------
 
     #-------
@@ -317,6 +410,7 @@ class Triple:
     
     def print_binary(self, binary):
         if binary.is_binary:
+            print binary.mass, 
             print binary.semimajor_axis, 
             print binary.eccentricity, 
             print binary.argument_of_pericenter, 
@@ -347,6 +441,8 @@ class Triple:
             self.print_star(stellar_system.child1)
             self.print_star(stellar_system.child2)
         elif stellar_system.is_binary:
+            print 'binary star: '
+            self.print_binary(stellar_system)
             self.print_stellar_system(stellar_system.child1)
             self.print_stellar_system(stellar_system.child2)
         elif stellar_system.is_star:
@@ -359,7 +455,90 @@ class Triple:
     #-------
         
     #-------
-    def determine_timestep(self):         
+    
+    def determine_time_step_wind(self, stellar_system = None):
+    #note: returned value can be inf when the wind_mass_loss_rate = 0
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_triple:
+            dt = self.determine_time_step_wind(stellar_system.child2)
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_wind_triple = ", dt
+            return dt
+        elif stellar_system.is_star:
+            dt = np.inf |units.Myr
+            if stellar_system.wind_mass_loss_rate > zero:
+               dt = maximum_wind_mass_loss*stellar_system.mass / stellar_system.wind_mass_loss_rate*-1
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_wind_star = ", dt
+            return dt 
+        elif self.is_double_star(stellar_system):
+            dt1 = np.inf |units.Myr
+            dt2 = np.inf |units.Myr
+            if stellar_system.child1.wind_mass_loss_rate > zero:
+               dt1 = maximum_wind_mass_loss*stellar_system.child1.mass / stellar_system.child1.wind_mass_loss_rate*-1
+            if stellar_system.child2.wind_mass_loss_rate > zero:
+                dt2 = maximum_wind_mass_loss*stellar_system.child2.mass / stellar_system.child2.wind_mass_loss_rate*-1
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_wind_double_star = ", dt1, dt2
+            return min(dt1, dt2)
+        elif stellar_system.is_binary:
+            dt1 = self.determine_time_step_wind(stellar_system.child1)        
+            dt2 = self.determine_time_step_wind(stellar_system.child2)
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_wind_binary = ", dt1, dt2
+            return min(dt1, dt2) 
+        else:
+            print 'determine_time_step_wind: structure stellar system unknown'        
+            exit(-1)
+    
+ 
+    def determine_time_step_mt(self, stellar_system = None):
+    #note: returned value can be inf when the mass_transfer_rate = 0 
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_triple:
+            dt = self.determine_time_step_mt(stellar_system.child2)
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_mt_triple = ", dt
+            return dt
+        elif stellar_system.is_star:
+            dt = np.inf |units.Myr
+            if stellar_system.is_donor:
+                dt = abs(time_step_factor*stellar_system.mass/stellar_system.mass_transfer_rate)
+                print 'mt >0?: ', stellar_system.mass_transfer_rate
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_mt_star = ", dt
+            return dt 
+        elif self.is_double_star(stellar_system):
+            dt = np.inf |units.Myr
+            if stellar_system.child1.is_donor and stelar_system.child2.is_donor:
+                print 'determine_time_step_mt: contact system'        
+                exit(-1)
+            elif stellar_system.child1.is_donor:
+                dt = abs(time_step_factor*stellar_system.child1.mass/stellar_system.mass_transfer_rate)
+                print 'mt1 >0?:', stellar_system.mass_transfer_rat
+            elif stellar_system.child2.is_donor:
+                dt = abs(time_step_factor*stellar_system.child2.mass/stellar_system.mass_transfer_rate)
+                print 'mt2 >0?:', stellar_system.mass_transfer_rate
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_mt_double_star = ", dt
+            return dt
+        elif stellar_system.is_binary:
+            dt1 = self.determine_time_step_mt(stellar_system.child1)        
+            dt2 = self.determine_time_step_mt(stellar_system.child2)
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_mt_binary = ", dt1, dt2
+            return min(dt1, dt2) 
+        else:
+            print 'determine_time_step_mt: structure stellar system unknown'        
+            exit(-1)
+     
+ 
+    
+    def determine_time_step(self):         
         if REPORT_TRIPLE_EVOLUTION:
             print "Dt = ", self.se_code.particles.time_step, self.tend/100.0
     
@@ -371,60 +550,51 @@ class Triple:
             # no step in time
             return
             
-        #maximum timestep            
-        timestep = self.tend - self.time
+        #maximum time_step            
+        time_step = self.tend - self.time
 
+        # time_step of stellar evolution
+        time_step =  min(time_step, min(self.se_code.particles.time_step))    
+#        if self.particles[0].child2.child1.is_star:
+#            time_step = min(time_step, self.particles[0].child2.child1.time_step)
+#        if self.particles[0].child1.child1.is_star:
+#            time_step = min(time_step, self.particles[0].child1.child1.time_step)
+#        if self.particles[0].child1.child2.is_star:
+#            time_step = min(time_step, self.particles[0].child1.child2.time_step)
+                    
+        # small time_step during heavy wind mass losses
+        time_step = min(time_step, self.determine_time_step_wind())
 
-        # timestep of stellar evolution
-        if self.particles[0].child2.child1.is_star:
-            timestep = min(timestep, self.particles[0].child2.child1.time_step)
-        if self.particles[0].child1.child1.is_star:
-            timestep = min(timestep, self.particles[0].child1.child1.time_step)
-        if self.particles[0].child1.child2.is_star:
-            timestep = min(timestep, self.particles[0].child1.child2.time_step)
-                
-            
-        # small timestep during heavy wind mass losses
-        if REPORT_TRIPLE_EVOLUTION:
-            print "DTwind =", timestep, 
-            print maximum_wind_mass_loss*self.particles[0].child1.child1.mass / self.particles[0].child1.child1.wind_mass_loss_rate*-1,
-            print maximum_wind_mass_loss*self.particles[0].child1.child2.mass / self.particles[0].child1.child2.wind_mass_loss_rate*-1,
-            print maximum_wind_mass_loss*self.particles[0].child2.child1.mass / self.particles[0].child2.child1.wind_mass_loss_rate*-1
-            
-        if -1*self.particles[0].child1.child1.wind_mass_loss_rate * timestep / self.particles[0].child1.child1.mass > maximum_wind_mass_loss:
-            timestep = min(timestep, maximum_wind_mass_loss*self.particles[0].child1.child1.mass / self.particles[0].child1.child1.wind_mass_loss_rate*-1)
-        if -1*self.particles[0].child1.child2.wind_mass_loss_rate * timestep / self.particles[0].child1.child2.mass > maximum_wind_mass_loss:
-            timestep = min(timestep, maximum_wind_mass_loss*self.particles[0].child1.child2.mass / self.particles[0].child1.child2.wind_mass_loss_rate*-1)
-        if -1*self.particles[0].child2.child1.wind_mass_loss_rate * timestep / self.particles[0].child2.child1.mass > maximum_wind_mass_loss:
-            timestep = min(timestep, maximum_wind_mass_loss*self.particles[0].child2.child1.mass / self.particles[0].child2.child1.wind_mass_loss_rate*-1)
+#        if -1*self.particles[0].child1.child1.wind_mass_loss_rate * time_step / self.particles[0].child1.child1.mass > maximum_wind_mass_loss:
+#            time_step = min(time_step, maximum_wind_mass_loss*self.particles[0].child1.child1.mass / self.particles[0].child1.child1.wind_mass_loss_rate*-1)
+#        if -1*self.particles[0].child1.child2.wind_mass_loss_rate * time_step / self.particles[0].child1.child2.mass > maximum_wind_mass_loss:
+#            time_step = min(time_step, maximum_wind_mass_loss*self.particles[0].child1.child2.mass / self.particles[0].child1.child2.wind_mass_loss_rate*-1)
+#        if -1*self.particles[0].child2.child1.wind_mass_loss_rate * time_step / self.particles[0].child2.child1.mass > maximum_wind_mass_loss:
+#            time_step = min(time_step, maximum_wind_mass_loss*self.particles[0].child2.child1.mass / self.particles[0].child2.child1.wind_mass_loss_rate*-1)
                          
             
             
         #during stable mass transfer     
-        if REPORT_TRIPLE_EVOLUTION:
-            print "DTmt =", timestep, 
-            print abs(timestep_factor*self.particles[0].child1.child1.mass/self.particles[0].child1.mass_transfer_rate),
-            print abs(timestep_factor*self.particles[0].child1.child2.mass/self.particles[0].child1.mass_transfer_rate),
-            print abs(timestep_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate)
+        time_step = min(time_step, self.determine_time_step_mt())
 
-        if (self.particles[0].child1.child1.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child1.mass/self.particles[0].child1.mass_transfer_rate))
-        if (self.particles[0].child1.child2.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].child1.child2.mass/self.particles[0].child1.mass_transfer_rate))
-        if (self.particles[0].child2.child1.is_donor):
-            timestep = min(timestep, abs(timestep_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate))
+#        if (self.particles[0].child1.child1.is_donor):
+#            time_step = min(time_step, abs(time_step_factor*self.particles[0].child1.child1.mass/self.particles[0].child1.mass_transfer_rate))
+#        if (self.particles[0].child1.child2.is_donor):
+#            time_step = min(time_step, abs(time_step_factor*self.particles[0].child1.child2.mass/self.particles[0].child1.mass_transfer_rate))
+#        if (self.particles[0].child2.child1.is_donor):
+#            time_step = min(time_step, abs(time_step_factor*self.particles[0].child2.child1.mass/self.particles[0].child2.mass_transfer_rate))
             
             
         ### for testing/plotting purposes only ###
-#        timestep = min(timestep, self.tend/100.0)
+#        time_step = min(time_step, self.tend/100.0)
     
             
             
-        if timestep < minimum_timestep:
-            print 'error small timestep'
+        if time_step < minimum_time_step:
+            print 'error small time_step'
             exit(-1)    
-        timestep = max(timestep, minimum_timestep)                
-        self.time += timestep
+        time_step = max(time_step, minimum_time_step)                
+        self.time += time_step
     
 
     def resolve_interaction_in_stellar_system(self):
@@ -512,7 +682,7 @@ class Triple:
         while self.time<self.tend:
             self.update_previous_se_parameters()
 #            self.determine_mass_transfer_timescale()
-            self.determine_timestep()  
+            self.determine_time_step()  
     
     
            #do stellar evolution 
@@ -520,7 +690,7 @@ class Triple:
             self.channel_from_se.copy()
             self.update_se_wind_parameters()
             self.update_se_parameters()        
-            safety_check_timestep(self)
+            safety_check_time_step(self)
     
     
             # do secular evolution
@@ -568,7 +738,7 @@ class Triple:
     
            
             self.resolve_interaction_in_stellar_system()        
-            #should also do safety check timestep here
+            #should also do safety check time_step here
             
             
             # for plotting data
@@ -614,7 +784,7 @@ class Triple:
 
 
 
-def safety_check_timestep(triple):
+def safety_check_time_step(triple):
         dm_1 = (triple.particles[0].child1.child1.previous_mass - triple.particles[0].child1.child1.mass)/triple.particles[0].child1.child1.mass
         dm_2 = (triple.particles[0].child1.child2.previous_mass - triple.particles[0].child1.child2.mass)/triple.particles[0].child1.child2.mass
         dm_3 = (triple.particles[0].child2.child1.previous_mass - triple.particles[0].child2.child1.mass)/triple.particles[0].child2.child1.mass
@@ -627,7 +797,7 @@ def safety_check_timestep(triple):
             print 'relative wind mass losses:',
             print dm_1, dm_2, dm_3
         if (dm_1 > error_dm) or (dm_2 > error_dm) or (dm_3 > error_dm):
-            print 'Change in mass in a single timestep larger then', error_dm
+            print 'Change in mass in a single time_step larger then', error_dm
             print dm_1, dm_2, dm_3
             print triple.particles[0].child1.child1.stellar_type
             print triple.particles[0].child1.child2.stellar_type
@@ -647,7 +817,7 @@ def safety_check_timestep(triple):
             print 'relative change in radius:',
             print dr_1, dr_2, dr_3
         if (dr_1 > error_dr) or (dr_2 > error_dr) or (dr_3 > error_dr):
-            print 'Change in radius in a single timestep larger then', error_dr
+            print 'Change in radius in a single time_step larger then', error_dr
             print dr_1, dr_2, dr_3
             print triple.particles[0].child1.child1.stellar_type
             print triple.particles[0].child1.child2.stellar_type
