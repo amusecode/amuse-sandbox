@@ -897,6 +897,7 @@ def safety_check_time_step(triple):
         dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
 
 
+
         if REPORT_TRIPLE_EVOLUTION:    
             print 'change in radius over time:', 
             print triple.particles[0].child1.child1.time_derivative_of_radius,
@@ -1237,7 +1238,7 @@ def parse_arguments():
     parser.add_option("-m",  unit=units.MSun, 
                       dest="inner_secondary_mass", type="float", default = 0.5|units.MSun,
                       help="inner secondary mass [%default]")
-    parser.add_option("-n",  unit=units.MSun, 
+    parser.add_option("-l",  unit=units.MSun, 
                       dest="outer_mass", type="float", default = 0.5|units.MSun,
                       help="outer mass [%default]")
     parser.add_option("-t", "-T", unit=units.Myr, 
