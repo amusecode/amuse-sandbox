@@ -1,4 +1,4 @@
-from amuse.lab import *
+from amuse.units import units, constants, quantities
 import numpy as np
 from math import sqrt
 
@@ -82,7 +82,7 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, triple):
         print 'donor stellar type after: ', donor.stellar_type
 
         bs.semi_major_axis = a_new
-        bs.eccentricity = zero
+        bs.eccentricity = quantities.zero
 #        bs.argument_of_pericenter = 
 #        bs.inner_longitude_of_ascending_node =  
 
@@ -134,7 +134,7 @@ def common_envelope_energy_balance(bs, donor, accretor, triple):
         print 'donor stellar type after: ', donor.stellar_type
 
         bs.semi_major_axis = a_new
-        bs.eccentricity = zero
+        bs.eccentricity = quantities.zero
 #        bs.argument_of_pericenter = 
 #        bs.inner_longitude_of_ascending_node =  
 
@@ -192,7 +192,7 @@ def double_common_envelope_energy_balance(bs, donor, accretor, triple):
 
 
         bs.semi_major_axis = a_new
-        bs.eccentricity = zero
+        bs.eccentricity = quantities.zero
 #        bs.argument_of_pericenter = 
 #        bs.inner_longitude_of_ascending_node =  
 
@@ -347,7 +347,7 @@ def adjust_triple_after_ce_in_inner_binary(bs, ce_binary, tr):
     M_accretor_after_ce = bs.child1.mass #niet zo mooi
     
     adiabatic_expansion_due_to_mass_loss(bs.semi_major_axis, M_com_after_ce, M_com_before_ce, M_accretor_after_ce, M_accretor_before_ce)
-#    bs.eccentricity = zero
+#    bs.eccentricity = quantities.zero
 #    bs.argument_of_pericenter = 
 #    bs.inner_longitude_of_ascending_node =  
 #    bs.child1.spin_angular_frequency = 

@@ -191,9 +191,78 @@ Topic: change_mass
 
 
 **********************
-Note number: 16
+Note number: 17
+Author: Silvia
+Date: 22-07-2014
+Topic: accretion efficiency
+**********************
+accretion_efficiency_mass_transfer = 1.0-> 10 x kelvinhelmholts
+accretion_efficiency_wind_child1_to_child2 = 0.0 -> # bondi hoyle- later
+accretion_efficiency_wind_child2_to_child1 = 0.0 -> # bondi hoyle- later
+
+**********************
+Note number: 18
+Author: Silvia
+Date: 22-07-2014
+Topic: check_for_inner_RLOF and check_for_outer_RLOF
+**********************
+These checks don't work
+
+**********************
+Note number: 19
+Author: Silvia
+Date: 22-07-2014
+Topic: assumption stellar system  = triple in secular code
+**********************
+ - for running the code
+ - give_roche_radii
+
+
+**********************
+Note number: 
 Author: 
 Date: 
 Topic: 
 **********************
-
+**********************
+Note number: 
+Author: 
+Date: 
+Topic: 
+**********************
+**********************
+Note number: 
+Author: 
+Date: 
+Topic: 
+**********************
+**********************
+Note number: 
+Author: 
+Date: 
+Topic: 
+**********************
+**********************
+Note number: 
+Author: 
+Date: 
+Topic: 
+**********************
+**********************
+Note number: 
+Author: 
+Date: 
+Topic: 
+**********************
+**********************
+Note number: 
+Author: 
+Date: 
+Topic: 
+**********************
+**********************
+Note number: 
+Author: 
+Date: 
+Topic: 
+**********************

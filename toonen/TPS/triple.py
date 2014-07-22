@@ -1,6 +1,7 @@
 from amuse.community.seba.interface import SeBa
 from amuse.units import units, constants
 from amuse.datamodel import Particles
+from amuse.support.console import set_printing_strategy
 
 from binary import *
 from math import sqrt
@@ -263,7 +264,7 @@ class Triple:
                 
         time_step = self.time - self.previous_time
 
-        if self.time == zero:
+        if self.time == quantities.zero:
             #initialization
             self.particles[0].child1.child1.time_derivative_of_radius = 0.0 | units.RSun/units.yr
             self.particles[0].child1.child2.time_derivative_of_radius = 0.0 | units.RSun/units.yr
@@ -391,7 +392,7 @@ class Triple:
         return False
 
     def has_donor(self, stellar_system = None):
-        if stellar_system = None:
+        if stellar_system == None:
             stellar_system = self.particles[0]
             
         if stellar_system.is_container:
@@ -546,7 +547,7 @@ class Triple:
             return dt
         elif stellar_system.is_star:
             dt = np.inf |units.Myr
-            if stellar_system.wind_mass_loss_rate > zero:
+            if stellar_system.wind_mass_loss_rate > quantities.zero:
                dt = maximum_wind_mass_loss*stellar_system.mass / stellar_system.wind_mass_loss_rate*-1
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_wind_star = ", dt
@@ -554,9 +555,9 @@ class Triple:
         elif self.is_double_star(stellar_system):
             dt1 = np.inf |units.Myr
             dt2 = np.inf |units.Myr
-            if stellar_system.child1.wind_mass_loss_rate > zero:
+            if stellar_system.child1.wind_mass_loss_rate > quantities.zero:
                dt1 = maximum_wind_mass_loss*stellar_system.child1.mass / stellar_system.child1.wind_mass_loss_rate*-1
-            if stellar_system.child2.wind_mass_loss_rate > zero:
+            if stellar_system.child2.wind_mass_loss_rate > quantities.zero:
                 dt2 = maximum_wind_mass_loss*stellar_system.child2.mass / stellar_system.child2.wind_mass_loss_rate*-1
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_wind_double_star = ", dt1, dt2
@@ -894,6 +895,7 @@ def safety_check_time_step(triple):
         dr_1 = (triple.particles[0].child1.child1.radius - triple.particles[0].child1.child1.previous_radius)/triple.particles[0].child1.child1.radius
         dr_2 = (triple.particles[0].child1.child2.radius - triple.particles[0].child1.child2.previous_radius)/triple.particles[0].child1.child2.radius
         dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
+
 
         if REPORT_TRIPLE_EVOLUTION:    
             print 'change in radius over time:', 
