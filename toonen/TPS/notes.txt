@@ -128,3 +128,59 @@ Topic: Stability of mass transfer
 **********************
 For now mass transfer is unstable if the Darwin-Riemann instability occurs or when the mass ratio of donor/accretor > 1. 
 This last assume is extremely crude. 
+
+
+**********************
+Note number: 10
+Author: Silvia
+Date: 22-07-2014
+Topic: Order of running codes
+**********************
+
+When we take into account the effect of wind mass loss to the orbit, there is a numerical error between the theoretical orbital change and the change calculated by us. The error is smaller when we first run the stellar evolution code, calculate the wind mass loss rate, and then run the secular evolution code. In the reversed order, the secular evolution takes the wind mass loss rate of the previous timestep, so that the actually mass lost in a certain timestep might not correspond to the wind mass loss rate times the timestep. The difference due to the order is about a factor 10 on the error on the final orbit. In order to reduce the error, smaller timesteps need to be taken. That also means that reversing the se and sec code, makes the code faster. 
+This is a disadvantage, because it makes it more likely that we have to step back in time when roche lobe overflow occurs during a timestep. 
+
+
+
+
+**********************
+Note number: 10
+Author: Silvia
+Date: 22-07-2014
+Topic: When switching to SSE
+**********************
+We use some functions or parameters from SeBa, which are not accessible for SSE.
+- gyration radius
+- change mass
+- wind_mass_loss_rate
+
+Regarding timesteps, 
+Is it always true that the star goes to the end of the phase? E.g. in order not to skip the maximum radius on the giant branch. 
+
+
+**********************
+Note number: 11
+Author: Silvia
+Date: 22-07-2014
+Topic: time_derivative_of_radius
+**********************
+time_derivative_of_radius only includes the effect of the wind, it does not include the change in the radius due to mass transfer
+
+**********************
+Note number: 12
+Author: Silvia
+Date: 22-07-2014
+Topic: stability criterium in secular code
+**********************
+The stability criterium is wide. Some systems that are stable, might be lost now.
+
+
+**********************
+Note number: 13
+Author: Silvia
+Date: 22-07-2014
+Topic: gamma-CE + eccentricity
+**********************
+In the implimentation of the gamma-CE, there is a dependence on the eccentricity through the orbital angular momentum. Do we notice the effect?
+
+

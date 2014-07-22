@@ -108,12 +108,20 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Timesteps + order of running codes
 **********************
+
+
+Is this still necessary
+Implement the posibility to go back in time:
+- When after a certain timestep a star fills its Roche lobe due to stellar or secular evolution, we want to go back in time, to find accurately the time of Roche lobe filling, and model the mass transfer from that moment onwards. This probably puts a constraint on the order of running codes: first stellar evolution or first secular evolution?
+-->
+When we take into account the effect of wind mass loss to the orbit, there is a numerical error between the theoretical orbital change and the change calculated by us. The error is smaller when we first run the stellar evolution code, calculate the wind mass loss rate, and then run the secular evolution code. In the reversed order, the secular evolution takes the wind mass loss rate of the previous timestep, so that the actually mass lost in a certain timestep might not correspond to the wind mass loss rate times the timestep. The difference due to the order is about a factor 10 on the error on the final orbit. In order to reduce the error, smaller timesteps need to be taken. That also means that reversing the se and sec code, makes the code faster. 
+This is a disadvantage, because it makes it more likely that we have to step back in time when roche lobe overflow occurs during a timestep. 
+
+Done
 Implement an adjustable timestep which is dependent on:
 - stellar evolution (we do not want to miss a certain phase e.g. maximum radius at helium flash)
 - binary evolution (if stable mass transfer occurs, the timestep should go down)
 
-Implement the posibility to go back in time:
-- When after a certain timestep a star fills its Roche lobe due to stellar or secular evolution, we want to go back in time, to find accurately the time of Roche lobe filling, and model the mass transfer from that moment onwards. This probably puts a constraint on the order of running codes: first stellar evolution or first secular evolution?
 
 
 **********************
@@ -169,9 +177,23 @@ Options:
 - Snapshots of the triple at interesting times (e.g. initially, at t_end, at the beginning and end of mass transfer phases)
 - For now, different flags for when the code stops.
 
+
+**********************
+Note number: 16
+Author: Silvia
+Date: 22-07-2014
+Topic: change_mass
+**********************
+- op dit moment dt<0 zodat mass transfer is conservatief, maar ik weet niet of dit goed gaat in adjust_accretor_radius
+- change mass heeft zo zijn voor- en nadelen. 
+    - add_mass neemt accretion_limit in rekening -> mooi voor mass transfer, niet voor wind
+    - subtract mass neemt adjust_accretor_radius in rekening -> mooi voor thermische tijdschaal massaoverdracht, maar niet voor nucleair, aml of ce (na common envelope heb ik liever reduce mass dan subtract mass from donor, omdat daar geen adjust_accretor_radius in zit) -> maar na een ce, wordt de hele envelope gestript, en verandert de ster van stertype, en dan wordt geen adjust-accretor_radius toegepast
+
+
 **********************
 Note number: 16
 Author: 
 Date: 
 Topic: 
 **********************
+

@@ -14,7 +14,7 @@ import amuse.plot as aplt
 
 #constants
 time_step_factor = 0.01
-# lowering this to 0.05 makes the code twice as slow
+# lowering this to 0.005 makes the code twice as slow
 # 0.01 -> error in the semi-major axis of about 0.5%
 maximum_wind_mass_loss = 0.01 
 error_dm = 0.05
@@ -390,6 +390,27 @@ class Triple:
 
         return False
 
+    def has_donor(self, stellar_system = None):
+        if stellar_system = None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_container:
+            if self.has_donor(stellar_system.child2):
+                return True
+        elif stellar_system.is_star:
+            if stellar_system.is_donor:
+                return True
+        elif self.is_double_star(stellar_system):
+            if stellar_system.child1.is_donor or stellar_system.child2.is_donor:
+                return True
+        elif stellar_system.is_binary:
+            if self.has_donor(stellar_system.child1) or self.has_donor(stellar_system.child2):
+                return True                        
+        else:
+            print 'has_donor: structure stellar system unknown'        
+            exit(-1)
+            
+        return False            
 
     def kozai_timescale(self):
         if self.is_triple():
@@ -741,8 +762,7 @@ class Triple:
 #            self.determine_mass_transfer_timescale()
             self.determine_time_step()  
     
-    
-           #do stellar evolution 
+            #do stellar evolution 
             self.se_code.evolve_model(self.time)
             self.channel_from_se.copy()
             self.update_se_wind_parameters()
@@ -775,10 +795,7 @@ class Triple:
 
 
             # when the secular code finds that mass transfer starts, go back in time
-            if ((self.particles[0].child1.child1.is_donor or
-                self.particles[0].child1.child2.is_donor or
-                self.particles[0].child2.child1.is_donor) and
-                self.first_contact):
+            if self.has_donor() and self.first_contact:
                     if REPORT_TRIPLE_EVOLUTION:
                         print 'Times:', self.previous_time, self.time, self.secular_code.model_time
                     print 'RLOF not yet'
@@ -801,6 +818,12 @@ class Triple:
            
             self.resolve_interaction_in_stellar_system()        
             #should also do safety check time_step here
+            
+            
+            
+            
+            
+            
             
             
             # for plotting data
@@ -871,6 +894,7 @@ def safety_check_time_step(triple):
         dr_1 = (triple.particles[0].child1.child1.radius - triple.particles[0].child1.child1.previous_radius)/triple.particles[0].child1.child1.radius
         dr_2 = (triple.particles[0].child1.child2.radius - triple.particles[0].child1.child2.previous_radius)/triple.particles[0].child1.child2.radius
         dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
+
         if REPORT_TRIPLE_EVOLUTION:    
             print 'change in radius over time:', 
             print triple.particles[0].child1.child1.time_derivative_of_radius,
