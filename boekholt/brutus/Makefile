@@ -9,9 +9,9 @@ AMUSE_DIR?=../../../..
 # mpfr: http://www.mpfr.org/
 # mpfrc++: http://www.holoborodko.com/pavel/mpfr/
 # Change these paths in this Makefile and in src/makefile
-GMP_LIBS   = -L/data1/boekholt/Packages/mpreal_local/lib/ -lgmp  # libgmp.a
-MPFR_LIBS  = -L/data1/boekholt/Packages/mpreal_local/lib/ -lmpfr # libmpfr.a
-MPFR_FLAGS = -I/data1/boekholt/Packages/mpreal_local/include/    # mpreal.h
+GMP_LIBS   ?= -L/data1/boekholt/Packages/mpreal_local/lib/ -lgmp  # libgmp.a
+MPFR_LIBS  ?= -L/data1/boekholt/Packages/mpreal_local/lib/ -lmpfr # libmpfr.a
+MPFR_FLAGS ?= -I/data1/boekholt/Packages/mpreal_local/include/    # mpreal.h
 ###############################################################
 
 LIBS += $(MPFR_LIBS) $(GMP_LIBS)
@@ -22,7 +22,9 @@ MPICC ?= mpicc
 CC = $(MPICC)
 CXX = $(MPICXX)
 
-CXXFLAGS ?= -Wall -g -O2
+CXXFLAGS ?= -Wall -g -O2 
+
+CXXFLAGS += $(MPFR_FLAGS) -std=gnu++0x
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -37,7 +39,7 @@ clean:
 	make -C src clean
 
 $(CODELIB):
-	make -C src all
+	make -C src all CXXFLAGS="$(CXXFLAGS)"
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BrutusInterface -o $@

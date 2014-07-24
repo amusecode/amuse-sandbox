@@ -5,13 +5,13 @@ AMUSE_DIR?=../../../../..
 ###################################################################
 ## Change these paths
 
-HOME    = /data1/boekholt/
-MPRDIR  = $(HOME)Packages/mpreal_local/include/ # mpreal.h
-MPRLIB  = $(HOME)Packages/mpreal_local/lib/	# libmpfr.a, libgmp.a
+#HOME    = /data1/boekholt/
+#MPRDIR  = $(HOME)Packages/mpreal_local/include/ # mpreal.h
+#MPRLIB  = $(HOME)Packages/mpreal_local/lib/	# libmpfr.a, libgmp.a
 
 ###################################################################
 COMP = mpicxx
-CFLAGS = -O1
+CFLAGS = -O1 $(CXXFLAGS)
 CC  = $(COMP) $(CFLAGS) -c
 CO  = $(COMP) $(CFLAGS) -o
 ###################################################################
