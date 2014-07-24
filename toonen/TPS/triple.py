@@ -161,7 +161,7 @@ class Triple:
         self.secular_code.parameters.equations_of_motion_specification = 0
         self.secular_code.parameters.include_quadrupole_terms = True
         self.secular_code.parameters.include_octupole_terms = True        
-        self.secular_code.parameters.include_inner_tidal_terms = False
+        self.secular_code.parameters.include_inner_tidal_terms = False #need apsidal motion constant
         self.secular_code.parameters.include_outer_tidal_terms = False
         self.secular_code.parameters.include_inner_wind_terms = True
         self.secular_code.parameters.include_outer_wind_terms = True
@@ -331,6 +331,7 @@ class Triple:
         # the prescription of Hurley, Tout & Pols 2002 is implemented in SeBa, however note that the prescription in BSE is different
         # both parameters don't need to be updated manually anymore
         
+        
         if stellar_system == None:
             stellar_system = self.particles[0]
 
@@ -339,11 +340,14 @@ class Triple:
         elif stellar_system.is_star:
             star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
             stellar_system.gyration_radius = star_in_se_code.get_gyration_radius_sq()**0.5     
+            stellar_system.apsidal_motion_constant = 1. # WARNING
         elif self.is_double_star(stellar_system):
             star1_in_se_code = stellar_system.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
             star2_in_se_code = stellar_system.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
             stellar_system.child1.gyration_radius = star1_in_se_code.get_gyration_radius_sq()**0.5     
             stellar_system.child2.gyration_radius = star2_in_se_code.get_gyration_radius_sq()**0.5
+            stellar_system.child1.apsidal_motion_constant = 1. # WARNING
+            stellar_system.child2.apsidal_motion_constant = 1. # WARNING
         elif stellar_system.is_binary:
             self.update_stellar_parameters(stellar_system.child1)        
             self.update_stellar_parameters(stellar_system.child2)
@@ -794,15 +798,13 @@ class Triple:
             #What if only 1 star left...
             self.check_for_RLOF()
 
-
             # when the secular code finds that mass transfer starts, go back in time
             if self.has_donor() and self.first_contact:
                     if REPORT_TRIPLE_EVOLUTION:
                         print 'Times:', self.previous_time, self.time, self.secular_code.model_time
                     print 'RLOF not yet'
 #                    self.determine_mass_transfer_timescale()
-                    
-                    exit(-1);
+                    break
 
                         
 #                    self.time = self.secular_code.model_time 
@@ -1183,6 +1185,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
     inner_longitude_of_ascending_node = float(inner_longitude_of_ascending_node)
     outer_longitude_of_ascending_node = float(outer_longitude_of_ascending_node)
 
+
     triple = Triple(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
@@ -1193,7 +1196,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend)
 
     triple.evolve_triple()
-#    plot_function(triple)
+    plot_function(triple)
     triple.print_stellar_system(triple.particles[0])
     return triple
 #-----

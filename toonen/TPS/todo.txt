@@ -54,6 +54,8 @@ inner argument of pericenter,outer argument of pericenter,
 inner longitude of ascending node, outer longitude of ascending node,
 inner primary mass, inner secondary mass, outer mass,
 
+grid based or monte carlo based?
+implement in TPS.py
 
 **********************
 Note number: 5
