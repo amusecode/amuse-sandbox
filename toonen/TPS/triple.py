@@ -196,12 +196,6 @@ class Triple:
         elif stellar_system.is_star:
             stellar_system.previous_mass = stellar_system.mass      
             stellar_system.previous_radius = stellar_system.radius
-        elif self.is_double_star(stellar_system):
-            stellar_system.child1.previous_mass = stellar_system.child1.mass 
-            stellar_system.child2.previous_mass = stellar_system.child2.mass 
-            stellar_system.child1.previous_radius = stellar_system.child1.radius 
-            stellar_system.child2.previous_radius = stellar_system.child2.radius
-            stellar_system.previous_mass = stellar_system.mass 
         elif stellar_system.is_binary:
             self.update_previous_se_parameters(stellar_system.child1)        
             self.update_previous_se_parameters(stellar_system.child2)
@@ -235,11 +229,6 @@ class Triple:
         elif stellar_system.is_star:
             star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
             stellar_system.wind_mass_loss_rate = star_in_se_code.get_wind_mass_loss_rate() 
-        elif self.is_double_star(stellar_system):
-            star1_in_se_code = stellar_system.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-            star2_in_se_code = stellar_system.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-            stellar_system.child1.wind_mass_loss_rate = star1_in_se_code.get_wind_mass_loss_rate() 
-            stellar_system.child2.wind_mass_loss_rate = star2_in_se_code.get_wind_mass_loss_rate() 
         elif stellar_system.is_binary:
             self.update_wind_mass_loss_rate(stellar_system.child1)        
             self.update_wind_mass_loss_rate(stellar_system.child2)
@@ -274,9 +263,6 @@ class Triple:
                 self.update_time_derivative_of_radius(stellar_system.child2)
             elif stellar_system.is_star:
                 stellar_system.time_derivative_of_radius = (stellar_system.radius - stellar_system.previous_radius)/time_step
-            elif self.is_double_star(stellar_system):
-                stellar_system.child1.time_derivative_of_radius = (stellar_system.child1.radius - stellar_system.child1.previous_radius)/time_step
-                stellar_system.child2.time_derivative_of_radius = (stellar_system.child1.radius - stellar_system.child2.previous_radius)/time_step
             elif stellar_system.is_binary:
                 self.update_time_derivative_of_radius(stellar_system.child1)        
                 self.update_time_derivative_of_radius(stellar_system.child2)
@@ -341,13 +327,6 @@ class Triple:
             star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
             stellar_system.gyration_radius = star_in_se_code.get_gyration_radius_sq()**0.5     
             stellar_system.apsidal_motion_constant = 1. # WARNING
-        elif self.is_double_star(stellar_system):
-            star1_in_se_code = stellar_system.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-            star2_in_se_code = stellar_system.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-            stellar_system.child1.gyration_radius = star1_in_se_code.get_gyration_radius_sq()**0.5     
-            stellar_system.child2.gyration_radius = star2_in_se_code.get_gyration_radius_sq()**0.5
-            stellar_system.child1.apsidal_motion_constant = 1. # WARNING
-            stellar_system.child2.apsidal_motion_constant = 1. # WARNING
         elif stellar_system.is_binary:
             self.update_stellar_parameters(stellar_system.child1)        
             self.update_stellar_parameters(stellar_system.child2)
@@ -404,9 +383,6 @@ class Triple:
                 return True
         elif stellar_system.is_star:
             if stellar_system.is_donor:
-                return True
-        elif self.is_double_star(stellar_system):
-            if stellar_system.child1.is_donor or stellar_system.child2.is_donor:
                 return True
         elif stellar_system.is_binary:
             if self.has_donor(stellar_system.child1) or self.has_donor(stellar_system.child2):
@@ -519,11 +495,6 @@ class Triple:
             print stellar_system.mutual_inclination
             print '\t'
             self.print_stellar_system(stellar_system.child2)
-        elif self.is_double_star(stellar_system):
-            print 'binary star (double star): '
-            self.print_binary(stellar_system)
-            self.print_star(stellar_system.child1)
-            self.print_star(stellar_system.child2)
         elif stellar_system.is_binary:
             print 'binary star: '
             self.print_binary(stellar_system)
@@ -556,16 +527,6 @@ class Triple:
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_wind_star = ", dt
             return dt 
-        elif self.is_double_star(stellar_system):
-            dt1 = np.inf |units.Myr
-            dt2 = np.inf |units.Myr
-            if stellar_system.child1.wind_mass_loss_rate > quantities.zero:
-               dt1 = maximum_wind_mass_loss*stellar_system.child1.mass / stellar_system.child1.wind_mass_loss_rate*-1
-            if stellar_system.child2.wind_mass_loss_rate > quantities.zero:
-                dt2 = maximum_wind_mass_loss*stellar_system.child2.mass / stellar_system.child2.wind_mass_loss_rate*-1
-            if REPORT_TRIPLE_EVOLUTION:
-                print "Dt_wind_double_star = ", dt1, dt2
-            return min(dt1, dt2)
         elif stellar_system.is_binary:
             dt1 = self.determine_time_step_wind(stellar_system.child1)        
             dt2 = self.determine_time_step_wind(stellar_system.child2)
@@ -595,21 +556,11 @@ class Triple:
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_mt_star = ", dt
             return dt 
-        elif self.is_double_star(stellar_system):
-            dt = np.inf |units.Myr
-            if stellar_system.child1.is_donor and stelar_system.child2.is_donor:
+        elif stellar_system.is_binary:
+            if stellar_system.child1.is_donor and stellar_system.child2.is_donor:
                 print 'determine_time_step_mt: contact system'        
                 exit(-1)
-            elif stellar_system.child1.is_donor:
-                dt = abs(time_step_factor*stellar_system.child1.mass/stellar_system.mass_transfer_rate)
-                print 'mt1 >0?:', stellar_system.mass_transfer_rat
-            elif stellar_system.child2.is_donor:
-                dt = abs(time_step_factor*stellar_system.child2.mass/stellar_system.mass_transfer_rate)
-                print 'mt2 >0?:', stellar_system.mass_transfer_rate
-            if REPORT_TRIPLE_EVOLUTION:
-                print "Dt_mt_double_star = ", dt
-            return dt
-        elif stellar_system.is_binary:
+
             dt1 = self.determine_time_step_mt(stellar_system.child1)        
             dt2 = self.determine_time_step_mt(stellar_system.child2)
             if REPORT_TRIPLE_EVOLUTION:
