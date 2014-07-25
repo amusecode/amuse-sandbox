@@ -15,6 +15,7 @@ import amuse.plot as aplt
 
 #constants
 time_step_factor = 0.01
+
 # lowering this to 0.005 makes the code twice as slow
 # 0.01 -> error in the semi-major axis of about 0.5%
 maximum_wind_mass_loss_factor = 0.01 
@@ -409,6 +410,7 @@ class Triple:
             
     def check_for_RLOF(self):
         if self.is_triple():
+
             Rl1, Rl2, Rl3 = self.secular_code.give_roche_radii(self.particles[0])
             
             if self.particles[0].child1.child1.radius >= Rl1:
@@ -523,7 +525,7 @@ class Triple:
             return dt
         elif stellar_system.is_star:
             dt = np.inf |units.Myr
-            if stellar_system.wind_mass_loss_rate > quantities.zero:
+            if stellar_system.wind_mass_loss_rate * -1. > quantities.zero:
                dt = maximum_wind_mass_loss_factor*stellar_system.mass / stellar_system.wind_mass_loss_rate*-1
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_wind_star = ", dt
@@ -758,8 +760,7 @@ class Triple:
             self.update_se_wind_parameters()
             self.update_se_parameters()        
             safety_check_time_step(self)
-    
-    
+        
             # do secular evolution
             self.channel_to_secular.copy()   
             if self.is_triple() == True:
@@ -779,7 +780,6 @@ class Triple:
                 exit(0)
             self.channel_from_secular.copy()     
     
-
             #What if only 1 star left...
             self.check_for_RLOF()
 
@@ -879,27 +879,28 @@ def safety_check_time_step(triple):
             exit(-1)
 
 
-        dr_1 = (triple.particles[0].child1.child1.radius - triple.particles[0].child1.child1.previous_radius)/triple.particles[0].child1.child1.radius
-        dr_2 = (triple.particles[0].child1.child2.radius - triple.particles[0].child1.child2.previous_radius)/triple.particles[0].child1.child2.radius
-        dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
-
-
-        if REPORT_TRIPLE_EVOLUTION:    
-            print 'change in radius over time:', 
-            print triple.particles[0].child1.child1.time_derivative_of_radius,
-            print triple.particles[0].child1.child2.time_derivative_of_radius,
-            print triple.particles[0].child2.child1.time_derivative_of_radius
-            print 'relative change in radius:',
-            print dr_1, dr_2, dr_3
-        if (dr_1 > error_dr) or (dr_2 > error_dr) or (dr_3 > error_dr):
-            print 'Change in radius in a single time_step larger then', error_dr
-            print dr_1, dr_2, dr_3
-            print triple.particles[0].child1.child1.stellar_type
-            print triple.particles[0].child1.child2.stellar_type
-            print triple.particles[0].child2.child1.stellar_type
-#            print 'WARNING'
-            exit(-1)
-        
+        if triple.secular_code.parameters.include_inner_tidal_terms or triple.secular_code.parameters.include_outer_tidal_terms:
+            dr_1 = (triple.particles[0].child1.child1.radius - triple.particles[0].child1.child1.previous_radius)/triple.particles[0].child1.child1.radius
+            dr_2 = (triple.particles[0].child1.child2.radius - triple.particles[0].child1.child2.previous_radius)/triple.particles[0].child1.child2.radius
+            dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
+    
+    
+            if REPORT_TRIPLE_EVOLUTION:    
+                print 'change in radius over time:', 
+                print triple.particles[0].child1.child1.time_derivative_of_radius,
+                print triple.particles[0].child1.child2.time_derivative_of_radius,
+                print triple.particles[0].child2.child1.time_derivative_of_radius
+                print 'relative change in radius:',
+                print dr_1, dr_2, dr_3
+            if (dr_1 > error_dr) or (dr_2 > error_dr) or (dr_3 > error_dr):
+                print 'Change in radius in a single time_step larger then', error_dr
+                print dr_1, dr_2, dr_3
+                print triple.particles[0].child1.child1.stellar_type
+                print triple.particles[0].child1.child2.stellar_type
+                print triple.particles[0].child2.child1.stellar_type
+    #            print 'WARNING'
+                exit(-1)
+            
 
     
 
