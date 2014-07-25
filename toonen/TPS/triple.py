@@ -17,9 +17,10 @@ import amuse.plot as aplt
 time_step_factor = 0.01
 # lowering this to 0.005 makes the code twice as slow
 # 0.01 -> error in the semi-major axis of about 0.5%
-maximum_wind_mass_loss = 0.01 
+maximum_wind_mass_loss_factor = 0.01 
 error_dm = 0.05
-error_dr = 0.75
+maximum_radius_change_factor = 0.05 
+error_dr = 0.2
 minimum_time_step = 1.e-9 |units.Myr
 
 REPORT_TRIPLE_EVOLUTION = False
@@ -523,7 +524,7 @@ class Triple:
         elif stellar_system.is_star:
             dt = np.inf |units.Myr
             if stellar_system.wind_mass_loss_rate > quantities.zero:
-               dt = maximum_wind_mass_loss*stellar_system.mass / stellar_system.wind_mass_loss_rate*-1
+               dt = maximum_wind_mass_loss_factor*stellar_system.mass / stellar_system.wind_mass_loss_rate*-1
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_wind_star = ", dt
             return dt 
@@ -537,6 +538,38 @@ class Triple:
             print 'determine_time_step_wind: structure stellar system unknown'        
             exit(-1)
     
+    def determine_time_step_radius_change(self, stellar_system = None):
+    #note: returned value can be inf when the change in radius <= 0
+        #radius is only necessary for tides
+        if not self.secular_code.parameters.include_inner_tidal_terms and not self.secular_code.parameters.include_outer_tidal_terms:
+            return np.inf |units.Myr
+    
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_container:
+            dt = self.determine_time_step_radius_change(stellar_system.child2)
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_radius_change_triple = ", dt
+            return dt
+        elif stellar_system.is_star:
+            dt = np.inf |units.Myr
+            if stellar_system.time_derivative_of_radius > quantities.zero:
+               dt = maximum_radius_change_factor*stellar_system.radius / stellar_system.time_derivative_of_radius
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_radius_change_star = ", dt
+            return dt 
+        elif stellar_system.is_binary:
+            dt1 = self.determine_time_step_radius_change(stellar_system.child1)        
+            dt2 = self.determine_time_step_radius_change(stellar_system.child2)
+            if REPORT_TRIPLE_EVOLUTION:
+                print "Dt_radius_change_binary = ", dt1, dt2
+            return min(dt1, dt2) 
+        else:
+            print 'determine_time_step_radius_change: structure stellar system unknown'        
+            exit(-1)
+    
+ 
  
     def determine_time_step_mt(self, stellar_system = None):
     #note: returned value can be inf when the mass_transfer_rate = 0 
@@ -598,14 +631,15 @@ class Triple:
         # small time_step during heavy wind mass losses
         time_step = min(time_step, self.determine_time_step_wind())
 
-#        if -1*self.particles[0].child1.child1.wind_mass_loss_rate * time_step / self.particles[0].child1.child1.mass > maximum_wind_mass_loss:
-#            time_step = min(time_step, maximum_wind_mass_loss*self.particles[0].child1.child1.mass / self.particles[0].child1.child1.wind_mass_loss_rate*-1)
-#        if -1*self.particles[0].child1.child2.wind_mass_loss_rate * time_step / self.particles[0].child1.child2.mass > maximum_wind_mass_loss:
-#            time_step = min(time_step, maximum_wind_mass_loss*self.particles[0].child1.child2.mass / self.particles[0].child1.child2.wind_mass_loss_rate*-1)
-#        if -1*self.particles[0].child2.child1.wind_mass_loss_rate * time_step / self.particles[0].child2.child1.mass > maximum_wind_mass_loss:
-#            time_step = min(time_step, maximum_wind_mass_loss*self.particles[0].child2.child1.mass / self.particles[0].child2.child1.wind_mass_loss_rate*-1)
+#        if -1*self.particles[0].child1.child1.wind_mass_loss_rate * time_step / self.particles[0].child1.child1.mass > maximum_wind_mass_loss_factor:
+#            time_step = min(time_step, maximum_wind_mass_loss_factor*self.particles[0].child1.child1.mass / self.particles[0].child1.child1.wind_mass_loss_rate*-1)
+#        if -1*self.particles[0].child1.child2.wind_mass_loss_rate * time_step / self.particles[0].child1.child2.mass > maximum_wind_mass_loss_factor:
+#            time_step = min(time_step, maximum_wind_mass_loss_factor*self.particles[0].child1.child2.mass / self.particles[0].child1.child2.wind_mass_loss_rate*-1)
+#        if -1*self.particles[0].child2.child1.wind_mass_loss_rate * time_step / self.particles[0].child2.child1.mass > maximum_wind_mass_loss_factor:
+#            time_step = min(time_step, maximum_wind_mass_loss_factor*self.particles[0].child2.child1.mass / self.particles[0].child2.child1.wind_mass_loss_rate*-1)
                          
-            
+        # small time_step during phases of fast growth (note: not yet during fast shrinkage)
+        time_step = min(time_step, self.determine_time_step_radius_change())           
             
         #during stable mass transfer     
         time_step = min(time_step, self.determine_time_step_mt())
@@ -848,7 +882,6 @@ def safety_check_time_step(triple):
         dr_1 = (triple.particles[0].child1.child1.radius - triple.particles[0].child1.child1.previous_radius)/triple.particles[0].child1.child1.radius
         dr_2 = (triple.particles[0].child1.child2.radius - triple.particles[0].child1.child2.previous_radius)/triple.particles[0].child1.child2.radius
         dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
-
 
 
         if REPORT_TRIPLE_EVOLUTION:    
@@ -1147,7 +1180,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend)
 
     triple.evolve_triple()
-    plot_function(triple)
+#    plot_function(triple)
     triple.print_stellar_system(triple.particles[0])
     return triple
 #-----
