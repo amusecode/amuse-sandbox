@@ -13,9 +13,11 @@ from amuse.units import quantities
 import matplotlib.pyplot as plt
 import amuse.plot as aplt
 
+
+REPORT_TRIPLE_EVOLUTION = False
+
 #constants
 time_step_factor = 0.01
-
 # lowering this to 0.005 makes the code twice as slow
 # 0.01 -> error in the semi-major axis of about 0.5%
 maximum_wind_mass_loss_factor = 0.01 
@@ -24,7 +26,6 @@ maximum_radius_change_factor = 0.05
 error_dr = 0.2
 minimum_time_step = 1.e-9 |units.Myr
 
-REPORT_TRIPLE_EVOLUTION = False
 
 class Triple:
     #-------
@@ -177,7 +178,7 @@ class Triple:
 
         self.secular_code.parameters.check_for_dynamical_stability = True
         self.secular_code.parameters.check_for_inner_collision = True
-        self.secular_code.parameters.check_for_outer_collision = False
+        self.secular_code.parameters.check_for_outer_collision = True
         self.secular_code.parameters.check_for_inner_RLOF = False ### work in progress
         self.secular_code.parameters.check_for_outer_RLOF = False ### work in progress
 
@@ -208,9 +209,12 @@ class Triple:
     #-------
 
     #-------
-    def update_se_wind_parameters(self):
-        self.update_wind_mass_loss_rate()
-        self.update_time_derivative_of_radius()
+    def update_se_wind_parameters(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        self.update_wind_mass_loss_rate(stellar_system)
+        self.update_time_derivative_of_radius(stellar_system)
                     
     def update_wind_mass_loss_rate(self, stellar_system = None):
         #note: wind mass loss rate < 0
@@ -257,11 +261,15 @@ class Triple:
     #-------
 
     #-------
-    def update_se_parameters(self):
-        self.update_binary_mass()
-        self.update_stellar_parameters()
+    def update_se_parameters(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        self.update_binary_mass(stellar_system)
+        self.update_stellar_parameters(stellar_system)
         
     def update_binary_mass(self, stellar_system = None):
+        print 'update binary mass better as function'
         if stellar_system == None:
             stellar_system = self.particles[0]
 
@@ -349,6 +357,26 @@ class Triple:
             
         return False            
 
+    def is_system_stable(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_container:
+            if self.is_system_stable(stellar_system.child2):
+                return True
+        elif stellar_system.is_star:
+            return True
+        elif self.is_double_star(stellar_system):
+            return stellar_system.is_stable
+        elif stellar_system.is_binary:
+            if stellar_system.is_stable and self.is_system_stable(stellar_system.child1) and self.is_system_stable(stellar_system.child2):
+                return True                        
+        else:
+            print 'is_system_stable: structure stellar system unknown'        
+            exit(-1)
+            
+        return False                    
+
     def kozai_timescale(self):
         if self.is_triple():
             P_in = orbital_period(self.particles[0].child2.child2) #period inner binary 
@@ -395,7 +423,7 @@ class Triple:
             else:                                                         
                self.particles[0].child1.child2.is_donor = False
         else:
-            print 'print_stellar_sytem: structure stellar system unknown'        
+            print 'check_for_RLOF: structure stellar system unknown'        
             exit(-1)           
     #-------
 
@@ -445,7 +473,10 @@ class Triple:
             exit(-1)
     
     
-    def print_stellar_system(self, stellar_system):
+    def print_stellar_system(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+
         if stellar_system.is_container:
             print '\t'
             print 'stellar system: '
@@ -527,13 +558,13 @@ class Triple:
     
  
  
-    def determine_time_step_mt(self, stellar_system = None):
+    def determine_time_step_stable_mt(self, stellar_system = None):
     #note: returned value can be inf when the mass_transfer_rate = 0 
         if stellar_system == None:
             stellar_system = self.particles[0]
             
         if stellar_system.is_container:
-            dt = self.determine_time_step_mt(stellar_system.child2)
+            dt = self.determine_time_step_stable_mt(stellar_system.child2)
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_mt_triple = ", dt
             return dt
@@ -547,31 +578,28 @@ class Triple:
             return dt 
         elif stellar_system.is_binary:
             if stellar_system.child1.is_donor and stellar_system.child2.is_donor:
-                print 'determine_time_step_mt: contact system'        
+                print 'determine_time_step_stable_mt: contact system'        
                 exit(-1)
 
-            dt1 = self.determine_time_step_mt(stellar_system.child1)        
-            dt2 = self.determine_time_step_mt(stellar_system.child2)
+            dt1 = self.determine_time_step_stable_mt(stellar_system.child1)        
+            dt2 = self.determine_time_step_stable_mt(stellar_system.child2)
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_mt_binary = ", dt1, dt2
             return min(dt1, dt2) 
         else:
-            print 'determine_time_step_mt: structure stellar system unknown'        
+            print 'determine_time_step_stable_mt: structure stellar system unknown'        
             exit(-1)
             
     
     def determine_time_step(self):         
         if REPORT_TRIPLE_EVOLUTION:
             print "Dt = ", self.se_code.particles.time_step, self.tend/100.0
-    
-        #during unstable mass transfer or other instantaneous interactions
-        if not self.particles[0].child2.is_stable:
+ 
+#        during unstable mass transfer or other instantaneous interactions
+        if self.first_contact == False and not self.is_system_stable():
             #no step in time
-            return
-        if not self.particles[0].child1.is_stable:
-            # no step in time
-            return
-            
+            return            
+           
         #maximum time_step            
         time_step = self.tend - self.time
 
@@ -585,12 +613,11 @@ class Triple:
         time_step = min(time_step, self.determine_time_step_radius_change())           
             
         #during stable mass transfer     
-        time_step = min(time_step, self.determine_time_step_mt())
+        time_step = min(time_step, self.determine_time_step_stable_mt())
 
         ### for testing/plotting purposes only ###
 #        time_step = min(time_step, self.tend/100.0)
     
-            
             
         if time_step < minimum_time_step:
             print 'error small time_step'
@@ -602,52 +629,107 @@ class Triple:
     #-------
     #evolution
     def resolve_interaction_in_stellar_system(self):
-    
+    # the most inner binary should be calculated first, and then move outwards
+
         if REPORT_TRIPLE_EVOLUTION:
-            print '\ninner binary'
-        if self.is_double_star(self.particles[0].child1):
-            resolve_binary_interaction(self.particles[0].child1, self)
-        elif self.particles[0].child1.is_star:
-    #        'e.g. if system merged'
+            print '\ninner binary - child1'
+        if self.particles[0].child1.is_star:
             print 'do nothing'
+        elif self.is_double_star(self.particles[0].child1):
+            resolve_binary_interaction(self.particles[0].child1, self)
         else:
             print 'resolve triple interaction: type of inner system unknown'
             exit(-1)                    
-    
-    
+        
         if REPORT_TRIPLE_EVOLUTION:
-            print '\nouter binary'
-        elif self.particles[0].child2.is_binary:
-            resolve_binary_interaction(self.particles[0].child2, self)
-        else:
-            print 'resolve triple interaction: type of outer system unknown'
-            exit(-1)  
-            
+            print '\nouter binary - child2'
+        if self.particles[0].is_binary:
+            #assumption that system has 3 stars or less -> only child1 and child2 exist
+            if self.particles[0].child2.is_binary:
+                resolve_binary_interaction(self.particles[0].child2, self)            
+            else:
+                print 'resolve triple interaction: type of outer system unknown'
+                exit(-1)                    
+                        
+
+    
+#        if REPORT_TRIPLE_EVOLUTION:
+#            print '\ninner binary'
+#        if self.is_double_star(self.particles[0].child1):
+#            resolve_binary_interaction(self.particles[0].child1, self)
+#        elif self.particles[0].child1.is_star:
+#    #        'e.g. if system merged'
+#            print 'do nothing'
+#        else:
+#            print 'resolve triple interaction: type of inner system unknown'
+#            exit(-1)                    
+#    
+#    
+#        if REPORT_TRIPLE_EVOLUTION:
+#            print '\nouter binary'
+#        elif self.particles[0].child2.is_binary:
+#            resolve_binary_interaction(self.particles[0].child2, self)
+#        else:
+#            print 'resolve triple interaction: type of outer system unknown'
+##            exit(-1)  
+#
+         
             
     def determine_mass_transfer_timescale(self):
     
-        if self.particles[0].child2.child1.is_donor:
-            if self.particles[0].child1.child1.is_donor or self.particles[0].child1.child2.is_donor:
+        if self.particles[0].is_binary and self.is_double_star(self.particles[0].child1) and self.particles[0].child2.is_binary:
+            #assumption child1 from self.particles[0].child2 is the star, and child2 is self.particles[0].child1
+            if self.particles[0].child2.child1.is_donor and (self.particles[0].child1.child1.is_donor or self.particles[0].child1.child2.is_donor):
                 print 'RLOF in inner and outer binary'
                 exit(0)
     
         if REPORT_TRIPLE_EVOLUTION:
-            print '\ninner binary'
-        if self.is_double_star(self.particles[0].child1):
-            mass_transfer_stability(self.particles[0].child1)
-        elif self.particles[0].child1.is_star:
+            print '\ninner binary - child1'
+        if self.particles[0].child1.is_star:
             print 'do nothing'
+        elif self.is_double_star(self.particles[0].child1):
+            print 'mt rate:', self.particles[0].child1.mass_transfer_rate
+            mass_transfer_stability(self.particles[0].child1)
+            print 'mt rate:', self.particles[0].child1.mass_transfer_rate
         else:
-            print 'determine_mass_transfer_timescale: type of inner system unknown'
+            print 'resolve triple interaction: type of inner system unknown'
             exit(-1)                    
-    
+        
         if REPORT_TRIPLE_EVOLUTION:
-            print '\nouter binary'
-        if self.particles[0].child2.is_binary:
-            mass_transfer_stability(self.particles[0].child2)
-        else:
-            print 'determine_mass_transfer_timescale: type of outer system unknown'
-            exit(-1)           
+            print '\nouter binary - child2'
+        if self.particles[0].is_binary:
+            #assumption that system has 3 stars or less -> only child1 and child2 exist
+            if self.particles[0].child2.is_binary:
+                print 'mt rate:', self.particles[0].child2.mass_transfer_rate
+                mass_transfer_stability(self.particles[0].child2)
+                print 'mt rate:', self.particles[0].child2.mass_transfer_rate
+            else:
+                print 'resolve triple interaction: type of outer system unknown'
+                exit(-1)                    
+    
+    
+#        if self.particles[0].child2.child1.is_donor:
+#            if self.particles[0].child1.child1.is_donor or self.particles[0].child1.child2.is_donor:
+#                print 'RLOF in inner and outer binary'
+#                exit(0)
+    
+#        if REPORT_TRIPLE_EVOLUTION:
+#            print '\ninner binary'
+#        if self.is_double_star(self.particles[0].child1):
+#            mass_transfer_stability(self.particles[0].child1)
+#        elif self.particles[0].child1.is_star:
+#            print 'do nothing'
+#        else:
+#            print 'determine_mass_transfer_timescale: type of inner system unknown'
+#            exit(-1)                    
+    
+#        if REPORT_TRIPLE_EVOLUTION:
+#            print '\nouter binary'
+#        if self.particles[0].child2.is_binary:
+#            mass_transfer_stability(self.particles[0].child2)
+#        else:
+#            print 'determine_mass_transfer_timescale: type of outer system unknown'
+#            exit(-1)           
 
 
     def evolve_triple(self):
@@ -684,8 +766,12 @@ class Triple:
         print 'kozai timescale:', self.kozai_timescale()      
         while self.time<self.tend:
             self.update_previous_se_parameters()
-#            self.determine_mass_transfer_timescale()
+            self.determine_mass_transfer_timescale()
             self.determine_time_step()  
+    
+            if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
+                print 'first timestep of RLOF'
+                self.print_stellar_system()
     
             #do stellar evolution 
             self.se_code.evolve_model(self.time)
@@ -693,6 +779,10 @@ class Triple:
             self.update_se_wind_parameters()
             self.update_se_parameters()        
             safety_check_time_step(self)
+            
+            if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
+                print 'after se'
+                self.print_stellar_system()
         
             # do secular evolution
             self.channel_to_secular.copy()   
@@ -713,38 +803,39 @@ class Triple:
                 exit(0)
             self.channel_from_secular.copy()     
     
-            #What if only 1 star left...
+           #What if only 1 star left...
             self.check_for_RLOF()
-
-            # when the secular code finds that mass transfer starts, go back in time
+            
+            if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
+                print 'after rlof check'
+                self.print_stellar_system()
+#                self.resolve_interaction_in_stellar_system()  
+#                self.print_stellar_system()
+#                print self.has_donor()
+#                print self.first_contact
+#                print 3/0
+                      
             if self.has_donor() and self.first_contact:
-                    if REPORT_TRIPLE_EVOLUTION:
-                        print 'Times:', self.previous_time, self.time, self.secular_code.model_time
-                    print 'RLOF not yet'
-#                    self.determine_mass_transfer_timescale()
-                    break
+                if REPORT_TRIPLE_EVOLUTION: 
+                    print 'RLOF'
+#                
+                # mass should not be transferred just yet
+                self.particles[0].child1.child1.is_donor = False
+                self.particles[0].child1.child2.is_donor = False
+                self.particles[0].child2.child1.is_donor = False               
+                self.resolve_interaction_in_stellar_system()     #detached evolution
+                self.first_contact = False
 
-                        
-#                    self.time = self.secular_code.model_time 
-#                    
-#                    # mass should not be transferred just yet -> check if this works ok
-#                    # do not overwrite this parameter in the secular code    
-#                    self.particles[0].child1.child1.is_donor = False
-#                    self.particles[0].child1.child2.is_donor = False
-#                    self.particles[0].child2.child1.is_donor = False
-#                    
-#                    self.first_contact = False
-#                    
-    
-           
-            self.resolve_interaction_in_stellar_system()        
-            #should also do safety check time_step here
-            
-            
-            
-            
-            
-            
+                #to reset the bools is_donor
+                #detached evolution can change the radius of the accretor, not the donor
+                self.check_for_RLOF()
+                
+                #if secular code stops at RLOF
+#                self.time = self.secular_code.model_time 
+            else:           
+                self.resolve_interaction_in_stellar_system()      
+                  
+            #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
             
             
             # for plotting data
@@ -1115,7 +1206,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
 
     triple.evolve_triple()
 #    plot_function(triple)
-    triple.print_stellar_system(triple.particles[0])
+    triple.print_stellar_system()
     return triple
 #-----
 
