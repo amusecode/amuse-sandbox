@@ -118,8 +118,6 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         
         donor.is_donor = False
         bs.is_stable = True
-        self.update_previous_se_parameters(bs) #previous_mass, previous_radius for safety check
-                                                     #possible problem if companion or tertiary accretes significantly from this
 
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope angular momentum balance' 
@@ -173,8 +171,6 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
 
         donor.is_donor = False
         bs.is_stable = True
-        self.update_previous_se_parameters(bs) #previous_mass, previous_radius for safety check
-                                                     #possible problem if companion or tertiary accretes significantly from this
 
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope energy balance' 
@@ -230,9 +226,6 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         accretor.spin_angular_frequency = corotating_frequency
         donor.is_donor = False
         bs.is_stable = True
-
-        self.update_previous_se_parameters(self, bs) #previous_mass, previous_radius for safety check
-                                                     #possible problem if companion or tertiary accretes significantly from this
 
         if REPORT_BINARY_EVOLUTION:
             print 'After double common envelope energy balance' 
@@ -337,10 +330,11 @@ def semi_detached(bs, donor, accretor, self):
             else:
                 print 'semi_detached: type of system unknown'
                 exit(-1)
-            
         print 'check on parent of parent in semi_detached not implemented yet'            
-
             
+    #possible problem if companion or tertiary accretes significantly from this
+    self.update_previous_se_parameters() #previous_mass, previous_radius for safety check
+
             
 def adjust_system_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
 # Assumption: Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
