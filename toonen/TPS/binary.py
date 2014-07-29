@@ -321,17 +321,36 @@ def semi_detached(bs, donor, accretor, self):
     else:        
         common_envelope_phase(bs, donor, accretor, self)
 
-        #depending on how the structure is when we implement mergers..
-        if bs.parent.is_binary:
-            if bs.parent.child1 == bs and bs.parent.child2.is_star:
-                adjust_system_after_ce_in_inner_binary(bs.parent, bs, bs.parent.child2, self)                
-            elif bs.parent.child2 == bs and bs.parent.child1.is_star:
-                adjust_system_after_ce_in_inner_binary(bs.parent, bs, bs.parent.child1, self)                            
-            else:
-                print 'semi_detached: type of system unknown'
-                exit(-1)
-        print 'check on parent of parent in semi_detached not implemented yet'            
-            
+        system = bs
+        while True:
+            try:    
+                system = system.parent
+                if system.child1.is_binary and system.child2.is_star:
+                    adjust_system_after_ce_in_inner_binary(system, system.child1, system.child2, self)                
+                elif system.child2.is_binary and system.child1.is_star:
+                    adjust_system_after_ce_in_inner_binary(system, system.child2, system.child1, self)                            
+                else:
+                    print 'semi_detached: type of system unknown'
+                    exit(-1)
+                                            
+            except AttributeError:
+                #when there is no parent
+                break
+
+#        assuming triples here
+#        try bs.parent and bs.parent.is_binary: # last requirement is probably redundant
+#            if bs.parent.child1 == bs and bs.parent.child2.is_star:
+#                adjust_system_after_ce_in_inner_binary(bs.parent, bs, bs.parent.child2, self)                
+#            elif bs.parent.child2 == bs and bs.parent.child1.is_star:
+#                adjust_system_after_ce_in_inner_binary(bs.parent, bs, bs.parent.child1, self)                            
+#            else:
+#                print 'semi_detached: type of system unknown'
+#                exit(-1)
+#        except AttributeError:
+#            when there is no parent
+#            pass
+#                            
+           
     #possible problem if companion or tertiary accretes significantly from this
     self.update_previous_se_parameters() #previous_mass, previous_radius for safety check
 
@@ -365,8 +384,7 @@ def adjust_system_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
 def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
 
     d_Md = Md_f - Md_i #negative mass loss rate
-    d_Ma = Ma_f - Ma_i #positive mass accretion rate
-    print "Stellar wind primary:", d_Md, d_Ma    
+    d_Ma = Ma_f - Ma_i #positive mass accretion rate  
 
     Mt_f = Md_f + Ma_f
     Mt_i = Md_i + Ma_i

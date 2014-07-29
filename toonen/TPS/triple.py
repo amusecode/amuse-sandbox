@@ -1230,7 +1230,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend)
 
     triple.evolve_triple()
-    plot_function(triple)
+#    plot_function(triple)
     triple.print_stellar_system()
     return triple
 #-----
