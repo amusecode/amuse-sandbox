@@ -27,9 +27,9 @@ def roche_radius_dimensionless(M, m):
     q23 =  q13**2
     return  0.49*q23/(0.6*q23 + np.log(1 + q13))
 
-def roche_radius(bin, primary):
+def roche_radius(bin, primary, self):
     if bin.is_binary and primary.is_star:
-        return bin.semimajor_axis * roche_radius_dimensionless(primary.mass, bin.mass-primary.mass)
+        return bin.semimajor_axis * roche_radius_dimensionless(primary.mass, self.get_mass(bin)-primary.mass)
 
     print 'Error: Roche radius can only be determined in a binary'
     exit(1)
@@ -118,14 +118,8 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         
         donor.is_donor = False
         bs.is_stable = True
- 
         self.update_previous_se_parameters(bs) #previous_mass, previous_radius for safety check
                                                      #possible problem if companion or tertiary accretes significantly from this
-        self.update_se_wind_parameters(bs) #wind_mass_loss_rate, time_derivative_of_radius for secular code
-                                                 #probably redundant           
-        self.update_se_parameters() #binary mass -> better as a function
-                                            #gyration_radius, apsidal motion constant for secular code, probably redundant
-
 
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope angular momentum balance' 
@@ -145,7 +139,7 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
     alpha = common_envelope_efficiency(donor, accretor) 
     lambda_donor = envelope_structure_parameter(donor)
 
-    Rl_donor = roche_radius(bs, donor)
+    Rl_donor = roche_radius(bs, donor, self)
     donor_radius = min(donor.radius, Rl_donor)
 
     orb_energy_new = donor.mass * donor.envelope_mass / (alpha * lambda_donor * donor_radius) + donor.mass * accretor.mass/2/bs.semimajor_axis
@@ -179,13 +173,8 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
 
         donor.is_donor = False
         bs.is_stable = True
-        
         self.update_previous_se_parameters(bs) #previous_mass, previous_radius for safety check
                                                      #possible problem if companion or tertiary accretes significantly from this
-        self.update_se_wind_parameters(bs) #wind_mass_loss_rate, time_derivative_of_radius for secular code
-                                                 #probably redundant           
-        self.update_se_parameters() #binary mass -> better as a function
-                                            #gyration_radius, apsidal motion constant for secular code, probably redundant
 
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope energy balance' 
@@ -205,7 +194,7 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
     lambda_donor = envelope_structure_parameter(donor) 
     lambda_accretor = envelope_structure_parameter(accretor)
 
-    Rl_donor = roche_radius(bs, donor)
+    Rl_donor = roche_radius(bs, donor, self)
     donor_radius = min(donor.radius, Rl_donor)
     accretor_radius = accretor.radius
     
@@ -239,16 +228,11 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         corotating_frequency = corotating_spin_angular_frequency_binary(a_new, donor.mass, accretor.mass)
         donor.spin_angular_frequency = corotating_frequency
         accretor.spin_angular_frequency = corotating_frequency
-
         donor.is_donor = False
         bs.is_stable = True
 
         self.update_previous_se_parameters(self, bs) #previous_mass, previous_radius for safety check
                                                      #possible problem if companion or tertiary accretes significantly from this
-        self.update_se_wind_parameters(self, bs) #wind_mass_loss_rate, time_derivative_of_radius for secular code
-                                                 #probably redundant           
-        self.update_se_parameters(self) #binary mass -> better as a function
-                                            #gyration_radius, apsidal motion constant for secular code, probably redundant
 
         if REPORT_BINARY_EVOLUTION:
             print 'After double common envelope energy balance' 
@@ -277,9 +261,9 @@ def common_envelope_phase(bs, donor, accretor, self):
         else:
             common_envelope_angular_momentum_balance(bs, donor, accretor, self)
     elif which_common_envelope == 2:
-        Js_d = stellar_angular_momentum(donor)
-        Js_a = stellar_angular_momentum(accretor)        
-        Jb = orbital_angular_momentum(bs)
+        Js_d = self.stellar_angular_momentum(donor)
+        Js_a = self.stellar_angular_momentum(accretor)        
+        Jb = self.orbital_angular_momentum(bs)
         Js = max(Js_d, Js_a)
         print "Darwin Riemann instability? donor/accretor:", Js_d, Js_a, Jb, Jb/3.        
         if donor.stellar_type in stellar_types_giants and accretor.stellar_type in stellar_types_giants:
@@ -332,33 +316,6 @@ def stable_mass_transfer(bs, donor, accretor, self):
 #    bs.accretion_efficiency_mass_transfer = accretion_efficiency
 
 
-
-def orbital_angular_momentum(bs):
-
-    M = bs.child1.mass
-    m = bs.child2.mass
-    a = bs.semimajor_axis
-    e = bs.eccentricity
-    J = M*m * np.sqrt(constants.G*a*(1-e**2)/(M+m))
-
-    if REPORT_BINARY_EVOLUTION:
-        print 'Jorb:', M, m, a, e, J
-
-    return J
-
-def stellar_angular_momentum(ss):
-
-    moment_of_inertia = ss.gyration_radius**2 * ss.mass * ss.radius**2
-    Jstar = moment_of_inertia * ss.spin_angular_frequency
-    return Jstar
-
-
-def orbital_period(bs):
-
-    Porb = 2*np.pi * np.sqrt(bs.semimajor_axis**3/constants.G / (bs.child1.mass + bs.child2.mass))
-    return Porb
-
-
 def semi_detached(bs, donor, accretor, self):
 #only for double stars (consisting of two stars)
 
@@ -392,17 +349,14 @@ def adjust_system_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
     if REPORT_FUNCTION_NAMES:
         print 'Adjust system after ce in inner_binary'
 
-
-    M_com_after_ce = ce_binary.mass
+    M_com_after_ce = self.get_mass(ce_binary)
     M_com_before_ce = ce_binary.previous_mass
-    print M_com_after_ce, M_com_before_ce
     
     # accretion_efficiency
     M_accretor_before_ce = tertiary_star.mass 
     M_accretor_after_ce = tertiary_star.mass 
     
     a_new = adiabatic_expansion_due_to_mass_loss(bs.semimajor_axis, M_com_after_ce, M_com_before_ce, M_accretor_after_ce, M_accretor_before_ce)
-    print bs.semimajor_axis, a_new
     bs.semimajor_axis = a_new
     bs.eccentricity = 0.
 #    bs.argument_of_pericenter = 
@@ -573,13 +527,13 @@ def resolve_binary_interaction(bs, self):
     
    if bs.is_binary and bs.child1.is_star:
         if REPORT_BINARY_EVOLUTION:
-            Rl1 = roche_radius(bs, bs.child1)
+            Rl1 = roche_radius(bs, bs.child1, self)
             print "Check for RLOF:", bs.child1.mass, bs.child1.previous_mass
             print "Check for RLOF:", Rl1, bs.child1.radius
                 
         if bs.child2.is_star:
             if REPORT_BINARY_EVOLUTION:
-                Rl2 = roche_radius(bs, bs.child2)
+                Rl2 = roche_radius(bs, bs.child2, self)
                 print "Check for RLOF:", bs.child2.mass, bs.child2.previous_mass
                 print "Check for RLOF:", Rl2, bs.child2.radius
 
@@ -594,7 +548,7 @@ def resolve_binary_interaction(bs, self):
                                         
         elif bs.child2.is_binary:
             if REPORT_BINARY_EVOLUTION:
-                print bs.mass, bs.child1.mass, bs.child2.mass
+                print self.get_mass(bs), bs.child1.mass, bs.child2.mass
     
 
             if bs.child1.is_donor:
@@ -622,21 +576,20 @@ def resolve_binary_interaction(bs, self):
 
         
 
-def mass_transfer_stability(binary):
+def mass_transfer_stability(binary, self):
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer stability'
 
     if binary.child1.is_star and binary.child2.is_star:
-        Js_1 = stellar_angular_momentum(binary.child1)
-        Js_2 = stellar_angular_momentum(binary.child2)        
-        Jb = orbital_angular_momentum(binary)
+        Js_1 = self.stellar_angular_momentum(binary.child1)
+        Js_2 = self.stellar_angular_momentum(binary.child2)        
+        Jb = self.orbital_angular_momentum(binary)
         
         if REPORT_BINARY_EVOLUTION:
             print "Darwin Riemann instability?:", Js_1, Js_2, Jb, Jb/3.
 
         Js = max(Js_1, Js_2)
         if Js >= Jb/3. :
-            print 'what if DR but no RLOF? solved by tidal interactions?'
             if REPORT_BINARY_EVOLUTION:
                 print "Darwin Riemann instability"
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr     
@@ -662,8 +615,8 @@ def mass_transfer_stability(binary):
             binary.is_stable = True
 
     elif binary.child1.is_star and binary.child2.is_binary:
-        Js = stellar_angular_momentum(binary.child1)
-        Jb = orbital_angular_momentum(binary)
+        Js = self.stellar_angular_momentum(binary.child1)
+        Jb = self.orbital_angular_momentum(binary)
         
         if REPORT_BINARY_EVOLUTION:
             print "Darwin Riemann instability?:", Js, Jb, Jb/3.

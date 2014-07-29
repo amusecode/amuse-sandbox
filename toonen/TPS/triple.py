@@ -54,7 +54,7 @@ class Triple:
         triples = Particles(1)
         triples[0].child1 = bins[0]
         triples[0].child2 = bins[1]
-        triples[0].mass = triples[0].child1.mass + triples[0].child2.mass
+#        triples[0].mass = triples[0].child1.mass + triples[0].child2.mass
         #when going to quadruples, mutual_inclination should be a characteristic of a bin 
         triples[0].mutual_inclination = mutual_inclination 
         triples[0].is_star = False
@@ -142,8 +142,8 @@ class Triple:
         bins[1].specific_AM_loss_mass_transfer = 2.5
 
         
-        for x in bins:
-            x.mass = x.child1.mass + x.child2.mass
+#        for x in bins:
+#            x.mass = x.child1.mass + x.child2.mass
 
         return bins
     #-------
@@ -195,14 +195,14 @@ class Triple:
 
         if stellar_system.is_container:
             self.update_previous_se_parameters(stellar_system.child2)
-            stellar_system.previous_mass = stellar_system.mass 
+            stellar_system.previous_mass = self.get_mass() 
         elif stellar_system.is_star:
-            stellar_system.previous_mass = stellar_system.mass      
+            stellar_system.previous_mass = self.get_mass(stellar_system)      
             stellar_system.previous_radius = stellar_system.radius
         elif stellar_system.is_binary:
             self.update_previous_se_parameters(stellar_system.child1)        
             self.update_previous_se_parameters(stellar_system.child2)
-            stellar_system.previous_mass = stellar_system.mass 
+            stellar_system.previous_mass = self.get_mass(stellar_system) 
         else:
             print 'update_previous_se_parameters: structure stellar system unknown'        
             exit(-1)
@@ -262,50 +262,26 @@ class Triple:
 
     #-------
     def update_se_parameters(self, stellar_system = None):
-        if stellar_system == None:
-            stellar_system = self.particles[0]
-            
-        self.update_binary_mass(stellar_system)
-        self.update_stellar_parameters(stellar_system)
-        
-    def update_binary_mass(self, stellar_system = None):
-        print 'update binary mass better as function'
-        if stellar_system == None:
-            stellar_system = self.particles[0]
-
-        if stellar_system.is_container:
-            self.update_binary_mass(stellar_system.child2)
-            stellar_system.mass = stellar_system.child1.mass + stellar_system.child2.mass
-        elif stellar_system.is_star:
-            return
-        elif stellar_system.is_binary:
-            self.update_binary_mass(stellar_system.child1)        
-            self.update_binary_mass(stellar_system.child2)
-            stellar_system.mass = stellar_system.child1.mass + stellar_system.child2.mass
-        else:
-            print 'update_binary_mass: structure stellar system unknown'        
-            exit(-1)
-
-    def update_stellar_parameters(self, stellar_system = None):
         # for the convective envelope mass:
         # the prescription of Hurley, Pols & Tout 2000 is implemented in SeBa, however note that the prescription in BSE is different
         # for the convective envelope radius:
         # the prescription of Hurley, Tout & Pols 2002 is implemented in SeBa, however note that the prescription in BSE is different
         # both parameters don't need to be updated manually anymore
-        
-        
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+                    
         if stellar_system == None:
             stellar_system = self.particles[0]
 
         if stellar_system.is_container:
-            self.update_stellar_parameters(stellar_system.child2)
+            self.update_se_parameters(stellar_system.child2)
         elif stellar_system.is_star:
             star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
             stellar_system.gyration_radius = star_in_se_code.get_gyration_radius_sq()**0.5     
             stellar_system.apsidal_motion_constant = 1. # WARNING
         elif stellar_system.is_binary:
-            self.update_stellar_parameters(stellar_system.child1)        
-            self.update_stellar_parameters(stellar_system.child2)
+            self.update_se_parameters(stellar_system.child1)        
+            self.update_se_parameters(stellar_system.child2)
         else:
             print 'update_previous_se_parameters: structure stellar system unknown'        
             exit(-1)
@@ -377,15 +353,64 @@ class Triple:
             
         return False                    
 
+    def get_mass(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+
+        if stellar_system.is_container:
+            M2 = self.get_mass(stellar_system.child2)
+            return M2
+        elif stellar_system.is_star:
+            return stellar_system.mass
+        elif stellar_system.is_binary:
+            M1 = self.get_mass(stellar_system.child1)        
+            M2 = self.get_mass(stellar_system.child2)
+            return M1 + M2 
+        else:
+            print 'get_mass: structure stellar system unknown'        
+            exit(-1)
+    #-------
+
+    #-------
+    # useful functions general
+            
+    def orbital_period(self, bs):
+        Porb = 2*np.pi * np.sqrt(bs.semimajor_axis**3/constants.G / self.get_mass(bs))
+        return Porb
+
+    def orbital_angular_momentum(self, bs):
+        M = self.get_mass(bs.child1)
+        m = self.get_mass(bs.child2)
+        a = bs.semimajor_axis
+        e = bs.eccentricity
+        J = M*m * np.sqrt(constants.G*a*(1-e**2)/(M+m))
+    
+        if REPORT_BINARY_EVOLUTION:
+            print 'Jorb:', M, m, a, e, J
+    
+        return J
+    
+    def stellar_angular_momentum(self, ss):
+        if ss.is_star:
+            moment_of_inertia = ss.gyration_radius**2 * ss.mass * ss.radius**2
+            Jstar = moment_of_inertia * ss.spin_angular_frequency
+            return Jstar            
+        else:
+            print 'stellar_angular_momentum: structure stellar system unknown'        
+            exit(-1)
+
     def kozai_timescale(self):
         if self.is_triple():
-            P_in = orbital_period(self.particles[0].child2.child2) #period inner binary 
-            P_out = orbital_period(self.particles[0].child2)#period outer binary 
+            P_in = self.orbital_period(self.particles[0].child1) #period inner binary 
+            P_out = self.orbital_period(self.particles[0].child2)#period outer binary 
             #Kozai 1962, Michaealy & Perets 2014        
 #            return P_out**2 / P_in * (self.particles[0].child2.child2.mass / self.particles[0].child2.child1.mass)
+#            return P_out**2 / P_in * (self.get_mass(self.particles[0].child2.child2) / self.get_mass(particles[0].child2.child1))
             #Kinoshita & Nakai 1999, Hamers et al 2014
             alpha_kozai = 1.
-            return alpha_kozai * P_out**2 / P_in * (self.particles[0].child2.mass / self.particles[0].child2.child1.mass) * (1-self.particles[0].child2.eccentricity**2)**1.5       
+#            return alpha_kozai * P_out**2 / P_in * (self.particles[0].child2.get_mass() / self.particles[0].child2.child1.get_mass()) * (1-self.particles[0].child2.eccentricity**2)**1.5       
+            return alpha_kozai * P_out**2 / P_in * (self.get_mass(self.particles[0].child2) / self.get_mass(self.particles[0].child2.child1)) * (1-self.particles[0].child2.eccentricity**2)**1.5       
+
         else:
             print 'Kozai timescale needs triple system'
             return np.nan   
@@ -455,7 +480,7 @@ class Triple:
     
     def print_binary(self, binary):
         if binary.is_binary:
-            print binary.mass, 
+            print self.get_mass(binary), 
             print binary.semimajor_axis, 
             print binary.eccentricity, 
             print binary.argument_of_pericenter, 
@@ -689,7 +714,7 @@ class Triple:
             print 'do nothing'
         elif self.is_double_star(self.particles[0].child1):
             print 'mt rate:', self.particles[0].child1.mass_transfer_rate
-            mass_transfer_stability(self.particles[0].child1)
+            mass_transfer_stability(self.particles[0].child1, self)
             print 'mt rate:', self.particles[0].child1.mass_transfer_rate
         else:
             print 'resolve triple interaction: type of inner system unknown'
@@ -701,7 +726,7 @@ class Triple:
             #assumption that system has 3 stars or less -> only child1 and child2 exist
             if self.particles[0].child2.is_binary:
                 print 'mt rate:', self.particles[0].child2.mass_transfer_rate
-                mass_transfer_stability(self.particles[0].child2)
+                mass_transfer_stability(self.particles[0].child2, self)
                 print 'mt rate:', self.particles[0].child2.mass_transfer_rate
             else:
                 print 'resolve triple interaction: type of outer system unknown'
@@ -1205,7 +1230,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend)
 
     triple.evolve_triple()
-#    plot_function(triple)
+    plot_function(triple)
     triple.print_stellar_system()
     return triple
 #-----
