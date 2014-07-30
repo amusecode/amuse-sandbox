@@ -184,6 +184,17 @@ class Triple:
 
         self.channel_from_secular = self.secular_code.triples.new_channel_to(triples)
         self.channel_to_secular = triples.new_channel_to(self.secular_code.triples)
+
+    def checks_after_secular_code(self):
+        if self.secular_code.triples[0].dynamical_instability == True:
+            print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
+            exit(0)
+        if self.secular_code.triples[0].inner_collision == True:
+            print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
+            exit(0)
+        if self.secular_code.triples[0].outer_collision == True:
+            print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
+            exit(0)        
     #-------
 
     #-------
@@ -795,7 +806,7 @@ class Triple:
             self.determine_time_step()  
     
             if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
-                print 'first timestep of RLOF'
+                print 'first timestep of RLOF', self.is_system_stable()
                 self.print_stellar_system()
     
             #do stellar evolution 
@@ -816,20 +827,11 @@ class Triple:
             else:# e.g. binaries
                 print 'Secular code disabled'
                 exit(-1)
-    
-            if self.secular_code.triples[0].dynamical_instability == True:
-                print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
-                exit(0)
-            if self.secular_code.triples[0].inner_collision == True:
-                print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
-                exit(0)
-            if self.secular_code.triples[0].outer_collision == True:
-                print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
-                exit(0)
+            self.checks_after_secular_code()
             self.channel_from_secular.copy()     
     
-           #What if only 1 star left...
-            self.check_for_RLOF()
+           
+            self.check_for_RLOF()   #What if only 1 star left...
             
             if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
                 print 'after rlof check'
@@ -843,6 +845,8 @@ class Triple:
             if self.has_donor() and self.first_contact:
                 if REPORT_TRIPLE_EVOLUTION: 
                     print 'RLOF'
+                    self.print_stellar_system()
+
 #                
                 # mass should not be transferred just yet
                 self.particles[0].child1.child1.is_donor = False
@@ -1230,7 +1234,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend)
 
     triple.evolve_triple()
-#    plot_function(triple)
+    plot_function(triple)
     triple.print_stellar_system()
     return triple
 #-----
