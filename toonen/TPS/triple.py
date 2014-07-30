@@ -17,7 +17,7 @@ import amuse.plot as aplt
 REPORT_TRIPLE_EVOLUTION = False
 
 #constants
-time_step_factor = 0.01
+time_step_factor_stable_mt = 0.01 #1% mass loss during mass transfer
 # lowering this to 0.005 makes the code twice as slow
 # 0.01 -> error in the semi-major axis of about 0.5%
 maximum_wind_mass_loss_factor = 0.01 
@@ -612,13 +612,13 @@ class Triple:
         elif stellar_system.is_star:
             dt = np.inf |units.Myr
             if stellar_system.is_donor:
-                dt = abs(time_step_factor*stellar_system.mass/stellar_system.mass_transfer_rate)
-                print 'mt >0?: ', stellar_system.mass_transfer_rate
+                dt = abs(time_step_factor_stable_mt*stellar_system.mass/stellar_system.parent.mass_transfer_rate)
+                print 'mt >0?: ', stellar_system.parent.mass_transfer_rate, dt
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_mt_star = ", dt
-            return dt 
+            return dt
         elif stellar_system.is_binary:
-            if stellar_system.child1.is_donor and stellar_system.child2.is_donor:
+            if self.is_double_star(stellar_system) and stellar_system.child1.is_donor and stellar_system.child2.is_donor:
                 print 'determine_time_step_stable_mt: contact system'        
                 exit(-1)
 
@@ -654,7 +654,8 @@ class Triple:
         time_step = min(time_step, self.determine_time_step_radius_change())           
             
         #during stable mass transfer     
-        time_step = min(time_step, self.determine_time_step_stable_mt())
+        if self.has_donor():
+            time_step = min(time_step, self.determine_time_step_stable_mt())
 
         ### for testing/plotting purposes only ###
 #        time_step = min(time_step, self.tend/100.0)
@@ -811,7 +812,7 @@ class Triple:
             self.determine_time_step()  
     
             if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
-                print 'first timestep of RLOF', self.is_system_stable()
+                print 'first time_step of RLOF', self.is_system_stable()
                 self.print_stellar_system()
     
             #do stellar evolution 
@@ -1313,3 +1314,5 @@ if __name__ == '__main__':
     triple = Triple(**options)
     triple.evolve_triple()
     plot_function(triple)
+
+

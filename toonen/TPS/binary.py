@@ -288,7 +288,7 @@ def stable_mass_transfer(bs, donor, accretor, self):
 
     #set mass transfer rate
     
-    dt = self.timestep
+    dt = self.time - self.previous_time
     dm = bs.mass_transfer_rate * dt
     print 'check sign of dm:', dm, 'presumably dm >0'
     donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
@@ -459,7 +459,7 @@ def detached(bs, self):
 #        child1_in_se_code = bs.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
 #        child2_in_se_code = bs.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
 #
-#        dt = self.timestep
+#        dt = self.time - self.previous_time
 #        dm_child1_to_child2 = -1 * child1.wind_mass_loss_rate * bs.accretion_efficiency_wind_child1_to_child2 * dt
 #        child2_in_se_code.change_mass(dm_child1_to_child2, -1*dt)
 #        dm_child12to_child1 = -1 * child2.wind_mass_loss_rate * bs.accretion_efficiency_wind_child2_to_child1 * dt
@@ -474,7 +474,7 @@ def detached(bs, self):
         bs.accretion_efficiency_wind_child2_to_child1 = 0.0
         
 #        child1_in_se_code = bs.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-#        dt = self.timestep
+#        dt = self.time - self.previous_time
         
          #effect of wind from bs.child2.child1 onto bs.child1
 #        mtr_w_in1_1 =  bs.child2.child1.wind_mass_loss_rate * (1-bs.child2.accretion_efficiency_wind_child1_to_child2)       
