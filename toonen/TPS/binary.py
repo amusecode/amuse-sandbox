@@ -355,7 +355,6 @@ def semi_detached(bs, donor, accretor, self):
            
     #possible problem if companion or tertiary accretes significantly from this
     self.update_previous_se_parameters() #previous_mass, previous_radius for safety check
-
             
 def adjust_system_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
 # Assumption: Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
@@ -661,7 +660,7 @@ def mass_transfer_stability(binary, self):
     elif binary.child1.is_star and binary.child2.is_binary:
         if REPORT_BINARY_EVOLUTION:
             print "Mass transfer stability: Binary "
-            
+    
         Js = self.stellar_angular_momentum(binary.child1)
         Jb = self.orbital_angular_momentum(binary)
         
@@ -674,13 +673,13 @@ def mass_transfer_stability(binary, self):
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr  
             binary.is_stable = False          
             
-        elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass*q_crit:
+        elif binary.child1.is_donor and binary.child1.mass > self.get_mass(binary.child2)*q_crit:
             if REPORT_BINARY_EVOLUTION:
                 print "Mass transfer stability: Mdonor1>3*Macc"
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = False
             
-        elif binary.child1.is_donor and binary.child1.stellar_type in stellar_types_giants_conv_env and binary.child1.mass > binary.child2.mass*q_crit_giants_conv_env:
+        elif binary.child1.is_donor and binary.child1.stellar_type in stellar_types_giants_conv_env and binary.child1.mass > self.get_mass(binary.child2)*q_crit_giants_conv_env:
             if REPORT_BINARY_EVOLUTION:
                 print "Mass transfer stability: Mdonorgiant1>Macc "
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr

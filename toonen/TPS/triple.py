@@ -428,9 +428,11 @@ class Triple:
             
     def check_for_RLOF(self):
         if self.is_triple():
-
             Rl1, Rl2, Rl3 = self.secular_code.give_roche_radii(self.particles[0])
-            
+            if REPORT_TRIPLE_EVOLUTION:
+                print 'Roche lobe radii:', Rl1, Rl2, Rl3
+                print 'Stellar radii:', self.particles[0].child1.child1.radius, self.particles[0].child1.child2.radius, self.particles[0].child2.child1.radius
+
             if self.particles[0].child1.child1.radius >= Rl1:
                 self.particles[0].child1.child1.is_donor = True
             else:                                                         
@@ -448,6 +450,9 @@ class Triple:
         elif self.is_double_star():
             Rl1 = roche_radius(self, self.child1)
             Rl2 = roche_radius(self, self.child2)
+            if REPORT_TRIPLE_EVOLUTION:
+                print 'Roche lobe radii:', Rl1, Rl2
+                print 'Stellar radii:', self.particles[0].child1.radius, self.particles[0].child2.radius
             
             if self.particles[0].child1.radius >= Rl1:
                 self.particles[0].child1.is_donor = True
