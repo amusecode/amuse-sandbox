@@ -5,6 +5,8 @@ REPORT_BINARY_EVOLUTION = False
 REPORT_FUNCTION_NAMES = False
 
 #constants
+numerical_error  = 1.e-8
+
 which_common_envelope = 2
 #0 alpha + dce
 #1 gamma + dce
@@ -283,14 +285,9 @@ def stable_mass_transfer(bs, donor, accretor, self):
 
     Md = donor.mass
     Ma = accretor.mass
-    print Md, Ma, 
-    print donor.previous_mass, accretor.previous_mass
-
-    #set mass transfer rate
     
     dt = self.time - self.previous_time
     dm = bs.mass_transfer_rate * dt
-    print 'check sign of dm:', dm, 'presumably dm >0'
     donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
     donor_in_se_code.change_mass(-1*dm, dt)
     
@@ -304,11 +301,14 @@ def stable_mass_transfer(bs, donor, accretor, self):
 
     Md_new = donor.mass
     Ma_new = accretor.mass
-    print Md_new, Ma_new, Md-Md_new, Ma-Ma_new
-    print 'check if this is indeed conservative'
     accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
-    print accretion_efficiency
-#    bs.accretion_efficiency_mass_transfer = accretion_efficiency
+    if abs(accretion_efficiency - 1.0) > numerical_error or abs(Md-Md_new - -1.*(Ma-Ma_new)) > numerical_error |units.MSun:
+        print 'stable_mass_transfer: non conservative mass transfer'
+        print Md, Ma, donor.previous_mass, accretor.previous_mass
+        print Md_new, Ma_new, Md-Md_new, Ma-Ma_new, accretion_efficiency
+        exit(-1)
+        
+    bs.accretion_efficiency_mass_transfer = accretion_efficiency
 
 
 def semi_detached(bs, donor, accretor, self):
@@ -319,6 +319,7 @@ def semi_detached(bs, donor, accretor, self):
 
     if bs.is_stable:
         stable_mass_transfer(bs, donor, accretor, self)
+        self.first_contact = False
         #adjusting triple is done in detached
     else:        
         common_envelope_phase(bs, donor, accretor, self)
@@ -513,14 +514,9 @@ def detached(bs, self):
         print bs.child1.is_binary, bs.child1.is_star
         print bs.child2.is_binary, bs.child2.is_star
         exit(-1)                    
-        
-        
+              
     #reset parameters after mass transfer
-    self.first_contact = True
-    self.particles[0].child1.mass_transfer_rate = 0.0 | units.MSun/units.yr
-    self.particles[0].child2.mass_transfer_rate = 0.0 | units.MSun/units.yr
-
-
+    bs.mass_transfer_rate = 0.0 | units.MSun/units.yr
 
 
 def triple_mass_transfer():

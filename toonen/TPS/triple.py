@@ -294,7 +294,7 @@ class Triple:
             self.update_se_parameters(stellar_system.child1)        
             self.update_se_parameters(stellar_system.child2)
         else:
-            print 'update_previous_se_parameters: structure stellar system unknown'        
+            print 'update_se_parameters: structure stellar system unknown'        
             exit(-1)
     #-------
 
@@ -485,7 +485,7 @@ class Triple:
             print star.CO_core_mass,
             print star.luminosity,
             print star.temperature,
-            print star.wind_mass_loss_rate
+            print star.wind_mass_loss_rate,
             print star.spin_angular_frequency,
             print star.is_donor
             print '\t'             
@@ -670,7 +670,7 @@ class Triple:
         
     #-------
     #evolution
-    def resolve_interaction_in_stellar_system(self):
+    def resolve_interaction(self):
     # the most inner binary should be calculated first, and then move outwards
 
         if REPORT_TRIPLE_EVOLUTION:
@@ -842,7 +842,7 @@ class Triple:
             if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
                 print 'after rlof check'
                 self.print_stellar_system()
-#                self.resolve_interaction_in_stellar_system()  
+#                self.resolve_interaction()  
 #                self.print_stellar_system()
 #                print self.has_donor()
 #                print self.first_contact
@@ -858,7 +858,7 @@ class Triple:
                 self.particles[0].child1.child1.is_donor = False
                 self.particles[0].child1.child2.is_donor = False
                 self.particles[0].child2.child1.is_donor = False               
-                self.resolve_interaction_in_stellar_system()     #detached evolution
+                self.resolve_interaction()     #detached evolution
                 self.first_contact = False
 
                 #to reset the bools is_donor
@@ -868,7 +868,8 @@ class Triple:
                 #if secular code stops at RLOF
 #                self.time = self.secular_code.model_time 
             else:           
-                self.resolve_interaction_in_stellar_system()      
+                self.first_contact = True
+                self.resolve_interaction()      
                   
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
             
