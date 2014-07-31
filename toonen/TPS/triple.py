@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import amuse.plot as aplt
 
 
-REPORT_TRIPLE_EVOLUTION = False
+REPORT_TRIPLE_EVOLUTION = False 
 
 #constants
 time_step_factor_stable_mt = 0.01 #1% mass loss during mass transfer
@@ -637,13 +637,13 @@ class Triple:
             print "Dt = ", self.se_code.particles.time_step, self.tend/100.0
  
 #        during unstable mass transfer or other instantaneous interactions
-        if self.first_contact == False and not self.is_system_stable():
+        if self.has_donor() and not self.is_system_stable():
             #no step in time
             return            
            
         #maximum time_step            
         time_step = self.tend - self.time
-
+        
         # time_step of stellar evolution
         time_step =  min(time_step, min(self.se_code.particles.time_step))    
                     
@@ -664,7 +664,7 @@ class Triple:
         if time_step < minimum_time_step:
             print 'error small time_step'
             exit(-1)    
-        time_step = max(time_step, minimum_time_step)                
+#        time_step = max(time_step, minimum_time_step)                
         self.time += time_step
     #-------
         
@@ -806,26 +806,23 @@ class Triple:
         m3_array.append(self.particles[0].child2.child1.mass)
 
         print 'kozai timescale:', self.kozai_timescale()      
+        self.determine_mass_transfer_timescale()
         while self.time<self.tend:
-            self.update_previous_se_parameters()
-            self.determine_mass_transfer_timescale()
             self.determine_time_step()  
-    
-            if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
-                print 'first time_step of RLOF', self.is_system_stable()
-                self.print_stellar_system()
+            print '\n\ntime:', self.time, self.has_donor()            
     
             #do stellar evolution 
+            self.update_previous_se_parameters()
             self.se_code.evolve_model(self.time)
             self.channel_from_se.copy()
             self.update_se_wind_parameters()
             self.update_se_parameters()        
             safety_check_time_step(self)
             
-            if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
-                print 'after se'
-                self.print_stellar_system()
-        
+            #do stellar interaction
+            self.determine_mass_transfer_timescale()
+            self.resolve_interaction()      
+            
             # do secular evolution
             self.channel_to_secular.copy()   
             if self.is_triple() == True:
@@ -838,41 +835,21 @@ class Triple:
     
            
             self.check_for_RLOF()   #What if only 1 star left...
-            
-            if REPORT_TRIPLE_EVOLUTION and self.has_donor() and not self.first_contact:
-                print 'after rlof check'
-                self.print_stellar_system()
-#                self.resolve_interaction()  
-#                self.print_stellar_system()
-#                print self.has_donor()
-#                print self.first_contact
-#                print 3/0
-                      
-            if self.has_donor() and self.first_contact:
-                if REPORT_TRIPLE_EVOLUTION: 
-                    print 'RLOF'
-                    self.print_stellar_system()
-
-#                
-                # mass should not be transferred just yet
-                self.particles[0].child1.child1.is_donor = False
-                self.particles[0].child1.child2.is_donor = False
-                self.particles[0].child2.child1.is_donor = False               
-                self.resolve_interaction()     #detached evolution
-                self.first_contact = False
-
-                #to reset the bools is_donor
-                #detached evolution can change the radius of the accretor, not the donor
-                self.check_for_RLOF()
-                
-                #if secular code stops at RLOF
+                     
+#            if self.has_donor():
+#                if REPORT_TRIPLE_EVOLUTION: 
+#                    print 'RLOF'
+#                    self.print_stellar_system()
+#                self.first_contact = False
+#               #if secular code stops at RLOF
 #                self.time = self.secular_code.model_time 
-            else:           
-                self.first_contact = True
-                self.resolve_interaction()      
-                  
+#            else:           
+#                self.first_contact = True
+                 
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
             
+
+
             
             # for plotting data
             times_array.append(self.time)
@@ -1241,7 +1218,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend)
 
     triple.evolve_triple()
-    plot_function(triple)
+#    plot_function(triple)
     triple.print_stellar_system()
     return triple
 #-----

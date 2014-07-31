@@ -3,6 +3,7 @@ import numpy as np
 
 REPORT_BINARY_EVOLUTION = False
 REPORT_FUNCTION_NAMES = False
+REPORT_MASS_TRANSFER_STABILITY = False
 
 #constants
 numerical_error  = 1.e-8
@@ -316,6 +317,8 @@ def semi_detached(bs, donor, accretor, self):
 
     if REPORT_FUNCTION_NAMES:
         print 'Semi-detached'
+        print bs.semimajor_axis, donor.mass, accretor.mass, donor.stellar_type, accretor.stellar_type
+        
 
     if bs.is_stable:
         stable_mass_transfer(bs, donor, accretor, self)
@@ -590,105 +593,101 @@ def mass_transfer_stability(binary, self):
         print 'Mass transfer stability'
 
     if binary.child1.is_star and binary.child2.is_star:
-        if REPORT_BINARY_EVOLUTION:
+        if REPORT_MASS_TRANSFER_STABILITY:
             print "Mass transfer stability: Double star "
+            print binary.semimajor_axis, binary.child1.mass, binary.child2.mass, binary.child1.stellar_type, binary.child2.stellar_type
    
         Js_1 = self.stellar_angular_momentum(binary.child1)
         Js_2 = self.stellar_angular_momentum(binary.child2)        
         Jb = self.orbital_angular_momentum(binary)
         
-        if REPORT_BINARY_EVOLUTION:
-            print "Darwin Riemann instability?:", Js_1, Js_2, Jb, Jb/3.
-
         Js = max(Js_1, Js_2)
         if Js >= Jb/3. :
-            if REPORT_BINARY_EVOLUTION:
-                print "Mass transfer stability: Darwin Riemann instability"
+            if REPORT_MASS_TRANSFER_STABILITY:
+                print "Mass transfer stability: Darwin Riemann instability", Js_1, Js_2, Jb, Jb/3.
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr     
             binary.is_stable = False
             
         elif binary.child1.is_donor and binary.child2.is_donor:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Contact"
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = False    
 
         elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass*q_crit:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonor1>3*Macc "
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = False
         elif binary.child2.is_donor and binary.child2.mass > binary.child1.mass*q_crit:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonor2>3*Macc "
             binary.mass_transfer_rate= 0.0 | units.MSun/units.yr
             binary.is_stable = False
             
         elif binary.child1.is_donor and binary.child1.stellar_type in stellar_types_giants_conv_env and binary.child1.mass > binary.child2.mass*q_crit_giants_conv_env: 
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonorgiant1>Macc "
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = False
         elif binary.child2.is_donor and binary.child2.stellar_type in stellar_types_giants_conv_env and binary.child2.mass > binary.child1.mass*q_crit_giants_conv_env:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonorgiant2>Macc "
             binary.mass_transfer_rate= 0.0 | units.MSun/units.yr
             binary.is_stable = False
             
         elif binary.child1.is_donor:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor1 stable "
             binary.mass_transfer_rate = binary.child1.mass / mass_transfer_timescale(binary)         
             binary.is_stable = True
         elif binary.child2.is_donor:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor2 stable"
             binary.mass_transfer_rate = binary.child2.mass / mass_transfer_timescale(binary)         
             binary.is_stable = True
             
         else:     
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Detached"
             #detached system
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = True
 
     elif binary.child1.is_star and binary.child2.is_binary:
-        if REPORT_BINARY_EVOLUTION:
+        if REPORT_MASS_TRANSFER_STABILITY:
             print "Mass transfer stability: Binary "
+            print binary.semimajor_axis, binary.child1.mass, self.get_mass(binary.child2), binary.child1.stellar_type
     
         Js = self.stellar_angular_momentum(binary.child1)
         Jb = self.orbital_angular_momentum(binary)
         
-        if REPORT_BINARY_EVOLUTION:
-            print "Darwin Riemann instability?:", Js, Jb, Jb/3.
-        
         if Js >= Jb/3. :
-            if REPORT_BINARY_EVOLUTION:
-                print "Mass transfer stability: Darwin Riemann instability"
+            if REPORT_MASS_TRANSFER_STABILITY:
+                print "Mass transfer stability: Darwin Riemann instability: ", Js, Jb, Jb/3.
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr  
             binary.is_stable = False          
             
         elif binary.child1.is_donor and binary.child1.mass > self.get_mass(binary.child2)*q_crit:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonor1>3*Macc"
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = False
             
         elif binary.child1.is_donor and binary.child1.stellar_type in stellar_types_giants_conv_env and binary.child1.mass > self.get_mass(binary.child2)*q_crit_giants_conv_env:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonorgiant1>Macc "
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = False
             
         elif binary.child1.is_donor:
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor1 stable "
             binary.mass_transfer_rate = binary.child1.mass / mass_transfer_timescale(binary)         
             binary.is_stable = True
             
         else:                     
-            if REPORT_BINARY_EVOLUTION:
+            if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Detached"
             #detached system
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
