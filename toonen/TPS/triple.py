@@ -810,11 +810,11 @@ class Triple:
         print 'kozai timescale:', self.kozai_timescale()      
         self.determine_mass_transfer_timescale()
         while self.time<self.tend:
+            self.update_previous_se_parameters()
             self.determine_time_step()  
             print '\n\ntime:', self.time, self.has_donor()            
     
             #do stellar evolution 
-            self.update_previous_se_parameters()
             self.se_code.evolve_model(self.time)
             self.channel_from_se.copy()
             self.update_se_wind_parameters()
