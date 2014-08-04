@@ -170,8 +170,8 @@ class Triple:
         self.secular_code.parameters.include_outer_tidal_terms = False
         self.secular_code.parameters.include_inner_wind_terms = True
         self.secular_code.parameters.include_outer_wind_terms = True
-        self.secular_code.parameters.include_inner_RLOF_terms = False
-        self.secular_code.parameters.include_outer_RLOF_terms = False
+        self.secular_code.parameters.include_inner_RLOF_terms = True
+        self.secular_code.parameters.include_outer_RLOF_terms = True
         self.secular_code.parameters.include_1PN_inner_terms = False
         self.secular_code.parameters.include_1PN_outer_terms = False
         self.secular_code.parameters.include_1PN_inner_outer_terms = False ### warning: probably broken
@@ -621,6 +621,11 @@ class Triple:
             return dt
         elif stellar_system.is_binary:
             if self.is_double_star(stellar_system) and stellar_system.child1.is_donor and stellar_system.child2.is_donor:
+                print stellar_system.child1.is_donor, stellar_system.child2.is_donor
+                print stellar_system.child1.mass, stellar_system.child2.mass
+                print stellar_system.child1.stellar_type, stellar_system.child2.stellar_type
+                print stellar_system.child1.radius, stellar_system.child2.radius
+                print stellar_system.semimajor_axis
                 print 'determine_time_step_stable_mt: contact system'        
                 exit(-1)
 
@@ -842,7 +847,7 @@ class Triple:
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
-            self.check_for_RLOF()   #What if only 1 star left...
+            self.check_for_RLOF()   #What if only 1 star left...                     
                      
 #            if self.has_donor():
 #                if REPORT_TRIPLE_EVOLUTION: 
@@ -1005,43 +1010,64 @@ def plot_function(triple):
     plt.show()
 
 
+#   wind a = ai * Mti/Mt
+#    Mtot = m1_array+m2_array    
+#    plt.plot(times_array_Myr,a_in_array_AU)
+#    plt.plot(times_array_Myr,a_in_array_AU, '.')
+#    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot)
+#    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot, '.')
+#    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*Mtot[:-1]/Mtot[1:])
+#    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*Mtot[:-1]/Mtot[1:], '.')
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$a_\mathrm{in}$')
+#    plt.savefig('plots/orbit/semi_inner_wind'+generic_plot_name+'.pdf')
+#    plt.show()
+#    
+#    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot/a_in_array_AU)
+#    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot/a_in_array_AU, '.')
+#    plt.ylabel('$relative error a_\mathrm{in}$')
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.savefig('plots/orbit/semi_inner_rel_wind'+generic_plot_name+'.pdf')
+#    plt.show()
 
-    Mtot = m1_array+m2_array    
+
+#   cons mt a = ai * (m1i*m2i*/m1/m2)**2
     plt.plot(times_array_Myr,a_in_array_AU)
     plt.plot(times_array_Myr,a_in_array_AU, '.')
-    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot)
-    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot, '.')
-    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*Mtot[:-1]/Mtot[1:])
-    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*Mtot[:-1]/Mtot[1:], '.')
+    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2)
+    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2, '.')
+    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*(m1_array[:-1]*m2_array[:-1]/m1_array[1:]/m2_array[1:])**2)
+    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*(m1_array[:-1]*m2_array[:-1]/m1_array[1:]/m2_array[1:])**2, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$a_\mathrm{in}$')
-    plt.savefig('plots/orbit/semi_inner'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/semi_inner_cons_mt'+generic_plot_name+'.pdf')
     plt.show()
     
-    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot/a_in_array_AU)
-    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot/a_in_array_AU, '.')
+    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2/a_in_array_AU)
+    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2/a_in_array_AU, '.')
     plt.ylabel('$relative error a_\mathrm{in}$')
     plt.xlabel('$t/\mathrm{Myr}$')
-    plt.savefig('plots/orbit/semi_inner_rel'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/semi_inner_rel_cons_mt'+generic_plot_name+'.pdf')
     plt.show()
 
-    dm = (m1_array[1:] - m1_array[:-1] )
-    dt = (times_array_Myr[1:] - times_array_Myr[:-1])
-    dmdt = (m1_array[1:] - m1_array[:-1] )/(times_array_Myr[1:] - times_array_Myr[:-1])
 
 
-    plt.plot(dmdt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
-    plt.plot(dmdt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
-    plt.show()
+#    dm = (m1_array[1:] - m1_array[:-1] )
+#    dt = (times_array_Myr[1:] - times_array_Myr[:-1])
+#    dmdt = (m1_array[1:] - m1_array[:-1] )/(times_array_Myr[1:] - times_array_Myr[:-1])
 
-    plt.plot(dm, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
-    plt.plot(dm, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
-    plt.show()
-
-    plt.plot(dt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
-    plt.plot(dt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
-    plt.show()
-
+#    plt.plot(dmdt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
+#    plt.plot(dmdt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
+#    plt.show()
+#
+#    plt.plot(dm, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
+#    plt.plot(dm, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
+#    plt.show()
+#
+#    plt.plot(dt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
+#    plt.plot(dt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
+#    plt.show()
+#
     
     
     
@@ -1108,39 +1134,59 @@ def plot_function(triple):
     plt.show()
 
 
-    Mtott = m1_array+m2_array+m3_array    
+#    Mtott = m1_array+m2_array+m3_array    
+#    plt.plot(times_array_Myr,a_out_array_AU)
+#    plt.plot(times_array_Myr,a_out_array_AU, '.')
+#    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott)
+#    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott, '.')
+#    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:])
+#    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:], '.')
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$a_\mathrm{out}$')
+#    plt.savefig('plots/orbit/semi_outer_wind'+generic_plot_name+'.pdf')
+#    plt.show()
+#
+#    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU)
+#    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU, '.')
+#    plt.ylabel('$relative error a_\mathrm{out}$')
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.savefig('plots/orbit/semi_outer_rel_wind'+generic_plot_name+'.pdf')
+#    plt.show()
+
+    m_in_array = m1_array+m2_array
     plt.plot(times_array_Myr,a_out_array_AU)
     plt.plot(times_array_Myr,a_out_array_AU, '.')
-    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott)
-    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott, '.')
-    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:])
-    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:], '.')
+    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2)
+    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2, '.')
+    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*(m_in_array[:-1]*m3_array[:-1]/m_in_array[1:]/m3_array[1:])**2)
+    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*(m_in_array[:-1]*m3_array[:-1]/m_in_array[1:]/m3_array[1:])**2, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$a_\mathrm{out}$')
-    plt.savefig('plots/orbit/semi_outer'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/semi_outer_cons_mt'+generic_plot_name+'.pdf')
     plt.show()
 
-    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU)
-    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU, '.')
+    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2/a_out_array_AU)
+    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2/a_out_array_AU, '.')
     plt.ylabel('$relative error a_\mathrm{out}$')
     plt.xlabel('$t/\mathrm{Myr}$')
-    plt.savefig('plots/orbit/semi_outer_rel'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/semi_outer_rel_cons_mt'+generic_plot_name+'.pdf')
     plt.show()
 
-    dm = (m3_array[1:] - m3_array[:-1] )
-    dmdt = (m3_array[1:] - m3_array[:-1] )/(times_array_Myr[1:] - times_array_Myr[:-1])
 
-    plt.plot(dmdt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
-    plt.plot(dmdt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
-    plt.show()
+#    dm = (m3_array[1:] - m3_array[:-1] )
+#    dmdt = (m3_array[1:] - m3_array[:-1] )/(times_array_Myr[1:] - times_array_Myr[:-1])
 
-    plt.plot(dm, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
-    plt.plot(dm, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
-    plt.show()
-
-    plt.plot(dt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
-    plt.plot(dt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
-    plt.show()
+#    plt.plot(dmdt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
+#    plt.plot(dmdt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
+#    plt.show()
+#
+#    plt.plot(dm, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
+#    plt.plot(dm, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
+#    plt.show()
+#
+#    plt.plot(dt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:])
+#    plt.plot(dt, a_out_array_AU[0]*Mtott[0]/Mtott[1:]/a_out_array_AU[1:], '.')
+#    plt.show()
 
 
 
@@ -1226,7 +1272,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend)
 
     triple.evolve_triple()
-#    plot_function(triple)
+    plot_function(triple)
     triple.print_stellar_system()
     return triple
 #-----

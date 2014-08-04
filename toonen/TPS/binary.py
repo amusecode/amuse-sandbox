@@ -21,7 +21,7 @@ stellar_types_giants = [2,3,4,5,6,8,9]|units.stellar_type
 q_crit = 3.
 q_crit_giants_conv_env = 0.9
 stellar_types_giants_conv_env = [3,5,6,8,9]|units.stellar_type
-
+nucleair_efficiency = 0.007 # nuc. energy production eff, Delta E = 0.007 Mc^2
     
 def roche_radius_dimensionless(M, m):
     # Assure that the q is calculated in identical units.
@@ -40,25 +40,28 @@ def roche_radius(bin, primary, self):
     exit(1)
 
 
-
-
 def nuclear_evolution_timescale(star):
     if REPORT_FUNCTION_NAMES:
-        print "Nuclear evolution timescale"
-    return 1|units.Gyr
+        print "Nuclear evolution timescale:", (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr) 
+
+    if star.stellar_type in [0,1,7]|units.stellar_type:
+        return (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr)
+    else: #t_nuc ~ delta t * R/ delta R, other prescription gave long timescales in SeBa which destables the mass transfer
+        t_nuc = star.radius / star.time_derivative_of_radius
+        if t_nuc < 0:
+            print 'Nuclear evolution timescale < 0'
+            exit(-1)
+        return t_nuc
 
 def kelvin_helmholds_timescale(star):
     if REPORT_FUNCTION_NAMES:
-        print "KH timescale"
-    return 1|units.Myr
+        print "KH timescale:", (constants.G*star.mass**2/star.radius/star.luminosity).in_(units.Myr)    
+    return constants.G*star.mass**2/star.radius/star.luminosity
 
 def dynamic_timescale(star):
     if REPORT_FUNCTION_NAMES:
-        print "Dynamic timescale"
-    return 1|units.yr
-
-
-
+        print "Dynamic timescale:", (np.sqrt(star.radius**3/star.mass/constants.G)[0]).in_(units.yr)
+    return np.sqrt(star.radius**3/star.mass/constants.G)    
 
 
 def corotating_spin_angular_frequency_binary(semi, m1, m2):
@@ -290,13 +293,13 @@ def stable_mass_transfer(bs, donor, accretor, self):
     dt = self.time - self.previous_time
     dm = bs.mass_transfer_rate * dt
     donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-    donor_in_se_code.change_mass(-1*dm, dt)
+    donor_in_se_code.change_mass(dm, dt)
     
     # there is an implicit assumption in change_mass that the accreted mass is of solar composition (hydrogen)
     accretor_in_se_code = accretor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
 #    accretor_in_se_code.change_mass(dm, dt)
     # for now, only conservative mass transfer   
-    accretor_in_se_code.change_mass(dm, -1*dt)
+    accretor_in_se_code.change_mass(-1.*dm, -1.*dt)
 
     self.channel_from_se.copy()
 
@@ -309,7 +312,6 @@ def stable_mass_transfer(bs, donor, accretor, self):
         print Md_new, Ma_new, Md-Md_new, Ma-Ma_new, accretion_efficiency
         exit(-1)
         
-
     bs.accretion_efficiency_mass_transfer = accretion_efficiency
 
 
@@ -362,7 +364,7 @@ def semi_detached(bs, donor, accretor, self):
 
            
     #possible problem if companion or tertiary accretes significantly from this
-    self.update_previous_se_parameters() #previous_mass, previous_radius for safety check
+#    self.update_previous_se_parameters() #previous_mass, previous_radius for safety check
             
 def adjust_system_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
 # Assumption: Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
@@ -523,7 +525,7 @@ def detached(bs, self):
         exit(-1)                    
               
     #reset parameters after mass transfer
-    bs.mass_transfer_rate = 0.0 | units.MSun/units.yr
+#    bs.mass_transfer_rate = 0.0 | units.MSun/units.yr
 
 
 def triple_mass_transfer():
@@ -643,19 +645,19 @@ def mass_transfer_stability(binary, self):
         elif binary.child1.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor1 stable "
-            binary.mass_transfer_rate = binary.child1.mass / mass_transfer_timescale(binary)         
+            binary.mass_transfer_rate = -1.* binary.child1.mass / mass_transfer_timescale(binary)         
             binary.is_stable = True
         elif binary.child2.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor2 stable"
-            binary.mass_transfer_rate = binary.child2.mass / mass_transfer_timescale(binary)         
+            binary.mass_transfer_rate = -1.* binary.child2.mass / mass_transfer_timescale(binary)         
             binary.is_stable = True
             
         else:     
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Detached"
             #detached system
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+            binary.mass_transfer_rate = -1.* max(binary.child1.mass, binary.child2.mass) / mass_transfer_timescale(binary)
             binary.is_stable = True
 
     elif binary.child1.is_star and binary.child2.is_binary:
@@ -687,14 +689,14 @@ def mass_transfer_stability(binary, self):
         elif binary.child1.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor1 stable "
-            binary.mass_transfer_rate = binary.child1.mass / mass_transfer_timescale(binary)         
+            binary.mass_transfer_rate = -1.* binary.child1.mass / mass_transfer_timescale(binary)         
             binary.is_stable = True
             
         else:                     
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Detached"
             #detached system
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+            binary.mass_transfer_rate = -1.* binary.child1.mass / mass_transfer_timescale(binary)
             binary.is_stable = True
             
     else:
