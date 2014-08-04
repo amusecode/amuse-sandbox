@@ -309,6 +309,7 @@ def stable_mass_transfer(bs, donor, accretor, self):
         print Md_new, Ma_new, Md-Md_new, Ma-Ma_new, accretion_efficiency
         exit(-1)
         
+
     bs.accretion_efficiency_mass_transfer = accretion_efficiency
 
 
@@ -343,6 +344,8 @@ def semi_detached(bs, donor, accretor, self):
                 #when there is no parent
                 break
 
+        self.instantaneous_evolution = True #skip secular evolution
+
 #        assuming triples here
 #        try bs.parent and bs.parent.is_binary: # last requirement is probably redundant
 #            if bs.parent.child1 == bs and bs.parent.child2.is_star:
@@ -356,6 +359,7 @@ def semi_detached(bs, donor, accretor, self):
 #            when there is no parent
 #            pass
 #                            
+
            
     #possible problem if companion or tertiary accretes significantly from this
     self.update_previous_se_parameters() #previous_mass, previous_radius for safety check

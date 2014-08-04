@@ -62,6 +62,8 @@ class Triple:
         triples[0].is_container = True # Upper level
         
         self.first_contact = True
+        self.instantaneous_evolution = False # no secular evolution
+        
         self.tend = tend #...
         self.time = 0.0|units.yr
         self.previous_time = 0.0|units.yr
@@ -825,15 +827,21 @@ class Triple:
             
             # do secular evolution
             self.channel_to_secular.copy()   
-            if self.is_triple() == True:
-                self.secular_code.evolve_model(self.time)
-            else:# e.g. binaries
-                print 'Secular code disabled'
-                exit(-1)
-            self.checks_after_secular_code()
-            self.channel_from_secular.copy()     
-    
-           
+            if self.instantaneous_evolution == False:                   
+                if self.is_triple() == True:
+                    self.secular_code.evolve_model(self.time)
+                else:# e.g. binaries
+                    print 'Secular code disabled'
+                    exit(-1)
+                self.checks_after_secular_code()
+                self.channel_from_secular.copy()     
+            else:        
+                print 'how do I restart the secular code?'                
+                print 'which parameters to overwrite?'
+                print ' only the internal time?'
+                self.secular_code.model_time = self.time
+                self.instantaneous_evolution = False
+                
             self.check_for_RLOF()   #What if only 1 star left...
                      
 #            if self.has_donor():
