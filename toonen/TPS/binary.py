@@ -109,10 +109,8 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
         #check if star changes type     
-        print 'donor stellar type before: ', donor.stellar_type
         donor_in_se_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
         self.channel_from_se.copy()
-        print 'donor stellar type after: ', donor.stellar_type
 
         bs.semimajor_axis = a_new
         bs.eccentricity = 0.
@@ -291,10 +289,21 @@ def stable_mass_transfer(bs, donor, accretor, self):
     Ma = accretor.mass
     
     dt = self.time - self.previous_time
-    dm = bs.mass_transfer_rate * dt
+    dm_desired = bs.mass_transfer_rate * dt
+    if REPORT_FUNCTION_NAMES:
+        print bs.mass_transfer_rate, dt, dm_desired
     donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-    donor_in_se_code.change_mass(dm, dt)
+    donor_in_se_code.change_mass(dm_desired, dt)
     
+    # dm != dm_desired e.g. when the envelope of the star is empty
+    dm = donor_in_se_code.mass - Md
+    bs.part_dt_mt = 1.
+    if dm - dm_desired > numerical_error|units.MSun:
+        print 'WARNING:the envelope is empty, mass transfer rate should be lower or dt should be smaller... '
+        print dm, dm_desired, donor_in_se_code.mass, Md, donor.stellar_type, donor_in_se_code.stellar_type
+        bs.part_dt_mt = dm/dm_desired
+        print dm, dm_desired, bs.part_dt_mt
+        
     # there is an implicit assumption in change_mass that the accreted mass is of solar composition (hydrogen)
     accretor_in_se_code = accretor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
 #    accretor_in_se_code.change_mass(dm, dt)
@@ -310,10 +319,10 @@ def stable_mass_transfer(bs, donor, accretor, self):
         print 'stable_mass_transfer: non conservative mass transfer'
         print Md, Ma, donor.previous_mass, accretor.previous_mass
         print Md_new, Ma_new, Md-Md_new, Ma-Ma_new, accretion_efficiency
+        print donor.stellar_type, accretor.stellar_type
         exit(-1)
         
     bs.accretion_efficiency_mass_transfer = accretion_efficiency
-
 
 def semi_detached(bs, donor, accretor, self):
 #only for double stars (consisting of two stars)
@@ -726,7 +735,6 @@ def mass_transfer_timescale(binary):
         print 'mass transfer timescale: type of system unknown'
         print 'no stars in binary'
 
-    print mtt, mtt1, mtt2
     return mtt        
         
         

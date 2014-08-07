@@ -106,7 +106,7 @@ class Triple:
         bins.is_binary = True
         bins.is_container = False
         bins.is_stable = True
-        
+        bins.part_dt_mt = 1.
 
         bins[0].child1 = stars[0]
         bins[0].child2 = stars[1]
@@ -467,7 +467,26 @@ class Triple:
                self.particles[0].child1.child2.is_donor = False
         else:
             print 'check_for_RLOF: structure stellar system unknown'        
-            exit(-1)           
+            exit(-1)    
+                     
+#            
+#    def determine_partial_timestep_stable_mass_transfer(self, stellar_system = None):
+#        if stellar_system == None:
+#            stellar_system = self.particles[0]
+#
+#        if stellar_system.is_container:
+#            self.determine_partial_timestep_stable_mass_transfer(stellar_system.child2)
+#        elif stellar_system.is_star:
+#            return np.inf |units.Myr 
+#        elif stellar_system.is_binary:
+#            dt1 = self.determine_partial_timestep_stable_mass_transfer(stellar_system.child1)        
+#            dt2 = self.determine_partial_timestep_stable_mass_transfer(stellar_system.child2)
+#            dt =  stellar_system.part_dt_mt
+#            return min(dt, min(dt1, dt2))
+#        else:
+#            print 'determine_partial_timestep_stable_mass_transfer: structure stellar system unknown'        
+#            exit(-1)
+                   
     #-------
 
     #-------
@@ -615,7 +634,6 @@ class Triple:
             dt = np.inf |units.Myr
             if stellar_system.is_donor:
                 dt = abs(time_step_factor_stable_mt*stellar_system.mass/stellar_system.parent.mass_transfer_rate)
-                print 'mt >0?: ', stellar_system.parent.mass_transfer_rate, dt
             if REPORT_TRIPLE_EVOLUTION:
                 print "Dt_mt_star = ", dt
             return dt
@@ -737,9 +755,9 @@ class Triple:
         if self.particles[0].child1.is_star:
             print 'do nothing'
         elif self.is_double_star(self.particles[0].child1):
-            print 'mt rate:', self.particles[0].child1.mass_transfer_rate
             mass_transfer_stability(self.particles[0].child1, self)
-            print 'mt rate:', self.particles[0].child1.mass_transfer_rate
+            if REPORT_TRIPLE_EVOLUTION:
+                print 'mt rate double star:', self.particles[0].child1.mass_transfer_rate
         else:
             print 'resolve triple interaction: type of inner system unknown'
             exit(-1)                    
@@ -749,9 +767,9 @@ class Triple:
         if self.particles[0].is_binary:
             #assumption that system has 3 stars or less -> only child1 and child2 exist
             if self.particles[0].child2.is_binary:
-                print 'mt rate:', self.particles[0].child2.mass_transfer_rate
                 mass_transfer_stability(self.particles[0].child2, self)
-                print 'mt rate:', self.particles[0].child2.mass_transfer_rate
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'mt rate binary:', self.particles[0].child2.mass_transfer_rate
             else:
                 print 'resolve triple interaction: type of outer system unknown'
                 exit(-1)                    
@@ -833,11 +851,41 @@ class Triple:
             # do secular evolution
             self.channel_to_secular.copy()   
             if self.instantaneous_evolution == False:                   
-                if self.is_triple() == True:
-                    self.secular_code.evolve_model(self.time)
-                else:# e.g. binaries
+
+                if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
                     exit(-1)
+
+                if self.particles[0].child1.part_dt_mt < 1: # inner binary, see function determine_partial_time_step_stable_mass_transfer
+                    full_dt = self.time - self.previous_time
+                    self.secular_code.evolve_model(self.previous_time + full_dt * self.particles[0].child1.part_dt_mt)
+
+                    # not necessary because secular code reset is_donor and therefore the mass transfer rate is not used if the system is detached    
+#                    self.particles[0].child1.mass_transfer_rate =  0.0 | units.MSun/units.yr 
+
+                    # for plotting data
+                    times_array.append(self.previous_time + full_dt * self.particles[0].child1.part_dt_mt)
+                    e_in_array.append(self.particles[0].child1.eccentricity)
+                    a_in_array.append(self.particles[0].child1.semimajor_axis)
+                    g_in_array.append(self.particles[0].child1.argument_of_pericenter) 
+                    o_in_array.append(self.particles[0].child1.longitude_of_ascending_node)               
+                    e_out_array.append(self.particles[0].child2.eccentricity)
+                    a_out_array.append(self.particles[0].child2.semimajor_axis)
+                    g_out_array.append(self.particles[0].child2.argument_of_pericenter) 
+                    o_out_array.append(self.particles[0].child2.longitude_of_ascending_node)               
+                    i_mutual_array.append(self.particles[0].mutual_inclination)        
+                    m1_array.append(self.particles[0].child1.child1.mass)
+                    m2_array.append(self.particles[0].child1.child2.mass)
+                    m3_array.append(self.particles[0].child2.child1.mass)
+
+                    if self.has_donor():
+                        print 'After partial timestep the system should be detached...'
+                        exit(-1)
+                    self.secular_code.evolve_model(self.time)
+                    self.particles[0].child1.part_dt_mt = 1.                    
+                    
+                else:
+                    self.secular_code.evolve_model(self.time)
                 self.checks_after_secular_code()
                 self.channel_from_secular.copy()     
             else:        
@@ -1032,12 +1080,12 @@ def plot_function(triple):
 
 
 #   cons mt a = ai * (m1i*m2i*/m1/m2)**2
-    plt.plot(times_array_Myr,a_in_array_AU)
-    plt.plot(times_array_Myr,a_in_array_AU, '.')
-    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2)
-    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2, '.')
-    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*(m1_array[:-1]*m2_array[:-1]/m1_array[1:]/m2_array[1:])**2)
-    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*(m1_array[:-1]*m2_array[:-1]/m1_array[1:]/m2_array[1:])**2, '.')
+    plt.plot(times_array_Myr,a_in_array_AU, 'b-')
+    plt.plot(times_array_Myr,a_in_array_AU, 'b.')
+    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2, 'g-')
+    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2, 'g.')
+    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*(m1_array[:-1]*m2_array[:-1]/m1_array[1:]/m2_array[1:])**2, 'r-')
+    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*(m1_array[:-1]*m2_array[:-1]/m1_array[1:]/m2_array[1:])**2, 'r.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$a_\mathrm{in}$')
     plt.savefig('plots/orbit/semi_inner_cons_mt'+generic_plot_name+'.pdf')
@@ -1134,32 +1182,32 @@ def plot_function(triple):
     plt.show()
 
 
-#    Mtott = m1_array+m2_array+m3_array    
-#    plt.plot(times_array_Myr,a_out_array_AU)
-#    plt.plot(times_array_Myr,a_out_array_AU, '.')
-#    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott)
-#    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott, '.')
-#    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:])
-#    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:], '.')
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$a_\mathrm{out}$')
-#    plt.savefig('plots/orbit/semi_outer_wind'+generic_plot_name+'.pdf')
-#    plt.show()
-#
-#    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU)
-#    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU, '.')
-#    plt.ylabel('$relative error a_\mathrm{out}$')
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.savefig('plots/orbit/semi_outer_rel_wind'+generic_plot_name+'.pdf')
-#    plt.show()
-
-    m_in_array = m1_array+m2_array
+    Mtott = m1_array+m2_array+m3_array    
     plt.plot(times_array_Myr,a_out_array_AU)
     plt.plot(times_array_Myr,a_out_array_AU, '.')
-    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2)
-    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2, '.')
-    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*(m_in_array[:-1]*m3_array[:-1]/m_in_array[1:]/m3_array[1:])**2)
-    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*(m_in_array[:-1]*m3_array[:-1]/m_in_array[1:]/m3_array[1:])**2, '.')
+    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott)
+    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott, '.')
+    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:])
+    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:], '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$a_\mathrm{out}$')
+    plt.savefig('plots/orbit/semi_outer_wind'+generic_plot_name+'.pdf')
+    plt.show()
+
+    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU)
+    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU, '.')
+    plt.ylabel('$relative error a_\mathrm{out}$')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.savefig('plots/orbit/semi_outer_rel_wind'+generic_plot_name+'.pdf')
+    plt.show()
+
+    m_in_array = m1_array+m2_array
+    plt.plot(times_array_Myr,a_out_array_AU, 'b-')
+    plt.plot(times_array_Myr,a_out_array_AU, 'b.')
+    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2, 'g-')
+    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2, 'g.')
+    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*(m_in_array[:-1]*m3_array[:-1]/m_in_array[1:]/m3_array[1:])**2, 'r-')
+    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*(m_in_array[:-1]*m3_array[:-1]/m_in_array[1:]/m3_array[1:])**2, 'r.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$a_\mathrm{out}$')
     plt.savefig('plots/orbit/semi_outer_cons_mt'+generic_plot_name+'.pdf')
