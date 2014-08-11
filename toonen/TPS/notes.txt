@@ -126,7 +126,7 @@ Author: Silvia
 Date: 7-07-2014 
 Topic: Stability of mass transfer
 **********************
-For now mass transfer is unstable if the Darwin-Riemann instability occurs or when the mass ratio of donor/accretor > 1. 
+For now mass transfer is unstable if the Darwin-Riemann instability occurs or when the mass ratio of donor/accretor > 3, or when the mass ratio of donor/accretor > 1 for giant donors. 
 This last assume is extremely crude. 
 
 
@@ -140,8 +140,9 @@ Topic: Order of running codes
 When we take into account the effect of wind mass loss to the orbit, there is a numerical error between the theoretical orbital change and the change calculated by us. The error is smaller when we first run the stellar evolution code, calculate the wind mass loss rate, and then run the secular evolution code. In the reversed order, the secular evolution takes the wind mass loss rate of the previous timestep, so that the actually mass lost in a certain timestep might not correspond to the wind mass loss rate times the timestep. The difference due to the order is about a factor 10 on the error on the final orbit. In order to reduce the error, smaller timesteps need to be taken. That also means that reversing the se and sec code, makes the code faster. 
 This is a disadvantage, because it makes it more likely that we have to step back in time when roche lobe overflow occurs during a timestep. 
 
-
-
+--> 
+revision 5627
+Order in evolve_triple changed again. Now 1) determine_time_step 2) se_code 3) determine_mass_transfer_timescale 4) resolve_interaction 5) secular_code 6) check_for_rlof. In short step 4 moved up (used to be the last step). This avoids confusion with step 6, which determines RLOF for the next timestep. Step 4 is also before the secular code, so that we can relatively easily adjust the system when dM > M_envelope (implemented in revision 5647) 
 
 **********************
 Note number: 10

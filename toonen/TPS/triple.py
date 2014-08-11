@@ -1,3 +1,33 @@
+## Triple:      Triple evolution
+##              computes the evolution of a given triple
+##              given any initial conditions (M, m, l, A, a, E, e, i, G, g, O, o).
+
+## Output:      in the form of the following files:
+##              
+
+## Options:   -M    mass of the inner primary [Msun]
+##            -m    mass of the inner secondary [MSun]
+##            -l    mass of the outer star [Msun]
+
+##            -A    inner semi-major axis []
+##            -a    outer semi-major axis []
+
+##            -E    inner eccentricity [1.]
+##            -e    outer eccentricity [0.]
+
+##            -i    mutual inclination []
+
+##            -G    inner argument of pericenter []
+##            -g    outer argument of pericenter []
+
+##            -O    inner longitude of ascending nodes []
+##            -o    outer longitude of ascending nodes []
+
+##            -T or -t   binary end time. [13500 Myr]
+##            -z         metallicity of stars  [0.02 Solar] 
+
+
+
 from amuse.community.seba.interface import SeBa
 from amuse.units import units, constants
 from amuse.datamodel import Particles
@@ -25,6 +55,8 @@ error_dm = 0.05
 maximum_radius_change_factor = 0.05 
 error_dr = 0.2
 minimum_time_step = 1.e-9 |units.Myr
+min_mass = 0.08 |units.MSun # for stars
+max_mass = 100 |units.MSun
 
 
 class Triple:
@@ -37,13 +69,17 @@ class Triple:
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity,
-            tend):
+            tend):      
             
-        if inner_semimajor_axis >= outer_semimajor_axis:
-            print 'error input parameters, should be:'
-            print 'inner_semimajor_axis < outer_semimajor_axis' 
-            exit(-1)            
-            
+        self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
+            inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
+            mutual_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter,
+            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)   
+        if inner_primary_mass < inner_secondary_mass:
+            spare = inner_primary_mass
+            inner_primary_mass = inner_secondary_mass
+            inner_secondary_mass = spare     
+                        
         stars = self.make_stars(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis)
         bins = self.make_bins(stars, inner_semimajor_axis, outer_semimajor_axis,
@@ -61,7 +97,7 @@ class Triple:
         triples[0].is_binary = True # True if there are 2 children
         triples[0].is_container = True # Upper level
         
-        self.first_contact = True
+        self.first_contact = True # not used at the moment, how to reset ?
         self.instantaneous_evolution = False # no secular evolution
         
         self.tend = tend #...
@@ -75,6 +111,7 @@ class Triple:
         self.update_previous_se_parameters()
         self.update_se_parameters() 
         self.update_se_wind_parameters()
+
 
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass, inner_semimajor_axis, outer_semimajor_axis):
         stars = Particles(3)
@@ -138,14 +175,9 @@ class Triple:
         bins[1].accretion_efficiency_wind_child1_to_child2 = 0.0
         bins[1].accretion_efficiency_wind_child2_to_child1 = 0.0
 
-
         # binary evolutionary settings
         bins[0].specific_AM_loss_mass_transfer = 2.5 
         bins[1].specific_AM_loss_mass_transfer = 2.5
-
-        
-#        for x in bins:
-#            x.mass = x.child1.mass + x.child2.mass
 
         return bins
     #-------
@@ -200,6 +232,57 @@ class Triple:
     #-------
 
     #-------
+    def test_initial_parameters(self, inner_primary_mass, inner_secondary_mass, outer_mass,
+            inner_semimajor_axis, outer_semimajor_axis,
+            inner_eccentricity, outer_eccentricity,
+            mutual_inclination,
+            inner_argument_of_pericenter, outer_argument_of_pericenter,
+            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node):
+            
+        if (min(inner_secondary_mass, outer_mass) < min_mass) or (max(inner_primary_mass, outer_mass) > max_mass):  
+            print inner_primary_mass, inner_secondary_mass, outer_mass
+            print 'should be within:', min_mass, '-', max_mass
+            print 'error: masses not in allowed range'
+            exit(1)
+                        
+        if inner_semimajor_axis >= outer_semimajor_axis:
+            print 'error input parameters, should be:'
+            print 'inner_semimajor_axis < outer_semimajor_axis' 
+            exit(1)            
+        if (inner_semimajor_axis < 0.|units.RSun):
+            print 'error: inner separation not in allowed range'
+            exit(1)
+        if (outer_semimajor_axis < 0.|units.RSun):
+            print 'error: outer separation not in allowed range'
+            exit(1)
+    
+        if (inner_eccentricity < 0.) or (inner_eccentricity > 1.):
+            print 'error: inner eccentricity not in allowed range'
+            exit(1)
+        if (outer_eccentricity < 0.) or (outer_eccentricity > 1.):
+            print 'error: outer eccentricity not in allowed range'
+            exit(1)
+    
+        if (mutual_inclination < 0.) or (mutual_inclination > 2.*np.pi):
+            print 'error: mutual inclination not in allowed range'
+            exit(1)
+    
+        if (inner_argument_of_pericenter < 0.) or (inner_argument_of_pericenter > 2*np.pi):
+            print 'error: inner argument of pericenter not in allowed range'
+            exit(1)
+        if (outer_argument_of_pericenter < 0.) or (outer_argument_of_pericenter > 2*np.pi):
+            print 'error: outer argument of pericenter not in allowed range'
+            exit(1)
+    
+        if (inner_longitude_of_ascending_node < 0.) or (inner_longitude_of_ascending_node > 2*np.pi):
+            print 'error: inner longitude of ascending node not in allowed range'
+            exit(1)
+        if (outer_longitude_of_ascending_node < 0.) or (outer_longitude_of_ascending_node > 2*np.pi):
+            print 'error: outer longitude of ascending node not in allowed range'
+            exit(1)
+    #-------
+
+    #-------
     def update_previous_se_parameters(self, stellar_system = None):
         if stellar_system == None:
             stellar_system = self.particles[0]
@@ -218,7 +301,7 @@ class Triple:
             stellar_system.previous_mass = self.get_mass(stellar_system) 
         else:
             print 'update_previous_se_parameters: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
     #-------
 
     #-------
@@ -244,7 +327,7 @@ class Triple:
             self.update_wind_mass_loss_rate(stellar_system.child2)
         else:
             print 'update_wind_mass_loss_rate: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
         
            
     def update_time_derivative_of_radius(self, stellar_system = None):
@@ -270,7 +353,7 @@ class Triple:
                 self.update_time_derivative_of_radius(stellar_system.child2)
             else:
                 print 'update_time_derivative_of_radius: structure stellar system unknown'        
-                exit(-1)
+                exit(2)
     #-------
 
     #-------
@@ -297,7 +380,7 @@ class Triple:
             self.update_se_parameters(stellar_system.child2)
         else:
             print 'update_se_parameters: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
     #-------
 
     #-------
@@ -342,7 +425,7 @@ class Triple:
                 return True                        
         else:
             print 'has_donor: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
             
         return False            
 
@@ -362,7 +445,7 @@ class Triple:
                 return True                        
         else:
             print 'is_system_stable: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
             
         return False                    
 
@@ -381,7 +464,7 @@ class Triple:
             return M1 + M2 
         else:
             print 'get_mass: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
     #-------
 
     #-------
@@ -410,7 +493,7 @@ class Triple:
             return Jstar            
         else:
             print 'stellar_angular_momentum: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
 
     def kozai_timescale(self):
         if self.is_triple():
@@ -467,7 +550,7 @@ class Triple:
                self.particles[0].child1.child2.is_donor = False
         else:
             print 'check_for_RLOF: structure stellar system unknown'        
-            exit(-1)    
+            exit(2)    
                      
 #            
 #    def determine_partial_timestep_stable_mass_transfer(self, stellar_system = None):
@@ -485,7 +568,7 @@ class Triple:
 #            return min(dt, min(dt1, dt2))
 #        else:
 #            print 'determine_partial_timestep_stable_mass_transfer: structure stellar system unknown'        
-#            exit(-1)
+#            exit(2)
                    
     #-------
 
@@ -512,7 +595,7 @@ class Triple:
             print '\t'             
         else:
             print 'print_star needs a star'        
-            exit(-1)
+            exit(2)
     
     
     def print_binary(self, binary):
@@ -532,7 +615,7 @@ class Triple:
             print '\t'
         else:
             print 'print_binary needs a binary'        
-            exit(-1)
+            exit(2)
     
     
     def print_stellar_system(self, stellar_system = None):
@@ -554,7 +637,7 @@ class Triple:
             self.print_star(stellar_system)
         else:
             print 'print_stellar_sytem: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
         print '\t'            
     #-------
         
@@ -585,7 +668,7 @@ class Triple:
             return min(dt1, dt2) 
         else:
             print 'determine_time_step_wind: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
     
     def determine_time_step_radius_change(self, stellar_system = None):
     #note: returned value can be inf when the change in radius <= 0
@@ -616,7 +699,7 @@ class Triple:
             return min(dt1, dt2) 
         else:
             print 'determine_time_step_radius_change: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
     
  
  
@@ -645,7 +728,7 @@ class Triple:
                 print stellar_system.child1.radius, stellar_system.child2.radius
                 print stellar_system.semimajor_axis
                 print 'determine_time_step_stable_mt: contact system'        
-                exit(-1)
+                exit(0)
 
             dt1 = self.determine_time_step_stable_mt(stellar_system.child1)        
             dt2 = self.determine_time_step_stable_mt(stellar_system.child2)
@@ -654,7 +737,7 @@ class Triple:
             return min(dt1, dt2) 
         else:
             print 'determine_time_step_stable_mt: structure stellar system unknown'        
-            exit(-1)
+            exit(2)
             
     
     def determine_time_step(self):         
@@ -688,7 +771,7 @@ class Triple:
             
         if time_step < minimum_time_step:
             print 'error small time_step'
-            exit(-1)    
+            exit(1)    
 #        time_step = max(time_step, minimum_time_step)                
         self.time += time_step
     #-------
@@ -706,7 +789,7 @@ class Triple:
             resolve_binary_interaction(self.particles[0].child1, self)
         else:
             print 'resolve triple interaction: type of inner system unknown'
-            exit(-1)                    
+            exit(2)                    
         
         if REPORT_TRIPLE_EVOLUTION:
             print '\nouter binary - child2'
@@ -716,7 +799,7 @@ class Triple:
                 resolve_binary_interaction(self.particles[0].child2, self)            
             else:
                 print 'resolve triple interaction: type of outer system unknown'
-                exit(-1)                    
+                exit(2)                    
                         
 
     
@@ -729,7 +812,7 @@ class Triple:
 #            print 'do nothing'
 #        else:
 #            print 'resolve triple interaction: type of inner system unknown'
-#            exit(-1)                    
+#            exit(2)                    
 #    
 #    
 #        if REPORT_TRIPLE_EVOLUTION:
@@ -738,7 +821,7 @@ class Triple:
 #            resolve_binary_interaction(self.particles[0].child2, self)
 #        else:
 #            print 'resolve triple interaction: type of outer system unknown'
-##            exit(-1)  
+##            exit(2)  
 #
          
             
@@ -760,7 +843,7 @@ class Triple:
                 print 'mt rate double star:', self.particles[0].child1.mass_transfer_rate
         else:
             print 'resolve triple interaction: type of inner system unknown'
-            exit(-1)                    
+            exit(2)                    
         
         if REPORT_TRIPLE_EVOLUTION:
             print '\nouter binary - child2'
@@ -772,7 +855,7 @@ class Triple:
                     print 'mt rate binary:', self.particles[0].child2.mass_transfer_rate
             else:
                 print 'resolve triple interaction: type of outer system unknown'
-                exit(-1)                    
+                exit(2)                    
     
     
 #        if self.particles[0].child2.child1.is_donor:
@@ -788,7 +871,7 @@ class Triple:
 #            print 'do nothing'
 #        else:
 #            print 'determine_mass_transfer_timescale: type of inner system unknown'
-#            exit(-1)                    
+#            exit(2)                    
     
 #        if REPORT_TRIPLE_EVOLUTION:
 #            print '\nouter binary'
@@ -796,7 +879,7 @@ class Triple:
 #            mass_transfer_stability(self.particles[0].child2)
 #        else:
 #            print 'determine_mass_transfer_timescale: type of outer system unknown'
-#            exit(-1)           
+#            exit(2)           
 
 
     def evolve_triple(self):
@@ -854,7 +937,7 @@ class Triple:
 
                 if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
-                    exit(-1)
+                    exit(0)
 
                 if self.particles[0].child1.part_dt_mt < 1: # inner binary, see function determine_partial_time_step_stable_mass_transfer
                     full_dt = self.time - self.previous_time
@@ -880,7 +963,7 @@ class Triple:
 
                     if self.has_donor():
                         print 'After partial timestep the system should be detached...'
-                        exit(-1)
+                        exit(1)
                     self.secular_code.evolve_model(self.time)
                     self.particles[0].child1.part_dt_mt = 1.                    
                     
@@ -974,7 +1057,7 @@ def safety_check_time_step(triple):
             print triple.particles[0].child1.child2.stellar_type
             print triple.particles[0].child2.child1.stellar_type
 #            print 'WARNING'
-            exit(-1)
+            exit(1)
 
 
         if triple.secular_code.parameters.include_inner_tidal_terms or triple.secular_code.parameters.include_outer_tidal_terms:
@@ -997,7 +1080,7 @@ def safety_check_time_step(triple):
                 print triple.particles[0].child1.child2.stellar_type
                 print triple.particles[0].child2.child1.stellar_type
     #            print 'WARNING'
-                exit(-1)
+                exit(1)
             
 
     
@@ -1298,9 +1381,6 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
                           precision = 11, prefix = "", 
                           separator = " [", suffix = "]")
 
-            
-
-
     inner_eccentricity = float(inner_eccentricity)
     outer_eccentricity = float(outer_eccentricity)
     mutual_inclination = float(mutual_inclination)
@@ -1330,35 +1410,6 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
 def parse_arguments():
     from amuse.units.optparse import OptionParser
     parser = OptionParser()
-    parser.add_option("-a", unit=units.AU,
-                      dest="inner_semimajor_axis", type="float", 
-                      default = 1.0 |units.AU,
-                      help="inner semi major axis [%default]")
-    parser.add_option("-A", unit=units.AU,
-                      dest="outer_semimajor_axis", type="float", 
-                      default = 100.0 |units.AU,
-                      help="outer semi major axis [%default]")
-    parser.add_option("-e",
-                      dest="inner_eccentricity", type="float", default = 0.1,
-                      help="inner eccentricity [%default]")
-    parser.add_option("-E",
-                      dest="outer_eccentricity", type="float", default = 0.5,
-                      help="outer eccentricity [%default]")
-    parser.add_option("-i",
-                      dest="mutual_inclination", type="float", default = 80.0*np.pi/180.0,
-                      help="mutual inclination [rad] [%default]")
-    parser.add_option("-g",
-                      dest="inner_argument_of_pericenter", type="float", default = 0.1,
-                      help="inner argument of pericenter [rad] [%default]")
-    parser.add_option("-G",
-                      dest="outer_argument_of_pericenter", type="float", default = 0.5,
-                      help="outer argument of pericenter [rad] [%default]")
-    parser.add_option("-o",
-                      dest="inner_longitude_of_ascending_node", type="float", default = 0.0,
-                      help="inner longitude of ascending node [rad] [%default]")
-    parser.add_option("-O",
-                      dest="outer_longitude_of_ascending_node", type="float", default = 0.0,
-                      help="outer longitude of ascending node [rad] [%default]")
     parser.add_option("-M", unit=units.MSun, 
                       dest="inner_primary_mass", type="float", default = 1.3|units.MSun,
                       help="inner primary mass [%default]")
@@ -1368,6 +1419,36 @@ def parse_arguments():
     parser.add_option("-l",  unit=units.MSun, 
                       dest="outer_mass", type="float", default = 0.5|units.MSun,
                       help="outer mass [%default]")
+
+    parser.add_option("-A", unit=units.AU,
+                      dest="inner_semimajor_axis", type="float", 
+                      default = 1.0 |units.AU,
+                      help="inner semi major axis [%default]")
+    parser.add_option("-a", unit=units.AU,
+                      dest="outer_semimajor_axis", type="float", 
+                      default = 100.0 |units.AU,
+                      help="outer semi major axis [%default]")
+    parser.add_option("-E",
+                      dest="inner_eccentricity", type="float", default = 0.1,
+                      help="inner eccentricity [%default]")
+    parser.add_option("-e",
+                      dest="outer_eccentricity", type="float", default = 0.5,
+                      help="outer eccentricity [%default]")
+    parser.add_option("-i","-I",
+                      dest="mutual_inclination", type="float", default = 80.0*np.pi/180.0,
+                      help="mutual inclination [rad] [%default]")
+    parser.add_option("-G",
+                      dest="inner_argument_of_pericenter", type="float", default = 0.1,
+                      help="inner argument of pericenter [rad] [%default]")
+    parser.add_option("-g",
+                      dest="outer_argument_of_pericenter", type="float", default = 0.5,
+                      help="outer argument of pericenter [rad] [%default]")
+    parser.add_option("-O",
+                      dest="inner_longitude_of_ascending_node", type="float", default = 0.0,
+                      help="inner longitude of ascending node [rad] [%default]")
+    parser.add_option("-o",
+                      dest="outer_longitude_of_ascending_node", type="float", default = 0.0,
+                      help="outer longitude of ascending node [rad] [%default]")
     parser.add_option("-t", "-T", unit=units.Myr, 
                       dest="tend", type="float", default = 5.0 |units.Myr,
                       help="end time [%default] %unit")
@@ -1393,6 +1474,7 @@ if __name__ == '__main__':
 
     triple = Triple(**options)
     triple.evolve_triple()
+    triple.print_stellar_system()
     plot_function(triple)
 
 

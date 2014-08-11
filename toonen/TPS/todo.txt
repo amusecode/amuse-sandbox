@@ -119,6 +119,11 @@ Implement the posibility to go back in time:
 When we take into account the effect of wind mass loss to the orbit, there is a numerical error between the theoretical orbital change and the change calculated by us. The error is smaller when we first run the stellar evolution code, calculate the wind mass loss rate, and then run the secular evolution code. In the reversed order, the secular evolution takes the wind mass loss rate of the previous timestep, so that the actually mass lost in a certain timestep might not correspond to the wind mass loss rate times the timestep. The difference due to the order is about a factor 10 on the error on the final orbit. In order to reduce the error, smaller timesteps need to be taken. That also means that reversing the se and sec code, makes the code faster. 
 This is a disadvantage, because it makes it more likely that we have to step back in time when roche lobe overflow occurs during a timestep. 
 
+--> 
+revision 5627
+Order in evolve_triple changed again. Now 1) determine_time_step 2) se_code 3) determine_mass_transfer_timescale 4) resolve_interaction 5) secular_code 6) check_for_rlof. In short step 4 moved up (used to be the last step). This avoids confusion with step 6, which determines RLOF for the next timestep. Step 4 is also before the secular code, so that we can relatively easily adjust the system when dM > M_envelope (implemented in revision 5647) 
+
+
 Done
 Implement an adjustable timestep which is dependent on:
 - stellar evolution (we do not want to miss a certain phase e.g. maximum radius at helium flash)
@@ -140,13 +145,17 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Tests
 **********************
+Done:
 - mass transfer in the inner binary. Do the inner and outer binary behave as desired?
+ yes
 - wind mass loss in a very wide system. Do the inner and outer binary behave as desired?
+yes
 - Are the timesteps given to Adrian's code sufficiently small to validate the assumptions of constant mass in his ccode?
+regarding wind mass loss and mass transfer, the error in the orbital separation is ±2%, therefore timesteps are small enough. However, the change in radius can be substantial. The timesteps are probably too large if we want to take tides into account. 
 - Tests do determine where we want the trade-off between speed and accuracy in the Adrian's code (for solving the differential equations)
-
+ yes
 - is there enough mass removed in the ce? does the star change type?
-
+ yes 
 
 **********************
 Note number: 13
@@ -191,6 +200,7 @@ Topic: change_mass
     - add_mass neemt accretion_limit in rekening -> mooi voor mass transfer, niet voor wind
     - subtract mass neemt adjust_accretor_radius in rekening -> mooi voor thermische tijdschaal massaoverdracht, maar niet voor nucleair, aml of ce (na common envelope heb ik liever reduce mass dan subtract mass from donor, omdat daar geen adjust_accretor_radius in zit) -> maar na een ce, wordt de hele envelope gestript, en verandert de ster van stertype, en dan wordt geen adjust-accretor_radius toegepast
 
+-> there might be a bug in adjust_donor_radius, for the moment effective_radius = radius
 
 **********************
 Note number: 17
@@ -216,6 +226,7 @@ Author: Silvia
 Date: 22-07-2014
 Topic: assumption stellar system  = triple in secular code
 **********************
+Fixed
  - for running the code
  - give_roche_radii
 
