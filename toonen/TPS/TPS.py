@@ -10,6 +10,7 @@
 ##                                             2) Miller & Scalo
 ##                                             3) Salpeter
 ##                                             4) Logarithmically flat 
+##                                             5) Eggleton
 ##            --Q_max    upper limit for the inner mass ratio [1.]
 ##            --Q_min    lower limit for the inner mass ratio [0.]
 ##            --Q_distr  inner mass ratio option: 0) Flat (uniform) distribution [default]
@@ -108,6 +109,19 @@ def circular_uniform_distr(lower, upper): #unit is missing for inclination
 
     return np.arccos(np.random.uniform(np.cos(lower), np.cos(upper)))
 
+def eggleton_mass_distr(lower_mass, upper_mass):
+    turnover_mass = 0.3|units.MSun
+    power = 0.85
+    
+    y_max = (upper_mass/turnover_mass) **(1/power)
+    upper = y_max / (1+y_max)
+    y_min = (lower_mass/turnover_mass) **(1/power)
+    lower = y_min / (1+y_min)
+
+    x = np.random.uniform(lower, upper)
+    y=turnover_mass * (x/(1-x))**power
+    return turnover_mass * (x/(1-x))**power
+
 
 class Generate_initial_triple:
     #-------
@@ -168,6 +182,8 @@ class Generate_initial_triple:
                 self.in_primary_mass= new_salpeter_mass_distribution(1, in_primary_mass_min, in_primary_mass_max)[0]
             elif in_primary_mass_distr == 4: # Flat in log space
                 self.in_primary_mass= new_flat_mass_distribution(1, in_primary_mass_min, in_primary_mass_max)[0]
+            elif in_primary_mass_distr == 5: # Eggleton 2009, 399, 1471, Salpeter-like with turnover at low masses
+                self.in_primary_mass= eggleton_mass_distr(in_primary_mass_min, in_primary_mass_max)
             else: #Kroupa 2001
                 self.in_primary_mass = new_kroupa_mass_distribution(1, in_primary_mass_max)[0]
                 while self.in_primary_mass < in_primary_mass_min:

@@ -82,7 +82,8 @@ Topic: Applications
 **********************
 _ Which evolutionary paths are most common in triples? 
 - Which processes are most important in triples?
-- Similar for binaries with planets. 
+- Similar for binaries with planets.
+- How many single stars binaries were born in triples? 
  
 **********************
 Note number: 5
