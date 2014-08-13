@@ -816,11 +816,47 @@ class Triple:
         if self.is_double_star(system):
             print 'adjust double star after supernova kick'
             #adjust orbit, separation and eccentricity
-            #adjust systemativ velocity
+                       
+            if system.eccentricity < 0:
+                print 'e<0'
+                exit(0)            
+            elif system.eccentricity >= 1:
+                print 'System becomes unbound'
+                exit(0)
+            else: 
+                pericenter = system.semimajor_axis*(1-system.eccentricity)
+                if pericenter < system.child1.radius + system.child2.radius:
+                    print 'Collision'
+                    exit(0)
+            
+            #adjust systematic velocity
+
         else: #binary    
             print 'adjust binary after supernova kick'
             #adjust orbit, separation and eccentricity, inclination
-            #adjust systemativ velocity
+            #adjust systematic velocity
+
+            if system.eccentricity < 0:
+                print 'e<0'
+                exit(0)            
+            elif system.eccentricity >= 1:
+                print 'System becomes unbound'
+                exit(0)
+            else: 
+                pericenter = system.semimajor_axis*(1-system.eccentricity)
+                if system.child1.is_star and system.child2.is_binary:
+                    if pericenter < system.child1.radius + system.child2.semimajor_axis:
+                        print 'Unstable?'
+                        exit(0)
+                elif system.child1.is_binary and system.child2.is_star:
+                    if pericenter < system.child1.semimajor_axis + system.child2.radius:
+                        print 'Unstable?'
+                        exit(0)
+                else:
+                    print 'adjust_binary_after_supernova_kick: type of system unknown'
+                    exit(2)
+                
+                
 
      
         
