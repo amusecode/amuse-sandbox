@@ -186,6 +186,16 @@ class Triple:
     #setup community codes
     def setup_se_code(self, metallicity, stars):
         self.se_code = SeBa()
+
+        #stopping conditions:
+#        print self.se_code.stopping_conditions
+#        print self.se_code.stopping_conditions.supernova_detection.is_supported()
+#        print self.se_code.stopping_conditions.supernova_detection.is_enabled()
+#        print self.se_code.stopping_conditions.supernova_detection.is_set()
+#        print self.se_code.stopping_conditions.supernova_detection.enable()
+#        print self.se_code.stopping_conditions.supernova_detection.is_enabled()
+#        print self.se_code.stopping_conditions.supernova_detection.is_set()
+
         self.se_code.parameters.metallicity = metallicity
         self.se_code.particles.add_particles(stars)
         self.channel_from_se = self.se_code.particles.new_channel_to(stars)
@@ -775,7 +785,47 @@ class Triple:
 #        time_step = max(time_step, minimum_time_step)                
         self.time += time_step
     #-------
+
+    #-------
+    def adjust_system_after_supernova_kick(self):
+        SN_star_in_se_code = self.se_code.stopping_conditions.supernova_detection.particles(0)
+        print SN_star_in_se_code
+
+        SN_star = SN_star_in_se_code.as_set().get_intersecting_subset_in(self.particles)[0] # this will probably not work :-)
+
+        system = SN_star
+        try:
+            parent = system.parent             
+        except AttributeError:            
+            #SN_star is a single star
+            #adjust velocity of SN_star
+            # this should only be done for single stars, so for an exception in the first iteration
+            return  
+              
+              
+        while True:
+            try:    
+                system = system.parent
+                self.adjust_binary_after_supernova_kick(system)  
+            except AttributeError:
+                #when there is no parent
+                break
+
+
+    def adjust_binary_after_supernova_kick(self, system):
+        if self.is_double_star(system):
+            print 'adjust double star after supernova kick'
+            #adjust orbit, separation and eccentricity
+            #adjust systemativ velocity
+        else: #binary    
+            print 'adjust binary after supernova kick'
+            #adjust orbit, separation and eccentricity, inclination
+            #adjust systemativ velocity
+
+     
         
+    #-------
+
     #-------
     #evolution
     def resolve_interaction(self):
@@ -917,6 +967,7 @@ class Triple:
         self.determine_mass_transfer_timescale()
         while self.time<self.tend:
             self.update_previous_se_parameters()
+            self.check_for_RLOF()   #What if only 1 star left...                     
             self.determine_time_step()  
             print '\n\ntime:', self.time, self.has_donor()            
     
@@ -926,15 +977,36 @@ class Triple:
             self.update_se_wind_parameters()
             self.update_se_parameters()        
             safety_check_time_step(self)
+#            if  self.se_code.stopping_condition.supernova_detection.is_set():
+#                print 'supernova detected'
+#                print self.se_code.stopping_condition.supernova_detection.particles(0)
+#                print self.se_code.stopping_condition.supernova_detection.particles(1)
+#                self.adjust_system_after_supernova_kick()
+#                exit(0)                   
+#
+#                print 'how do I restart the secular code?'                
+#                self.secular_code.model_time = self.time
+#                continue # the while loop, skip resolve_interaction and secular evolution
             
             #do stellar interaction
             self.determine_mass_transfer_timescale()
-            self.resolve_interaction()      
+            self.resolve_interaction()
+#            if  self.se_code.stopping_condition.supernova_detection.is_set():
+#                print 'supernova detected'
+#                print self.se_code.stopping_condition.supernova_detection.particles(0)
+#                print self.se_code.stopping_condition.supernova_detection.particles(1)
+#                self.adjust_system_after_supernova_kick()
+#                exit(0)                   
+#
+#                print 'how do I restart the secular code?'                
+#                self.secular_code.model_time = self.time
+#                continue # the while loop, skip resolve_interaction and secular evolution
+
+                  
             
             # do secular evolution
             self.channel_to_secular.copy()   
-            if self.instantaneous_evolution == False:                   
-
+            if self.instantaneous_evolution == False: # better to do this with a continue statement?                 
                 if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
                     exit(0)
@@ -978,7 +1050,6 @@ class Triple:
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
-            self.check_for_RLOF()   #What if only 1 star left...                     
                      
 #            if self.has_donor():
 #                if REPORT_TRIPLE_EVOLUTION: 
