@@ -68,21 +68,6 @@ def dynamic_timescale(star):
 
 #-------------------------
 # functions for mass transfer in a double star
-def contact_binary():
-    if REPORT_FUNCTION_NAMES:
-        print "Contact binary"
-
-    #which outer_bs.child is bs..?
-    if outer_bs.child1.is_star and outer_bs.child1.is_donor:
-        print 'RLOF in inner and outer binary'
-        exit(0)
-    if outer_bs.child2.is_star and outer_bs.child2.is_donor:
-        print 'RLOF in inner and outer binary'
-        exit(0)
-
-
-    exit(0)
-
 
 def corotating_spin_angular_frequency_binary(semi, m1, m2):
     return 1./np.sqrt(semi**3/constants.G / (m1+m2))
@@ -258,14 +243,14 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
             self.print_binary(bs) 
 
 
-def common_envelope_phase(bs, donor, accretor, self):
+def which_common_envelope_phase(bs, donor, accretor, self):
     if REPORT_FUNCTION_NAMES:
-        print 'Common envelope phase'
+        print 'Which common envelope phase'
 
     if donor.stellar_type not in stellar_types_giants and accretor.stellar_type not in stellar_types_giants:
 #        possible options: MS+MS, MS+remnant, remnant+remnant,
 #                          HeMS+HeMS, HeMS+MS, HeMS+remnant
-        print donor.stellar_type, accretor_stellar_type
+        print donor.stellar_type, accretor.stellar_type
         print 'Merger in inner binary through common envelope phase (stellar types)'
         exit(0)
     
@@ -298,7 +283,43 @@ def common_envelope_phase(bs, donor, accretor, self):
             #giant+normal(non-giant, non-remnant)
             common_envelope_angular_momentum_balance(bs, donor, accretor, self)   
        
+
+def common_envelope_phase(bs, donor, accretor, self):
+    if REPORT_FUNCTION_NAMES:
+        print 'Common envelope phase'
+
+    #perform CE in binary
+    which_common_envelope_phase(bs, donor, accretor, self)
+
+    #adjusting of stellar system
+    system = bs
+    while True:
+        try:    
+            system = system.parent
+            if system.child1.is_binary and system.child2.is_star:
+                adjust_system_after_ce_in_inner_binary(system, system.child1, system.child2, self)                
+            elif system.child2.is_binary and system.child1.is_star:
+                adjust_system_after_ce_in_inner_binary(system, system.child2, system.child1, self)                            
+            else:
+                print 'common_envelope_phase: type of system unknown'
+                exit(2)
+                                        
+        except AttributeError:
+            #when there is no parent
+            break
+
+    self.instantaneous_evolution = True #skip secular evolution                
        
+
+def contact_system(bs, star1, star2, self):
+    if REPORT_FUNCTION_NAMES:
+        print "Contact system"
+
+    #for now no W Ursae Majoris evolution
+    #so for now MS-MS contact binaries merge in common_envelope_phase
+    #if stable mass transfer is implemented, then also the timestep needs to be adjusted
+    common_envelope_phase(bs, star1, star2, self)  
+
 
 def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
 
@@ -402,23 +423,6 @@ def semi_detached(bs, donor, accretor, self):
     else:        
         common_envelope_phase(bs, donor, accretor, self)
 
-        system = bs
-        while True:
-            try:    
-                system = system.parent
-                if system.child1.is_binary and system.child2.is_star:
-                    adjust_system_after_ce_in_inner_binary(system, system.child1, system.child2, self)                
-                elif system.child2.is_binary and system.child1.is_star:
-                    adjust_system_after_ce_in_inner_binary(system, system.child2, system.child1, self)                            
-                else:
-                    print 'semi_detached: type of system unknown'
-                    exit(2)
-                                            
-            except AttributeError:
-                #when there is no parent
-                break
-
-        self.instantaneous_evolution = True #skip secular evolution                
            
     #possible problem if companion or tertiary accretes significantly from this
 #    self.update_previous_se_parameters() #previous_mass, previous_radius for safety check
@@ -572,7 +576,7 @@ def resolve_binary_interaction(bs, self):
                 print "Check for RLOF:", Rl2, bs.child2.radius
 
             if bs.child1.is_donor and bs.child2.is_donor:
-                contact_binary()
+                contact_system(bs, bs.child1, bs.child2, self)
             elif bs.child1.is_donor and not bs.child2.is_donor:
                 semi_detached(bs, bs.child1, bs.child2, self)
             elif not bs.child1.is_donor and bs.child2.is_donor:

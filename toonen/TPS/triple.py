@@ -439,6 +439,31 @@ class Triple:
             
         return False            
 
+
+    def has_contact_system(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_container:
+            if self.has_contact_system(stellar_system.child2):
+                return True
+        elif stellar_system.is_star:
+            return False
+        elif self.is_double_star(stellar_system):
+            if stellar_system.child1.is_donor and stellar_system.child2.is_donor:
+                return True
+        elif stellar_system.is_binary:
+            if self.has_contact_system(stellar_system.child1):
+                return True
+            if self.has_contact_system(stellar_system.child2):
+                return True
+        else:
+            print 'has_contact_system: structure stellar system unknown'        
+            exit(2)
+            
+        return False            
+
+
     def is_system_stable(self, stellar_system = None):
         if stellar_system == None:
             stellar_system = self.particles[0]
@@ -754,11 +779,10 @@ class Triple:
         if REPORT_TRIPLE_EVOLUTION:
             print "Dt = ", self.se_code.particles.time_step, self.tend/100.0
  
-#        during unstable mass transfer or other instantaneous interactions
-        if self.has_donor() and not self.is_system_stable():
-            #no step in time
+#        during unstable mass transfer, contact_system or other instantaneous interactions: no step in time
+        if self.has_donor() and (not self.is_system_stable() or self.has_contact_system()):
             return            
-           
+                       
         #maximum time_step            
         time_step = self.tend - self.time
         
