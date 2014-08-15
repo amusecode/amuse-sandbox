@@ -23,6 +23,37 @@ q_crit_giants_conv_env = 0.9
 stellar_types_giants_conv_env = [3,5,6,8,9]|units.stellar_type
 nucleair_efficiency = 0.007 # nuc. energy production eff, Delta E = 0.007 Mc^2
     
+
+#dictionaries
+bin_type = {    
+#                0: 'unknown',       
+#                1: 'merger'
+#                2: 'disintegrated'
+#                3: 'detached',       
+#                4: 'contact',     
+#                5: 'common_envelope_energy_balance',     
+#                6: 'common_envelope_angular_momentum_balance',
+#                7: 'double_common_envelope',
+#                8: 'stable_mass_transfer',
+                
+                'unknown': 'unknown',       
+                'merger': 'merger', 
+                'disintegrated': 'disintegrated', 
+                'detached': 'detached',       
+                'contact': 'contact',    
+                 
+                'common_envelope_energy_balance': 'common_envelope_energy_balance',     
+                'ce_e': 'common_envelope_energy_balance',     
+                'ce_alpha': 'common_envelope_energy_balance',     
+                'common_envelope_angular_momentum_balance': 'common_envelope_angular_momentum_balance',
+                'ce_J': 'common_envelope_angular_momentum_balance',
+                'ce_gamma': 'common_envelope_angular_momentum_balance',
+                'double_common_envelope': 'double_common_envelope',
+                'dce': 'double_common_envelope',
+                
+                'stable_mass_transfer': 'stable_mass_transfer',
+            }            
+
 #-------------------------
 #general functions
 def roche_radius_dimensionless(M, m):
@@ -95,6 +126,9 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         print 'Before common envelope angular momentum balance' 
         self.print_binary(bs) 
 
+    bs.bin_type = bin_type['common_envelope_angular_momentum_balance']
+    #snapshot                
+
     gamma = common_envelope_efficiency_gamma(donor, accretor)
     J_init = np.sqrt(bs.semimajor_axis) * (donor.mass * accretor.mass) / np.sqrt(donor.mass + accretor.mass) * np.sqrt(1-bs.eccentricity**2)
     J_f_over_sqrt_a_new = (donor.core_mass * accretor.mass) / np.sqrt(donor.core_mass + accretor.mass)
@@ -109,6 +143,9 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         print 'Merger in inner binary through common envelope phase (energy balance)'
         print 'donor:', donor.core_radius, Rl_donor_new
         print 'accretor:', accretor.radius, Rl_accretor_new
+        
+        bs.bin_type = bin_type['merger']
+        #snapshot    
         exit(0)
     else:
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
@@ -129,6 +166,9 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         
         donor.is_donor = False
         bs.is_stable = True
+        bs.bin_type = bin_type['detached']
+        #snapshot                
+
 
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope angular momentum balance' 
@@ -144,6 +184,9 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
     if REPORT_BINARY_EVOLUTION:
         print 'Before common envelope angular momentum balance' 
         self.print_binary(bs) 
+
+    bs.bin_type = bin_type['common_envelope_energy_balance']                
+    #snapshot
 
     alpha = common_envelope_efficiency(donor, accretor) 
     lambda_donor = envelope_structure_parameter(donor)
@@ -162,6 +205,8 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         print 'Merger in inner binary through common envelope phase (energy balance)'
         print 'donor:', donor.core_radius, Rl_donor_new
         print 'accretor:', accretor.radius, Rl_accretor_new
+        bs.bin_type = bin_type['merger']
+        #snapshot    
         exit(0)
     else:
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
@@ -182,6 +227,8 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
 
         donor.is_donor = False
         bs.is_stable = True
+        bs.bin_type = bin_type['detached']
+        #snapshot
 
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope energy balance' 
@@ -196,6 +243,9 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
     if REPORT_BINARY_EVOLUTION:
         print 'Before common envelope angular momentum balance' 
         self.print_binary(bs) 
+
+    bs.bin_type = bin_type['double_common_envelope']                
+    #snapshot
 
     alpha = common_envelope_efficiency(donor, accretor)
     lambda_donor = envelope_structure_parameter(donor) 
@@ -215,6 +265,8 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         print 'Merger in inner binary through common envelope phase (double common envelope)'
         print 'donor:', donor.core_radius, Rl_donor_new
         print 'accretor:', accretor.radius, Rl_accretor_new
+        bs.bin_type = bin_type['merger']
+        #snapshot    
         exit(0)
     else:
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
@@ -235,8 +287,11 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         corotating_frequency = corotating_spin_angular_frequency_binary(a_new, donor.mass, accretor.mass)
         donor.spin_angular_frequency = corotating_frequency
         accretor.spin_angular_frequency = corotating_frequency
+
         donor.is_donor = False
         bs.is_stable = True
+        bs.bin_type = bin_type['detached']
+        #snapshot
 
         if REPORT_BINARY_EVOLUTION:
             print 'After double common envelope energy balance' 
@@ -315,6 +370,10 @@ def contact_system(bs, star1, star2, self):
     if REPORT_FUNCTION_NAMES:
         print "Contact system"
 
+    bs.bin_type = bin_type['contact']                
+    #snapshot    
+
+
     #for now no W Ursae Majoris evolution
     #so for now MS-MS contact binaries merge in common_envelope_phase
     #if stable mass transfer is implemented, then also the timestep needs to be adjusted
@@ -369,6 +428,12 @@ def stable_mass_transfer(bs, donor, accretor, self):
     if REPORT_FUNCTION_NAMES:
         print 'Stable mass transfer'
 
+    if bs.bin_type != bin_type['stable_mass_transfer']:
+        bs.bin_type = bin_type['stable_mass_transfer']                
+        #snapshot
+    else:
+        bs.bin_type = bin_type['stable_mass_transfer']                
+
     Md = donor.mass
     Ma = accretor.mass
     
@@ -408,6 +473,9 @@ def stable_mass_transfer(bs, donor, accretor, self):
         
     bs.accretion_efficiency_mass_transfer = accretion_efficiency
 
+
+
+
 def semi_detached(bs, donor, accretor, self):
 #only for double stars (consisting of two stars)
 
@@ -436,6 +504,12 @@ def triple_stable_mass_transfer(bs, donor, accretor, self):
     if REPORT_FUNCTION_NAMES:
         print 'triple stable mass transfer'
 
+    if bs.bin_type != bin_type['stable_mass_transfer']:
+        bs.bin_type = bin_type['stable_mass_transfer']                
+        #snapshot
+    else:
+        bs.bin_type = bin_type['stable_mass_transfer']                
+    
     exit(0)
 
 def triple_mass_transfer(bs, donor, accretor, self):
@@ -450,6 +524,8 @@ def triple_mass_transfer(bs, donor, accretor, self):
         #adjusting triple is done in secular evolution code
     else:        
         print 'triple_mass_transfer: unstable mass transfer in outer binary'
+#        bs.bin_type = bin_type['?']                
+        #snapshot
         exit(0)
 
 #-------------------------
@@ -488,6 +564,12 @@ def detached(bs, self):
     # orbital evolution is being taken into account in secular_code        
     if REPORT_FUNCTION_NAMES:
         print 'Detached'
+
+    if bs.bin_type != bin_type['detached']:
+        bs.bin_type = bin_type['detached']
+        #snapshot
+    else:
+        bs.bin_type = bin_type['detached']
     
     # wind mass loss is done by se_code
     # wind accretion here:

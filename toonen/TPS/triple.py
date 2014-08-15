@@ -58,7 +58,6 @@ minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
 
-
 class Triple:
     #-------
     #setup stellar system
@@ -138,12 +137,14 @@ class Triple:
             inner_eccentricity, outer_eccentricity,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node):     
+
         bins = Particles(2)
         bins.is_star = False
         bins.is_binary = True
         bins.is_container = False
         bins.is_stable = True
         bins.part_dt_mt = 1.
+        bins.bin_type = bin_type['unknown'] #Unknown
 
         bins[0].child1 = stars[0]
         bins[0].child2 = stars[1]
