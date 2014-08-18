@@ -2,7 +2,7 @@ from amuse.units import units, constants, quantities
 import numpy as np
 
 REPORT_BINARY_EVOLUTION = False
-REPORT_FUNCTION_NAMES = False
+REPORT_FUNCTION_NAMES = True
 REPORT_MASS_TRANSFER_STABILITY = False
 
 #constants
@@ -146,7 +146,7 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         
         bs.bin_type = bin_type['merger']
         #snapshot    
-        exit(0)
+        return
     else:
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
@@ -167,6 +167,11 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         donor.is_donor = False
         bs.is_stable = True
         bs.bin_type = bin_type['detached']
+
+#        adjusting of stellar system
+        adjust_system_after_ce_in_inner_binary(bs, self)                    
+        self.instantaneous_evolution = True #skip secular evolution                
+
         #snapshot                
 
 
@@ -207,7 +212,7 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         print 'accretor:', accretor.radius, Rl_accretor_new
         bs.bin_type = bin_type['merger']
         #snapshot    
-        exit(0)
+        return
     else:
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
@@ -228,6 +233,11 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         donor.is_donor = False
         bs.is_stable = True
         bs.bin_type = bin_type['detached']
+
+#        adjusting of stellar system
+        adjust_system_after_ce_in_inner_binary(bs, self)                    
+        self.instantaneous_evolution = True #skip secular evolution                
+
         #snapshot
 
         if REPORT_BINARY_EVOLUTION:
@@ -263,11 +273,11 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
     
     if (donor.core_radius > Rl_donor_new) or (accretor.core_radius > Rl_accretor_new):
         print 'Merger in inner binary through common envelope phase (double common envelope)'
-        print 'donor:', donor.core_radius, Rl_donor_new
-        print 'accretor:', accretor.radius, Rl_accretor_new
+        print 'donor:', donor.core_radius, Rl_donor_new, donor.stellar_type
+        print 'accretor:', accretor.radius, Rl_accretor_new, accretor.stellar_type
         bs.bin_type = bin_type['merger']
         #snapshot    
-        exit(0)
+        return
     else:
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
         #check if star changes type     
@@ -291,6 +301,11 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         donor.is_donor = False
         bs.is_stable = True
         bs.bin_type = bin_type['detached']
+
+#        adjusting of stellar system
+        adjust_system_after_ce_in_inner_binary(bs, self)                    
+        self.instantaneous_evolution = True #skip secular evolution                
+
         #snapshot
 
         if REPORT_BINARY_EVOLUTION:
@@ -305,10 +320,13 @@ def which_common_envelope_phase(bs, donor, accretor, self):
     if donor.stellar_type not in stellar_types_giants and accretor.stellar_type not in stellar_types_giants:
 #        possible options: MS+MS, MS+remnant, remnant+remnant,
 #                          HeMS+HeMS, HeMS+MS, HeMS+remnant
-        print donor.stellar_type, accretor.stellar_type
         print 'Merger in inner binary through common envelope phase (stellar types)'
-        exit(0)
-    
+        print 'donor:', donor.stellar_type
+        print 'accretor:', accretor.stellar_type
+        bs.bin_type = bin_type['merger']
+        #snapshot    
+        return
+
     if which_common_envelope == 0:
         if donor.stellar_type in stellar_types_giants and accretor.stellar_type in stellar_types_giants:
             double_common_envelope(bs, donor, accretor, self)
@@ -346,24 +364,9 @@ def common_envelope_phase(bs, donor, accretor, self):
     #perform CE in binary
     which_common_envelope_phase(bs, donor, accretor, self)
 
-    #adjusting of stellar system
-    system = bs
-    while True:
-        try:    
-            system = system.parent
-            if system.child1.is_binary and system.child2.is_star:
-                adjust_system_after_ce_in_inner_binary(system, system.child1, system.child2, self)                
-            elif system.child2.is_binary and system.child1.is_star:
-                adjust_system_after_ce_in_inner_binary(system, system.child2, system.child1, self)                            
-            else:
-                print 'common_envelope_phase: type of system unknown'
-                exit(2)
-                                        
-        except AttributeError:
-            #when there is no parent
-            break
-
-    self.instantaneous_evolution = True #skip secular evolution                
+#    adjusting of stellar system
+#    adjust_system_after_ce_in_inner_binary(bs, self)                    
+#    self.instantaneous_evolution = True #skip secular evolution                
        
 
 def contact_system(bs, star1, star2, self):
@@ -396,12 +399,11 @@ def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
    
        
             
-def adjust_system_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
+def adjust_triple_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
 # Assumption: Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
 # Instanteneous effect
-   
     if REPORT_FUNCTION_NAMES:
-        print 'Adjust system after ce in inner_binary'
+        print 'Adjust triple after ce in inner_binary'
 
     M_com_after_ce = self.get_mass(ce_binary)
     M_com_before_ce = ce_binary.previous_mass
@@ -419,9 +421,31 @@ def adjust_system_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
 
     self.check_for_RLOF()       
     if self.has_donor():
-        print 'adjust_system_after_ce_in_inner_binary: RLOF'    
+        print 'adjust_triple_after_ce_in_inner_binary: RLOF'    
         exit(1)
             
+
+def adjust_system_after_ce_in_inner_binary(bs, self):
+    if REPORT_FUNCTION_NAMES:
+        print 'Adjust system after ce in inner_binary'
+
+    system = bs
+    while True:
+        try:    
+            system = system.parent
+            if system.child1.is_binary and system.child2.is_star:
+                adjust_triple_after_ce_in_inner_binary(system, system.child1, system.child2, self)                
+            elif system.child2.is_binary and system.child1.is_star:
+                adjust_triple_after_ce_in_inner_binary(system, system.child2, system.child1, self)                            
+            else:
+                print 'adjust_system_after_ce_in_inner_binary: type of system unknown'
+                exit(2)
+                                        
+        except AttributeError:
+            #when there is no parent
+            break
+
+
 
 def stable_mass_transfer(bs, donor, accretor, self):
     # orbital evolution is being taken into account in secular_code        

@@ -58,6 +58,12 @@ minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
 
+
+#stopping conditions
+stop_at_merger = True
+stop_at_disintegrated = True
+
+
 class Triple:
     #-------
     #setup stellar system
@@ -464,6 +470,50 @@ class Triple:
             
         return False            
 
+# if a merger is currently taking place, not if a merger has happened in the past
+    def has_merger(self, stellar_system = None): 
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_container:
+            if self.has_merger(stellar_system.child2):
+                return True
+        elif stellar_system.is_star:
+            return False
+        elif stellar_system.is_binary:
+            if self.has_merger(stellar_system.child1):
+                return True
+            if self.has_merger(stellar_system.child2):
+                return True
+            if stellar_system.bin_type == bin_type['merger']:  
+                return True    
+        else:
+            print 'has_merger: structure stellar system unknown'        
+            exit(2)
+
+# if a disruption is currently taking place, not if a disruption has happened in the past
+    def has_disintegrated(self, stellar_system = None): 
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_container:
+            if self.has_disintegrated(stellar_system.child2):
+                return True
+        elif stellar_system.is_star:
+            return False
+        elif stellar_system.is_binary:
+            if self.has_disintegrated(stellar_system.child1):
+                return True
+            if self.has_disintegrated(stellar_system.child2):
+                return True
+            if stellar_system.bin_type == bin_type['disintegrated']:  
+                return True    
+        else:
+            print 'has_disintegrated: structure stellar system unknown'        
+            exit(2)
+
+            
+        return False            
 
     def is_system_stable(self, stellar_system = None):
         if stellar_system == None:
@@ -1063,6 +1113,12 @@ class Triple:
 #                self.secular_code.model_time = self.time
 #                continue # the while loop, skip resolve_interaction and secular evolution
 
+            if stop_at_merger and self.has_merger():
+                print 'stop at merger in triple'
+                break    
+            if stop_at_disintegrated and self.has_disintegrated():
+                print 'stopping at disintegration of triple'
+                break    
                   
             
             # do secular evolution
