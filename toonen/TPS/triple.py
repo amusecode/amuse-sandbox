@@ -60,9 +60,11 @@ max_mass = 100 |units.MSun
 
 
 #stopping conditions
-stop_at_merger = True
-stop_at_disintegrated = True
-
+stop_at_merger = True # as implementation is missing, e.g. secular code not adjusted
+stop_at_disintegrated = True # as implementation is missing, e.g. secular code not adjusted
+stop_at_triple_mass_transfer = True # as implementation is missing 
+stop_at_collision = True # as implementation is missing
+stop_at_dynamical_instability = True # this should always be true!
 
 class Triple:
     #-------
@@ -101,6 +103,7 @@ class Triple:
         triples[0].is_star = False
         triples[0].is_binary = True # True if there are 2 children
         triples[0].is_container = True # Upper level
+        triples[0].dynamical_stable = True 
         
         self.first_contact = True # not used at the moment, how to reset ?
         self.instantaneous_evolution = False # no secular evolution
@@ -208,7 +211,8 @@ class Triple:
         self.channel_from_se = self.se_code.particles.new_channel_to(stars)
         self.channel_to_se = stars.new_channel_to(self.se_code.particles)
         self.channel_from_se.copy()
-    
+
+      
     def setup_secular_code(self, triples):
         self.secular_code = SecularTriple()
         self.secular_code.triples.add_particles(triples)
@@ -235,17 +239,6 @@ class Triple:
 
         self.channel_from_secular = self.secular_code.triples.new_channel_to(triples)
         self.channel_to_secular = triples.new_channel_to(self.secular_code.triples)
-
-    def checks_after_secular_code(self):
-        if self.secular_code.triples[0].dynamical_instability == True:
-            print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
-            exit(0)
-        if self.secular_code.triples[0].inner_collision == True:
-            print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
-            exit(0)
-        if self.secular_code.triples[0].outer_collision == True:
-            print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
-            exit(0)        
     #-------
 
     #-------
@@ -491,6 +484,8 @@ class Triple:
             print 'has_merger: structure stellar system unknown'        
             exit(2)
 
+        return False            
+
 # if a disruption is currently taking place, not if a disruption has happened in the past
     def has_disintegrated(self, stellar_system = None): 
         if stellar_system == None:
@@ -511,7 +506,31 @@ class Triple:
         else:
             print 'has_disintegrated: structure stellar system unknown'        
             exit(2)
+            
+        return False            
 
+# if a mass transfer in the outer binary of the triple is currently taking place, not if a mass transfer has happened in the past
+    def has_triple_mass_transfer(self, stellar_system = None): 
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+            
+        if stellar_system.is_container:
+            if self.has_triple_mass_transfer(stellar_system.child2):
+                return True
+        elif stellar_system.is_star:
+            return False
+        elif self.is_double_star(stellar_system):
+            return False
+        elif stellar_system.is_binary:
+            if self.has_triple_mass_transfer(stellar_system.child1):
+                return True
+            if self.has_triple_mass_transfer(stellar_system.child2):
+                return True
+            if stellar_system.bin_type != bin_type['unknown'] and stellar_system.bin_type != bin_type['detached']:  
+                return True    
+        else:
+            print 'has_triple_mass_transfer: structure stellar system unknown'        
+            exit(2)
             
         return False            
 
@@ -808,13 +827,9 @@ class Triple:
             return dt
         elif stellar_system.is_binary:
             if self.is_double_star(stellar_system) and stellar_system.child1.is_donor and stellar_system.child2.is_donor:
-                print stellar_system.child1.is_donor, stellar_system.child2.is_donor
-                print stellar_system.child1.mass, stellar_system.child2.mass
-                print stellar_system.child1.stellar_type, stellar_system.child2.stellar_type
-                print stellar_system.child1.radius, stellar_system.child2.radius
-                print stellar_system.semimajor_axis
+                #should have been taken care of in determine_time_step()
                 print 'determine_time_step_stable_mt: contact system'        
-                exit(0)
+                exit(1)
 
             dt1 = self.determine_time_step_stable_mt(stellar_system.child1)        
             dt2 = self.determine_time_step_stable_mt(stellar_system.child2)
@@ -992,7 +1007,6 @@ class Triple:
             #assumption child1 from self.particles[0].child2 is the star, and child2 is self.particles[0].child1
             if self.particles[0].child2.child1.is_donor and (self.particles[0].child1.child1.is_donor or self.particles[0].child1.child2.is_donor):
                 print 'RLOF in inner and outer binary'
-                exit(0)
     
         if REPORT_TRIPLE_EVOLUTION:
             print '\ninner binary - child1'
@@ -1018,31 +1032,6 @@ class Triple:
                 print 'resolve triple interaction: type of outer system unknown'
                 exit(2)                    
     
-    
-#        if self.particles[0].child2.child1.is_donor:
-#            if self.particles[0].child1.child1.is_donor or self.particles[0].child1.child2.is_donor:
-#                print 'RLOF in inner and outer binary'
-#                exit(0)
-    
-#        if REPORT_TRIPLE_EVOLUTION:
-#            print '\ninner binary'
-#        if self.is_double_star(self.particles[0].child1):
-#            mass_transfer_stability(self.particles[0].child1)
-#        elif self.particles[0].child1.is_star:
-#            print 'do nothing'
-#        else:
-#            print 'determine_mass_transfer_timescale: type of inner system unknown'
-#            exit(2)                    
-    
-#        if REPORT_TRIPLE_EVOLUTION:
-#            print '\nouter binary'
-#        if self.particles[0].child2.is_binary:
-#            mass_transfer_stability(self.particles[0].child2)
-#        else:
-#            print 'determine_mass_transfer_timescale: type of outer system unknown'
-#            exit(2)           
-
-
     def evolve_triple(self):
         
         # for plotting data
@@ -1118,7 +1107,14 @@ class Triple:
                 break    
             if stop_at_disintegrated and self.has_disintegrated():
                 print 'stopping at disintegration of triple'
-                break    
+                break
+            if stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
+                print 'stopping at mass transfer in outer binary of triple'
+                #it's possible that there is mass transfer in the inner and outer binary
+                print self.particles[0].child1.bin_type
+                print self.particles[0].child2.bin_type
+                print self.has_triple_mass_transfer()
+                break                                    
                   
             
             # do secular evolution
@@ -1126,7 +1122,7 @@ class Triple:
             if self.instantaneous_evolution == False: # better to do this with a continue statement?                 
                 if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
-                    exit(0)
+                    exit(1)
 
                 if self.particles[0].child1.part_dt_mt < 1: # inner binary, see function determine_partial_time_step_stable_mass_transfer
                     full_dt = self.time - self.previous_time
@@ -1158,7 +1154,23 @@ class Triple:
                     
                 else:
                     self.secular_code.evolve_model(self.time)
-                self.checks_after_secular_code()
+
+            if stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
+                self.triples[0].dynamical_stable = False    
+                print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
+                #snapshot
+                break
+            if stop_at_collision and self.secular_code.triples[0].inner_collision == True:
+                self.triples[0].child1.bin_type = bin_type['collision']
+                print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
+                #snapshot
+                break
+            if stop_at_collision and self.secular_code.triples[0].outer_collision == True:
+                self.triples[0].child2.bin_type = bin_type['collision']
+                print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
+                #snapshot
+                break
+
                 self.channel_from_secular.copy()     
             else:        
                 print 'how do I restart the secular code?'                

@@ -35,12 +35,14 @@ bin_type = {
 #                6: 'common_envelope_angular_momentum_balance',
 #                7: 'double_common_envelope',
 #                8: 'stable_mass_transfer',
+#                9: 'collision',
                 
                 'unknown': 'unknown',       
                 'merger': 'merger', 
                 'disintegrated': 'disintegrated', 
                 'detached': 'detached',       
                 'contact': 'contact',    
+                'collision': 'collision',    
                  
                 'common_envelope_energy_balance': 'common_envelope_energy_balance',     
                 'ce_e': 'common_envelope_energy_balance',     
@@ -122,7 +124,6 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
     if REPORT_BINARY_EVOLUTION:
         if bs.eccentricity > 0.05:
             print 'gamma common envelope in eccentric binary'
-            exit(0)
         print 'Before common envelope angular momentum balance' 
         self.print_binary(bs) 
 
@@ -526,7 +527,7 @@ def semi_detached(bs, donor, accretor, self):
 def triple_stable_mass_transfer(bs, donor, accretor, self):
     # orbital evolution is being taken into account in secular_code        
     if REPORT_FUNCTION_NAMES:
-        print 'triple stable mass transfer'
+        print 'Triple stable mass transfer'
 
     if bs.bin_type != bin_type['stable_mass_transfer']:
         bs.bin_type = bin_type['stable_mass_transfer']                
@@ -534,7 +535,7 @@ def triple_stable_mass_transfer(bs, donor, accretor, self):
     else:
         bs.bin_type = bin_type['stable_mass_transfer']                
     
-    exit(0)
+    #implementation is missing
 
 def triple_mass_transfer(bs, donor, accretor, self):
 #only for binaries consisting of a star and a binary/double stars
@@ -542,15 +543,20 @@ def triple_mass_transfer(bs, donor, accretor, self):
         print 'Triple mass transfer'
         bs.semimajor_axis, donor.mass, self.get_mass(accretor), donor.stellar_type
 
+
     if bs.is_stable:
         triple_stable_mass_transfer(bs, donor, accretor, self)
         self.first_contact = False
         #adjusting triple is done in secular evolution code
     else:        
-        print 'triple_mass_transfer: unstable mass transfer in outer binary'
-#        bs.bin_type = bin_type['?']                
+        if REPORT_FUNCTION_NAMES:
+            print 'triple_mass_transfer: unstable mass transfer in outer binary'
+        bs.bin_type = bin_type['common_envelope_energy_balance']                
         #snapshot
-        exit(0)
+        
+        #implementation is missing
+        #snapshot
+
 
 #-------------------------
 
@@ -697,7 +703,6 @@ def resolve_binary_interaction(bs, self):
             if bs.child1.is_donor:
                 if bs.child2.child1.is_donor or bs.child2.child2.is_donor:
                     print 'rlof in inner and outer binary'
-                    exit(0)
                 triple_mass_transfer(bs, bs.child1, bs.child2, self)
             else:
                 detached(bs, self)
