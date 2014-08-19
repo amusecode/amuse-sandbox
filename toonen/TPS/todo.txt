@@ -46,6 +46,8 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Initial conditions
 **********************
+Done
+
 Distributions for the initial parameters should be included:
 inner_semimajor_axis, outer_semimajor_axis,
 inner_eccentricity, outer eccentricity,
@@ -92,7 +94,7 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Stopping conditions
 **********************
-To do on long-term. 
+Done
 
 Implement stopping conditions nicely (from within AMUSE framework).
 
@@ -182,6 +184,9 @@ Author: Silvia
 Date: 25-06-2014
 Topic: Data output
 **********************
+Done
+output is generated when binary type or stellar type changes.
+
 How do we organize the data output? Which information do we want to save?
 
 Options:

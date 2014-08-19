@@ -128,7 +128,7 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         self.print_binary(bs) 
 
     bs.bin_type = bin_type['common_envelope_angular_momentum_balance']
-    #snapshot                
+    self.save_snapshot()        
 
     gamma = common_envelope_efficiency_gamma(donor, accretor)
     J_init = np.sqrt(bs.semimajor_axis) * (donor.mass * accretor.mass) / np.sqrt(donor.mass + accretor.mass) * np.sqrt(1-bs.eccentricity**2)
@@ -145,8 +145,7 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         print 'donor:', donor.core_radius, Rl_donor_new
         print 'accretor:', accretor.radius, Rl_accretor_new
         
-        bs.bin_type = bin_type['merger']
-        #snapshot    
+        bs.bin_type = bin_type['merger']      
         return
     else:
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
@@ -171,10 +170,7 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
 
 #        adjusting of stellar system
         adjust_system_after_ce_in_inner_binary(bs, self)                    
-        self.instantaneous_evolution = True #skip secular evolution                
-
-        #snapshot                
-
+        self.instantaneous_evolution = True #skip secular evolution                        
 
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope angular momentum balance' 
@@ -192,7 +188,7 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         self.print_binary(bs) 
 
     bs.bin_type = bin_type['common_envelope_energy_balance']                
-    #snapshot
+    self.save_snapshot()        
 
     alpha = common_envelope_efficiency(donor, accretor) 
     lambda_donor = envelope_structure_parameter(donor)
@@ -212,7 +208,6 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         print 'donor:', donor.core_radius, Rl_donor_new
         print 'accretor:', accretor.radius, Rl_accretor_new
         bs.bin_type = bin_type['merger']
-        #snapshot    
         return
     else:
         donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
@@ -239,8 +234,6 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         adjust_system_after_ce_in_inner_binary(bs, self)                    
         self.instantaneous_evolution = True #skip secular evolution                
 
-        #snapshot
-
         if REPORT_BINARY_EVOLUTION:
             print 'After common envelope energy balance' 
             self.print_binary(bs) 
@@ -256,7 +249,7 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         self.print_binary(bs) 
 
     bs.bin_type = bin_type['double_common_envelope']                
-    #snapshot
+    self.save_snapshot()        
 
     alpha = common_envelope_efficiency(donor, accretor)
     lambda_donor = envelope_structure_parameter(donor) 
@@ -277,7 +270,6 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         print 'donor:', donor.core_radius, Rl_donor_new, donor.stellar_type
         print 'accretor:', accretor.radius, Rl_accretor_new, accretor.stellar_type
         bs.bin_type = bin_type['merger']
-        #snapshot    
         return
     else:
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
@@ -307,8 +299,6 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         adjust_system_after_ce_in_inner_binary(bs, self)                    
         self.instantaneous_evolution = True #skip secular evolution                
 
-        #snapshot
-
         if REPORT_BINARY_EVOLUTION:
             print 'After double common envelope energy balance' 
             self.print_binary(bs) 
@@ -325,7 +315,6 @@ def which_common_envelope_phase(bs, donor, accretor, self):
         print 'donor:', donor.stellar_type
         print 'accretor:', accretor.stellar_type
         bs.bin_type = bin_type['merger']
-        #snapshot    
         return
 
     if which_common_envelope == 0:
@@ -375,7 +364,7 @@ def contact_system(bs, star1, star2, self):
         print "Contact system"
 
     bs.bin_type = bin_type['contact']                
-    #snapshot    
+    self.save_snapshot()        
 
 
     #for now no W Ursae Majoris evolution
@@ -455,7 +444,7 @@ def stable_mass_transfer(bs, donor, accretor, self):
 
     if bs.bin_type != bin_type['stable_mass_transfer']:
         bs.bin_type = bin_type['stable_mass_transfer']                
-        #snapshot
+        self.save_snapshot()        
     else:
         bs.bin_type = bin_type['stable_mass_transfer']                
 
@@ -531,7 +520,7 @@ def triple_stable_mass_transfer(bs, donor, accretor, self):
 
     if bs.bin_type != bin_type['stable_mass_transfer']:
         bs.bin_type = bin_type['stable_mass_transfer']                
-        #snapshot
+        self.save_snapshot()        
     else:
         bs.bin_type = bin_type['stable_mass_transfer']                
     
@@ -552,7 +541,7 @@ def triple_mass_transfer(bs, donor, accretor, self):
         if REPORT_FUNCTION_NAMES:
             print 'triple_mass_transfer: unstable mass transfer in outer binary'
         bs.bin_type = bin_type['common_envelope_energy_balance']                
-        #snapshot
+        self.save_snapshot()        
         
         #implementation is missing
         #snapshot
@@ -595,11 +584,11 @@ def detached(bs, self):
     if REPORT_FUNCTION_NAMES:
         print 'Detached'
 
-    if bs.bin_type != bin_type['detached']:
+    if bs.bin_type == bin_type['detached'] or bs.bin_type == bin_type['unknown']:
         bs.bin_type = bin_type['detached']
-        #snapshot
     else:
         bs.bin_type = bin_type['detached']
+        self.save_snapshot()        
     
     # wind mass loss is done by se_code
     # wind accretion here:

@@ -28,23 +28,37 @@
 
 
 
+from amuse.community.seculartriple_TPS.interface import SecularTriple
 from amuse.community.seba.interface import SeBa
+from binary import *
+
 from amuse.units import units, constants
 from amuse.datamodel import Particles
 from amuse.support.console import set_printing_strategy
+from amuse.io import write_set_to_file
+from amuse.units import quantities
+import amuse.plot as aplt
 
-from binary import *
+import matplotlib.pyplot as plt
 from math import sqrt
 import numpy as np
 
-from amuse.community.seculartriple_TPS.interface import SecularTriple
-
-from amuse.units import quantities
-import matplotlib.pyplot as plt
-import amuse.plot as aplt
-
 
 REPORT_TRIPLE_EVOLUTION = False 
+
+#stopping conditions
+#for the moment these are global variables, and not interface parameters, as we cannot simulate them
+stop_at_merger = True # as implementation is missing, e.g. secular code not adjusted
+stop_at_disintegrated = True # as implementation is missing, e.g. secular code not adjusted
+stop_at_triple_mass_transfer = True # as implementation is missing 
+stop_at_collision = True # as implementation is missing
+stop_at_dynamical_instability = True # this should always be true!
+
+
+file_name = "triple.hdf"
+file_type = "hdf5"
+#file_name = "triple.txt"
+#file_type = "txt"
 
 #constants
 time_step_factor_stable_mt = 0.01 #1% mass loss during mass transfer
@@ -58,13 +72,6 @@ minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
 
-
-#stopping conditions
-stop_at_merger = True # as implementation is missing, e.g. secular code not adjusted
-stop_at_disintegrated = True # as implementation is missing, e.g. secular code not adjusted
-stop_at_triple_mass_transfer = True # as implementation is missing 
-stop_at_collision = True # as implementation is missing
-stop_at_dynamical_instability = True # this should always be true!
 
 class Triple:
     #-------
@@ -305,6 +312,7 @@ class Triple:
         elif stellar_system.is_star:
             stellar_system.previous_mass = self.get_mass(stellar_system)      
             stellar_system.previous_radius = stellar_system.radius
+            stellar_system.previous_stellar_type = stellar_system.stellar_type
         elif stellar_system.is_binary:
             self.update_previous_se_parameters(stellar_system.child1)        
             self.update_previous_se_parameters(stellar_system.child2)
@@ -534,6 +542,28 @@ class Triple:
             
         return False            
 
+
+    def has_stellar_type_changed(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+
+        if stellar_system.is_container:
+            if self.has_stellar_type_changed(stellar_system.child2):
+                return True
+        elif stellar_system.is_star:
+            if stellar_system.stellar_type != stellar_system.previous_stellar_type:
+                return True
+        elif stellar_system.is_binary:
+            if self.has_stellar_type_changed(stellar_system.child1) or self.has_stellar_type_changed(stellar_system.child2):
+                return True                        
+        else:
+            print 'has_stellar_type_changed: structure stellar system unknown'        
+            exit(2)
+            
+        return False            
+    
+
+
     def is_system_stable(self, stellar_system = None):
         if stellar_system == None:
             stellar_system = self.particles[0]
@@ -744,6 +774,77 @@ class Triple:
             print 'print_stellar_sytem: structure stellar system unknown'        
             exit(2)
         print '\t'            
+    #-------
+    #-------
+    #don't change this unless you know what you're doing
+    def remove_parents(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+
+        parents = []
+        if stellar_system.is_container:
+            parents = self.remove_parents(stellar_system.child2)
+            return parents
+        elif stellar_system.is_star:
+            try:
+                p = stellar_system.parent
+                stellar_system.parent = 0
+                return p
+            except AttributeError: #when there is no parent
+                return 0
+        elif stellar_system.is_binary:
+            parents.append(self.remove_parents(stellar_system.child1))
+            parents.append(self.remove_parents(stellar_system.child2))
+
+            p = stellar_system.parent
+#            except AttributeError: #when there is no parent=
+            if p != None:
+                stellar_system.parent = 0
+                parents.append(p)                                    
+
+            return parents
+        else:
+            print 'remove_parents: structure stellar system unknown'        
+            exit(2)
+            
+    #don't change this unless you know what you're doing
+    def set_parents(self, parents, stellar_system=None):            
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+
+        if stellar_system.is_container:
+            self.set_parents(parents, stellar_system.child2)
+        elif stellar_system.is_star:
+                stellar_system.parent = parents
+        elif stellar_system.is_binary:
+            self.set_parents(parents[0], stellar_system.child1)
+            self.set_parents(parents[1], stellar_system.child2)
+            if len(parents) == 3:
+                stellar_system.parent = parents[2]
+            elif len(parents) != 2:
+                print 'set_parents: structure stellar system unknown'        
+                exit(2)
+        else:
+            print 'set_parents: structure stellar system unknown'        
+            exit(2)
+ 
+    def save_snapshot(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+
+        if file_type == 'txt':
+            parents = self.remove_parents()
+            write_set_to_file(self.particles, file_name, file_type) 
+            self.set_parents(parents)
+        else:
+            write_set_to_file(self.particles, file_name, file_type, version='2.0') 
+
+    #some minor parameters are missing:
+#        self.first_contact = True 
+#        self.instantaneous_evolution = False 
+#        self.tend = tend #...
+#        self.time = 0.0|units.yr
+#        self.previous_time = 0.0|units.yr
     #-------
         
     #-------
@@ -1065,7 +1166,11 @@ class Triple:
 
         print 'kozai timescale:', self.kozai_timescale()      
         self.determine_mass_transfer_timescale()
+        self.save_snapshot()        
         while self.time<self.tend:
+            if self.has_stellar_type_changed():
+                self.save_snapshot()        
+        
             self.update_previous_se_parameters()
             self.check_for_RLOF()   #What if only 1 star left...                     
             self.determine_time_step()  
@@ -1158,17 +1263,17 @@ class Triple:
             if stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
                 self.triples[0].dynamical_stable = False    
                 print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
-                #snapshot
+                self.save_snapshot()        
                 break
             if stop_at_collision and self.secular_code.triples[0].inner_collision == True:
                 self.triples[0].child1.bin_type = bin_type['collision']
                 print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
-                #snapshot
+                self.save_snapshot()        
                 break
             if stop_at_collision and self.secular_code.triples[0].outer_collision == True:
                 self.triples[0].child2.bin_type = bin_type['collision']
                 print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
-                #snapshot
+                self.save_snapshot()        
                 break
 
                 self.channel_from_secular.copy()     
@@ -1179,16 +1284,6 @@ class Triple:
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
-                     
-#            if self.has_donor():
-#                if REPORT_TRIPLE_EVOLUTION: 
-#                    print 'RLOF'
-#                    self.print_stellar_system()
-#                self.first_contact = False
-#               #if secular code stops at RLOF
-#                self.time = self.secular_code.model_time 
-#            else:           
-#                self.first_contact = True
                  
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
             
@@ -1210,6 +1305,8 @@ class Triple:
             m2_array.append(self.particles[0].child1.child2.mass)
             m3_array.append(self.particles[0].child2.child1.mass)
             
+
+        self.save_snapshot()        
             
         # for plotting data
         e_in_array = np.array(e_in_array)
@@ -1675,6 +1772,6 @@ if __name__ == '__main__':
     triple = Triple(**options)
     triple.evolve_triple()
     triple.print_stellar_system()
-    plot_function(triple)
+#    plot_function(triple)
 
 
