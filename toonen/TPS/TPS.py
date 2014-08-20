@@ -55,7 +55,8 @@
 ##            --o_distr  outer longitude of ascending node option: 0) ? [default]
 ##            -T or -t   binary end time. [13500 Myr]
 ##            -z         metallicity of stars  [0.02 Solar] 
-##            -n         number of binaries to be simulated.  [1]
+##            -n         number of triples to be simulated.  [1]
+##            -N         number of initial triple.  [0]
 
 #not implemented yet
 ##            -D        stopping condition at merger or disruption [False]
@@ -76,7 +77,7 @@ from amuse.ic.salpeter import new_salpeter_mass_distribution
 from amuse.ic.flatimf import new_flat_mass_distribution
 
 
-min_mass = 0.1 |units.MSun # for stars
+min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
 
 
@@ -214,7 +215,6 @@ class Generate_initial_triple:
             else: # flat distribution
                out_mass_ratio = flat_distr(out_mass_ratio_min, out_mass_ratio_max)
                self.out_mass = out_mass_ratio * (self.in_primary_mass + self.in_secondary_mass)
-               print out_mass_ratio, self.out_mass
 
 
     def generate_semi(self, 
@@ -350,10 +350,12 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                         in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr,
                         in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                         in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr,                                                                     
-                        metallicity, tend, number, stop_at_merger_or_disruption, seed):
+                        metallicity, tend, number, initial_number, stop_at_merger_or_disruption, seed):
 
 
+    
     for i_n in range(number):
+        print 'new triple, number:', initial_number+i_n
         triple_system = Generate_initial_triple(in_primary_mass_max, in_primary_mass_min, 
                     in_mass_ratio_max, in_mass_ratio_min, 
                     out_mass_ratio_max, out_mass_ratio_min, 
@@ -366,21 +368,22 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                     in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                     in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr)
         
-        triple_system.print_triple()
+#        triple_system.print_triple()
         
-#        triple.main(inner_primary_mass = triple_system.in_primary_mass, 
-#                    inner_secondary_mass = triple_system.in_secondary_mass, 
-#                    outer_mass = triple_system.out_mass, 
-#                    inner_semimajor_axis = triple_system.in_semi, 
-#                    outer_semimajor_axis = triple_system.out_semi, 
-#                    inner_eccentricity = triple_system.in_ecc, 
-#                    outer_eccentricity = triple_system.out_ecc, 
-#                    mutual_inclination = triple_system.incl, 
-#                    inner_argument_of_pericenter = triple_system.in_aop, 
-#                    outer_argument_of_pericenter = triple_system.out_aop, 
-#                    inner_longitude_of_ascending_node = triple_system.in_loan, 
-#                    outer_longitude_of_ascending_node = triple_system.out_loan, 
-#                    metallicity = metallicity, tend = tend)                        
+        number_of_system = initial_number + i_n
+        triple.main(inner_primary_mass = triple_system.in_primary_mass, 
+                    inner_secondary_mass = triple_system.in_secondary_mass, 
+                    outer_mass = triple_system.out_mass, 
+                    inner_semimajor_axis = triple_system.in_semi, 
+                    outer_semimajor_axis = triple_system.out_semi, 
+                    inner_eccentricity = triple_system.in_ecc, 
+                    outer_eccentricity = triple_system.out_ecc, 
+                    mutual_inclination = triple_system.incl, 
+                    inner_argument_of_pericenter = triple_system.in_aop, 
+                    outer_argument_of_pericenter = triple_system.out_aop, 
+                    inner_longitude_of_ascending_node = triple_system.in_loan, 
+                    outer_longitude_of_ascending_node = triple_system.out_loan, 
+                    metallicity = metallicity, tend = tend, number = number_of_system)                        
                                 
 
 def test_initial_parameters(in_primary_mass_max, in_primary_mass_min, 
@@ -394,7 +397,7 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
                         in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr,
                         in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                         in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr,                   
-                        metallicity, tend, number, stop_at_merger_or_disruption, seed):
+                        metallicity, tend, number, initial_number, stop_at_merger_or_disruption, seed):
 
     if (in_primary_mass_min < min_mass) or (in_primary_mass_max > max_mass):
         print 'error: inner primary mass not in allowed range [', min_mass, ',', max_mass, ']'
@@ -506,6 +509,13 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
         print 'error: maximum outer longitude of ascending node smaller than minimum argument of pericenter'
         exit(1)
 
+    if (number < 1):
+        print 'Requested number of systems < 1'
+        exit(1)
+
+    if (initial_number < 0):
+        print 'Initial number of system < 0'
+        exit(1)
 
 
 def parse_arguments():
@@ -627,13 +637,15 @@ def parse_arguments():
                       help="outer longitude of ascending node distribution [?]")
                       
     parser.add_option("-t", "-T", unit=units.Myr, 
-                      dest="tend", type="float", default = 200|units.Myr,
+                      dest="tend", type="float", default = 13500|units.Myr,
                       help="end time [%default] %unit")
     parser.add_option("-z", unit=units.none, 
                       dest="metallicity", type="float", default = 0.02|units.none,
                       help="metallicity [%default] %unit")
     parser.add_option("-n", dest="number", type="int", default = 10,
                       help="number of systems [%default]")
+    parser.add_option("-N", dest="initial_number", type="int", default = 0,
+                      help="number of initial system [%default]")
     parser.add_option("-D", unit=units.none, 
                       dest="stop_at_merger_or_disruption", type="int", default = 0|units.none,
                       help="stop at merger or disruption [%default] %unit") #should be bool

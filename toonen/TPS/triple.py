@@ -82,8 +82,7 @@ class Triple:
             mutual_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
-            metallicity,
-            tend):      
+            metallicity, tend, number):      
             
         self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
@@ -111,6 +110,7 @@ class Triple:
         triples[0].is_binary = True # True if there are 2 children
         triples[0].is_container = True # Upper level
         triples[0].dynamical_stable = True 
+        triples[0].number = number 
         
         self.first_contact = True # not used at the moment, how to reset ?
         self.instantaneous_evolution = False # no secular evolution
@@ -256,7 +256,9 @@ class Triple:
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node):
             
-        if (min(inner_secondary_mass, outer_mass) < min_mass) or (max(inner_primary_mass, outer_mass) > max_mass):  
+
+        if max(inner_primary_mass, outer_mass) > max_mass:  
+#        if (min(inner_secondary_mass, outer_mass) < min_mass) or (max(inner_primary_mass, outer_mass) > max_mass):  
             print inner_primary_mass, inner_secondary_mass, outer_mass
             print 'should be within:', min_mass, '-', max_mass
             print 'error: masses not in allowed range'
@@ -760,6 +762,7 @@ class Triple:
         if stellar_system.is_container:
             print '\t'
             print 'stellar system: '
+            print stellar_system.number
             print stellar_system.mutual_inclination
             print '\t'
             self.print_stellar_system(stellar_system.child2)
@@ -1164,7 +1167,7 @@ class Triple:
         m2_array.append(self.particles[0].child1.child2.mass)
         m3_array.append(self.particles[0].child2.child1.mass)
 
-        print 'kozai timescale:', self.kozai_timescale()      
+#        print 'kozai timescale:', self.kozai_timescale()      
         self.determine_mass_transfer_timescale()
         self.save_snapshot()        
         while self.time<self.tend:
@@ -1181,7 +1184,6 @@ class Triple:
             self.channel_from_se.copy()
             self.update_se_wind_parameters()
             self.update_se_parameters()        
-            safety_check_time_step(self)
 #            if  self.se_code.stopping_condition.supernova_detection.is_set():
 #                print 'supernova detected'
 #                print self.se_code.stopping_condition.supernova_detection.particles(0)
@@ -1225,6 +1227,7 @@ class Triple:
             # do secular evolution
             self.channel_to_secular.copy()   
             if self.instantaneous_evolution == False: # better to do this with a continue statement?                 
+                safety_check_time_step(self)
                 if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
                     exit(1)
@@ -1261,26 +1264,23 @@ class Triple:
                     self.secular_code.evolve_model(self.time)
 
             if stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
-                self.triples[0].dynamical_stable = False    
+                self.particles[0].dynamical_stable = False    
                 print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
                 self.save_snapshot()        
                 break
             if stop_at_collision and self.secular_code.triples[0].inner_collision == True:
-                self.triples[0].child1.bin_type = bin_type['collision']
+                self.particles[0].child1.bin_type = bin_type['collision']
                 print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
                 self.save_snapshot()        
                 break
             if stop_at_collision and self.secular_code.triples[0].outer_collision == True:
-                self.triples[0].child2.bin_type = bin_type['collision']
+                self.particles[0].child2.bin_type = bin_type['collision']
                 print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
                 self.save_snapshot()        
                 break
 
                 self.channel_from_secular.copy()     
             else:        
-                print 'how do I restart the secular code?'                
-                print 'which parameters to overwrite?'
-                print ' only the internal time?'
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
@@ -1671,7 +1671,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             inner_argument_of_pericenter= 0.1, outer_argument_of_pericenter= 0.5,
             inner_longitude_of_ascending_node= 0.0, outer_longitude_of_ascending_node= 0.0,
             metallicity= 0.02|units.none,
-            tend= 5.0 |units.Myr):
+            tend= 5.0 |units.Myr, number = 0):
 
     set_printing_strategy("custom", 
                           preferred_units = [units.MSun, units.RSun, units.Myr], 
@@ -1686,19 +1686,17 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
     inner_longitude_of_ascending_node = float(inner_longitude_of_ascending_node)
     outer_longitude_of_ascending_node = float(outer_longitude_of_ascending_node)
 
-
     triple = Triple(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
             mutual_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
-            metallicity,
-            tend)
+            metallicity, tend, number)
 
     triple.evolve_triple()
 #    plot_function(triple)
-    triple.print_stellar_system()
+#    triple.print_stellar_system()
     return triple
 #-----
 
@@ -1746,12 +1744,14 @@ def parse_arguments():
     parser.add_option("-o",
                       dest="outer_longitude_of_ascending_node", type="float", default = 0.0,
                       help="outer longitude of ascending node [rad] [%default]")
-    parser.add_option("-t", "-T", unit=units.Myr, 
-                      dest="tend", type="float", default = 5.0 |units.Myr,
-                      help="end time [%default] %unit")
     parser.add_option("-z", unit=units.none, 
                       dest="metallicity", type="float", default = 0.02|units.none,
                       help="metallicity [%default] %unit")
+    parser.add_option("-t", "-T", unit=units.Myr, 
+                      dest="tend", type="float", default = 5.0 |units.Myr,
+                      help="end time [%default] %unit")
+    parser.add_option("-N", dest="number", type="int", default = 0,
+                      help="number of system [%default]")
 
     options, args = parser.parse_args()
     return options.__dict__

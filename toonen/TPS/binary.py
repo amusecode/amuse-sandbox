@@ -2,7 +2,7 @@ from amuse.units import units, constants, quantities
 import numpy as np
 
 REPORT_BINARY_EVOLUTION = False
-REPORT_FUNCTION_NAMES = True
+REPORT_FUNCTION_NAMES = False
 REPORT_MASS_TRANSFER_STABILITY = False
 
 #constants
