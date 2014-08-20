@@ -394,7 +394,7 @@ class Triple:
         elif stellar_system.is_star:
             star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
             stellar_system.gyration_radius = star_in_se_code.get_gyration_radius_sq()**0.5     
-            stellar_system.apsidal_motion_constant = 1. # WARNING
+            stellar_system.apsidal_motion_constant = self.apsidal_motion_constant(stellar_system) 
         elif stellar_system.is_binary:
             self.update_se_parameters(stellar_system.child1)        
             self.update_se_parameters(stellar_system.child2)
@@ -631,6 +631,27 @@ class Triple:
         else:
             print 'stellar_angular_momentum: structure stellar system unknown'        
             exit(2)
+            
+    def apsidal_motion_constant(self, star):
+        if star.stellar_type in [13]|units.stellar_type: #ns
+            #based on Brooke & Olle 1955, for n=1 polytrope
+            return 0.260
+    
+        elif star.stellar_type in [1,7,10,11,12]|units.stellar_type:#ms, he-ms, wd
+            #based on Brooke & Olle 1955, for n=3 polytrope
+            return 0.0144            
+
+        elif star.stellar_type in [0,2,3,4,5,6,8,9,17]|units.stellar_type:#low-mass ms, hg, gb, cheb, agb, he-g, pre-ms
+            #based on Brooke & Olle 1955, for n=3 polytrope
+#            return 0.143 
+            #based on Claret & Gimenez 1992, 96, 225 the value should be smaller, try:
+            return 0.05
+        else:
+            print 'apsidal motion constant: stellar_type unknown'
+#            print 'possibly black hole'
+            print star.stellar_type
+            exit(2)
+            
 
     def kozai_timescale(self):
         if self.is_triple():
