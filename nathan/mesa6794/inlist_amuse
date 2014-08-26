@@ -1,0 +1,21 @@
+! inlist for use with AMUSE
+
+! For the sake of future readers of this file (yourself included),
+! ONLY include the controls you are actually using.  DO NOT include
+! all of the other controls that simply have their default values.
+
+&star_job
+
+
+/ !end of star_job namelist
+
+
+&controls
+
+
+!      photo_directory = 'photos'
+      photostep = -1
+      do_history_file = .false.
+      write_profiles_flag = .false.
+
+/ ! end of controls namelist
