@@ -1,10 +1,5 @@
 from amuse.test.amusetest import TestWithMPI, get_path_to_results
-#~import sys
-#~import os.path
-#~from subprocess import PIPE, Popen
-#~import numpy
-#~from math import ceil
-#~
+import os.path
 from interface import MESA, MESAInterface
 
 from amuse.support.exceptions import AmuseException
@@ -22,28 +17,23 @@ class TestMESAInterface(TestWithMPI):
         self.assertEqual(status, 0)
         instance.stop()
         
-    #~def slowtest2(self):
-        #~print "Testing get/set of metallicity (tests new ZAMS model implicitly)..."
-        #~print "The first time this test will take quite some time" \
-            #~" to generate new starting models."
-        #~instance = self.new_instance_of_an_optional_code(MESAInterface)
-        #~if instance is None:
-            #~print "MESA was not built. Skipping test."
-            #~return
-        #~instance.set_MESA_paths(instance.default_path_to_inlist, 
-            #~instance.default_path_to_MESA, instance.get_output_directory())
-        #~status = instance.initialize_code()
-        #~self.assertEqual(status,0)
-        #~(metallicity, error) = instance.get_metallicity()
-        #~self.assertEquals(0, error)
-        #~self.assertEquals(0.02, metallicity)
-        #~for x in [0.04, 0.02, 0.01, 0.00]:
-            #~error = instance.set_metallicity(x)
-            #~self.assertEquals(0, error)
-            #~(metallicity, error) = instance.get_metallicity()
-            #~self.assertEquals(0, error)
-            #~self.assertEquals(x, metallicity)
-        #~instance.stop()
+    def test2(self):
+        print "Testing get/set of metallicity parameter (only used for creating pre-main-sequence models)"
+        instance = self.new_instance_of_an_optional_code(MESAInterface)
+        instance.set_MESA_paths(instance.default_path_to_inlist, 
+            instance.default_path_to_MESA, instance.get_output_directory())
+        status = instance.initialize_code()
+        self.assertEqual(status,0)
+        (metallicity, error) = instance.get_metallicity()
+        self.assertEquals(0, error)
+        self.assertEquals(0.02, metallicity)
+        for x in [0.04, 0.02, 0.01, 0.00]:
+            error = instance.set_metallicity(x)
+            self.assertEquals(0, error)
+            (metallicity, error) = instance.get_metallicity()
+            self.assertEquals(0, error)
+            self.assertEquals(x, metallicity)
+        instance.stop()
     
     def test3(self):
         print "Testing basic operations: new_particle..."
@@ -260,16 +250,41 @@ class TestMESAInterface(TestWithMPI):
 
 class TestMESA(TestWithMPI):
     
-    def xtest1(self):
-        print "Testing initialization and default MESA parameters..."
+    def test1(self):
+        print "Testing initialization"
         instance = self.new_instance_of_an_optional_code(MESA, redirection="none")
-        instance.set_MESA_paths(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA, instance.get_output_directory())
+        instance.initialize_code()
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test2(self):
+        print "Testing MESA parameters..."
+        instance = self.new_instance_of_an_optional_code(MESA, redirection="none")
         instance.initialize_code()
         self.assertEquals(0.02 | units.no_unit, instance.parameters.metallicity)
-        self.assertEquals(1.0e36 | units.yr, instance.parameters.max_age_stop_condition)
-        instance.parameters.max_age_stop_condition = 1.0e2 | units.Myr
-        self.assertEquals(1.0e2 | units.Myr, instance.parameters.max_age_stop_condition)
+        self.assertEquals(1.0e-6 | units.s, instance.parameters.min_timestep_stop_condition)
+        instance.parameters.min_timestep_stop_condition = 1.0e-2 | units.s
+        self.assertEquals(1.0e-2 | units.s, instance.parameters.min_timestep_stop_condition)
+        
+        instance.commit_parameters()
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test5(self):
+        print "Test for saving and loading the stellar structure model"
+        filenames = ["test1.dump", "test2.dump"]
+        filenames = [os.path.join(get_path_to_results(), name) for name in filenames]
+        instance = self.new_instance_of_an_optional_code(MESA, redirection="none")
+        instance.particles.add_particles(Particles(mass = [0.5, 0.8] | units.MSun))
+        instance.evolve_model()
+        instance.evolve_model()
+        instance.particles.write_star_to_file(filenames)
+        copies = Particles(2)
+        copies.filename = filenames
+        instance.particles.add_particles(copies)
+        instance.evolve_model()
+        print instance.particles
+        self.assertAlmostRelativeEquals(instance.particles.temperature, [3873, 4885, 3872, 4884] | units.K, 3)
         instance.stop()
     
     #~def test2(self):

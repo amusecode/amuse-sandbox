@@ -9,12 +9,16 @@
          double precision :: AMUSE_min_timestep_stop_condition = 1.0d-6
          double precision :: AMUSE_mixing_length_ratio = 2.0d0
          double precision :: AMUSE_semi_convection_efficiency = 0.0d0
-!~         integer :: AMUSE_RGB_wind_scheme = 1
-!~         integer :: AMUSE_AGB_wind_scheme = 1
-!~         double precision :: AMUSE_reimers_wind_efficiency = 0.5d0
-!~         double precision :: AMUSE_blocker_wind_efficiency = 0.1d0
-!~         double precision :: AMUSE_de_jager_wind_efficiency = 0.8d0
-!~         double precision :: AMUSE_dutch_wind_efficiency = 0.8d0
+         character (len=32) :: AMUSE_RGB_wind_scheme = ''
+         character (len=32) :: AMUSE_AGB_wind_scheme = ''
+         double precision :: AMUSE_reimers_wind_efficiency = 0.5d0
+         double precision :: AMUSE_blocker_wind_efficiency = 0.1d0
+         double precision :: AMUSE_de_jager_wind_efficiency = 0.8d0
+         double precision :: AMUSE_dutch_wind_efficiency = 0.8d0
+         double precision :: AMUSE_van_Loon_wind_eta = 0.0d0
+         double precision :: AMUSE_Kudritzki_wind_eta = 0.0d0
+         double precision :: AMUSE_Nieuwenhuijzen_wind_eta = 0.0d0
+         double precision :: AMUSE_Vink_wind_eta = 0.0d0
          double precision :: AMUSE_overshoot_f_all = 0
 
          double precision, allocatable :: target_times(:)
@@ -72,6 +76,97 @@
             end if
          end subroutine amuse_star_setup
          
+! General initializations, used by new_zams_star, new_prems_star, and new_star_from_file
+         integer function amuse_new_particle(AMUSE_id, AMUSE_mass)
+            use run_star_support, only: failed, do_read_star_job, id_from_read_star_job, &
+               do_star_job_controls_before
+            use star_lib, only: starlib_init, star_set_kap_and_eos_handles, &
+               star_load_zams, show_log_description
+            use star_def, only: star_info, get_star_ptr
+            use se_support, only: se_startup
+            use const_def, only: mesa_data_dir, mesa_dir
+            implicit none
+            integer, intent(out) :: AMUSE_id
+            integer :: ierr
+            double precision, intent(in) :: AMUSE_mass
+            type (star_info), pointer :: s
+            
+            amuse_new_particle = -1
+            call do_read_star_job(AMUSE_inlist_path, ierr)
+            if (failed('do_read_star_job', ierr)) return
+            
+            ! Replace value of mesa_data_dir just read, with supplied path.
+            mesa_dir = AMUSE_mesa_dir
+            mesa_data_dir = AMUSE_local_data_dir
+            
+            ! already allocated by read_star_job
+            AMUSE_id = id_from_read_star_job
+            id_from_read_star_job = 0
+            number_of_particles = AMUSE_id
+            call get_star_ptr(AMUSE_id, s, ierr)
+            if (failed('get_star_ptr', ierr)) return
+            
+            s% job% mesa_dir = AMUSE_mesa_dir
+            
+            call starlib_init(s, ierr) ! okay to do extra calls on this
+            if (failed('star_init',ierr)) return
+            
+            call star_set_kap_and_eos_handles(AMUSE_id, ierr)
+            if (failed('set_star_kap_and_eos_handles',ierr)) return
+            
+            call amuse_star_setup(AMUSE_id, AMUSE_inlist_path, ierr)
+            if (failed('amuse_star_setup', ierr)) return
+            
+            if (len_trim(s% op_mono_data_path) == 0) &
+               call get_environment_variable( &
+                  "MESA_OP_MONO_DATA_PATH", s% op_mono_data_path)
+            
+            if (len_trim(s% op_mono_data_cache_filename) == 0) &
+               call get_environment_variable( &
+                  "MESA_OP_MONO_DATA_CACHE_FILENAME", s% op_mono_data_cache_filename)         
+            
+            ! Replace value of mass and metallicity just read, with supplied values.
+            s% initial_mass = AMUSE_mass
+            s% initial_z = AMUSE_initial_z
+            s% initial_y = AMUSE_initial_y
+            s% zams_filename = trim(AMUSE_zamsfile)
+            s% min_timestep_limit = AMUSE_min_timestep_stop_condition
+            s% mixing_length_alpha = AMUSE_mixing_length_ratio
+            s% alpha_semiconvection = AMUSE_semi_convection_efficiency
+            s% RGB_wind_scheme = trim(AMUSE_RGB_wind_scheme)
+            s% AGB_wind_scheme = trim(AMUSE_AGB_wind_scheme)
+            s% Reimers_wind_eta = AMUSE_reimers_wind_efficiency
+            s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
+            s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
+            s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
+            s% van_Loon_wind_eta = AMUSE_van_Loon_wind_eta
+            s% Kudritzki_wind_eta = AMUSE_Kudritzki_wind_eta
+            s% Nieuwenhuijzen_wind_eta = AMUSE_Nieuwenhuijzen_wind_eta
+            s% Vink_wind_eta = AMUSE_Vink_wind_eta
+            s% overshoot_f_above_nonburn = AMUSE_overshoot_f_all
+            s% overshoot_f_below_nonburn = AMUSE_overshoot_f_all
+            s% overshoot_f_above_burn_h = AMUSE_overshoot_f_all
+            s% overshoot_f_below_burn_h = AMUSE_overshoot_f_all
+            s% overshoot_f_above_burn_he = AMUSE_overshoot_f_all
+            s% overshoot_f_below_burn_he = AMUSE_overshoot_f_all
+            s% overshoot_f_above_burn_z = AMUSE_overshoot_f_all
+            s% overshoot_f_below_burn_z = AMUSE_overshoot_f_all
+            if (debugging) then
+               write (*,*) "Creating new particles with mass: ", s% initial_mass
+               write (*,*) "Loading starting model from: ", s% zams_filename
+            endif
+            if (s% job% show_log_description_at_start .and. AMUSE_id == 1) then
+               write(*,*)
+               call show_log_description(AMUSE_id, ierr)
+               if (failed('show_log_description', ierr)) return
+            end if
+            write(*,*)
+            
+            call do_star_job_controls_before(AMUSE_id, s, .false., ierr)
+            if (failed('do_star_job_controls_before', ierr)) return
+            amuse_new_particle = 0
+         end function amuse_new_particle
+      
       end module amuse_support
 
 ! Set the paths to the inlist and the data directory
@@ -90,23 +185,7 @@
 
 ! Initialize the stellar evolution code
       integer function initialize_code()
-!~         use amuse_support, only: AMUSE_mesa_dir, AMUSE_inlist_path, AMUSE_local_data_dir
-!~         use amuse_support, only: AMUSE_initial_z
-!~         use run_star_support
-!~         use const_def, only: mesa_data_dir
          implicit none
-!~         integer :: ierr!, set_metallicity
-!~         initialize_code = -1
-!~         call star_init(mesa_data_dir, kappa_file_prefix, &
-!~            net_reaction_filename, rates_dir, ppn_rate_numbers_fname, ierr)
-!~         if (failed('star_init', ierr)) return
-!~         profile_columns_file = trim(mesa_data_dir) // '/star_data/profile_columns.list'
-!~         log_columns_file = trim(mesa_data_dir) // '/star_data/log_columns.list'
-!~         ierr = set_metallicity(AMUSE_initial_z)
-!~         if (failed('set_metallicity', ierr)) return
-!~         call flush()
-!~         report_backups = .true.
-!~         report_retries = .true.
          initialize_code = 0
       end function initialize_code
 
@@ -123,305 +202,254 @@
          cleanup_code = 0
       end function cleanup_code
 
-   integer function new_zams_star(AMUSE_id, AMUSE_mass)
-      use amuse_support
-      use run_star_support
-      use star_lib, only: alloc_star, starlib_init, star_set_kap_and_eos_handles, &
-         star_setup, star_load_zams, &
-         show_terminal_header, show_log_description
-      use star_def, only: star_info, get_star_ptr
-      use se_support, only: se_startup
-      use const_def, only: mesa_data_dir
-      implicit none
-      integer, intent(out) :: AMUSE_id
-      integer :: ierr
-      double precision, intent(in) :: AMUSE_mass
-      type (star_info), pointer :: s
-      
-      new_zams_star = -1
-      call do_read_star_job(AMUSE_inlist_path, ierr)
-      if (failed('do_read_star_job', ierr)) return
-      
-      ! Replace value of mesa_data_dir just read, with supplied path.
-      mesa_dir = AMUSE_mesa_dir
-      mesa_data_dir = AMUSE_local_data_dir
-      
-      ! already allocated by read_star_job
-      AMUSE_id = id_from_read_star_job
-      id_from_read_star_job = 0
-      number_of_particles = AMUSE_id
-      
-      call get_star_ptr(AMUSE_id, s, ierr)
-      if (failed('get_star_ptr', ierr)) return
-      
-      s% job% mesa_dir = AMUSE_mesa_dir
-      
-      call starlib_init(s, ierr) ! okay to do extra calls on this
-      if (failed('star_init',ierr)) return
-      
-      call star_set_kap_and_eos_handles(AMUSE_id, ierr)
-      if (failed('set_star_kap_and_eos_handles',ierr)) return
-      
-      call amuse_star_setup(AMUSE_id, AMUSE_inlist_path, ierr)
-      if (failed('amuse_star_setup', ierr)) return
-      
-      if (len_trim(s% op_mono_data_path) == 0) &
-         call get_environment_variable( &
-            "MESA_OP_MONO_DATA_PATH", s% op_mono_data_path)
-      
-      if (len_trim(s% op_mono_data_cache_filename) == 0) &
-         call get_environment_variable( &
-            "MESA_OP_MONO_DATA_CACHE_FILENAME", s% op_mono_data_cache_filename)         
-      
-      ! Replace value of mass and metallicity just read, with supplied values.
-      s% initial_mass = AMUSE_mass
-      s% initial_z = AMUSE_initial_z
-      s% initial_y = AMUSE_initial_y
-      s% zams_filename = trim(AMUSE_zamsfile)
-!~      s% max_age = AMUSE_max_age_stop_condition
-      s% min_timestep_limit = AMUSE_min_timestep_stop_condition
-!~      s% max_model_number = AMUSE_max_iter_stop_condition
-      s% mixing_length_alpha = AMUSE_mixing_length_ratio
-      s% alpha_semiconvection = AMUSE_semi_convection_efficiency
-!~      s% RGB_wind_scheme = AMUSE_RGB_wind_scheme
-!~      s% AGB_wind_scheme = AMUSE_AGB_wind_scheme
-!~      s% Reimers_wind_eta = AMUSE_reimers_wind_efficiency
-!~      s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
-!~      s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
-!~      s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
-      s% overshoot_f_above_nonburn = AMUSE_overshoot_f_all
-      s% overshoot_f_below_nonburn = AMUSE_overshoot_f_all
-      s% overshoot_f_above_burn_h = AMUSE_overshoot_f_all
-      s% overshoot_f_below_burn_h = AMUSE_overshoot_f_all
-      s% overshoot_f_above_burn_he = AMUSE_overshoot_f_all
-      s% overshoot_f_below_burn_he = AMUSE_overshoot_f_all
-      s% overshoot_f_above_burn_z = AMUSE_overshoot_f_all
-      s% overshoot_f_below_burn_z = AMUSE_overshoot_f_all
-      if (debugging) then
-         write (*,*) "Creating new particles with mass: ", s% initial_mass
-         write (*,*) "Loading starting model from: ", s% zams_filename
-      endif
-      if (s% job% show_log_description_at_start) then
-         write(*,*)
-         call show_log_description(AMUSE_id, ierr)
-         if (failed('show_log_description', ierr)) return
-      end if
-      write(*,*)
-      
-      call do_star_job_controls_before(AMUSE_id, s, .false., ierr)
-      if (failed('do_star_job_controls_before', ierr)) return
 
-!~         call do_load1_star(id, s, .false., 'restart_photo', ierr)
-!~         if (failed('do_load1_star',ierr)) return
-      call star_load_zams(AMUSE_id, ierr)
-      if (failed('star_load_zams', ierr)) return
+      integer function new_zams_star(AMUSE_id, AMUSE_mass)
+         use amuse_support, only: amuse_new_particle
+         use run_star_support, only: failed, do_star_job_controls_after, before_evolve
+         use star_lib, only: show_terminal_header, star_load_zams, start_new_run_for_pgstar
+         use star_def, only: star_info, get_star_ptr
+         use se_support, only: se_startup
+         implicit none
+         integer, intent(out) :: AMUSE_id
+         integer :: ierr
+         double precision, intent(in) :: AMUSE_mass
+         type (star_info), pointer :: s
          
-      call do_star_job_controls_after(AMUSE_id, s, .false., ierr)
-      if (failed('do_star_job_controls_after',ierr)) return
-      
-      write(*,*)
-      write(*,*)
-!~      call before_evolve(AMUSE_id, ierr)
-!~      if (failed('before_evolve',ierr)) return
-!~            call start_new_run_for_pgstar(s, ierr)
-!~            if (failed('start_new_run_for_pgstar',ierr)) return
-      call se_startup(s, AMUSE_id, .false., s% job% use_se_output, ierr)
-      if (failed('se_startup',ierr)) return
-
-
-
-      call show_terminal_header(AMUSE_id, ierr)
-      if (failed('show_terminal_header', ierr)) return
-      call flush()
-      new_zams_star = 0
-   end function
+         new_zams_star = -1
+         ierr = amuse_new_particle(AMUSE_id, AMUSE_mass)
+         if (failed('amuse_new_particle', ierr)) return
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         
+   !~         call do_load1_star(id, s, .false., 'restart_photo', ierr)
+   !~         if (failed('do_load1_star',ierr)) return
+         call star_load_zams(AMUSE_id, ierr)
+         if (failed('star_load_zams', ierr)) return
+            
+         call do_star_job_controls_after(AMUSE_id, s, .false., ierr)
+         if (failed('do_star_job_controls_after',ierr)) return
+         
+         write(*,*)
+         write(*,*)
+         call before_evolve(AMUSE_id, ierr)
+         if (failed('before_evolve',ierr)) return
+         call start_new_run_for_pgstar(s, ierr)
+         if (failed('start_new_run_for_pgstar',ierr)) return
+         call se_startup(s, AMUSE_id, .false., s% job% use_se_output, ierr)
+         if (failed('se_startup',ierr)) return
+         call show_terminal_header(AMUSE_id, ierr)
+         if (failed('show_terminal_header', ierr)) return
+         call flush()
+         new_zams_star = 0
+      end function new_zams_star
 
 ! Create a new pre-main-sequence star
-   function new_prems_star(AMUSE_id, AMUSE_mass)
-      use amuse_support
-      use star_lib, only: alloc_star, star_setup, star_create_pre_ms_model, &
-         show_terminal_header, show_log_description
-      use star_def, only: star_info, get_star_ptr
-      use run_star_support
-      !, only: setup_for_run_star, before_evolve, &
-      !   show_log_description_at_start, failed
-      implicit none
-      integer, intent(out) :: AMUSE_id
-      integer :: new_prems_star, ierr
-      double precision, intent(in) :: AMUSE_mass
-      type (star_info), pointer :: s
-      new_prems_star = -1
-      AMUSE_id = alloc_star(ierr)
-      number_of_particles = AMUSE_id
-      if (failed('alloc_star', ierr)) return
-      call get_star_ptr(AMUSE_id, s, ierr)
-      if (failed('get_star_ptr', ierr)) return
-      call star_setup(AMUSE_id, AMUSE_inlist_path, ierr)
-      if (failed('star_setup', ierr)) return
-      ! Replace value of mass and metallicity just read, with supplied values.
-      s% initial_mass = AMUSE_mass
-      s% initial_z = AMUSE_initial_z
-      s% initial_y = AMUSE_initial_y
-!~      s% max_age = AMUSE_max_age_stop_condition
-      s% min_timestep_limit = AMUSE_min_timestep_stop_condition
-!~      s% max_model_number = AMUSE_max_iter_stop_condition
-      s% mixing_length_alpha = AMUSE_mixing_length_ratio
-      s% alpha_semiconvection = AMUSE_semi_convection_efficiency
-!~      s% RGB_wind_scheme = AMUSE_RGB_wind_scheme
-!~      s% AGB_wind_scheme = AMUSE_AGB_wind_scheme
-!~      s% Reimers_wind_eta = AMUSE_reimers_wind_efficiency
-!~      s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
-!~      s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
-!~      s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
-      s% overshoot_f_above_nonburn = AMUSE_overshoot_f_all
-      s% overshoot_f_below_nonburn = AMUSE_overshoot_f_all
-      s% overshoot_f_above_burn_h = AMUSE_overshoot_f_all
-      s% overshoot_f_below_burn_h = AMUSE_overshoot_f_all
-      s% overshoot_f_above_burn_he = AMUSE_overshoot_f_all
-      s% overshoot_f_below_burn_he = AMUSE_overshoot_f_all
-      s% overshoot_f_above_burn_z = AMUSE_overshoot_f_all
-      s% overshoot_f_below_burn_z = AMUSE_overshoot_f_all
-      if (debugging) then
-         write (*,*) "Creating new pre-main-sequence particles with mass: ", s% initial_mass
-      endif
-!~      if (show_log_description_at_start) then
-!~         write(*,*)
-!~         call show_log_description(AMUSE_id, ierr)
-!~         if (failed('show_log_description', ierr)) return
-!~      end if
-      write(*,*)
-!~      call star_create_pre_ms_model(AMUSE_id, 0.0d0, 0.0d0, 0.0d0, ierr)
-!~      if (failed('create_pre_ms_model', ierr)) return
-!~      call setup_for_run_star(AMUSE_id, s, .false., ierr)
-!~      if (failed('setup_for_run_star', ierr)) return
-!~      call before_evolve(AMUSE_id, ierr)
-!~      if (failed('before_evolve', ierr)) return
-      call show_terminal_header(AMUSE_id, ierr)
-      if (failed('show_terminal_header', ierr)) return
-      call flush()
-      new_prems_star = 0
-   end function
+      integer function new_prems_star(AMUSE_id, AMUSE_mass)
+         use amuse_support, only: amuse_new_particle
+         use run_star_support, only: failed, do_star_job_controls_after, before_evolve
+         use star_lib, only: show_terminal_header, star_create_pre_ms_model, start_new_run_for_pgstar
+         use star_def, only: star_info, get_star_ptr
+         use se_support, only: se_startup
+         implicit none
+         integer, intent(out) :: AMUSE_id
+         integer :: ierr
+         double precision, intent(in) :: AMUSE_mass
+         type (star_info), pointer :: s
+         
+         new_prems_star = -1
+         ierr = amuse_new_particle(AMUSE_id, AMUSE_mass)
+         if (failed('amuse_new_particle', ierr)) return
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         
+         call star_create_pre_ms_model( &
+            AMUSE_id, s% job% pre_ms_T_c, s% job% pre_ms_guess_rho_c, &
+            s% job% pre_ms_d_log10_P, s% job% pre_ms_logT_surf_limit, &
+            s% job% pre_ms_logP_surf_limit, &
+            s% job% initial_zfracs, s% job% pre_ms_relax_num_steps, ierr)
+         if (failed('star_create_pre_ms_model',ierr)) return
+         
+         call do_star_job_controls_after(AMUSE_id, s, .false., ierr)
+         if (failed('do_star_job_controls_after',ierr)) return
+         
+         write(*,*)
+         write(*,*)
+         call before_evolve(AMUSE_id, ierr)
+         if (failed('before_evolve',ierr)) return
+         call start_new_run_for_pgstar(s, ierr)
+         if (failed('start_new_run_for_pgstar',ierr)) return
+         call se_startup(s, AMUSE_id, .false., s% job% use_se_output, ierr)
+         if (failed('se_startup',ierr)) return
+         call show_terminal_header(AMUSE_id, ierr)
+         if (failed('show_terminal_header', ierr)) return
+         call flush()
+         new_prems_star = 0
+      end function new_prems_star
+
+! Create a new star from a saved model
+      integer function new_star_from_file(AMUSE_id, AMUSE_filename)
+         use amuse_support, only: amuse_new_particle
+         use run_star_support, only: failed, do_star_job_controls_after, before_evolve
+         use star_lib, only: show_terminal_header, star_read_model, start_new_run_for_pgstar
+         use star_def, only: star_info, get_star_ptr
+         use se_support, only: se_startup
+         implicit none
+         integer, intent(out) :: AMUSE_id
+         integer :: ierr
+         character(*), intent(in) :: AMUSE_filename
+         type (star_info), pointer :: s
+         
+         new_star_from_file = -1
+         ierr = amuse_new_particle(AMUSE_id, -1.0d0)
+         if (failed('amuse_new_particle', ierr)) return
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         
+         s% job% saved_model_name = trim(AMUSE_filename)
+         call star_read_model(AMUSE_id, s% job% saved_model_name, ierr)
+         if (failed('star_read_model',ierr)) return
+         
+         call do_star_job_controls_after(AMUSE_id, s, .false., ierr)
+         if (failed('do_star_job_controls_after',ierr)) return
+         
+         write(*,*)
+         write(*,*)
+         call before_evolve(AMUSE_id, ierr)
+         if (failed('before_evolve',ierr)) return
+         call start_new_run_for_pgstar(s, ierr)
+         if (failed('start_new_run_for_pgstar',ierr)) return
+         call se_startup(s, AMUSE_id, .false., s% job% use_se_output, ierr)
+         if (failed('se_startup',ierr)) return
+         call show_terminal_header(AMUSE_id, ierr)
+         if (failed('show_terminal_header', ierr)) return
+         call flush()
+         new_star_from_file = 0
+      end function new_star_from_file
+
+      integer function write_star_to_file(AMUSE_id, AMUSE_filename)
+         use star_lib, only: star_write_model
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         character(*), intent(in) :: AMUSE_filename
+         integer :: ierr
+         call star_write_model(AMUSE_id, AMUSE_filename, ierr)
+         write_star_to_file = ierr
+      end function write_star_to_file
 
 ! Remove a particle (doesn't do anything yet)
-   function delete_star(AMUSE_id)
-      implicit none
-      integer, intent(in) :: AMUSE_id
-      integer :: delete_star
-      delete_star = 0
-   end function
-
-   function commit_particles()
-      use amuse_support, only: target_times, number_of_particles
-      implicit none
-      integer :: commit_particles
-      allocate(target_times(number_of_particles))
-      target_times = 0
-      commit_particles = 0
-   end function
-
-   function recommit_particles()
-      use amuse_support, only: target_times, number_of_particles
-      implicit none
-      integer :: recommit_particles
-      double precision, allocatable :: temp(:)
-      allocate(temp(size(target_times)))
-      temp = target_times
-      deallocate(target_times)
-      allocate(target_times(number_of_particles))
-      target_times = 0
-      target_times(1:size(temp)) = temp
-      deallocate(temp)
-      recommit_particles = 0
-   end function
+      function delete_star(AMUSE_id)
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer :: delete_star
+         delete_star = 0
+      end function
+   
+      function commit_particles()
+         use amuse_support, only: target_times, number_of_particles
+         use star_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer :: commit_particles, k, ierr
+         type (star_info), pointer :: s
+         allocate(target_times(number_of_particles))
+         do k = 1, number_of_particles
+            call get_star_ptr(k, s, ierr)
+            if (failed('get_star_ptr', ierr)) return
+            target_times(k) = s% time
+         end do
+         commit_particles = 0
+      end function
+   
+      function recommit_particles()
+         use amuse_support, only: target_times, number_of_particles
+         use star_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer :: recommit_particles, k, ierr
+         type (star_info), pointer :: s
+         double precision, allocatable :: temp(:)
+         allocate(temp(size(target_times)))
+         temp = target_times
+         deallocate(target_times)
+         allocate(target_times(number_of_particles))
+         target_times = 0
+         target_times(1:size(temp)) = temp
+         do k = size(temp)+1, number_of_particles
+            call get_star_ptr(k, s, ierr)
+            if (failed('get_star_ptr', ierr)) return
+            target_times(k) = s% time
+         end do
+         deallocate(temp)
+         recommit_particles = 0
+      end function
 
 ! Get/setters for code parameters:
 
 ! Return the number of particles currently allocated in the code
-   function get_number_of_particles(AMUSE_value)
-      implicit none
-      integer :: get_number_of_particles
-      integer, intent(out) :: AMUSE_value
-      AMUSE_value = -1
-      get_number_of_particles = -1
-   end function
+      function get_number_of_particles(AMUSE_value)
+         implicit none
+         integer :: get_number_of_particles
+         integer, intent(out) :: AMUSE_value
+         AMUSE_value = -1
+         get_number_of_particles = -1
+      end function
 
 ! Return the metallicity parameter
-   integer function get_metallicity(AMUSE_value)
-      use amuse_support, only: AMUSE_initial_z
-      implicit none
-      double precision, intent(out) :: AMUSE_value
-      AMUSE_value = AMUSE_initial_z
-      get_metallicity = 0
-   end function
+      integer function get_metallicity(AMUSE_value)
+         use amuse_support, only: AMUSE_initial_z
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_initial_z
+         get_metallicity = 0
+      end function
 
 ! Set the metallicity parameter
-!~   integer function set_metallicity(AMUSE_value)
-!~      use amuse_support, only: AMUSE_initial_z, &
-!~         AMUSE_zamsfile, set_zams_filename
-!~      use utils_lib, only: alloc_iounit, free_iounit
-!~      use run_star_support, only: failed
-!~      implicit none
-!~      double precision, intent(in) :: AMUSE_value
-!~      integer :: ierr, iounit
-!~      set_metallicity = -1
-!~      AMUSE_initial_z = AMUSE_value
-!~      call set_zams_filename(ierr)
-!~      if (failed('get_zams_filename', ierr)) return
-!~      ! Check if the ZAMS model file exists
-!~      iounit = alloc_iounit(ierr)
-!~      if (failed('alloc_iounit', ierr)) return
-!~      ! Check whether the file exists
-!~      open(iounit, file=trim(AMUSE_zamsfile), action='read', &
-!~         status='old', iostat=ierr)
-!~      if (ierr == 0) then
-!~         close(iounit)
-!~         call free_iounit(iounit)
-!~      else
-!~         call free_iounit(iounit)
-!~         write(*, *) 'Error in set_metallicity for Z=', AMUSE_value
-!~         write(*, *) 'Missing zams file: ', trim(AMUSE_zamsfile)
-!~         write(*, *) 'See src/star/test_suite/create_zams to create it'
-!~         return
-!~      endif
-!~      set_metallicity = 0
-!~   end function
-   integer function set_zamsfile(AMUSE_value)
-      use amuse_support, only: AMUSE_zamsfile, AMUSE_local_data_dir
-      use utils_lib, only: alloc_iounit, free_iounit
-      use run_star_support, only: failed
-      implicit none
-      character(*), intent(in) :: AMUSE_value
-      integer :: ierr, iounit
-      character(len=4096) :: tmp
-      set_zamsfile = -1
-      ! Check whether the file exists
-      iounit = alloc_iounit(ierr)
-      if (failed('alloc_iounit', ierr)) return
-      open(iounit, file=trim(AMUSE_value), action='read', status='old', iostat=ierr)
-      if (ierr /= 0) then
-         tmp = trim(AMUSE_local_data_dir) // '/star_data/zams_models/' // trim(AMUSE_value)
-         open(iounit, file=trim(tmp), action='read', status='old', iostat=ierr)
+      integer function set_metallicity(AMUSE_value)
+         use amuse_support, only: AMUSE_initial_z
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_initial_z = AMUSE_value
+         set_metallicity = 0
+      end function
+   
+      integer function set_zamsfile(AMUSE_value)
+         use amuse_support, only: AMUSE_zamsfile, AMUSE_local_data_dir
+         use utils_lib, only: alloc_iounit, free_iounit
+         use run_star_support, only: failed
+         implicit none
+         character(*), intent(in) :: AMUSE_value
+         integer :: ierr, iounit
+         character(len=4096) :: tmp
+         set_zamsfile = -1
+         ! Check whether the file exists
+         iounit = alloc_iounit(ierr)
+         if (failed('alloc_iounit', ierr)) return
+         open(iounit, file=trim(AMUSE_value), action='read', status='old', iostat=ierr)
          if (ierr /= 0) then
-            write(*, *) 'Missing zams file: ', trim(AMUSE_value)
-            write(*, *) 'Not found here, nor at: ', &
-               trim(AMUSE_local_data_dir), '/star_data/zams_models/'
-            call free_iounit(iounit)
-            return
+            tmp = trim(AMUSE_local_data_dir) // '/star_data/zams_models/' // trim(AMUSE_value)
+            open(iounit, file=trim(tmp), action='read', status='old', iostat=ierr)
+            if (ierr /= 0) then
+               write(*, *) 'Missing zams file: ', trim(AMUSE_value)
+               write(*, *) 'Not found here, nor at: ', &
+                  trim(AMUSE_local_data_dir), '/star_data/zams_models/'
+               call free_iounit(iounit)
+               return
+            endif
          endif
-      endif
+         
+         close(iounit)
+         call free_iounit(iounit)
+         AMUSE_zamsfile = AMUSE_value
+         set_zamsfile = 0
+      end function set_zamsfile
       
-      close(iounit)
-      call free_iounit(iounit)
-      AMUSE_zamsfile = AMUSE_value
-      set_zamsfile = 0
-   end function set_zamsfile
-   integer function get_zamsfile(AMUSE_value)
-      use amuse_support, only: AMUSE_zamsfile
-      implicit none
-      character(*), intent(out) :: AMUSE_value
-      AMUSE_value = AMUSE_zamsfile
-      get_zamsfile = 0
-   end function get_zamsfile
+      integer function get_zamsfile(AMUSE_value)
+         use amuse_support, only: AMUSE_zamsfile
+         implicit none
+         character(*), intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_zamsfile
+         get_zamsfile = 0
+      end function get_zamsfile
 
 ! Return the current mass of the star
    function get_mass(AMUSE_id, AMUSE_value)
@@ -2095,113 +2123,178 @@
          set_min_timestep_stop_condition = 0
       end function set_min_timestep_stop_condition
 
-!~! Return the wind (mass loss) scheme for RGB stars
-!~      integer function get_RGB_wind_scheme(AMUSE_value)
-!~         use amuse_support, only: AMUSE_RGB_wind_scheme
-!~         implicit none
-!~         integer, intent(out) :: AMUSE_value
-!~         AMUSE_value = AMUSE_RGB_wind_scheme
-!~         get_RGB_wind_scheme = 0
-!~      end function get_RGB_wind_scheme
-!~
-!~! Set the wind (mass loss) scheme for RGB stars
-!~      integer function set_RGB_wind_scheme(AMUSE_value)
-!~         use amuse_support, only: AMUSE_RGB_wind_scheme
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_value
-!~         AMUSE_RGB_wind_scheme = AMUSE_value
-!~         set_RGB_wind_scheme = 0
-!~      end function set_RGB_wind_scheme
-!~
-!~! Return the wind (mass loss) scheme for AGB stars
-!~      integer function get_AGB_wind_scheme(AMUSE_value)
-!~         use amuse_support, only: AMUSE_AGB_wind_scheme
-!~         implicit none
-!~         integer, intent(out) :: AMUSE_value
-!~         AMUSE_value = AMUSE_AGB_wind_scheme
-!~         get_AGB_wind_scheme = 0
-!~      end function get_AGB_wind_scheme
-!~
-!~! Set the wind (mass loss) scheme for AGB stars
-!~      integer function set_AGB_wind_scheme(AMUSE_value)
-!~         use amuse_support, only: AMUSE_AGB_wind_scheme
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_value
-!~         AMUSE_AGB_wind_scheme = AMUSE_value
-!~         set_AGB_wind_scheme = 0
-!~      end function set_AGB_wind_scheme
-!~
-!~! Retrieve the current value of the Reimers wind (mass loss) efficiency
-!~      integer function get_reimers_wind_efficiency(AMUSE_value)
-!~         use amuse_support, only: AMUSE_reimers_wind_efficiency
-!~         implicit none
-!~         double precision, intent(out) :: AMUSE_value
-!~         AMUSE_value = AMUSE_reimers_wind_efficiency
-!~         get_reimers_wind_efficiency = 0
-!~      end function get_reimers_wind_efficiency
-!~
-!~! Set the current value of the Reimers wind (mass loss) efficiency
-!~      integer function set_reimers_wind_efficiency(AMUSE_value)
-!~         use amuse_support, only: AMUSE_reimers_wind_efficiency
-!~         implicit none
-!~         double precision, intent(in) :: AMUSE_value
-!~         AMUSE_reimers_wind_efficiency = AMUSE_value
-!~         set_reimers_wind_efficiency = 0
-!~      end function set_reimers_wind_efficiency
-!~
-!~! Retrieve the current value of the Blocker wind (mass loss) efficiency
-!~      integer function get_blocker_wind_efficiency(AMUSE_value)
-!~         use amuse_support, only: AMUSE_blocker_wind_efficiency
-!~         implicit none
-!~         double precision, intent(out) :: AMUSE_value
-!~         AMUSE_value = AMUSE_blocker_wind_efficiency
-!~         get_blocker_wind_efficiency = 0
-!~      end function get_blocker_wind_efficiency
-!~
-!~! Set the current value of the Blocker wind (mass loss) efficiency
-!~      integer function set_blocker_wind_efficiency(AMUSE_value)
-!~         use amuse_support, only: AMUSE_blocker_wind_efficiency
-!~         implicit none
-!~         double precision, intent(in) :: AMUSE_value
-!~         AMUSE_blocker_wind_efficiency = AMUSE_value
-!~         set_blocker_wind_efficiency = 0
-!~      end function set_blocker_wind_efficiency
-!~
-!~! Retrieve the current value of the de Jager wind (mass loss) efficiency
-!~      integer function get_de_jager_wind_efficiency(AMUSE_value)
-!~         use amuse_support, only: AMUSE_de_jager_wind_efficiency
-!~         implicit none
-!~         double precision, intent(out) :: AMUSE_value
-!~         AMUSE_value = AMUSE_de_jager_wind_efficiency
-!~         get_de_jager_wind_efficiency = 0
-!~      end function get_de_jager_wind_efficiency
-!~
-!~! Set the current value of the de Jager wind (mass loss) efficiency
-!~      integer function set_de_jager_wind_efficiency(AMUSE_value)
-!~         use amuse_support, only: AMUSE_de_jager_wind_efficiency
-!~         implicit none
-!~         double precision, intent(in) :: AMUSE_value
-!~         AMUSE_de_jager_wind_efficiency = AMUSE_value
-!~         set_de_jager_wind_efficiency = 0
-!~      end function set_de_jager_wind_efficiency
-!~
-!~! Retrieve the current value of the Dutch wind (mass loss) efficiency
-!~      integer function get_dutch_wind_efficiency(AMUSE_value)
-!~         use amuse_support, only: AMUSE_dutch_wind_efficiency
-!~         implicit none
-!~         double precision, intent(out) :: AMUSE_value
-!~         AMUSE_value = AMUSE_dutch_wind_efficiency
-!~         get_dutch_wind_efficiency = 0
-!~      end function get_dutch_wind_efficiency
-!~
-!~! Set the current value of the Dutch wind (mass loss) efficiency
-!~      integer function set_dutch_wind_efficiency(AMUSE_value)
-!~         use amuse_support, only: AMUSE_dutch_wind_efficiency
-!~         implicit none
-!~         double precision, intent(in) :: AMUSE_value
-!~         AMUSE_dutch_wind_efficiency = AMUSE_value
-!~         set_dutch_wind_efficiency = 0
-!~      end function set_dutch_wind_efficiency
+! Return the wind (mass loss) scheme for RGB stars
+      integer function get_RGB_wind_scheme(AMUSE_value)
+         use amuse_support, only: AMUSE_RGB_wind_scheme
+         implicit none
+         character(*), intent(out) :: AMUSE_value
+         AMUSE_value = trim(AMUSE_RGB_wind_scheme)
+         get_RGB_wind_scheme = 0
+      end function get_RGB_wind_scheme
+
+! Set the wind (mass loss) scheme for RGB stars
+      integer function set_RGB_wind_scheme(AMUSE_value)
+         use amuse_support, only: AMUSE_RGB_wind_scheme
+         implicit none
+         character(*), intent(in) :: AMUSE_value
+         AMUSE_RGB_wind_scheme = trim(AMUSE_value)
+         set_RGB_wind_scheme = 0
+      end function set_RGB_wind_scheme
+
+! Return the wind (mass loss) scheme for AGB stars
+      integer function get_AGB_wind_scheme(AMUSE_value)
+         use amuse_support, only: AMUSE_AGB_wind_scheme
+         implicit none
+         character(*), intent(out) :: AMUSE_value
+         AMUSE_value = trim(AMUSE_AGB_wind_scheme)
+         get_AGB_wind_scheme = 0
+      end function get_AGB_wind_scheme
+
+! Set the wind (mass loss) scheme for AGB stars
+      integer function set_AGB_wind_scheme(AMUSE_value)
+         use amuse_support, only: AMUSE_AGB_wind_scheme
+         implicit none
+         character(*), intent(in) :: AMUSE_value
+         AMUSE_AGB_wind_scheme = trim(AMUSE_value)
+         set_AGB_wind_scheme = 0
+      end function set_AGB_wind_scheme
+
+! Retrieve the current value of the Reimers wind (mass loss) efficiency
+      integer function get_reimers_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_reimers_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_reimers_wind_efficiency
+         get_reimers_wind_efficiency = 0
+      end function get_reimers_wind_efficiency
+
+! Set the current value of the Reimers wind (mass loss) efficiency
+      integer function set_reimers_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_reimers_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_reimers_wind_efficiency = AMUSE_value
+         set_reimers_wind_efficiency = 0
+      end function set_reimers_wind_efficiency
+
+! Retrieve the current value of the Blocker wind (mass loss) efficiency
+      integer function get_blocker_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_blocker_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_blocker_wind_efficiency
+         get_blocker_wind_efficiency = 0
+      end function get_blocker_wind_efficiency
+
+! Set the current value of the Blocker wind (mass loss) efficiency
+      integer function set_blocker_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_blocker_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_blocker_wind_efficiency = AMUSE_value
+         set_blocker_wind_efficiency = 0
+      end function set_blocker_wind_efficiency
+
+! Retrieve the current value of the de Jager wind (mass loss) efficiency
+      integer function get_de_jager_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_de_jager_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_de_jager_wind_efficiency
+         get_de_jager_wind_efficiency = 0
+      end function get_de_jager_wind_efficiency
+
+! Set the current value of the de Jager wind (mass loss) efficiency
+      integer function set_de_jager_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_de_jager_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_de_jager_wind_efficiency = AMUSE_value
+         set_de_jager_wind_efficiency = 0
+      end function set_de_jager_wind_efficiency
+
+! Retrieve the current value of the Dutch wind (mass loss) efficiency
+      integer function get_dutch_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_dutch_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_dutch_wind_efficiency
+         get_dutch_wind_efficiency = 0
+      end function get_dutch_wind_efficiency
+
+! Set the current value of the Dutch wind (mass loss) efficiency
+      integer function set_dutch_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_dutch_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_dutch_wind_efficiency = AMUSE_value
+         set_dutch_wind_efficiency = 0
+      end function set_dutch_wind_efficiency
+
+      integer function get_van_Loon_wind_eta(AMUSE_value)
+         use amuse_support, only: AMUSE_van_Loon_wind_eta
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_van_Loon_wind_eta
+         get_van_Loon_wind_eta = 0
+      end function get_van_Loon_wind_eta
+
+      integer function set_van_Loon_wind_eta(AMUSE_value)
+         use amuse_support, only: AMUSE_van_Loon_wind_eta
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_van_Loon_wind_eta = AMUSE_value
+         set_van_Loon_wind_eta = 0
+      end function set_van_Loon_wind_eta
+      
+      integer function get_Kudritzki_wind_eta(AMUSE_value)
+         use amuse_support, only: AMUSE_Kudritzki_wind_eta
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_Kudritzki_wind_eta
+         get_Kudritzki_wind_eta = 0
+      end function get_Kudritzki_wind_eta
+
+      integer function set_Kudritzki_wind_eta(AMUSE_value)
+         use amuse_support, only: AMUSE_Kudritzki_wind_eta
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_Kudritzki_wind_eta = AMUSE_value
+         set_Kudritzki_wind_eta = 0
+      end function set_Kudritzki_wind_eta
+
+      integer function get_Nieuwenhuijzen_wind_eta(AMUSE_value)
+         use amuse_support, only: AMUSE_Nieuwenhuijzen_wind_eta
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_Nieuwenhuijzen_wind_eta
+         get_Nieuwenhuijzen_wind_eta = 0
+      end function get_Nieuwenhuijzen_wind_eta
+
+      integer function set_Nieuwenhuijzen_wind_eta(AMUSE_value)
+         use amuse_support, only: AMUSE_Nieuwenhuijzen_wind_eta
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_Nieuwenhuijzen_wind_eta = AMUSE_value
+         set_Nieuwenhuijzen_wind_eta = 0
+      end function set_Nieuwenhuijzen_wind_eta
+
+      integer function get_Vink_wind_eta(AMUSE_value)
+         use amuse_support, only: AMUSE_Vink_wind_eta
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_Vink_wind_eta
+         get_Vink_wind_eta = 0
+      end function get_Vink_wind_eta
+
+      integer function set_Vink_wind_eta(AMUSE_value)
+         use amuse_support, only: AMUSE_Vink_wind_eta
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_Vink_wind_eta = AMUSE_value
+         set_Vink_wind_eta = 0
+      end function set_Vink_wind_eta
+
 
 ! Retrieve the current value of the convective overshoot parameter
       integer function get_convective_overshoot_parameter(AMUSE_value)

@@ -14,9 +14,9 @@ PYTHON ?= python
 FC      = $(FORTRAN)
 MPIFC+= $(FCFLAGS)
 
-INCLUDE_DIR=./src/star/make
 MESA_DIR = ./src
 MESA_LIB=$(MESA_DIR)/lib/libstar.a
+INCLUDE_DIR=./src/star/make
 
 include makefile_header
 
@@ -41,7 +41,7 @@ $(MESA_DIR)/install:
 		@echo "http://sourceforge.net/projects/mesa/files/releases/"
 		@echo "and unpack it to the src directory. Also download the mesasdk from"
 		@echo "http://www.astro.wisc.edu/~townsend/static.php?ref=mesasdk"
-		@echo "and unpack it to the mesasdk directory."
+		@echo "for your operating system and unpack it to the mesasdk directory."
 		@echo "Note: MESA requires about 10 GB of disk space."
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"

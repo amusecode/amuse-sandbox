@@ -11,7 +11,7 @@ from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import option
 
 class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
-#~        InternalStellarStructureInterface, CodeWithDataDirectories): 
+#~        InternalStellarStructureInterface, 
         CodeWithDataDirectories): 
     """
     The software project MESA (Modules for Experiments in Stellar Astrophysics, 
@@ -62,7 +62,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
     
-    set_metallicity=None
     @legacy_function
     def set_zamsfile():
         function = LegacyFunctionSpecification()  
@@ -103,18 +102,18 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.result_type = 'int32'
         return function
     
-#~    @legacy_function
-#~    def new_star_from_file():
-#~        """
-#~        Define a new star in the code: read the model from file.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.can_handle_array = True
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT)
-#~        function.addParameter('filename', dtype='string', direction=function.IN)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
+    @legacy_function
+    def new_star_from_file():
+        """
+        Define a new star in the code: read the model from file.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT)
+        function.addParameter('filename', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
     def new_particle_method(self, mass=0|units.MSun, pms=False, filename=None):
         if not filename is None:
             return self.new_star_from_file(filename)
@@ -123,6 +122,15 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         else:
             return self.new_zams_star(mass)
     new_particle = None
+    
+    @legacy_function
+    def write_star_to_file():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('filename', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
     
     @legacy_function
     def get_maximum_number_of_stars():
@@ -804,153 +812,147 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         return function
     
-#~    @legacy_function
-#~    def get_RGB_wind_scheme():
-#~        """
-#~        Retrieve the current wind (mass loss) scheme for RGB stars:
-#~        No automatic wind (0)
-#~        Reimers (1): e.g. see: Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
-#~        Blocker (2): T. Blocker, A&A 297, 727-738 (1995)
-#~        de Jager (3): de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259
-#~        Dutch (4): Glebbeek et al 2009, Vink et al 2001, Nugis & Lamers 2000, de Jager 1990
-#~        Mattsson (5)
-#~        """
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('RGB_wind_scheme', dtype='int32', direction=function.OUT
-#~            , description="The current wind (mass loss) scheme for RGB stars of this instance.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            Current value was retrieved
-#~        -1 - ERROR
-#~            The code could not retrieve the value.
-#~        """
-#~        return function
-#~    
-#~    @legacy_function
-#~    def set_RGB_wind_scheme():
-#~        """
-#~        Set the new wind (mass loss) scheme for RGB stars:
-#~        No automatic wind (0)
-#~        Reimers (1): e.g. see: Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
-#~        Blocker (2): T. Blocker, A&A 297, 727-738 (1995)
-#~        de Jager (3): de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259
-#~        Dutch (4): Glebbeek et al 2009, Vink et al 2001, Nugis & Lamers 2000, de Jager 1990
-#~        Mattsson (5)
-#~        """
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('RGB_wind_scheme', dtype='int32', direction=function.IN
-#~            , description="The new wind (mass loss) scheme for RGB stars of this instance.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            The value has been set.
-#~        -1 - ERROR
-#~            The code could not set the value.
-#~        """
-#~        return function
-#~    
-#~    @legacy_function
-#~    def get_AGB_wind_scheme():
-#~        """
-#~        Retrieve the current wind (mass loss) scheme for AGB stars:
-#~        No automatic wind (0)
-#~        Reimers (1): e.g. see: Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
-#~        Blocker (2): T. Blocker, A&A 297, 727-738 (1995)
-#~        de Jager (3): de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259
-#~        Dutch (4): Glebbeek et al 2009, Vink et al 2001, Nugis & Lamers 2000, de Jager 1990
-#~        Mattsson (5)
-#~        """
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('AGB_wind_scheme', dtype='int32', direction=function.OUT
-#~            , description="The current wind (mass loss) scheme for AGB stars of this instance.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            Current value was retrieved
-#~        -1 - ERROR
-#~            The code could not retrieve the value.
-#~        """
-#~        return function
-#~    
-#~    @legacy_function
-#~    def set_AGB_wind_scheme():
-#~        """
-#~        Set the new wind (mass loss) scheme for AGB stars:
-#~        No automatic wind (0)
-#~        Reimers (1): e.g. see: Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
-#~        Blocker (2): T. Blocker, A&A 297, 727-738 (1995)
-#~        de Jager (3): de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259
-#~        Dutch (4): Glebbeek et al 2009, Vink et al 2001, Nugis & Lamers 2000, de Jager 1990
-#~        Mattsson (5)
-#~        """
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('AGB_wind_scheme', dtype='int32', direction=function.IN
-#~            , description="The new wind (mass loss) scheme for AGB stars of this instance.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            The value has been set.
-#~        -1 - ERROR
-#~            The code could not set the value.
-#~        """
-#~        return function
-#~    
-#~    @legacy_function
-#~    def get_reimers_wind_efficiency():
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('reimers_wind_efficiency', dtype='float64', direction=function.OUT)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function
-#~    def set_reimers_wind_efficiency():
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('reimers_wind_efficiency', dtype='float64', direction=function.IN)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function
-#~    def get_blocker_wind_efficiency():
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('blocker_wind_efficiency', dtype='float64', direction=function.OUT)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function
-#~    def set_blocker_wind_efficiency():
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('blocker_wind_efficiency', dtype='float64', direction=function.IN)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function
-#~    def get_de_jager_wind_efficiency():
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('de_jager_wind_efficiency', dtype='float64', direction=function.OUT)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function
-#~    def set_de_jager_wind_efficiency():
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('de_jager_wind_efficiency', dtype='float64', direction=function.IN)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function
-#~    def get_dutch_wind_efficiency():
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('dutch_wind_efficiency', dtype='float64', direction=function.OUT)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function
-#~    def set_dutch_wind_efficiency():
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('dutch_wind_efficiency', dtype='float64', direction=function.IN)
-#~        function.result_type = 'int32'
-#~        return function
+    @legacy_function
+    def get_RGB_wind_scheme():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('RGB_wind_scheme', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_RGB_wind_scheme():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('RGB_wind_scheme', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_AGB_wind_scheme():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('AGB_wind_scheme', dtype='string', direction=function.OUT
+            , description="The current wind (mass loss) scheme for AGB stars of this instance.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_AGB_wind_scheme():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('AGB_wind_scheme', dtype='string', direction=function.IN
+            , description="The new wind (mass loss) scheme for AGB stars of this instance.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_reimers_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('reimers_wind_efficiency', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_reimers_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('reimers_wind_efficiency', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_blocker_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('blocker_wind_efficiency', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_blocker_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('blocker_wind_efficiency', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_de_jager_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('de_jager_wind_efficiency', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_de_jager_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('de_jager_wind_efficiency', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_dutch_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('dutch_wind_efficiency', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_dutch_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('dutch_wind_efficiency', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_van_Loon_wind_eta():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('van_Loon_wind_eta', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_van_Loon_wind_eta():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('van_Loon_wind_eta', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_Kudritzki_wind_eta():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('Kudritzki_wind_eta', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_Kudritzki_wind_eta():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('Kudritzki_wind_eta', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_Nieuwenhuijzen_wind_eta():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('Nieuwenhuijzen_wind_eta', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_Nieuwenhuijzen_wind_eta():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('Nieuwenhuijzen_wind_eta', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_Vink_wind_eta():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('Vink_wind_eta', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_Vink_wind_eta():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('Vink_wind_eta', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
     
     @legacy_function
     def get_stabilize_new_stellar_model_flag():
@@ -1015,13 +1017,13 @@ class MESA(StellarEvolution):
     
     def define_parameters(self, object):
         
-#~        object.add_method_parameter(
-#~            "get_metallicity",
-#~            "set_metallicity",
-#~            "metallicity", 
-#~            "Initial metallicity (Z) of all stars", 
-#~            default_value = 0.02
-#~        )
+        object.add_method_parameter(
+            "get_metallicity",
+            "set_metallicity",
+            "metallicity", 
+            "Initial metallicity (Z) of all pre-main-sequence stars (for ZAMS stars, change the 'zamsfile' parameter)", 
+            default_value = 0.02
+        )
         object.add_method_parameter(
             "get_zamsfile",
             "set_zamsfile",
@@ -1067,47 +1069,75 @@ class MESA(StellarEvolution):
             "get_RGB_wind_scheme",
             "set_RGB_wind_scheme",
             "RGB_wind_scheme", 
-            "The mass loss scheme for RGB stars: none (0), Reimers (1), "
-                "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
-            default_value = 1
+            "The mass loss scheme for RGB stars: ''(=no automatic wind), 'Reimers', "
+               "'Blocker', 'de Jager', 'van Loon', 'Nieuwenhuijzen', 'Kudritzki', 'Vink' or 'Dutch'",
+            default_value = ''
         )
         
         object.add_method_parameter(
             "get_AGB_wind_scheme",
             "set_AGB_wind_scheme",
             "AGB_wind_scheme", 
-            "The mass loss scheme for AGB stars: none (0), Reimers (1), "
-                "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
-            default_value = 1
+            "The mass loss scheme for AGB stars: ''(=no automatic wind), 'Reimers', "
+               "'Blocker', 'de Jager', 'van Loon', 'Nieuwenhuijzen', 'Kudritzki', 'Vink' or 'Dutch'",
+            default_value = ''
         )
         
         object.add_method_parameter(
             "get_reimers_wind_efficiency",
             "set_reimers_wind_efficiency",
             "reimers_wind_efficiency", 
-            "The Reimers mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 1).",
+            "The Reimers mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 'Reimers').",
             default_value = 0.5
         )
         object.add_method_parameter(
             "get_blocker_wind_efficiency",
             "set_blocker_wind_efficiency",
             "blocker_wind_efficiency", 
-            "The Blocker mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 2).",
+            "The Blocker mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 'Blocker').",
             default_value = 0.1
         )
         object.add_method_parameter(
             "get_de_jager_wind_efficiency",
             "set_de_jager_wind_efficiency",
             "de_jager_wind_efficiency", 
-            "The de Jager mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 3).",
+            "The de Jager mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 'de Jager').",
             default_value = 0.8
         )
         object.add_method_parameter(
             "get_dutch_wind_efficiency",
             "set_dutch_wind_efficiency",
             "dutch_wind_efficiency", 
-            "The Dutch mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 4).",
+            "The Dutch mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 'Dutch').",
             default_value = 0.8
+        )
+        object.add_method_parameter(
+            "get_van_Loon_wind_eta",
+            "set_van_Loon_wind_eta",
+            "van_loon_wind_efficiency", 
+            "The van Loon mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 'van Loon').",
+            default_value = 0.0
+        )
+        object.add_method_parameter(
+            "get_Kudritzki_wind_eta",
+            "set_Kudritzki_wind_eta",
+            "kudritzki_wind_efficiency", 
+            "The Kudritzki mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 'Kudritzki').",
+            default_value = 0.0
+        )
+        object.add_method_parameter(
+            "get_Nieuwenhuijzen_wind_eta",
+            "set_Nieuwenhuijzen_wind_eta",
+            "nieuwenhuijzen_wind_efficiency", 
+            "The Nieuwenhuijzen mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 'Nieuwenhuijzen').",
+            default_value = 0.0
+        )
+        object.add_method_parameter(
+            "get_Vink_wind_eta",
+            "set_Vink_wind_eta",
+            "vink_wind_efficiency", 
+            "The Vink mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 'Vink').",
+            default_value = 0.0
         )
         object.add_boolean_parameter(
             "get_stabilize_new_stellar_model_flag",
@@ -1141,55 +1171,55 @@ class MESA(StellarEvolution):
 #~        object.set_delete('pre_ms_stars', 'delete_star')
 #~        
 #~        for particle_set_name in ['native_stars', 'imported_stars', 'pre_ms_stars']:
-        object.add_getter(particle_set_name, 'get_radius', names = ('radius',))
-        object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
-        object.add_getter(particle_set_name, 'get_mass', names = ('mass',))
-        object.add_setter(particle_set_name, 'set_mass', names = ('mass',))
-        object.add_getter(particle_set_name, 'get_core_mass', names = ('core_mass',))
-        object.add_getter(particle_set_name, 'get_mass_loss_rate', names = ('wind',))
-        object.add_getter(particle_set_name, 'get_age', names = ('age',))
-        object.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
-        object.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
-        object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
-        object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
+        object.add_getter('particles', 'get_radius', names = ('radius',))
+        object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
+        object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_getter('particles', 'get_core_mass', names = ('core_mass',))
+        object.add_getter('particles', 'get_mass_loss_rate', names = ('wind',))
+        object.add_getter('particles', 'get_age', names = ('age',))
+        object.add_getter('particles', 'get_time_step', names = ('time_step',))
+        object.add_setter('particles', 'set_time_step', names = ('time_step',))
+        object.add_getter('particles', 'get_luminosity', names = ('luminosity',))
+        object.add_getter('particles', 'get_temperature', names = ('temperature',))
         
-        object.add_getter(particle_set_name, 'get_manual_mass_transfer_rate', names = ('mass_change',))
-        object.add_setter(particle_set_name, 'set_manual_mass_transfer_rate', names = ('mass_change',))
+        object.add_getter('particles', 'get_manual_mass_transfer_rate', names = ('mass_change',))
+        object.add_setter('particles', 'set_manual_mass_transfer_rate', names = ('mass_change',))
         
-        object.add_method(particle_set_name, 'get_accrete_same_as_surface')
-        object.add_method(particle_set_name, 'set_accrete_same_as_surface')
-        object.add_method(particle_set_name, 'get_accrete_composition_non_metals')
-        object.add_method(particle_set_name, 'set_accrete_composition_non_metals')
-        object.add_method(particle_set_name, 'get_accrete_composition_metals_identifier')
-        object.add_method(particle_set_name, 'set_accrete_composition_metals_identifier')
-        object.add_method(particle_set_name, 'get_accrete_composition_metals')
-        object.add_method(particle_set_name, 'set_accrete_composition_metals')
+        object.add_method('particles', 'get_accrete_same_as_surface')
+        object.add_method('particles', 'set_accrete_same_as_surface')
+        object.add_method('particles', 'get_accrete_composition_non_metals')
+        object.add_method('particles', 'set_accrete_composition_non_metals')
+        object.add_method('particles', 'get_accrete_composition_metals_identifier')
+        object.add_method('particles', 'set_accrete_composition_metals_identifier')
+        object.add_method('particles', 'get_accrete_composition_metals')
+        object.add_method('particles', 'set_accrete_composition_metals')
         
-        object.add_method(particle_set_name, 'evolve_one_step')
-        object.add_method(particle_set_name, 'evolve_for')
-        InternalStellarStructure.define_particle_sets(
-            self, 
-            object, 
-            set_name = particle_set_name
-        )
-        object.add_method(particle_set_name, 'get_mass_profile')
-        object.add_method(particle_set_name, 'set_mass_profile')
-        object.add_method(particle_set_name, 'get_cumulative_mass_profile')
-        object.add_method(particle_set_name, 'get_luminosity_profile')
-        object.add_method(particle_set_name, 'set_luminosity_profile')
-        object.add_method(particle_set_name, 'get_entropy_profile')
-        object.add_method(particle_set_name, 'get_thermal_energy_profile')
-        object.add_method(particle_set_name, 'get_brunt_vaisala_frequency_squared_profile')
-        object.add_method(particle_set_name, 'get_IDs_of_species')
-        object.add_method(particle_set_name, 'get_masses_of_species')
-        object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
-        object.add_method(particle_set_name, 'reset_number_of_backups_in_a_row')
+        object.add_method('particles', 'evolve_one_step')
+        object.add_method('particles', 'evolve_for')
+        object.add_method('particles', 'write_star_to_file')
+#~        InternalStellarStructure.define_particle_sets(
+#~            self, 
+#~            object, 
+#~            set_name = particle_set_name
+#~        )
+#~        object.add_method(particle_set_name, 'get_mass_profile')
+#~        object.add_method(particle_set_name, 'set_mass_profile')
+#~        object.add_method(particle_set_name, 'get_cumulative_mass_profile')
+#~        object.add_method(particle_set_name, 'get_luminosity_profile')
+#~        object.add_method(particle_set_name, 'set_luminosity_profile')
+#~        object.add_method(particle_set_name, 'get_entropy_profile')
+#~        object.add_method(particle_set_name, 'get_thermal_energy_profile')
+#~        object.add_method(particle_set_name, 'get_brunt_vaisala_frequency_squared_profile')
+#~        object.add_method(particle_set_name, 'get_IDs_of_species')
+#~        object.add_method(particle_set_name, 'get_masses_of_species')
+#~        object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
+#~        object.add_method(particle_set_name, 'reset_number_of_backups_in_a_row')
             
     def define_state(self, object):
         StellarEvolution.define_state(self, object)
-        object.add_method('EDIT', 'new_pre_ms_particle')
-        object.add_method('UPDATE', 'new_pre_ms_particle')
-        object.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
+#~        object.add_method('EDIT', 'new_pre_ms_particle')
+#~        object.add_method('UPDATE', 'new_pre_ms_particle')
+#~        object.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
         object.add_method('EDIT', 'finalize_stellar_model')
         object.add_method('UPDATE', 'finalize_stellar_model')
         object.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
@@ -1198,7 +1228,7 @@ class MESA(StellarEvolution):
         object.add_transition('RUN', 'UPDATE', 'new_particle_method', False)
     
     def define_errorcodes(self, object):
-        InternalStellarStructure.define_errorcodes(self, object)
+#~        InternalStellarStructure.define_errorcodes(self, object)
         object.add_errorcode(-1, 'Something went wrong...')
         object.add_errorcode(-4, 'Not implemented.')
         object.add_errorcode(-11, 'Evolve terminated: Unspecified stop condition reached.')
@@ -1208,18 +1238,18 @@ class MESA(StellarEvolution):
         object.add_errorcode(-15, 'Evolve terminated: Minimum timestep limit reached.')
     
     def define_methods(self, object):
-        InternalStellarStructure.define_methods(self, object)
+#~        InternalStellarStructure.define_methods(self, object)
         StellarEvolution.define_methods(self, object)
         object.add_method(
             "new_particle_method",
             (units.MSun, object.NO_UNIT, object.NO_UNIT),
             (object.INDEX, object.ERROR_CODE)
         )
-        object.add_method(
-            "new_pre_ms_particle",
-            (units.MSun),
-            (object.INDEX, object.ERROR_CODE)
-        )
+#~        object.add_method(
+#~            "new_pre_ms_particle",
+#~            (units.MSun),
+#~            (object.INDEX, object.ERROR_CODE)
+#~        )
         object.add_method(
             "set_time_step", 
             (object.INDEX, units.yr), 
