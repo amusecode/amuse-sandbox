@@ -1006,776 +1006,530 @@
          endif
       end function
 
-! Reset number_of_backups_in_a_row of the star
-!~      integer function reset_number_of_backups_in_a_row(AMUSE_id)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            reset_number_of_backups_in_a_row = -1
-!~         else
-!~            s% number_of_backups_in_a_row = 0
-!~            reset_number_of_backups_in_a_row = 0
-!~         endif
-!~      end function
-!~
-!~! Return the mass fraction at the specified zone/mesh-cell of the star
-!~      integer function get_mass_fraction_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_mass_fraction_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_mass_fraction_at_zone = -2
-!~            else
-!~               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~                  AMUSE_value = s% dq_old(s% nz - AMUSE_zone)
-!~               else
-!~                  AMUSE_value = s% dq(s% nz - AMUSE_zone)
-!~               endif
-!~               get_mass_fraction_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~! Set the mass fraction at the specified zone/mesh-cell of the star
-!~      integer function set_mass_fraction_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(in) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            set_mass_fraction_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~               set_mass_fraction_at_zone = -2
-!~            else
-!~               s% dq(s% nz - AMUSE_zone) = AMUSE_value
-!~               set_mass_fraction_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~
-!~! Return the temperature at the specified zone/mesh-cell of the star
-!~      integer function get_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_temperature_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_temperature_at_zone = -2
-!~            else
-!~               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~                  AMUSE_value = exp(s% xh_old(s% i_lnT, s% nz - AMUSE_zone))
-!~               else
-!~                  AMUSE_value = exp(s% xh(s% i_lnT, s% nz - AMUSE_zone))
-!~               endif
-!~               get_temperature_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~! Set the temperature at the specified zone/mesh-cell of the star
-!~      integer function set_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(in) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            set_temperature_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~               set_temperature_at_zone = -2
-!~            else
-!~               s% xh(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
-!~               set_temperature_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~
-!~! Return the density at the specified zone/mesh-cell of the star
-!~      integer function get_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_density_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~               AMUSE_value = -1.0
-!~               get_density_at_zone = -2
-!~            else
-!~               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~                  AMUSE_value = exp(s% xh_old(s% i_lnd, s% nz - AMUSE_zone))
-!~               else
-!~                  AMUSE_value = exp(s% xh(s% i_lnd, s% nz - AMUSE_zone))
-!~               endif
-!~               get_density_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~! Set the density at the specified zone/mesh-cell of the star
-!~      integer function set_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(in) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            set_density_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~               set_density_at_zone = -2
-!~            else
-!~               s% xh(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
-!~               set_density_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~
-!~! Return the radius at the specified zone/mesh-cell of the star
-!~      integer function get_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_radius_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_radius_at_zone = -2
-!~            else
-!~               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~                  AMUSE_value = exp(s% xh_old(s% i_lnR, s% nz - AMUSE_zone))
-!~               else
-!~                  AMUSE_value = exp(s% xh(s% i_lnR, s% nz - AMUSE_zone))
-!~               endif
-!~               get_radius_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~! Set the radius at the specified zone/mesh-cell of the star
-!~      integer function set_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(in) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            set_radius_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~               set_radius_at_zone = -2
-!~            else
-!~               s% xh(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
-!~               set_radius_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~
-!~! Return the luminosity at the specified zone/mesh-cell of the star
-!~      integer function get_luminosity_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_luminosity_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_luminosity_at_zone = -2
-!~            else
-!~               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~                  AMUSE_value = s% xh_old(s% i_lum, s% nz - AMUSE_zone)
-!~               else
-!~                  AMUSE_value = s% xh(s% i_lum, s% nz - AMUSE_zone)
-!~               endif
-!~               get_luminosity_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~! Set the luminosity at the specified zone/mesh-cell of the star
-!~      integer function set_luminosity_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(in) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            set_luminosity_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~               set_luminosity_at_zone = -2
-!~            else
-!~               s% xh(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
-!~               set_luminosity_at_zone = 0
-!~            endif
-!~         endif
-!~      end function
-!~
-!~! Return the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star
-!~      integer function get_brunt_vaisala_frequency_squared_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         use const_def, only: cgrav
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer :: ierr
-!~         type (star_info), pointer :: s
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_brunt_vaisala_frequency_squared_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_brunt_vaisala_frequency_squared_at_zone = -2
-!~            else
-!~                AMUSE_value = brunt_N2(s% nz - AMUSE_zone)
-!~               get_brunt_vaisala_frequency_squared_at_zone = 0
-!~            endif
-!~         endif
-!~
-!~         contains
-!~
-!~         double precision function brunt_N2(k)
-!~            ! reminder: gradB(k) and gradT(k) are the values at face(k)
-!~            integer, intent(in) :: k
-!~            double precision :: T_face, rho_face, P_face, chiT_face, chiRho_face, grada_face
-!~            double precision :: g, tmp
-!~            g = cgrav*s% mstar*s% q(k)/s% r(k)**2
-!~            if (k == 1) then
-!~               rho_face = s% rho(1)
-!~               P_face = s% P(1)
-!~               T_face = s% T(1)
-!~               chiT_face = s% chiT(1)
-!~               chiRho_face = s% chiRho(1)
-!~               grada_face = s% grada(1)
-!~            else
-!~               tmp = 1.0d0 / (s% dq(k-1) + s% dq(k))
-!~               rho_face = (s%rho(k)*s%dq(k-1) + s%rho(k-1)*s%dq(k)) * tmp
-!~               P_face = (s%P(k)*s%dq(k-1) + s%P(k-1)*s%dq(k)) * tmp
-!~               T_face = (s%T(k)*s%dq(k-1) + s%T(k-1)*s%dq(k)) * tmp
-!~               chiT_face = (s%chiT(k)*s%dq(k-1) + s%chiT(k-1)*s%dq(k)) * tmp
-!~               chiRho_face = (s%chiRho(k)*s%dq(k-1) + s%chiRho(k-1)*s%dq(k)) * tmp
-!~               grada_face = (s%grada(k)*s%dq(k-1) + s%grada(k-1)*s%dq(k)) * tmp
-!~            endif
-!~            brunt_N2 = &
-!~               (g**2*rho_face/P_face)* &
-!~               (chiT_face/chiRho_face)* &
-!~               (grada_face - s% gradT(k) + s% gradB(k))
-!~         end function brunt_N2
-!~      end function
-!~
-!~! Return the mean molecular weight per particle (ions + free electrons) at the specified zone/mesh-cell of the star
-!~      integer function get_mu_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~!         use micro, only: do_eos_for_cell
-!~         use chem_def, only: ih1, ihe3, ihe4
-!~
-!~         use eos_lib, only: eosDT_get
-!~         use eos_def, only: num_eos_basic_results, i_mu
-!~         use const_def, only: ln10
-!~         use run_star_support, only: failed
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer, pointer :: net_iso(:)
-!~         integer :: ierr, k
-!~         type (star_info), pointer :: s
-!~         double precision, dimension(num_eos_basic_results) :: res, d_dlnd, d_dlnT
-!~         double precision :: z, xh, xhe, abar, zbar
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_mu_at_zone = -1
-!~         else
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_mu_at_zone = -2
-!~            else
-!~               k = s% nz - AMUSE_zone
-!~               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~                  call get_abar_zbar(s, k, abar, zbar)
-!~                  net_iso => s% net_iso
-!~                  xh = s% xa_old(net_iso(ih1),k)
-!~                  xhe = s% xa_old(net_iso(ihe3),k) + s% xa_old(net_iso(ihe4),k)
-!~                  z = max(0d0,1d0-(xh+xhe))
-!~                  call eosDT_get( &
-!~                     s% eos_handle, z, xh, abar, zbar, &
-!~                     exp(s% xh_old(s% i_lnd, k)), s% xh_old(s% i_lnd, k)/ln10, &
-!~                     exp(s% xh_old(s% i_lnT, k)), s% xh_old(s% i_lnT, k)/ln10, &
-!~                     res, d_dlnd, d_dlnT, ierr)
-!~                  if (failed('eosDT_get', ierr)) then
-!~                     AMUSE_value = -1.0
-!~                     get_mu_at_zone = -4
-!~                     return
-!~                  endif
-!~                  s% mu(k) = res(i_mu)
-!~               endif
-!~               AMUSE_value = s% mu(k)
-!~               get_mu_at_zone = 0
-!~            endif
-!~         endif
-!~!      end function
-!~
-!~         contains
-!~
-!~         subroutine get_abar_zbar(s, k, abar, zbar)
-!~!            use star_private_def, only: star_info
-!~            use chem_lib, only: composition_info
-!~            type (star_info), pointer :: s
-!~            integer, intent(in) :: k
-!~            double precision, intent(out) :: abar, zbar
-!~            double precision :: z2bar, ye, xsum, dabar_dx(s% species), dzbar_dx(s% species)
-!~            integer :: species
-!~            species = s% species
-!~            call composition_info(species, s% chem_id, s% xa_old(1:species,k), &
-!~                abar, zbar, z2bar, ye, xsum, dabar_dx, dzbar_dx)
-!~         end subroutine get_abar_zbar
-!~
-!~      end function
-!~
-!~
-!~! Return the total (gas + radiation) pressure at the specified zone/mesh-cell of the star
-!~      integer function get_pressure_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use chem_def, only: ih1, ihe3, ihe4
-!~         use eos_lib, only: eosDT_get
-!~         use eos_def, only: num_eos_basic_results, i_lnPgas
-!~         use const_def, only: ln10, crad
-!~         use run_star_support, only: failed
-!~         use amuse_support, only: debugging
-!~
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer, pointer :: net_iso(:)
-!~         integer :: ierr, k
-!~         type (star_info), pointer :: s
-!~         double precision, dimension(num_eos_basic_results) :: res, d_dlnd, d_dlnT
-!~         double precision :: z, xh, xhe, abar, zbar
-!~
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_pressure_at_zone = -1
-!~         else
-!~            k = s% nz - AMUSE_zone
-!~            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~!               if (debugging) then
-!~!                  write(*, *) 'Warning: pressure may not be up to date, since the last evolve failed.'
-!~!               endif
-!~                  call get_abar_zbar(s, k, abar, zbar)
-!~                  net_iso => s% net_iso
-!~                  xh = s% xa_old(net_iso(ih1),k)
-!~                  xhe = s% xa_old(net_iso(ihe3),k) + s% xa_old(net_iso(ihe4),k)
-!~                  z = max(0d0,1d0-(xh+xhe))
-!~                  call eosDT_get( &
-!~                     s% eos_handle, z, xh, abar, zbar, &
-!~                     exp(s% xh_old(s% i_lnd, k)), s% xh_old(s% i_lnd, k)/ln10, &
-!~                     exp(s% xh_old(s% i_lnT, k)), s% xh_old(s% i_lnT, k)/ln10, &
-!~                     res, d_dlnd, d_dlnT, ierr)
-!~                  if (failed('eosDT_get', ierr)) then
-!~                     AMUSE_value = -1.0
-!~                     get_pressure_at_zone = -4
-!~                     return
-!~                  endif
-!~!                  s% mu(k) = res(i_mu)
-!~                  s% lnPgas(k) = res(i_lnPgas)
-!~                  s% Pgas(k) = exp(s% lnPgas(k))
-!~
-!~                  s% Prad(k) = crad * s% T(k)**4 / 3
-!~                  s% P(k) = s% Prad(k) + s% Pgas(k)
-!~!               get_pressure_at_zone = -1
-!~!               return
-!~            endif
-!~
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_pressure_at_zone = -2
-!~            else
-!~               AMUSE_value = s% P(k)
-!~               get_pressure_at_zone = 0
-!~            endif
-!~         endif
-!~
-!~         contains
-!~
-!~         subroutine get_abar_zbar(s, k, abar, zbar)
-!~!            use star_private_def, only: star_info
-!~            use chem_lib, only: composition_info
-!~            type (star_info), pointer :: s
-!~            integer, intent(in) :: k
-!~            double precision, intent(out) :: abar, zbar
-!~            double precision :: z2bar, ye, xsum, dabar_dx(s% species), dzbar_dx(s% species)
-!~            integer :: species
-!~            species = s% species
-!~            call composition_info(species, s% chem_id, s% xa_old(1:species,k), &
-!~                abar, zbar, z2bar, ye, xsum, dabar_dx, dzbar_dx)
-!~         end subroutine get_abar_zbar
-!~
-!~      end function
-!~
-!~! Return the specific entropy at the specified zone/mesh-cell of the star
-!~      integer function get_entropy_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         use amuse_support, only: debugging
-!~         
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer :: ierr, k
-!~         type (star_info), pointer :: s
-!~         
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_entropy_at_zone = -1
-!~         else
-!~            k = s% nz - AMUSE_zone
-!~            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~               get_entropy_at_zone = -1
-!~               return
-!~            endif
-!~            
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_entropy_at_zone = -2
-!~            else
-!~               AMUSE_value = exp(s% lnS(k))
-!~               get_entropy_at_zone = 0
-!~            endif
-!~         endif         
-!~      end function
-!~
-!~! Return the specific thermal energy at the specified zone/mesh-cell of the star
-!~      integer function get_thermal_energy_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
-!~         use star_private_def, only: star_info, get_star_ptr
-!~         use run_star_support, only: failed
-!~         use amuse_support, only: debugging
-!~         
-!~         implicit none
-!~         integer, intent(in) :: AMUSE_id, AMUSE_zone
-!~         double precision, intent(out) :: AMUSE_value
-!~         integer :: ierr, k
-!~         type (star_info), pointer :: s
-!~         
-!~         call get_star_ptr(AMUSE_id, s, ierr)
-!~         if (failed('get_star_ptr', ierr)) then
-!~            AMUSE_value = -1.0
-!~            get_thermal_energy_at_zone = -1
-!~         else
-!~            k = s% nz - AMUSE_zone
-!~            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~               get_thermal_energy_at_zone = -1
-!~               return
-!~            endif
-!~            
-!~            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~                AMUSE_value = -1.0
-!~                get_thermal_energy_at_zone = -2
-!~            else
-!~               AMUSE_value = exp(s% lnE(k))
-!~               get_thermal_energy_at_zone = 0
-!~            endif
-!~         endif         
-!~      end function
-!~
-!~
-!~
-!~! Return the current number of chemical abundance variables per zone of the star
-!~   integer function get_number_of_species(AMUSE_id, AMUSE_value)
-!~      use star_private_def, only: star_info, get_star_ptr
-!~      use run_star_support, only: failed
-!~      implicit none
-!~      integer, intent(in) :: AMUSE_id
-!~      integer, intent(out) :: AMUSE_value
-!~      integer :: ierr
-!~      type (star_info), pointer :: s
-!~      call get_star_ptr(AMUSE_id, s, ierr)
-!~      if (failed('get_star_ptr', ierr)) then
-!~         AMUSE_value = -1
-!~         get_number_of_species = -1
-!~      else
-!~         AMUSE_value = s% nvar_chem
-!~         get_number_of_species = 0
-!~      endif
-!~   end function
-!~
-!~! Return the name of chemical abundance variable 'AMUSE_species' of the star
-!~   integer function get_name_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
-!~      use star_private_def, only: star_info, get_star_ptr
-!~      use run_star_support, only: failed
-!~      use chem_def, only: num_chem_isos, chem_isos
-!~      implicit none
-!~      integer, intent(in) :: AMUSE_id, AMUSE_species
-!~      character (len=6), intent(out) :: AMUSE_value
-!~      integer :: ierr
-!~      type (star_info), pointer :: s
-!~      call get_star_ptr(AMUSE_id, s, ierr)
-!~      if (failed('get_star_ptr', ierr)) then
-!~         AMUSE_value = 'error'
-!~         get_name_of_species = -1
-!~      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
-!~         AMUSE_value = 'error'
-!~         get_name_of_species = -3
-!~      else
-!~         AMUSE_value = chem_isos% name(s% chem_id(AMUSE_species))
-!~         get_name_of_species = 0
-!~      endif
-!~!      do ierr=1,s% nvar
-!~!         write(*,*) ierr, s% nameofvar(ierr)
-!~!      end do
-!~!      do ierr=1,num_chem_isos
-!~!         write(*,*) ierr, s% net_iso(ierr), chem_isos% name(ierr)
-!~!      end do
-!~!      do ierr=1,s% nvar_chem
-!~!         write(*,*) ierr, s% chem_id(ierr), chem_isos% name(s% chem_id(ierr))
-!~!      end do
-!~   end function
-!~
-!~! Return the chem_ID of chemical abundance variable 'AMUSE_species' of the star
-!~   integer function get_id_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
-!~      use star_private_def, only: star_info, get_star_ptr
-!~      use run_star_support, only: failed
-!~      implicit none
-!~      integer, intent(in) :: AMUSE_id, AMUSE_species
-!~      integer, intent(out) :: AMUSE_value
-!~      integer :: ierr
-!~      type (star_info), pointer :: s
-!~      call get_star_ptr(AMUSE_id, s, ierr)
-!~      if (failed('get_star_ptr', ierr)) then
-!~         AMUSE_value = -1
-!~         get_id_of_species = -1
-!~      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
-!~         AMUSE_value = -1
-!~         get_id_of_species = -3
-!~      else
-!~         AMUSE_value = s% chem_id(AMUSE_species)
-!~         get_id_of_species = 0
-!~      endif
-!~   end function
-!~
-!~! Return the mass number of chemical abundance variable 'AMUSE_species' of the star
-!~   integer function get_mass_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
-!~      use star_private_def, only: star_info, get_star_ptr
-!~      use run_star_support, only: failed
-!~      use chem_def, only: chem_isos
-!~      use const_def, only: mev_to_ergs, clight, amu
-!~      implicit none
-!~      integer, intent(in) :: AMUSE_id, AMUSE_species
-!~      double precision, intent(out) :: AMUSE_value
-!~      integer :: ierr
-!~      type (star_info), pointer :: s
-!~      call get_star_ptr(AMUSE_id, s, ierr)
-!~      if (failed('get_star_ptr', ierr)) then
-!~         AMUSE_value = -1.0
-!~         get_mass_of_species = -1
-!~      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
-!~         AMUSE_value = -1.0
-!~         get_mass_of_species = -3
-!~      else
-!~         AMUSE_value = chem_isos% A(s% chem_id(AMUSE_species)) + &
-!~            chem_isos% mass_excess(s% chem_id(AMUSE_species))*mev_to_ergs/(clight*clight*amu)
-!~         get_mass_of_species = 0
-!~      endif
-!~   end function
-!~
-!~! Return the mass fraction of species 'AMUSE_species' at the specified
-!~! zone/mesh-cell of the star
-!~   integer function get_mass_fraction_of_species_at_zone(AMUSE_id, &
-!~         AMUSE_species, AMUSE_zone, AMUSE_value)
-!~      use star_private_def, only: star_info, get_star_ptr
-!~      use run_star_support, only: failed
-!~      implicit none
-!~      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
-!~      double precision, intent(out) :: AMUSE_value
-!~      integer :: ierr
-!~      type (star_info), pointer :: s
-!~      call get_star_ptr(AMUSE_id, s, ierr)
-!~      if (failed('get_star_ptr', ierr)) then
-!~         AMUSE_value = -1.0
-!~         get_mass_fraction_of_species_at_zone = -1
-!~      else if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~         AMUSE_value = -1.0
-!~         get_mass_fraction_of_species_at_zone = -2
-!~      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
-!~         AMUSE_value = -1.0
-!~         get_mass_fraction_of_species_at_zone = -3
-!~      else
-!~         if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-!~            AMUSE_value = s% xa_old(AMUSE_species, s% nz - AMUSE_zone)
-!~         else
-!~            AMUSE_value = s% xa(AMUSE_species, s% nz - AMUSE_zone)
-!~         endif
-!~         get_mass_fraction_of_species_at_zone = 0
-!~      endif
-!~   end function
-!~! Set the mass fraction of species 'AMUSE_species' at the specified
-!~! zone/mesh-cell of the star
-!~   integer function set_mass_fraction_of_species_at_zone(AMUSE_id, &
-!~         AMUSE_species, AMUSE_zone, AMUSE_value)
-!~      use star_private_def, only: star_info, get_star_ptr
-!~      use run_star_support, only: failed
-!~      implicit none
-!~      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
-!~      double precision, intent(in) :: AMUSE_value
-!~      integer :: ierr
-!~      type (star_info), pointer :: s
-!~      call get_star_ptr(AMUSE_id, s, ierr)
-!~      if (failed('get_star_ptr', ierr)) then
-!~         set_mass_fraction_of_species_at_zone = -1
-!~      else if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-!~         set_mass_fraction_of_species_at_zone = -2
-!~      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
-!~         set_mass_fraction_of_species_at_zone = -3
-!~      else
-!~         s% xa(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-!~         s% xa_pre_hydro(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-!~         set_mass_fraction_of_species_at_zone = 0
-!~      endif
-!~   end function
+!~! Reset number_of_backups_in_a_row of the star
+      integer function reset_number_of_backups_in_a_row(AMUSE_id)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            reset_number_of_backups_in_a_row = -1
+         else
+            s% number_of_backups_in_a_row = 0
+            reset_number_of_backups_in_a_row = 0
+         endif
+      end function
+
+! Return the mass fraction at the specified zone/mesh-cell of the star
+      integer function get_mass_fraction_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_mass_fraction_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_mass_fraction_at_zone = -2
+            else
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = s% dq_old(s% nz - AMUSE_zone)
+               else
+                  AMUSE_value = s% dq(s% nz - AMUSE_zone)
+               endif
+               get_mass_fraction_at_zone = 0
+            endif
+         endif
+      end function
+! Set the mass fraction at the specified zone/mesh-cell of the star
+      integer function set_mass_fraction_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(in) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            set_mass_fraction_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+               set_mass_fraction_at_zone = -2
+            else
+               s% dq(s% nz - AMUSE_zone) = AMUSE_value
+               set_mass_fraction_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the temperature at the specified zone/mesh-cell of the star
+      integer function get_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_temperature_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_temperature_at_zone = -2
+            else
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = exp(s% xh_old(s% i_lnT, s% nz - AMUSE_zone))
+               else
+                  AMUSE_value = exp(s% xh(s% i_lnT, s% nz - AMUSE_zone))
+               endif
+               get_temperature_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the density at the specified zone/mesh-cell of the star
+      integer function get_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_density_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+               AMUSE_value = -1.0
+               get_density_at_zone = -2
+            else
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = exp(s% xh_old(s% i_xlnd, s% nz - AMUSE_zone))
+               else
+                  AMUSE_value = exp(s% xh(s% i_xlnd, s% nz - AMUSE_zone))
+               endif
+               get_density_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the radius at the specified zone/mesh-cell of the star
+      integer function get_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_radius_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_radius_at_zone = -2
+            else
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = exp(s% xh_old(s% i_lnR, s% nz - AMUSE_zone))
+               else
+                  AMUSE_value = exp(s% xh(s% i_lnR, s% nz - AMUSE_zone))
+               endif
+               get_radius_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the luminosity at the specified zone/mesh-cell of the star
+      integer function get_luminosity_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_luminosity_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_luminosity_at_zone = -2
+            else
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = s% xh_old(s% i_lum, s% nz - AMUSE_zone)
+               else
+                  AMUSE_value = s% xh(s% i_lum, s% nz - AMUSE_zone)
+               endif
+               get_luminosity_at_zone = 0
+            endif
+         endif
+      end function
+! Set the luminosity at the specified zone/mesh-cell of the star
+      integer function set_luminosity_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(in) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            set_luminosity_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+               set_luminosity_at_zone = -2
+            else
+               s% xh(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
+               set_luminosity_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star
+      integer function get_brunt_vaisala_frequency_squared_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_brunt_vaisala_frequency_squared_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_brunt_vaisala_frequency_squared_at_zone = -2
+            else
+                AMUSE_value = s% brunt_N2(s% nz - AMUSE_zone)
+               get_brunt_vaisala_frequency_squared_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the mean molecular weight per particle (ions + free electrons) at the specified zone/mesh-cell of the star
+      integer function get_mu_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_mu_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_mu_at_zone = -2
+            else
+                AMUSE_value = s% mu(s% nz - AMUSE_zone)
+               get_mu_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the total (gas + radiation) pressure at the specified zone/mesh-cell of the star
+      integer function get_pressure_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_pressure_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_pressure_at_zone = -2
+            else
+               AMUSE_value = s% P(s% nz - AMUSE_zone)
+               get_pressure_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the specific entropy at the specified zone/mesh-cell of the star
+      integer function get_entropy_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         use amuse_support, only: debugging
+         
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr, k
+         type (star_info), pointer :: s
+         
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_entropy_at_zone = -1
+         else
+            k = s% nz - AMUSE_zone
+            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+               get_entropy_at_zone = -1
+               return
+            endif
+            
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_entropy_at_zone = -2
+            else
+               AMUSE_value = exp(s% lnS(k))
+               get_entropy_at_zone = 0
+            endif
+         endif         
+      end function
+
+! Return the specific thermal energy at the specified zone/mesh-cell of the star
+      integer function get_thermal_energy_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use run_star_support, only: failed
+         use amuse_support, only: debugging
+         
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr, k
+         type (star_info), pointer :: s
+         
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_thermal_energy_at_zone = -1
+         else
+            k = s% nz - AMUSE_zone
+            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+               get_thermal_energy_at_zone = -1
+               return
+            endif
+            
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_thermal_energy_at_zone = -2
+            else
+               AMUSE_value = exp(s% lnE(k))
+               get_thermal_energy_at_zone = 0
+            endif
+         endif         
+      end function
+
+
+
+! Return the current number of chemical abundance variables per zone of the star
+   integer function get_number_of_species(AMUSE_id, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      integer, intent(out) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1
+         get_number_of_species = -1
+      else
+         AMUSE_value = s% nvar_chem
+         get_number_of_species = 0
+      endif
+   end function
+
+! Return the name of chemical abundance variable 'AMUSE_species' of the star
+   integer function get_name_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support, only: failed
+      use chem_def, only: num_chem_isos, chem_isos
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_species
+      character (len=6), intent(out) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = 'error'
+         get_name_of_species = -1
+      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
+         AMUSE_value = 'error'
+         get_name_of_species = -3
+      else
+         AMUSE_value = chem_isos% name(s% chem_id(AMUSE_species))
+         get_name_of_species = 0
+      endif
+!      do ierr=1,s% nvar
+!         write(*,*) ierr, s% nameofvar(ierr)
+!      end do
+!      do ierr=1,num_chem_isos
+!         write(*,*) ierr, s% net_iso(ierr), chem_isos% name(ierr)
+!      end do
+!      do ierr=1,s% nvar_chem
+!         write(*,*) ierr, s% chem_id(ierr), chem_isos% name(s% chem_id(ierr))
+!      end do
+   end function
+
+! Return the mass fraction of species 'AMUSE_species' at the specified
+! zone/mesh-cell of the star
+   integer function get_mass_fraction_of_species_at_zone(AMUSE_id, &
+         AMUSE_species, AMUSE_zone, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1.0
+         get_mass_fraction_of_species_at_zone = -1
+      else if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+         AMUSE_value = -1.0
+         get_mass_fraction_of_species_at_zone = -2
+      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
+         AMUSE_value = -1.0
+         get_mass_fraction_of_species_at_zone = -3
+      else
+         if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+            AMUSE_value = s% xa_old(AMUSE_species, s% nz - AMUSE_zone)
+         else
+            AMUSE_value = s% xa(AMUSE_species, s% nz - AMUSE_zone)
+         endif
+         get_mass_fraction_of_species_at_zone = 0
+      endif
+   end function
+
+! Set the mass fraction of species 'AMUSE_species' at the specified
+! zone/mesh-cell of the star
+   integer function set_mass_fraction_of_species_at_zone(AMUSE_id, &
+         AMUSE_species, AMUSE_zone, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
+      double precision, intent(in) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         set_mass_fraction_of_species_at_zone = -1
+      else if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+         set_mass_fraction_of_species_at_zone = -2
+      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
+         set_mass_fraction_of_species_at_zone = -3
+      else
+         s% xa(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
+         s% xa_pre(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
+         set_mass_fraction_of_species_at_zone = 0
+      endif
+   end function
 
 ! Erase memory of the star - xh_old(er), xa_old(er), q_old(er), etc.
 ! Useful after setting the stucture of the star, to prevent backup steps to undo changes
-!~   integer function erase_memory(AMUSE_id)
-!~      use star_private_def, only: star_info, get_star_ptr
-!~      use run_star_support, only: failed
-!~      implicit none
-!~      integer, intent(in) :: AMUSE_id
-!~      integer :: ierr
-!~      type (star_info), pointer :: s
-!~
-!~      erase_memory = -1
-!~      call get_star_ptr(AMUSE_id, s, ierr)
-!~      if (failed('get_star_ptr', ierr)) return
-!~      if (s%generations > 1) then
-!~         s% nz_old = s% nz
-!~         call realloc2d_if_necessary(s% xa_old, s% species, s% nz, ierr)
-!~         if (failed('realloc2d_if_necessary', ierr)) return
-!~         s% xa_old(:,:) = s% xa(:,:)
-!~         call realloc2d_if_necessary(s% xh_old, s% nvar, s% nz, ierr)
-!~         if (failed('realloc2d_if_necessary', ierr)) return
-!~         s% xh_old(:,:) = s% xh(:,:)
-!~         call realloc1d_if_necessary(s% q_old, s% nz, ierr)
-!~         if (failed('realloc1d_if_necessary', ierr)) return
-!~         s% q_old(:) = s% q(:)
-!~         call realloc1d_if_necessary(s% dq_old, s% nz, ierr)
-!~         if (failed('realloc1d_if_necessary', ierr)) return
-!~         s% dq_old(:) = s% dq(:)
-!~         if (s%generations == 3) then
-!~            s% nz_older = s% nz
-!~            call realloc2d_if_necessary(s% xa_older, s% species, s% nz, ierr)
-!~            if (failed('realloc2d_if_necessary', ierr)) return
-!~            s% xa_older(:,:) = s% xa(:,:)
-!~            call realloc2d_if_necessary(s% xh_older, s% nvar, s% nz, ierr)
-!~            if (failed('realloc2d_if_necessary', ierr)) return
-!~            s% xh_older(:,:) = s% xh(:,:)
-!~            call realloc1d_if_necessary(s% q_older, s% nz, ierr)
-!~            if (failed('realloc1d_if_necessary', ierr)) return
-!~            s% q_older(:) = s% q(:)
-!~            call realloc1d_if_necessary(s% dq_older, s% nz, ierr)
-!~            if (failed('realloc1d_if_necessary', ierr)) return
-!~            s% dq_older(:) = s% dq(:)
-!~         end if
-!~      end if
-!~      erase_memory = 0
-!~
-!~      contains
-!~
-!~      subroutine realloc1d_if_necessary(ptr,new_size,ierr)
-!~         double precision, pointer :: ptr(:)
-!~         integer, intent(in) :: new_size
-!~         integer, intent(out) :: ierr
-!~         ierr = 0
-!~         if (associated(ptr)) then
-!~            if (size(ptr,1) == new_size) return
-!~            deallocate(ptr)
-!~         end if
-!~         allocate(ptr(new_size),stat=ierr)
-!~      end subroutine realloc1d_if_necessary
-!~
-!~      subroutine realloc2d_if_necessary(ptr,ld,new_size,ierr)
-!~         double precision, pointer :: ptr(:,:)
-!~         integer, intent(in) :: ld, new_size
-!~         integer, intent(out) :: ierr
-!~         ierr = 0
-!~         if (associated(ptr)) then
-!~            if (size(ptr,1) == ld .and. size(ptr,2) == new_size) return
-!~            deallocate(ptr)
-!~         end if
-!~         allocate(ptr(ld,new_size),stat=ierr)
-!~      end subroutine realloc2d_if_necessary
-!~
-!~   end function erase_memory
+   integer function erase_memory(AMUSE_id)
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      integer :: ierr
+      type (star_info), pointer :: s
+
+      erase_memory = -1
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) return
+      if (s%generations > 1) then
+         s% nz_old = s% nz
+         call realloc2d_if_necessary(s% xa_old, s% species, s% nz, ierr)
+         if (failed('realloc2d_if_necessary', ierr)) return
+         s% xa_old(:,:) = s% xa(:,:)
+         call realloc2d_if_necessary(s% xh_old, s% nvar, s% nz, ierr)
+         if (failed('realloc2d_if_necessary', ierr)) return
+         s% xh_old(:,:) = s% xh(:,:)
+         call realloc1d_if_necessary(s% q_old, s% nz, ierr)
+         if (failed('realloc1d_if_necessary', ierr)) return
+         s% q_old(:) = s% q(:)
+         call realloc1d_if_necessary(s% dq_old, s% nz, ierr)
+         if (failed('realloc1d_if_necessary', ierr)) return
+         s% dq_old(:) = s% dq(:)
+         if (s%generations == 3) then
+            s% nz_older = s% nz
+            call realloc2d_if_necessary(s% xa_older, s% species, s% nz, ierr)
+            if (failed('realloc2d_if_necessary', ierr)) return
+            s% xa_older(:,:) = s% xa(:,:)
+            call realloc2d_if_necessary(s% xh_older, s% nvar, s% nz, ierr)
+            if (failed('realloc2d_if_necessary', ierr)) return
+            s% xh_older(:,:) = s% xh(:,:)
+            call realloc1d_if_necessary(s% q_older, s% nz, ierr)
+            if (failed('realloc1d_if_necessary', ierr)) return
+            s% q_older(:) = s% q(:)
+            call realloc1d_if_necessary(s% dq_older, s% nz, ierr)
+            if (failed('realloc1d_if_necessary', ierr)) return
+            s% dq_older(:) = s% dq(:)
+         end if
+      end if
+      erase_memory = 0
+
+      contains
+
+      subroutine realloc1d_if_necessary(ptr,new_size,ierr)
+         double precision, pointer :: ptr(:)
+         integer, intent(in) :: new_size
+         integer, intent(out) :: ierr
+         ierr = 0
+         if (associated(ptr)) then
+            if (size(ptr,1) == new_size) return
+            deallocate(ptr)
+         end if
+         allocate(ptr(new_size),stat=ierr)
+      end subroutine realloc1d_if_necessary
+
+      subroutine realloc2d_if_necessary(ptr,ld,new_size,ierr)
+         double precision, pointer :: ptr(:,:)
+         integer, intent(in) :: ld, new_size
+         integer, intent(out) :: ierr
+         ierr = 0
+         if (associated(ptr)) then
+            if (size(ptr,1) == ld .and. size(ptr,2) == new_size) return
+            deallocate(ptr)
+         end if
+         allocate(ptr(ld,new_size),stat=ierr)
+      end subroutine realloc2d_if_necessary
+
+   end function erase_memory
 
 ! Evolve the star for one step (for internal calls)
    function do_evolve_one_step(AMUSE_id)
       use star_lib
       use star_def, only: star_info, get_star_ptr, maxlen_history_column_name
       use run_star_support
-!~      use run_star, only: check_model
-!~      use run_star_extras, only: &
-!~         how_many_extra_profile_columns, data_for_extra_profile_columns, &
-!~         how_many_extra_log_columns, data_for_extra_log_columns
       use amuse_support, only: evolve_failed
       use const_def, only: secyer
       use se_support, only: se_finish_step
@@ -2123,6 +1877,33 @@
          set_min_timestep_stop_condition = 0
       end function set_min_timestep_stop_condition
 
+
+      logical function is_valid_wind_scheme(AMUSE_value)
+         implicit none
+         character(*), intent(in) :: AMUSE_value
+         if (len(trim(AMUSE_value)) == 0) then
+            is_valid_wind_scheme = .true.
+         else if (trim(AMUSE_value) == 'Reimers') then
+            is_valid_wind_scheme = .true.
+         else if (trim(AMUSE_value) == 'Blocker') then
+            is_valid_wind_scheme = .true.
+         else if (trim(AMUSE_value) == 'de Jager') then
+            is_valid_wind_scheme = .true.
+         else if (trim(AMUSE_value) == 'van Loon') then
+            is_valid_wind_scheme = .true.
+         else if (trim(AMUSE_value) == 'Nieuwenhuijzen') then
+            is_valid_wind_scheme = .true.
+         else if (trim(AMUSE_value) == 'Kudritzki') then
+            is_valid_wind_scheme = .true.
+         else if (trim(AMUSE_value) == 'Vink') then
+            is_valid_wind_scheme = .true.
+         else if (trim(AMUSE_value) == 'Dutch') then
+            is_valid_wind_scheme = .true.
+         else
+            is_valid_wind_scheme = .false.
+         endif
+      end function is_valid_wind_scheme
+
 ! Return the wind (mass loss) scheme for RGB stars
       integer function get_RGB_wind_scheme(AMUSE_value)
          use amuse_support, only: AMUSE_RGB_wind_scheme
@@ -2137,8 +1918,13 @@
          use amuse_support, only: AMUSE_RGB_wind_scheme
          implicit none
          character(*), intent(in) :: AMUSE_value
-         AMUSE_RGB_wind_scheme = trim(AMUSE_value)
-         set_RGB_wind_scheme = 0
+         logical :: is_valid_wind_scheme
+         if (is_valid_wind_scheme(AMUSE_value)) then
+            AMUSE_RGB_wind_scheme = trim(AMUSE_value)
+            set_RGB_wind_scheme = 0
+         else
+            set_RGB_wind_scheme = -1
+         endif
       end function set_RGB_wind_scheme
 
 ! Return the wind (mass loss) scheme for AGB stars
@@ -2155,8 +1941,13 @@
          use amuse_support, only: AMUSE_AGB_wind_scheme
          implicit none
          character(*), intent(in) :: AMUSE_value
-         AMUSE_AGB_wind_scheme = trim(AMUSE_value)
-         set_AGB_wind_scheme = 0
+         logical :: is_valid_wind_scheme
+         if (is_valid_wind_scheme(AMUSE_value)) then
+            AMUSE_AGB_wind_scheme = trim(AMUSE_value)
+            set_AGB_wind_scheme = 0
+         else
+            set_AGB_wind_scheme = -1
+         endif
       end function set_AGB_wind_scheme
 
 ! Retrieve the current value of the Reimers wind (mass loss) efficiency
@@ -2473,7 +2264,7 @@
 !~      s% nz = n
 !~      call allocate_star_info_arrays(s, ierr)
 !~      if (failed('allocate_star_info_arrays', ierr)) return
-!~      s% xh(s% i_lnd, :) = log(rho(:))
+!~      s% xh(s% i_xlnd, :) = log(rho(:))
 !~      s% xh(s% i_lnT, :) = log(temperature(:))
 !~      s% xh(s% i_lnR, :) = log(radius(:))
 !~      if (luminosity(1) <= 0) then
@@ -2896,7 +2687,7 @@
 !~         nz, nz_old, prv% xh, prv% xa, energy, prv% eta, prv% dq, xq_old, &
 !~         s_tmp% xh, s_tmp% xa, s_tmp% dq, xq_new, s_tmp% species, s_tmp% chem_id, s_tmp% net_iso, s_tmp% eos_handle, &
 !~         s_tmp% mesh_adjust_use_quadratic, s_tmp% mesh_adjust_get_T_from_E, &
-!~         s_tmp% i_lnd, s_tmp% i_lnT, s_tmp% i_lnR, s_tmp% i_lum, s_tmp% i_vel, s_tmp% i_lndq, s_tmp% i_lnq, &
+!~         s_tmp% i_xlnd, s_tmp% i_lnT, s_tmp% i_lnR, s_tmp% i_lum, s_tmp% i_vel, s_tmp% i_lndq, s_tmp% i_lnq, &
 !~         s_tmp% q_flag, s_tmp% v_flag, &
 !~         prv% mstar, s_tmp% comes_from, s_tmp% cell_type, ierr)
 !~      if (failed('do_mesh_adjust', ierr)) return

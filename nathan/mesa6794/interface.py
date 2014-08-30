@@ -11,8 +11,7 @@ from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import option
 
 class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
-#~        InternalStellarStructureInterface, 
-        CodeWithDataDirectories): 
+        InternalStellarStructureInterface, CodeWithDataDirectories): 
     """
     The software project MESA (Modules for Experiments in Stellar Astrophysics, 
     http://mesa.sourceforge.net/), aims to provide state-of-the-art, robust, 
@@ -34,6 +33,10 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
     
+    set_radius_at_zone = None
+    set_density_at_zone = None
+    set_temperature_at_zone = None
+
     @property
     def default_path_to_inlist(self):
 #~        return os.path.join(self.get_data_directory(), 'inlist_amuse')
@@ -148,20 +151,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         """
         return function
     
-#~    @legacy_function   
-#~    def new_pre_ms_particle():
-#~        """
-#~        Define a new pre-main-sequence star in the code. The star will start with the given mass.
-#~        """
-#~        function = LegacyFunctionSpecification()  
-#~        function.can_handle_array = True
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
-#~            , description="The new index for the star. This index can be used to refer to this star in other functions")
-#~        function.addParameter('mass', dtype='float64', direction=function.IN
-#~            , description="The initial mass of the star")
-#~        function.result_type = 'int32'
-#~        return function
-        
     @legacy_function
     def set_time_step():
         function = LegacyFunctionSpecification() 
@@ -399,30 +388,27 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 #~        """
 #~        return function
     
-#~    @legacy_function
-#~    def get_mass_fraction_at_zone():
-#~        """
-#~        Retrieve the mass fraction at the specified zone/mesh-cell of the star.
-#~        """
-#~        function = LegacyFunctionSpecification() 
-#~        function.can_handle_array = True 
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-#~            , description="The index of the star to get the value of")
-#~        function.addParameter('zone', dtype='int32', direction=function.IN
-#~            , description="The zone/mesh-cell of the star to get the value of")
-#~        function.addParameter('dq_i', dtype='float64', direction=function.OUT
-#~            , description="The mass fraction at the specified zone/mesh-cell of the star.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            The value was retrieved.
-#~        -1 - ERROR
-#~            A star with the given index was not found.
-#~        -2 - ERROR
-#~            A zone with the given index was not found.
-#~        """
-#~        return function
-#~    
+    @legacy_function
+    def get_mass_fraction_at_zone():
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter('dq_i', dtype='float64', direction=function.OUT
+            , description="The mass fraction at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
 #~    @legacy_function
 #~    def set_mass_fraction_at_zone():
 #~        """
@@ -447,30 +433,30 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 #~        """
 #~        return function
 #~    
-#~    @legacy_function
-#~    def get_luminosity_at_zone():
-#~        """
-#~        Retrieve the luminosity at the specified zone/mesh-cell of the star.
-#~        """
-#~        function = LegacyFunctionSpecification() 
-#~        function.can_handle_array = True 
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-#~            , description="The index of the star to get the value of")
-#~        function.addParameter('zone', dtype='int32', direction=function.IN
-#~            , description="The zone/mesh-cell of the star to get the value of")
-#~        function.addParameter('lum_i', dtype='float64', direction=function.OUT
-#~            , description="The luminosity at the specified zone/mesh-cell of the star.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            The value was retrieved.
-#~        -1 - ERROR
-#~            A star with the given index was not found.
-#~        -2 - ERROR
-#~            A zone with the given index was not found.
-#~        """
-#~        return function
-#~    
+    @legacy_function
+    def get_luminosity_at_zone():
+        """
+        Retrieve the luminosity at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter('lum_i', dtype='float64', direction=function.OUT
+            , description="The luminosity at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
 #~    @legacy_function
 #~    def set_luminosity_at_zone():
 #~        """
@@ -518,88 +504,44 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 #~            A zone with the given index was not found.
 #~        """
 #~        return function    
-#~
-#~    @legacy_function
-#~    def get_thermal_energy_at_zone():
-#~        """
-#~        Retrieve the entropy at the specified zone/mesh-cell of the star.
-#~        """
-#~        function = LegacyFunctionSpecification() 
-#~        function.can_handle_array = True 
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-#~            , description="The index of the star to get the value of")
-#~        function.addParameter('zone', dtype='int32', direction=function.IN
-#~            , description="The zone/mesh-cell of the star to get the value of")
-#~        function.addParameter('E_i', dtype='float64', direction=function.OUT
-#~            , description="The specific thermal energy at the specified zone/mesh-cell of the star.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            The value was retrieved.
-#~        -1 - ERROR
-#~            A star with the given index was not found.
-#~        -2 - ERROR
-#~            A zone with the given index was not found.
-#~        """
-#~        return function    
-#~    
-#~    @legacy_function
-#~    def get_brunt_vaisala_frequency_squared_at_zone():
-#~        """
-#~        Retrieve the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star.
-#~        """
-#~        function = LegacyFunctionSpecification() 
-#~        function.can_handle_array = True 
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN, unit=INDEX)
-#~        function.addParameter('zone', dtype='int32', direction=function.IN, unit=NO_UNIT)
-#~        function.addParameter('brunt_N2', dtype='float64', direction=function.OUT, unit=units.s**-2)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function
-#~    def get_id_of_species():
-#~        """
-#~        Retrieve the chem_ID of the chemical abundance variable of the star.
-#~        """
-#~        function = LegacyFunctionSpecification() 
-#~        function.can_handle_array = True 
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-#~            , description="The index of the star to get the value of")
-#~        function.addParameter('species', dtype='int32', direction=function.IN
-#~            , description="The species of the star to get the name of")
-#~        function.addParameter('species_id', dtype='int32', direction=function.OUT
-#~            , description="The chem_ID of the chemical abundance variable of the star.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            The value was retrieved.
-#~        -1 - ERROR
-#~            A star with the given index was not found.
-#~        """
-#~        return function
-#~    
-#~    @legacy_function
-#~    def get_mass_of_species():
-#~        """
-#~        Retrieve the mass number of the chemical abundance variable of the star.
-#~        """
-#~        function = LegacyFunctionSpecification() 
-#~        function.can_handle_array = True 
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-#~            , description="The index of the star to get the value of")
-#~        function.addParameter('species', dtype='int32', direction=function.IN
-#~            , description="The species of the star to get the mass number of")
-#~        function.addParameter('species_mass', dtype='float64', direction=function.OUT
-#~            , description="The mass number of the chemical abundance variable of the star.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            The value was retrieved.
-#~        -1 - ERROR
-#~            A star with the given index was not found.
-#~        """
-#~        return function
-#~    
+
+    @legacy_function
+    def get_thermal_energy_at_zone():
+        """
+        Retrieve the entropy at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter('E_i', dtype='float64', direction=function.OUT
+            , description="The specific thermal energy at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function    
+    
+    @legacy_function
+    def get_brunt_vaisala_frequency_squared_at_zone():
+        """
+        Retrieve the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN, unit=INDEX)
+        function.addParameter('zone', dtype='int32', direction=function.IN, unit=NO_UNIT)
+        function.addParameter('brunt_N2', dtype='float64', direction=function.OUT, unit=units.s**-2)
+        function.result_type = 'int32'
+        return function
+    
 #~    @legacy_function
 #~    def erase_memory():
 #~        """
@@ -997,8 +939,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
 #~        function.result_type = 'int32'
 #~        return function
 
-class MESA(StellarEvolution):
-#~class MESA(StellarEvolution, InternalStellarStructure):
+class MESA(StellarEvolution, InternalStellarStructure):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
@@ -1154,23 +1095,6 @@ class MESA(StellarEvolution):
         object.set_new('particles', 'new_particle_method')
         object.set_delete('particles', 'delete_star')
         
-#~    def define_particle_sets(self, object):
-#~        object.define_super_set('particles', ['native_stars', 'imported_stars', 'pre_ms_stars'], 
-#~            index_to_default_set = 0)
-#~        
-#~        object.define_set('imported_stars', 'index_of_the_star')
-#~        object.set_new('imported_stars', 'finalize_stellar_model')
-#~        object.set_delete('imported_stars', 'delete_star')
-#~        
-#~        object.define_set('native_stars', 'index_of_the_star')
-#~        object.set_new('native_stars', 'new_particle')
-#~        object.set_delete('native_stars', 'delete_star')
-#~        
-#~        object.define_set('pre_ms_stars', 'index_of_the_star')
-#~        object.set_new('pre_ms_stars', 'new_pre_ms_particle')
-#~        object.set_delete('pre_ms_stars', 'delete_star')
-#~        
-#~        for particle_set_name in ['native_stars', 'imported_stars', 'pre_ms_stars']:
         object.add_getter('particles', 'get_radius', names = ('radius',))
         object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
         object.add_getter('particles', 'get_mass', names = ('mass',))
@@ -1197,29 +1121,26 @@ class MESA(StellarEvolution):
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
         object.add_method('particles', 'write_star_to_file')
-#~        InternalStellarStructure.define_particle_sets(
+        InternalStellarStructure.define_particle_sets(self, object)
 #~            self, 
 #~            object, 
-#~            set_name = particle_set_name
+#~            set_name = 'particles'
 #~        )
-#~        object.add_method(particle_set_name, 'get_mass_profile')
-#~        object.add_method(particle_set_name, 'set_mass_profile')
-#~        object.add_method(particle_set_name, 'get_cumulative_mass_profile')
-#~        object.add_method(particle_set_name, 'get_luminosity_profile')
-#~        object.add_method(particle_set_name, 'set_luminosity_profile')
-#~        object.add_method(particle_set_name, 'get_entropy_profile')
-#~        object.add_method(particle_set_name, 'get_thermal_energy_profile')
-#~        object.add_method(particle_set_name, 'get_brunt_vaisala_frequency_squared_profile')
-#~        object.add_method(particle_set_name, 'get_IDs_of_species')
-#~        object.add_method(particle_set_name, 'get_masses_of_species')
-#~        object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
-#~        object.add_method(particle_set_name, 'reset_number_of_backups_in_a_row')
+        object.add_method('particles', 'get_mass_profile')
+#~        object.add_method('particles', 'set_mass_profile')
+        object.add_method('particles', 'get_cumulative_mass_profile')
+        object.add_method('particles', 'get_luminosity_profile')
+#~        object.add_method('particles', 'set_luminosity_profile')
+        object.add_method('particles', 'get_entropy_profile')
+        object.add_method('particles', 'get_thermal_energy_profile')
+        object.add_method('particles', 'get_brunt_vaisala_frequency_squared_profile')
+#~        object.add_method('particles', 'get_IDs_of_species')
+#~        object.add_method('particles', 'get_masses_of_species')
+#~        object.add_method('particles', 'get_number_of_backups_in_a_row')
+#~        object.add_method('particles', 'reset_number_of_backups_in_a_row')
             
     def define_state(self, object):
         StellarEvolution.define_state(self, object)
-#~        object.add_method('EDIT', 'new_pre_ms_particle')
-#~        object.add_method('UPDATE', 'new_pre_ms_particle')
-#~        object.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
         object.add_method('EDIT', 'finalize_stellar_model')
         object.add_method('UPDATE', 'finalize_stellar_model')
         object.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
@@ -1228,7 +1149,7 @@ class MESA(StellarEvolution):
         object.add_transition('RUN', 'UPDATE', 'new_particle_method', False)
     
     def define_errorcodes(self, object):
-#~        InternalStellarStructure.define_errorcodes(self, object)
+        InternalStellarStructure.define_errorcodes(self, object)
         object.add_errorcode(-1, 'Something went wrong...')
         object.add_errorcode(-4, 'Not implemented.')
         object.add_errorcode(-11, 'Evolve terminated: Unspecified stop condition reached.')
@@ -1238,18 +1159,13 @@ class MESA(StellarEvolution):
         object.add_errorcode(-15, 'Evolve terminated: Minimum timestep limit reached.')
     
     def define_methods(self, object):
-#~        InternalStellarStructure.define_methods(self, object)
+        InternalStellarStructure.define_methods(self, object)
         StellarEvolution.define_methods(self, object)
         object.add_method(
             "new_particle_method",
             (units.MSun, object.NO_UNIT, object.NO_UNIT),
             (object.INDEX, object.ERROR_CODE)
         )
-#~        object.add_method(
-#~            "new_pre_ms_particle",
-#~            (units.MSun),
-#~            (object.INDEX, object.ERROR_CODE)
-#~        )
         object.add_method(
             "set_time_step", 
             (object.INDEX, units.yr), 
@@ -1315,16 +1231,6 @@ class MESA(StellarEvolution):
             (object.INDEX,object.NO_UNIT,), 
             (units.erg/units.g, object.ERROR_CODE,)
         )        
-        object.add_method(
-            "get_id_of_species", 
-            (object.INDEX,object.NO_UNIT,), 
-            (object.NO_UNIT, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_mass_of_species", 
-            (object.INDEX,object.NO_UNIT,), 
-            (units.amu, object.ERROR_CODE,)
-        )
         object.add_method(
             "erase_memory", 
             (object.INDEX,), 
@@ -1561,24 +1467,6 @@ class MESA(StellarEvolution):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_brunt_vaisala_frequency_squared_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
-    
-    def get_IDs_of_species(self, indices_of_the_stars, number_of_species = None):
-        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance IDs")
-        if number_of_species is None:
-            number_of_species = self.get_number_of_species(indices_of_the_stars)
-        return list(self.get_id_of_species(
-            [indices_of_the_stars]*number_of_species, 
-            range(1,number_of_species+1) 
-        ))
-    
-    def get_masses_of_species(self, indices_of_the_stars, number_of_species = None):
-        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance mass numbers")
-        if number_of_species is None:
-            number_of_species = self.get_number_of_species(indices_of_the_stars)
-        return self.get_mass_of_species(
-            [indices_of_the_stars]*number_of_species, 
-            range(1,number_of_species+1)
-        )
     
     def new_particle_from_model(self, internal_structure, current_age, key=None):
         if isinstance(internal_structure, dict):
