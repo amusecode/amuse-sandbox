@@ -13,9 +13,9 @@ from amuse.community.athena.interface import Athena
 from amuse.units.generic_unit_system import *
 from amuse.datamodel import Grid
 
-NUMBER_OF_WORKERS = 4
+NUMBER_OF_WORKERS = 1
 GAMMA = 1.4
-DIMENSIONS_OF_MESH = (400,400/NUMBER_OF_WORKERS,1)
+DIMENSIONS_OF_MESH = (200, 200,1)
 PERTUBATION_AMPLITUDE = 0.01 | speed
 
 def new_instance_of_hydro_code(number_of_workers=1):
@@ -56,10 +56,8 @@ def initialize_grid(grid):
     vx = 0.5 | speed
     p = 2.5 | (mass / (length * time**2))
     
-    halfway = DIMENSIONS_OF_MESH[0]/2 - 1
-    
-    outerregion = numpy.logical_or(grid.y <= 0.25 | length, grid.y >= 0.75 | length)
-    innerregion = numpy.logical_and(grid.y > 0.25 | length, grid.y < 0.75 | length)
+    outerregion = numpy.logical_or(grid.y <= 0.35 | length, grid.y >= 0.85 | length)
+    innerregion = numpy.logical_and(grid.y > 0.35 | length, grid.y < 0.85 | length)
     
     grid[outerregion].rho = 1  | density
     grid[outerregion].rhovx =  vx * grid[outerregion].rho
