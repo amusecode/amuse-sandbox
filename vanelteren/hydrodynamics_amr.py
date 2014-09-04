@@ -8,6 +8,9 @@ import math
 import time as T
 from itertools import groupby
 
+from matplotlib import pyplot
+from mpl_toolkits.mplot3d import axes3d
+
 from amuse.test.amusetest import TestCase
 from amuse.rfi.channel import AsyncRequestsPool
 from amuse.rfi.channel import ASyncRequestSequence
@@ -63,101 +66,209 @@ def refine_grid(code, grid, offset, factor = 2):
                 grids.append([quantities.as_vector_quantity([x,y,z]), refined_grid])
     return grids
     
+def amr_wave_filter(level):
+    return 1.0e-2
+    
 def lohnen_error_estimation(grid, attributes):
     result = 0.0
-    dx, dy, dz = grid.cellsize()
+    shape = grid.shape
+    dimensions = 1
+    if shape[1] > 1:
+         dimensions += 1
+    if shape[2] > 1:
+         dimensions += 1
+         
     for attribute in attributes:
         value = getattr(grid, attribute)
-        numerator=quantities.zero
-        denominator=quantities.zero
-        for dimension in range(3):
+        numerator=None
+        denominator=None
+        for dimension in range(dimensions):
             imin0 = 0 if dimension == 0 else 1
-            jmin0 = 0 if dimension == 1 else 1
-            kmin0 = 0 if dimension == 2 else 1
             imax0 = -2 if dimension == 0 else -1
-            jmax0 = -2 if dimension == 1 else -1
-            kmax0 = -2 if dimension == 2 else -1
             imin1 = 2 if dimension == 0 else 1
-            jmin1 = 2 if dimension == 1 else 1
-            kmin1 = 2 if dimension == 2 else 1
             imax1 = None if dimension == 0 else -1
-            jmax1 = None if dimension == 1 else -1
-            kmax1 = None if dimension == 2 else -1
+            
+            if dimensions > 1:
+                jmin0 = 0 if dimension == 1 else 1
+                jmax0 = -2 if dimension == 1 else -1
+                jmin1 = 2 if dimension == 1 else 1
+                jmax1 = None if dimension == 1 else -1
+            else:
+                jmin0 = jmax0 = jmin1 = jmax1 = None
+                
+            if dimensions > 2:
+                kmin0 = 0 if dimension == 2 else 1
+                kmax0 = -2 if dimension == 2 else -1
+                kmin1 = 2 if dimension == 2 else 1
+                kmax1 = None if dimension == 2 else -1
+            else:
+                kmin0 = kmax0 = kmin1 = kmax1 = None
             
             dvalue = value[imin1:imax1,jmin1:jmax1,kmin1:kmax1] - value[imin0:imax0,jmin0:jmax0,kmin0:kmax0]
-            print dvaluedx.shape
-            for dimension2 in range(3):
+            
+            for dimension2 in range(dimensions):
                 
-                imin02 = 0 if dimension == 0 else 1
-                jmin02 = 0 if dimension == 1 else 1
-                kmin02 = 0 if dimension == 2 else 1
+                imin02 = 0 if dimension2 == 0 else 1
+                imax02 = -2 if dimension2 == 0 else -1
+                imin12 = 2 if dimension2 == 0 else 1
+                imax12 = None if dimension2 == 0 else -1
                 
-                imax02 = -2 if dimension == 0 else -1
-                jmax02 = -2 if dimension == 1 else -1
-                kmax02 = -2 if dimension == 2 else -1
+                if dimensions > 1:
+                    jmin02 = 0 if dimension2 == 1 else 1
+                    jmax02 = -2 if dimension2 == 1 else -1
+                    jmin12 = 2 if dimension2 == 1 else 1
+                    jmax12 = None if dimension2 == 1 else -1
+                else:
+                    jmin02 = jmax02 = jmin12 = jmax12 = None
                 
-                imin12 = 2 if dimension == 0 else 1
-                jmin12 = 2 if dimension == 1 else 1
-                kmin12 = 2 if dimension == 2 else 1
-                
-                imax12 = None if dimension == 0 else -1
-                jmax12 = None if dimension == 1 else -1
-                kmax12 = None if dimension == 2 else -1
+                if dimensions > 2:
+                    kmax02 = -2 if dimension2 == 2 else -1
+                    kmin02 = 0 if dimension2 == 2 else 1
+                    kmin12 = 2 if dimension2 == 2 else 1
+                    kmax12 = None if dimension2 == 2 else -1
+                else:
+                    kmin02 = kmax02 = kmin12 = kmax12 = None
                 
                 ddvalue = dvalue[imin12:imax12,jmin12:jmax12,kmin12:kmax12] - dvalue[imin02:imax02,jmin02:jmax02,kmin02:kmax02]
-                print ddvalue.shape
-                numerator += (ddvalue * ddvalue).sum()
-                print numerator
+                if numerator is None:
+                    numerator = (ddvalue * ddvalue)
+                else:
+                    numerator += (ddvalue * ddvalue)
                 
-        for dimension in range(3):
-            absvalue = value.abs()
+        for dimension in range(dimensions):
+            absvalue = abs(value)
             
             imin0 = 0 if dimension == 0 else 1
-            jmin0 = 0 if dimension == 1 else 1
-            kmin0 = 0 if dimension == 2 else 1
             imax0 = -2 if dimension == 0 else -1
-            jmax0 = -2 if dimension == 1 else -1
-            kmax0 = -2 if dimension == 2 else -1
             imin1 = 2 if dimension == 0 else 1
-            jmin1 = 2 if dimension == 1 else 1
-            kmin1 = 2 if dimension == 2 else 1
             imax1 = None if dimension == 0 else -1
-            jmax1 = None if dimension == 1 else -1
-            kmax1 = None if dimension == 2 else -1
             
-            sum_value= value[imin1:imax1,jmin1:jmax1,kmin1:kmax1] + value[imin0:imax0,jmin0:jmax0,kmin0:kmax0]
-            print sum_value.shape
-            for dimension2 in range(3):
+            if dimensions > 1:
+                jmin0 = 0 if dimension == 1 else 1
+                jmax0 = -2 if dimension == 1 else -1
+                jmin1 = 2 if dimension == 1 else 1
+                jmax1 = None if dimension == 1 else -1
+            else:
+                jmin0 = jmax0 = jmin1 = jmax1 = None
+            
+            if dimensions > 2:
+                kmin0 = 0 if dimension == 2 else 1
+                kmax0 = -2 if dimension == 2 else -1
+                kmin1 = 2 if dimension == 2 else 1
+                kmax1 = None if dimension == 2 else -1
+            else:
+                kmin0 = kmax0 = kmin1 = kmax1 = None
                 
-                imin02 = 0 if dimension == 0 else 1
-                jmin02 = 0 if dimension == 1 else 1
-                kmin02 = 0 if dimension == 2 else 1
+            sum_value= absvalue[imin1:imax1,jmin1:jmax1,kmin1:kmax1] + absvalue[imin0:imax0,jmin0:jmax0,kmin0:kmax0]
+            
+            imin0 = 0 if dimension == 0 else 2
+            imax0 = -4 if dimension == 0 else -2
+            imin1 = 4 if dimension == 0 else 2
+            imax1 = None if dimension == 0 else -2
+            
+            if dimensions > 1:
+                jmin0 = 0 if dimension == 1 else 2
+                jmax0 = -4 if dimension == 1 else -2
+                jmin1 = 4 if dimension == 1 else 2
+                jmax1 = None if dimension == 1 else -2
+            else:
+                jmin0 = jmax0 = jmin1 = jmax1 = None
+            
+            if dimensions > 2:
+                kmin0 = 0 if dimension == 2 else 2
+                kmax0 = -4 if dimension == 2 else -2
+                kmin1 = 4 if dimension == 2 else 2
+                kmax1 = None if dimension == 2 else -2
+            else:
+                kmin0 = kmax0 = kmin1 = kmax1 = None
+            
+            if dimensions == 1:
+                field_value = value[2:-2,:,:]
+            elif dimensions == 2:
+                field_value = value[2:-2,2:-2,:]
+            elif dimensions == 3:
+                field_value = value[2:-2,2:-2,2:-2]
+            
+            diff_value = abs(value[imin1:imax1,jmin1:jmax1,kmin1:kmax1] - field_value) +  abs(field_value - value[imin0:imax0,jmin0:jmax0,kmin0:kmax0])
+            
+            
+            for dimension2 in range(dimensions):
                 
-                imax02 = -2 if dimension == 0 else -1
-                jmax02 = -2 if dimension == 1 else -1
-                kmax02 = -2 if dimension == 2 else -1
+                imin02 = 0 if dimension2 == 0 else 1
+                imax02 = -2 if dimension2 == 0 else -1
+                imin12 = 2 if dimension2 == 0 else 1
+                imax12 = None if dimension2 == 0 else -1
                 
-                imin12 = 2 if dimension == 0 else 1
-                jmin12 = 2 if dimension == 1 else 1
-                kmin12 = 2 if dimension == 2 else 1
+                    
+                if dimensions > 1:
+                    jmin02 = 0 if dimension2 == 1 else 1
+                    jmax02 = -2 if dimension2 == 1 else -1
+                    jmin12 = 2 if dimension2 == 1 else 1
+                    jmax12 = None if dimension2 == 1 else -1
+                else:
+                    jmin02 = jmax02 = jmin12 = jmax12 = None
                 
-                imax12 = None if dimension == 0 else -1
-                jmax12 = None if dimension == 1 else -1
-                kmax12 = None if dimension == 2 else -1
-                
-                dvaluedxdx = dvaluedx[imin12:imax12,jmin12:jmax12,kmin12:kmax12] - dvaluedx[imin02:imax02,jmin02:jmax02,kmin02:kmax02]
-                print dvaluedxdx.shape
-                numerator += (dvaluedxdx * dvaluedxdx).sum()
-                print numerator
-        result += numerator / denominator
+                if dimensions > 2:
+                    kmin02 = 0 if dimension2 == 2 else 1
+                    kmax02 = -2 if dimension2 == 2 else -1
+                    kmin12 = 2 if dimension2 == 2 else 1
+                    kmax12 = None if dimension2 == 2 else -1
+                else:
+                    kmin02 = kmax02 = kmin12 = kmax12 = None
+                 
+                ssvalue = sum_value[imin12:imax12,jmin12:jmax12,kmin12:kmax12]  + sum_value[imin02:imax02,jmin02:jmax02,kmin02:kmax02]
+                #tmp = (diff_value + (amr_wave_filter(1) * ssvalue)**2)
+                tmp = (diff_value + (amr_wave_filter(1) * ssvalue))**2
+                if denominator is None:
+                    denominator = tmp
+                else:
+                    denominator += tmp
+        result += numpy.sqrt(numerator / (denominator.maximum(1e-6 | denominator.unit)))
+        
+        #result += numpy.sqrt((1.0 |numerator.unit) / (denominator.maximum(1e-6 | denominator.unit)))
     return result
         
 class LohnenErrorEstimationTests(TestCase):
     def test1(self):
         input = Grid.create((7,6,5), [7,6,5] | generic_unit_system.length)
-        input.rho = 0 | generic_unit_system.density
+        input.rho = 0.0 | generic_unit_system.density
         error = lohnen_error_estimation(input, ["rho",])
         self.assertEquals(error, 0)
+        
+    def test2(self):
+        from amuse.community.mpiamrvac.interface import MpiAmrVac
+        code = MpiAmrVac(mode="1d", redirection = "none")
+        code.parameters.x_boundary_conditions = ("periodic","periodic")
+        code.parameters.mesh_length = (12.0,1,1) | generic_unit_system.length
+        code.parameters.mesh_size = (40, 1, 1)
+        code.parameters.maximum_number_of_grid_levels = 2
+        for grid in code.itergrids():
+            copy = grid.copy()
+            copy.rho = 1.0 + 0.5 * (numpy.sin(copy.x/(12.0 | generic_unit_system.length)*  2 * numpy.pi)) | generic_unit_system.density
+            channel = copy.new_channel_to(grid)
+            channel.copy()
+        must_refine = code.refine_grid()
+        print must_refine
+            
+            
+        grid = Grid.create((44,1,1), [12,12,12] | generic_unit_system.length)
+        r = ((grid.x**2  + grid.y**2)).sqrt()
+        grid.rho = 1.0 + 0.5 * (numpy.sin(grid.x/(12.0 | generic_unit_system.length)*  2 * numpy.pi)) | generic_unit_system.density
+        error = lohnen_error_estimation(grid, ["rho",])
+        
+        rho = grid[2:-2,:,:].rho[...,...,0].value_in(generic_unit_system.density)
+        rho = error[...,...,0]
+        print rho
+        figure = pyplot.figure(figsize=(6,6))
+        plot = figure.add_subplot(1,1,1)#, projection='3d')
+        plot.plot(
+            grid[2:-2,:,:].x[...,...,0].value_in(generic_unit_system.length),
+            rho
+        )
+        figure.savefig('test2.png')
+        pyplot.show()
+        
+        #self.assertEquals(error, 0)
         
 
 def set_values_in_store_multi_async(atss, list_of_indices, attributes, list_of_quantities):
