@@ -867,7 +867,7 @@ class SecularTriple(InCodeComponentImplementation):
             triple.child1.eccentricity = e_in
             triple.child2.semimajor_axis = a_out
             triple.child2.eccentricity = e_out
-            triple.mutual_inclination = INCL_in
+            triple.relative_inclination = INCL_in
             triple.child1.argument_of_pericenter = AP_in
             triple.child2.argument_of_pericenter = AP_out
             triple.child1.longitude_of_ascending_node = LAN_in
@@ -957,7 +957,7 @@ def extract_data_from_triple(self,triple):
     a_out = outer_binary.semimajor_axis
     e_out = outer_binary.eccentricity
         
-    INCL_in = triple.mutual_inclination
+    INCL_in = triple.relative_inclination
     INCL_out = 0.0
     AP_in = inner_binary.argument_of_pericenter
     AP_out = outer_binary.argument_of_pericenter
