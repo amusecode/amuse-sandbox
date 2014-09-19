@@ -13,8 +13,8 @@ g = 1e-3*units.kg
 class SecularTripleInterface(CodeInterface):
     include_headers = ['src/main_code.h','src/ODE_system.h']
 
-    def __init__(self):
-         CodeInterface.__init__(self)
+    def __init__(self, **options):
+         CodeInterface.__init__(self, **options)
 
     @legacy_function
     def evolve():
@@ -815,33 +815,6 @@ class SecularTriple(InCodeComponentImplementation):
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_dummy,flag,error = self.evolve(*args)
-            """
-            m1,m2,m3,R1,R2,R3, \
-            spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3, \
-            a_in,a_out,e_in,e_out, \
-            INCL_in,INCL_out,INCL_in_out, \
-            AP_in,AP_out,LAN_in,LAN_out, \
-            end_time_dummy,flag,error = self.evolve(
-                m1,m2,m3,
-                R1,R2,R3,
-                spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3,
-                AMC_star1,AMC_star2,AMC_star3,
-                gyration_radius_star1,gyration_radius_star2,gyration_radius_star3,
-                k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
-                a_in,a_out,
-                e_in,e_out,
-                INCL_in,INCL_out,
-                AP_in,AP_out,LAN_in,LAN_out,
-                star1_is_donor,star2_is_donor,star3_is_donor,
-                wind_mass_loss_rate_star1,wind_mass_loss_rate_star2,wind_mass_loss_rate_star3,
-                time_derivative_of_radius_star1,time_derivative_of_radius_star2,time_derivative_of_radius_star3,
-                inner_mass_transfer_rate,outer_mass_transfer_rate,
-                inner_accretion_efficiency_wind_child1_to_child2,inner_accretion_efficiency_wind_child2_to_child1,
-                outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1,
-                inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer,
-                inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer,
-                self.model_time,time_step)
-            """
             
             ### dynamical instability ###
             triple.dynamical_instability = False
@@ -862,10 +835,12 @@ class SecularTriple(InCodeComponentImplementation):
             triple.child1.child1.is_donor = False
             if flag==4: 
                 triple.child1.child1.is_donor = True
+                print 'RLOF star 1'
 
             ### RLOF star2 ###
             triple.child1.child2.is_donor = False
             if flag==5: 
+                print 'RLOF star 2'            
                 triple.child1.child2.is_donor = True
 
             ### RLOF star3 ###
@@ -887,7 +862,7 @@ class SecularTriple(InCodeComponentImplementation):
                 triple.child1.child1.spin_angular_frequency = spin_angular_frequency1
                 triple.child1.child2.spin_angular_frequency = spin_angular_frequency2
                 triple.child2.child1.spin_angular_frequency = spin_angular_frequency3
-                                                
+                                               
             triple.child1.semimajor_axis = a_in
             triple.child1.eccentricity = e_in
             triple.child2.semimajor_axis = a_out
@@ -1098,12 +1073,13 @@ def extract_data_from_triple(self,triple):
             spin_angular_frequency3 = star3.spin_angular_frequency
                 
             k_div_T_tides_star1 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1)
-            k_div_T_tides_star2 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m2,m1,a_in,R2,m2_envelope,R2_envelope,luminosity_star2,spin_angular_frequency2,gyration_radius_star2)
-            k_div_T_tides_star3 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m3,m1+m2,a_out,R3,m3_envelope,R3_envelope,luminosity_star3,spin_angular_frequency3,gyration_radius_star3)              
+            k_div_T_tides_star2 = tidal_friction_constant.tidal_friction_constant(stellar_type2,m2,m1,a_in,R2,m2_envelope,R2_envelope,luminosity_star2,spin_angular_frequency2,gyration_radius_star2)
+            k_div_T_tides_star3 = tidal_friction_constant.tidal_friction_constant(stellar_type3,m3,m1+m2,a_out,R3,m3_envelope,R3_envelope,luminosity_star3,spin_angular_frequency3,gyration_radius_star3)
         except AttributeError:
             print "More attributes required for tides"
             return
 
+   
     args = [m1,m2,m3,
         R1,R2,R3,
         spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3,

@@ -517,6 +517,40 @@ class TestSeBa(TestWithMPI):
 
         print 'test13: succeeded'
 
+        #test tides
+    def test14(self):
+        print 'test14'
+
+        M1 = 1.|units.MSun
+        M2 = 0.1|units.MSun
+        M3 = 0.08|units.MSun
+        a_in = 20|units.RSun
+        a_out = 1.e6|units.RSun
+        e_in = 0.8
+        e_out = 0.0
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        o_in = 0.0
+        o_out = 0.0
+        T_end = 11000|units.Myr 
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+
+        self.assertEqual(tr.particles[0].child1.child1.mass, 1. | units.MSun)        
+        self.assertEqual(tr.particles[0].child1.child2.mass, 0.1 | units.MSun)        
+        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+
+        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 6.99056| units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1.e6 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.particles[0].child1.eccentricity, 0., 4)  #eccentricity < 0
+        self.assertAlmostRelativeEqual(tr.particles[0].child2.eccentricity, 0., 4)        #eccentricity < 0
+
+        a_in_final_theory = a_in * (1-e_in**2)
+        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 1)        
+
+        print 'test14: succeeded'
+        print tr.particles[0].child1.semimajor_axis, tr.particles[0].child2.semimajor_axis
+        print tr.particles[0].child1.eccentricity, tr.particles[0].child2.eccentricity
  
 
  
@@ -639,15 +673,15 @@ if __name__ == '__main__':
     test.test0()
     test.test1()
 
-    # test wind mass loss inner system
+     test wind mass loss inner system
     test.test2()
     test.test3()
     test.test4()
 
-    # test wind mass loss outer system
+     test wind mass loss outer system
     test.test5()
 
-    # test stable mass transfer in inner system
+     test stable mass transfer in inner system
     test.test6()
     test.test7()
     test.test8()
@@ -661,4 +695,6 @@ if __name__ == '__main__':
     test.test12() #double alpha-ce
     test.test13() #merger
 
+    #test tides
+#    test.test14()
 

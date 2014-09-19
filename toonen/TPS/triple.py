@@ -67,7 +67,7 @@ time_step_factor_stable_mt = 0.01 #1% mass loss during mass transfer
 # 0.01 -> error in the semi-major axis of about 0.5%
 maximum_wind_mass_loss_factor = 0.01 
 error_dm = 0.05
-maximum_radius_change_factor = 0.05 
+maximum_radius_change_factor = 0.05
 error_dr = 0.2
 minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
@@ -1184,7 +1184,7 @@ class Triple:
         m2_array.append(self.particles[0].child1.child2.mass)
         m3_array.append(self.particles[0].child2.child1.mass)
 
-#        print 'kozai timescale:', self.kozai_timescale()      
+        print 'kozai timescale:', self.kozai_timescale()      
         self.determine_mass_transfer_timescale()
         self.save_snapshot()        
         while self.time<self.tend:
@@ -1371,6 +1371,18 @@ def safety_check_time_step(triple):
             dr_2 = (triple.particles[0].child1.child2.radius - triple.particles[0].child1.child2.previous_radius)/triple.particles[0].child1.child2.radius
             dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
     
+
+            print 'radius:', 
+            print triple.particles[0].child1.child1.radius,
+            print triple.particles[0].child1.child2.radius,
+            print triple.particles[0].child2.child1.radius
+            print 'change in radius over time:', 
+            print triple.particles[0].child1.child1.time_derivative_of_radius,
+            print triple.particles[0].child1.child2.time_derivative_of_radius,
+            print triple.particles[0].child2.child1.time_derivative_of_radius
+            print 'relative change in radius:',
+            print dr_1, dr_2, dr_3
+
     
             if REPORT_TRIPLE_EVOLUTION:    
                 print 'change in radius over time:', 
