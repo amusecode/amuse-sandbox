@@ -187,17 +187,31 @@ In the implimentation of the gamma-CE, there is a dependence on the eccentricity
 
 
 **********************
+Note number: 14
+Author: Silvia
+Date: 17-09-2014
+Topic: 1PN inner outer term
+**********************
+Has been neglected for a long time, not clear how important it is. 
+
+
+**********************
+Note number: 15
+Author: Silvia
+Date: 17-09-2014
+Topic: 1PN inner outer term
+**********************
+The stability criteion is valid for q<5.
+
+
+**********************
 Note number: 
 Author: 
 Date: 
 Topic: 
 **********************
-**********************
-Note number: 
-Author: 
-Date: 
-Topic: 
-**********************
+
+
 **********************
 Note number: 
 Author: 

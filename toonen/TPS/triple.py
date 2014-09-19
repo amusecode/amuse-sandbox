@@ -15,7 +15,7 @@
 ##            -E    inner eccentricity [1.]
 ##            -e    outer eccentricity [0.]
 
-##            -i    mutual inclination []
+##            -i    relative inclination between orbits []
 
 ##            -G    inner argument of pericenter []
 ##            -g    outer argument of pericenter []
@@ -79,14 +79,14 @@ class Triple:
     def __init__(self, inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
-            mutual_inclination,
+            relative_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity, tend, number):      
             
         self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
-            mutual_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter,
+            relative_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)   
         if inner_primary_mass < inner_secondary_mass:
             spare = inner_primary_mass
@@ -104,8 +104,8 @@ class Triple:
         triples[0].child1 = bins[0]
         triples[0].child2 = bins[1]
 #        triples[0].mass = triples[0].child1.mass + triples[0].child2.mass
-        #when going to quadruples, mutual_inclination should be a characteristic of a bin 
-        triples[0].mutual_inclination = mutual_inclination 
+        #when going to quadruples, relative_inclination should be a characteristic of a bin 
+        triples[0].relative_inclination = relative_inclination 
         triples[0].is_star = False
         triples[0].is_binary = True # True if there are 2 children
         triples[0].is_container = True # Upper level
@@ -120,12 +120,12 @@ class Triple:
         self.previous_time = 0.0|units.yr
 
         self.particles = triples
-        self.setup_se_code(metallicity, stars)
+        self.setup_stellar_code(metallicity, stars)
         self.setup_secular_code(triples)
 
-        self.update_previous_se_parameters()
-        self.update_se_parameters() 
-        self.update_se_wind_parameters()
+        self.update_previous_stellar_parameters()
+        self.update_stellar_parameters() 
+        self.update_stellar_wind_parameters()
 
 
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass, inner_semimajor_axis, outer_semimajor_axis):
@@ -201,23 +201,23 @@ class Triple:
             
     #-------
     #setup community codes
-    def setup_se_code(self, metallicity, stars):
-        self.se_code = SeBa()
+    def setup_stellar_code(self, metallicity, stars):
+        self.stellar_code = SeBa()
 
         #stopping conditions:
-#        print self.se_code.stopping_conditions
-#        print self.se_code.stopping_conditions.supernova_detection.is_supported()
-#        print self.se_code.stopping_conditions.supernova_detection.is_enabled()
-#        print self.se_code.stopping_conditions.supernova_detection.is_set()
-#        print self.se_code.stopping_conditions.supernova_detection.enable()
-#        print self.se_code.stopping_conditions.supernova_detection.is_enabled()
-#        print self.se_code.stopping_conditions.supernova_detection.is_set()
+#        print self.stellar_code.stopping_conditions
+#        print self.stellar_code.stopping_conditions.supernova_detection.is_supported()
+#        print self.stellar_code.stopping_conditions.supernova_detection.is_enabled()
+#        print self.stellar_code.stopping_conditions.supernova_detection.is_set()
+#        print self.stellar_code.stopping_conditions.supernova_detection.enable()
+#        print self.stellar_code.stopping_conditions.supernova_detection.is_enabled()
+#        print self.stellar_code.stopping_conditions.supernova_detection.is_set()
 
-        self.se_code.parameters.metallicity = metallicity
-        self.se_code.particles.add_particles(stars)
-        self.channel_from_se = self.se_code.particles.new_channel_to(stars)
-        self.channel_to_se = stars.new_channel_to(self.se_code.particles)
-        self.channel_from_se.copy()
+        self.stellar_code.parameters.metallicity = metallicity
+        self.stellar_code.particles.add_particles(stars)
+        self.channel_from_stellar = self.stellar_code.particles.new_channel_to(stars)
+        self.channel_to_stellar = stars.new_channel_to(self.stellar_code.particles)
+        self.channel_from_stellar.copy()
 
       
     def setup_secular_code(self, triples):
@@ -252,7 +252,7 @@ class Triple:
     def test_initial_parameters(self, inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
-            mutual_inclination,
+            relative_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node):
             
@@ -282,8 +282,8 @@ class Triple:
             print 'error: outer eccentricity not in allowed range'
             exit(1)
     
-        if (mutual_inclination < 0.) or (mutual_inclination > 2.*np.pi):
-            print 'error: mutual inclination not in allowed range'
+        if (relative_inclination < 0.) or (relative_inclination > 2.*np.pi):
+            print 'error: relative inclination not in allowed range'
             exit(1)
     
         if (inner_argument_of_pericenter < 0.) or (inner_argument_of_pericenter > 2*np.pi):
@@ -302,30 +302,30 @@ class Triple:
     #-------
 
     #-------
-    def update_previous_se_parameters(self, stellar_system = None):
+    def update_previous_stellar_parameters(self, stellar_system = None):
         if stellar_system == None:
             stellar_system = self.particles[0]
 
         self.previous_time = self.time
 
         if stellar_system.is_container:
-            self.update_previous_se_parameters(stellar_system.child2)
+            self.update_previous_stellar_parameters(stellar_system.child2)
             stellar_system.previous_mass = self.get_mass() 
         elif stellar_system.is_star:
             stellar_system.previous_mass = self.get_mass(stellar_system)      
             stellar_system.previous_radius = stellar_system.radius
             stellar_system.previous_stellar_type = stellar_system.stellar_type
         elif stellar_system.is_binary:
-            self.update_previous_se_parameters(stellar_system.child1)        
-            self.update_previous_se_parameters(stellar_system.child2)
+            self.update_previous_stellar_parameters(stellar_system.child1)        
+            self.update_previous_stellar_parameters(stellar_system.child2)
             stellar_system.previous_mass = self.get_mass(stellar_system) 
         else:
-            print 'update_previous_se_parameters: structure stellar system unknown'        
+            print 'update_previous_stellar_parameters: structure stellar system unknown'        
             exit(2)
     #-------
 
     #-------
-    def update_se_wind_parameters(self, stellar_system = None):
+    def update_stellar_wind_parameters(self, stellar_system = None):
         if stellar_system == None:
             stellar_system = self.particles[0]
             
@@ -340,8 +340,8 @@ class Triple:
         if stellar_system.is_container:
             self.update_wind_mass_loss_rate(stellar_system.child2)
         elif stellar_system.is_star:
-            star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-            stellar_system.wind_mass_loss_rate = star_in_se_code.get_wind_mass_loss_rate() 
+            star_in_stellar_code = stellar_system.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
+            stellar_system.wind_mass_loss_rate = star_in_stellar_code.get_wind_mass_loss_rate() 
         elif stellar_system.is_binary:
             self.update_wind_mass_loss_rate(stellar_system.child1)        
             self.update_wind_mass_loss_rate(stellar_system.child2)
@@ -377,7 +377,7 @@ class Triple:
     #-------
 
     #-------
-    def update_se_parameters(self, stellar_system = None):
+    def update_stellar_parameters(self, stellar_system = None):
         # for the convective envelope mass:
         # the prescription of Hurley, Pols & Tout 2000 is implemented in SeBa, however note that the prescription in BSE is different
         # for the convective envelope radius:
@@ -390,16 +390,16 @@ class Triple:
             stellar_system = self.particles[0]
 
         if stellar_system.is_container:
-            self.update_se_parameters(stellar_system.child2)
+            self.update_stellar_parameters(stellar_system.child2)
         elif stellar_system.is_star:
-            star_in_se_code = stellar_system.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-            stellar_system.gyration_radius = star_in_se_code.get_gyration_radius_sq()**0.5     
+            star_in_stellar_code = stellar_system.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
+            stellar_system.gyration_radius = star_in_stellar_code.get_gyration_radius_sq()**0.5     
             stellar_system.apsidal_motion_constant = self.apsidal_motion_constant(stellar_system) 
         elif stellar_system.is_binary:
-            self.update_se_parameters(stellar_system.child1)        
-            self.update_se_parameters(stellar_system.child2)
+            self.update_stellar_parameters(stellar_system.child1)        
+            self.update_stellar_parameters(stellar_system.child2)
         else:
-            print 'update_se_parameters: structure stellar system unknown'        
+            print 'update_stellar_parameters: structure stellar system unknown'        
             exit(2)
     #-------
 
@@ -655,14 +655,9 @@ class Triple:
 
     def kozai_timescale(self):
         if self.is_triple():
+            alpha_kozai = 1.
             P_in = self.orbital_period(self.particles[0].child1) #period inner binary 
             P_out = self.orbital_period(self.particles[0].child2)#period outer binary 
-            #Kozai 1962, Michaealy & Perets 2014        
-#            return P_out**2 / P_in * (self.particles[0].child2.child2.mass / self.particles[0].child2.child1.mass)
-#            return P_out**2 / P_in * (self.get_mass(self.particles[0].child2.child2) / self.get_mass(particles[0].child2.child1))
-            #Kinoshita & Nakai 1999, Hamers et al 2014
-            alpha_kozai = 1.
-#            return alpha_kozai * P_out**2 / P_in * (self.particles[0].child2.get_mass() / self.particles[0].child2.child1.get_mass()) * (1-self.particles[0].child2.eccentricity**2)**1.5       
             return alpha_kozai * P_out**2 / P_in * (self.get_mass(self.particles[0].child2) / self.get_mass(self.particles[0].child2.child1)) * (1-self.particles[0].child2.eccentricity**2)**1.5       
 
         else:
@@ -784,7 +779,7 @@ class Triple:
             print '\t'
             print 'stellar system: '
             print stellar_system.number
-            print stellar_system.mutual_inclination
+            print stellar_system.relative_inclination
             print '\t'
             self.print_stellar_system(stellar_system.child2)
         elif stellar_system.is_binary:
@@ -968,7 +963,7 @@ class Triple:
     
     def determine_time_step(self):         
         if REPORT_TRIPLE_EVOLUTION:
-            print "Dt = ", self.se_code.particles.time_step, self.tend/100.0
+            print "Dt = ", self.stellar_code.particles.time_step, self.tend/100.0
  
 #        during unstable mass transfer, contact_system or other instantaneous interactions: no step in time
         if self.has_donor() and (not self.is_system_stable() or self.has_contact_system()):
@@ -978,7 +973,7 @@ class Triple:
         time_step = self.tend - self.time
         
         # time_step of stellar evolution
-        time_step =  min(time_step, min(self.se_code.particles.time_step))    
+        time_step =  min(time_step, min(self.stellar_code.particles.time_step))    
                     
         # small time_step during heavy wind mass losses
         time_step = min(time_step, self.determine_time_step_wind())
@@ -1003,10 +998,10 @@ class Triple:
 
     #-------
     def adjust_system_after_supernova_kick(self):
-        SN_star_in_se_code = self.se_code.stopping_conditions.supernova_detection.particles(0)
-        print SN_star_in_se_code
+        SN_star_in_stellar_code = self.stellar_code.stopping_conditions.supernova_detection.particles(0)
+        print SN_star_in_stellar_code
 
-        SN_star = SN_star_in_se_code.as_set().get_intersecting_subset_in(self.particles)[0] # this will probably not work :-)
+        SN_star = SN_star_in_stellar_code.as_set().get_intersecting_subset_in(self.particles)[0] # this will probably not work :-)
 
         system = SN_star
         try:
@@ -1079,7 +1074,7 @@ class Triple:
 
     #-------
     #evolution
-    def resolve_interaction(self):
+    def resolve_stellar_interaction(self):
     # the most inner binary should be calculated first, and then move outwards
 
         if REPORT_TRIPLE_EVOLUTION:
@@ -1157,7 +1152,7 @@ class Triple:
                 print 'resolve triple interaction: type of outer system unknown'
                 exit(2)                    
     
-    def evolve_triple(self):
+    def evolve_model(self):
         
         # for plotting data
         times_array = quantities.AdaptingVectorQuantity() 
@@ -1169,7 +1164,7 @@ class Triple:
         e_out_array = []
         g_out_array = []
         o_out_array = []
-        i_mutual_array = []
+        i_relative_array = []
         m1_array = quantities.AdaptingVectorQuantity()
         m2_array = quantities.AdaptingVectorQuantity()
         m3_array = quantities.AdaptingVectorQuantity()
@@ -1183,7 +1178,7 @@ class Triple:
         a_out_array.append(self.particles[0].child2.semimajor_axis)
         g_out_array.append(self.particles[0].child2.argument_of_pericenter) 
         o_out_array.append(self.particles[0].child2.longitude_of_ascending_node)               
-        i_mutual_array.append(self.particles[0].mutual_inclination)        
+        i_relative_array.append(self.particles[0].relative_inclination)        
         m1_array.append(self.particles[0].child1.child1.mass)
         m2_array.append(self.particles[0].child1.child2.mass)
         m3_array.append(self.particles[0].child2.child1.mass)
@@ -1195,40 +1190,40 @@ class Triple:
             if self.has_stellar_type_changed():
                 self.save_snapshot()        
         
-            self.update_previous_se_parameters()
+            self.update_previous_stellar_parameters()
             self.check_for_RLOF()   #What if only 1 star left...                     
             self.determine_time_step()  
             print '\n\ntime:', self.time, self.has_donor()            
     
             #do stellar evolution 
-            self.se_code.evolve_model(self.time)
-            self.channel_from_se.copy()
-            self.update_se_wind_parameters()
-            self.update_se_parameters()        
-#            if  self.se_code.stopping_condition.supernova_detection.is_set():
+            self.stellar_code.evolve_model(self.time)
+            self.channel_from_stellar.copy()
+            self.update_stellar_wind_parameters()
+            self.update_stellar_parameters()        
+#            if  self.stellar_code.stopping_condition.supernova_detection.is_set():
 #                print 'supernova detected'
-#                print self.se_code.stopping_condition.supernova_detection.particles(0)
-#                print self.se_code.stopping_condition.supernova_detection.particles(1)
+#                print self.stellar_code.stopping_condition.supernova_detection.particles(0)
+#                print self.stellar_code.stopping_condition.supernova_detection.particles(1)
 #                self.adjust_system_after_supernova_kick()
 #                exit(0)                   
 #
 #                print 'how do I restart the secular code?'                
 #                self.secular_code.model_time = self.time
-#                continue # the while loop, skip resolve_interaction and secular evolution
+#                continue # the while loop, skip resolve_stellar_interaction and secular evolution
             
             #do stellar interaction
             self.determine_mass_transfer_timescale()
-            self.resolve_interaction()
-#            if  self.se_code.stopping_condition.supernova_detection.is_set():
+            self.resolve_stellar_interaction()
+#            if  self.stellar_code.stopping_condition.supernova_detection.is_set():
 #                print 'supernova detected'
-#                print self.se_code.stopping_condition.supernova_detection.particles(0)
-#                print self.se_code.stopping_condition.supernova_detection.particles(1)
+#                print self.stellar_code.stopping_condition.supernova_detection.particles(0)
+#                print self.stellar_code.stopping_condition.supernova_detection.particles(1)
 #                self.adjust_system_after_supernova_kick()
 #                exit(0)                   
 #
 #                print 'how do I restart the secular code?'                
 #                self.secular_code.model_time = self.time
-#                continue # the while loop, skip resolve_interaction and secular evolution
+#                continue # the while loop, skip resolve_stellar_interaction and secular evolution
 
             if stop_at_merger and self.has_merger():
                 print 'stop at merger in triple'
@@ -1247,43 +1242,32 @@ class Triple:
             
             # do secular evolution
             self.channel_to_secular.copy()   
-            if self.instantaneous_evolution == False: # better to do this with a continue statement?                 
+            if self.instantaneous_evolution == False: 
                 safety_check_time_step(self)
                 if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
                     exit(1)
 
+                # if mass transfer should only take place for a fraction of the timestep
+                # e.g. at the end of mass transfer when the envelope is thin
                 if self.particles[0].child1.part_dt_mt < 1: # inner binary, see function determine_partial_time_step_stable_mass_transfer
                     full_dt = self.time - self.previous_time
                     self.secular_code.evolve_model(self.previous_time + full_dt * self.particles[0].child1.part_dt_mt)
 
-                    # not necessary because secular code reset is_donor and therefore the mass transfer rate is not used if the system is detached    
-#                    self.particles[0].child1.mass_transfer_rate =  0.0 | units.MSun/units.yr 
-
-                    # for plotting data
-                    times_array.append(self.previous_time + full_dt * self.particles[0].child1.part_dt_mt)
-                    e_in_array.append(self.particles[0].child1.eccentricity)
-                    a_in_array.append(self.particles[0].child1.semimajor_axis)
-                    g_in_array.append(self.particles[0].child1.argument_of_pericenter) 
-                    o_in_array.append(self.particles[0].child1.longitude_of_ascending_node)               
-                    e_out_array.append(self.particles[0].child2.eccentricity)
-                    a_out_array.append(self.particles[0].child2.semimajor_axis)
-                    g_out_array.append(self.particles[0].child2.argument_of_pericenter) 
-                    o_out_array.append(self.particles[0].child2.longitude_of_ascending_node)               
-                    i_mutual_array.append(self.particles[0].mutual_inclination)        
-                    m1_array.append(self.particles[0].child1.child1.mass)
-                    m2_array.append(self.particles[0].child1.child2.mass)
-                    m3_array.append(self.particles[0].child2.child1.mass)
-
                     if self.has_donor():
                         print 'After partial timestep the system should be detached...'
                         exit(1)
+                    # not necessary because secular code reset is_donor and therefore the mass transfer rate is not used if the system is detached    
+#                    self.particles[0].child1.mass_transfer_rate =  0.0 | units.MSun/units.yr 
+                        
                     self.secular_code.evolve_model(self.time)
                     self.particles[0].child1.part_dt_mt = 1.                    
                     
                 else:
                     self.secular_code.evolve_model(self.time)
-
+                    
+                    
+                    
             if stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
                 self.particles[0].dynamical_stable = False    
                 print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
@@ -1299,6 +1283,9 @@ class Triple:
                 print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
                 self.save_snapshot()        
                 break
+                
+                
+                
 
                 self.channel_from_secular.copy()     
             else:        
@@ -1321,7 +1308,7 @@ class Triple:
             a_out_array.append(self.particles[0].child2.semimajor_axis)
             g_out_array.append(self.particles[0].child2.argument_of_pericenter) 
             o_out_array.append(self.particles[0].child2.longitude_of_ascending_node)               
-            i_mutual_array.append(self.particles[0].mutual_inclination)        
+            i_relative_array.append(self.particles[0].relative_inclination)        
             m1_array.append(self.particles[0].child1.child1.mass)
             m2_array.append(self.particles[0].child1.child2.mass)
             m3_array.append(self.particles[0].child2.child1.mass)
@@ -1336,7 +1323,7 @@ class Triple:
         e_out_array = np.array(e_out_array)
         g_out_array = np.array(g_out_array)
         o_out_array = np.array(o_out_array)
-        i_mutual_array = np.array(i_mutual_array)
+        i_relative_array = np.array(i_relative_array)
 
         self.plot_data = plot_data_container()
         self.plot_data.times_array = times_array
@@ -1348,7 +1335,7 @@ class Triple:
         self.plot_data.e_out_array = e_out_array
         self.plot_data.g_out_array = g_out_array
         self.plot_data.o_out_array = o_out_array        
-        self.plot_data.i_mutual_array = i_mutual_array
+        self.plot_data.i_relative_array = i_relative_array
         self.plot_data.m1_array = m1_array
         self.plot_data.m2_array = m2_array
         self.plot_data.m3_array = m3_array
@@ -1415,7 +1402,7 @@ def plot_function(triple):
     a_in_array_AU = triple.plot_data.a_in_array.value_in(units.AU)
     g_in_array = triple.plot_data.g_in_array
     e_in_array = triple.plot_data.e_in_array
-    i_mutual_array = triple.plot_data.i_mutual_array
+    i_relative_array = triple.plot_data.i_relative_array
     o_in_array = triple.plot_data.o_in_array
     a_out_array_AU = triple.plot_data.a_out_array.value_in(units.AU)
     g_out_array = triple.plot_data.g_out_array
@@ -1429,7 +1416,7 @@ def plot_function(triple):
     N_subplots = 4
 
     plot_e_in = figure.add_subplot(N_subplots,1,1)
-    plot_i_mutual = figure.add_subplot(N_subplots,1,2)
+    plot_i_relative = figure.add_subplot(N_subplots,1,2)
     plot_e_in_g_in = figure.add_subplot(N_subplots,1,3)
     plot_a_in = figure.add_subplot(N_subplots,1,4)
 
@@ -1439,11 +1426,11 @@ def plot_function(triple):
     plot_e_in.set_xlabel('$t/\mathrm{Myr}$')
     plot_e_in.set_ylabel('$e_\mathrm{in}$')
 
-    plot_i_mutual.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
-    plot_i_mutual.set_xlim(0,t_max_Myr)
-    plot_i_mutual.set_ylim(0.9*min(i_mutual_array*180.0/np.pi),1.1*max(i_mutual_array*180.0/np.pi))
-    plot_i_mutual.set_xlabel('$t/\mathrm{Myr}$')
-    plot_i_mutual.set_ylabel('$i_\mathrm{mutual} ({}^\circ)$')
+    plot_i_relative.plot(times_array_Myr,i_relative_array*180.0/np.pi)
+    plot_i_relative.set_xlim(0,t_max_Myr)
+    plot_i_relative.set_ylim(0.9*min(i_relative_array*180.0/np.pi),1.1*max(i_relative_array*180.0/np.pi))
+    plot_i_relative.set_xlabel('$t/\mathrm{Myr}$')
+    plot_i_relative.set_ylabel('$i_\mathrm{relative} ({}^\circ)$')
 
     plot_e_in_g_in.plot(np.cos(g_in_array),e_in_array)
     plot_e_in_g_in.set_xlabel('$\cos(g_\mathrm{in})$')
@@ -1454,7 +1441,7 @@ def plot_function(triple):
     plot_a_in.set_ylabel('$a_\mathrm{in}$')
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
 
-    generic_plot_name = '_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_mutual_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr)
+    generic_plot_name = '_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr)
     plt.savefig('plots/orbit/TPS_inner_orbit'+generic_plot_name+'.pdf')
     plt.show()
 
@@ -1551,24 +1538,24 @@ def plot_function(triple):
     N_subplots = 4
 
     plot_e_out = figure.add_subplot(N_subplots,1,1)
-    plot_i_mutual2 = figure.add_subplot(N_subplots,1,2)
+    plot_i_relative2 = figure.add_subplot(N_subplots,1,2)
     plot_e_out_g_out = figure.add_subplot(N_subplots,1,3)
     plot_a_out = figure.add_subplot(N_subplots,1,4)
 
 #    times_array_Myr = triple.plot_data.times_array.value_in(units.Myr)
 #    t_max_Myr = max(times_array_Myr)
-#    i_mutual_array = triple.plot_data.i_mutual_array
+#    i_relative_array = triple.plot_data.i_relative_array
 
     plot_e_out.plot(times_array_Myr,e_out_array)
     plot_e_out.set_xlim(0,t_max_Myr)
     plot_e_out.set_xlabel('$t/\mathrm{Myr}$')
     plot_e_out.set_ylabel('$e_\mathrm{out}$')
 
-    plot_i_mutual2.plot(times_array_Myr,i_mutual_array*180.0/np.pi)
-    plot_i_mutual2.set_xlim(0,t_max_Myr)
-    plot_i_mutual2.set_ylim(0.9*min(i_mutual_array*180.0/np.pi),1.1*max(i_mutual_array*180.0/np.pi))
-    plot_i_mutual2.set_xlabel('$t/\mathrm{Myr}$')
-    plot_i_mutual2.set_ylabel('$i_\mathrm{mutual} ({}^\circ)$')
+    plot_i_relative2.plot(times_array_Myr,i_relative_array*180.0/np.pi)
+    plot_i_relative2.set_xlim(0,t_max_Myr)
+    plot_i_relative2.set_ylim(0.9*min(i_relative_array*180.0/np.pi),1.1*max(i_relative_array*180.0/np.pi))
+    plot_i_relative2.set_xlabel('$t/\mathrm{Myr}$')
+    plot_i_relative2.set_ylabel('$i_\mathrm{relative} ({}^\circ)$')
 
     plot_e_out_g_out.plot(np.cos(g_out_array),e_out_array)
     plot_e_out_g_out.set_xlabel('$\cos(g_\mathrm{out})$')
@@ -1688,10 +1675,10 @@ def plot_function(triple):
 def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSun, outer_mass= 0.5|units.MSun,
             inner_semimajor_axis= 1.0 |units.AU, outer_semimajor_axis= 100.0 |units.AU,
             inner_eccentricity= 0.1, outer_eccentricity= 0.5,
-            mutual_inclination= 80.0*np.pi/180.0,
+            relative_inclination= 80.0*np.pi/180.0,
             inner_argument_of_pericenter= 0.1, outer_argument_of_pericenter= 0.5,
             inner_longitude_of_ascending_node= 0.0, outer_longitude_of_ascending_node= 0.0,
-            metallicity= 0.02|units.none,
+            metallicity= 0.02,
             tend= 5.0 |units.Myr, number = 0):
 
     set_printing_strategy("custom", 
@@ -1701,7 +1688,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
 
     inner_eccentricity = float(inner_eccentricity)
     outer_eccentricity = float(outer_eccentricity)
-    mutual_inclination = float(mutual_inclination)
+    relative_inclination = float(relative_inclination)
     inner_argument_of_pericenter = float(inner_argument_of_pericenter)
     outer_argument_of_pericenter = float(outer_argument_of_pericenter)
     inner_longitude_of_ascending_node = float(inner_longitude_of_ascending_node)
@@ -1710,12 +1697,12 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
     triple = Triple(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
-            mutual_inclination,
+            relative_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity, tend, number)
 
-    triple.evolve_triple()
+    triple.evolve_model()
 #    plot_function(triple)
 #    triple.print_stellar_system()
     return triple
@@ -1751,8 +1738,8 @@ def parse_arguments():
                       dest="outer_eccentricity", type="float", default = 0.5,
                       help="outer eccentricity [%default]")
     parser.add_option("-i","-I",
-                      dest="mutual_inclination", type="float", default = 80.0*np.pi/180.0,
-                      help="mutual inclination [rad] [%default]")
+                      dest="relative_inclination", type="float", default = 80.0*np.pi/180.0,
+                      help="relative inclination [rad] [%default]")
     parser.add_option("-G",
                       dest="inner_argument_of_pericenter", type="float", default = 0.1,
                       help="inner argument of pericenter [rad] [%default]")
@@ -1765,8 +1752,7 @@ def parse_arguments():
     parser.add_option("-o",
                       dest="outer_longitude_of_ascending_node", type="float", default = 0.0,
                       help="outer longitude of ascending node [rad] [%default]")
-    parser.add_option("-z", unit=units.none, 
-                      dest="metallicity", type="float", default = 0.02|units.none,
+    parser.add_option("-z", dest="metallicity", type="float", default = 0.02,
                       help="metallicity [%default] %unit")
     parser.add_option("-t", "-T", unit=units.Myr, 
                       dest="tend", type="float", default = 5.0 |units.Myr,
@@ -1791,7 +1777,7 @@ if __name__ == '__main__':
 
 
     triple = Triple(**options)
-    triple.evolve_triple()
+    triple.evolve_model()
     triple.print_stellar_system()
 #    plot_function(triple)
 

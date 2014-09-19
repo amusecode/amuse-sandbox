@@ -35,18 +35,18 @@
 ##            --e_min    lower limit for the outer eccentricity [0.]
 ##            --e_distr  outer eccentricity option: 0) Thermal [default]
 ##                                                  1) Constant eccentricity
-##            --i_max    upper limit for the mutual inclination [pi]
-##            --i_min    lower limit for the mutual inclination [0]
-##            --i_distr  mutual inclination option: 0) Circular uniform distribution [default]
+##            --i_max    upper limit for the relative inclination [pi]
+##            --i_min    lower limit for the relative inclination [0]
+##            --i_distr  relative inclination option: 0) Circular uniform distribution [default]
 ##                                                  1) Constant inclination
 ##            --G_max    upper limit for the inner argument of pericenter []
 ##            --G_min    lower limit for the inner argument of pericenter []
 ##            --G_distr  inner argument of pericenter option: 0) Uniform [default]
-##                                                            1) Constant inclination
+##                                                            1) Constant argument of pericenter
 ##            --g_max    upper limit for the outer argument of pericenter []
 ##            --g_min    lower limit for the outer argument of pericenter []
 ##            --g_distr  outer argument of pericenter option: 0) Uniform [default]
-##                                                            1) Constant inclination
+##                                                            1) Constant argument of pericenter
 ##            --O_max    upper limit for the inner longitude of ascending node []
 ##            --O_min    lower limit for the inner longitude of ascending node []
 ##            --O_distr  inner longitude of ascending node option: 0) ? [default]
@@ -138,15 +138,18 @@ class Generate_initial_triple:
                         in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr,
                         in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                         in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr):
-                            
-                        self.generate_mass(in_primary_mass_max, in_primary_mass_min, 
-                            in_mass_ratio_max, in_mass_ratio_min,
-                            out_mass_ratio_max, out_mass_ratio_min,
-                            in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr)
-                            
-                        self.generate_semi(in_semi_max, in_semi_min, 
-                            out_semi_max, out_semi_min,
-                            in_semi_distr,  out_semi_distr)
+                        
+                        if in_primary_mass_distr == 5:
+                            self.generate_mass_and_semi_eggleton()                            
+                        else:    
+                            self.generate_mass(in_primary_mass_max, in_primary_mass_min, 
+                                in_mass_ratio_max, in_mass_ratio_min,
+                                out_mass_ratio_max, out_mass_ratio_min,
+                                in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr)
+                                
+                            self.generate_semi(in_semi_max, in_semi_min, 
+                                out_semi_max, out_semi_min,
+                                in_semi_distr,  out_semi_distr)
 
                         self.generate_ecc(in_ecc_max, in_ecc_min, 
                             out_ecc_max, out_ecc_min,
@@ -228,7 +231,7 @@ class Generate_initial_triple:
             if in_semi_distr == 1: #Constant 
                 print 'TPS::generate_semi: unambiguous choise of constant semi-major axis'
                 print '--A_min option to set the value of the semi-major axis in the inner binary'                
-                self.in_ecc = in_semi_min
+                self.in_semi = in_semi_min
             else: # log flat distribution
                  maximal_semi = min(in_semi_max, out_semi_max)
                  self.in_semi = log_flat_distr(in_semi_min, maximal_semi)
@@ -240,7 +243,7 @@ class Generate_initial_triple:
             if out_semi_distr == 1: #Constant 
                 print 'TPS::generate_semi: unambiguous choise of constant semi-major axis'
                 print '--a_min option to set the value of the semi-major axis in the outer binary'                
-                self.out_ecc = out_semi_min
+                self.out_semi = out_semi_min
             else: # log flat distribution
                  minimal_semi = max(out_semi_min, self.in_semi) # outer orbit is always larger then inner orbit
                  self.out_semi = log_flat_distr(minimal_semi, out_semi_max)
@@ -285,8 +288,8 @@ class Generate_initial_triple:
             self.incl = incl_min
         else:
             if incl_distr == 1: #Constant 
-                print 'TPS::generate_incl: unambiguous choise of constant mutual inclination'
-                print '--i_min option to set the value of the mutual inclination in the inner triple'                
+                print 'TPS::generate_incl: unambiguous choise of constant relative inclination'
+                print '--i_min option to set the value of the relative inclination in the inner triple'                
                 self.incl = incl_min
             else: #Circular uniform distribution
                  self.incl = circular_uniform_distr(incl_min, incl_max)
@@ -325,6 +328,95 @@ class Generate_initial_triple:
                         in_loan_distr, out_loan_distr):                                
         self.in_loan = 0.
         self.out_loan = 0.
+
+#-------
+
+# Eggleton 2009, 399, 1471
+    def generate_mass_and_semi_eggleton(self):
+        U0_mass = [0. .01, .09, .32, 1., 3.2, 11, 32, np.inf]|units.MSun
+        U0_l0 = [0.40, 0.40, 0.40, 0.40, 0.50, 0.75, 0.88, 0.94, 0.96]        U0_l1 = [0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.20, 0.60, 0.80]        U0_l2 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.20, 0.33, 0.82, 0.90]        U0_l3 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]
+              
+        Mt = eggleton_mass_distr(0.1|units.MSun, 100|units.MSun)
+        U = np.random.uniform(0, 1)
+        f_l0 = interp1d (U0_mass, U0_l0)
+        U0 = f_l0(Mt)     
+
+        while U >= U0:
+            Mt = eggleton_mass_distr(0.1|units.MSun, 100|units.MSun)
+            U = np.random.uniform(0, 1)
+            f_l0 = interp1d (U0_mass, U0_l0)
+            U0 = f_l0(Mt)     
+        
+        
+        
+         if U < U0:
+            V = np.random.uniform(0, 1)
+            P0 = 1.e5 * V**2 / (1-V)**2.5 |units.day
+            while P > 1e10|units.day:             
+                V = np.random.uniform(0, 1)
+                P0 = 1.e5 * V**2 / (1-V)**2.5|units.day
+
+            x_p = np.random.uniform(0, 1)
+            if P0 > 25|units.day or x_p > 0.25: 
+                Q0 = ( (U0-U)/U0 )**0.8
+            else:
+                Q0 = 0.9+0.09*(U0-U)/U0 
+            if Q0 < 0.01:
+                Q0 = 0.01                                
+                
+            M1 = Mt / (1+Q0)
+            M2 = M1 * Q0
+            f_l1 = interp1d (U0_mass, U0_l1)
+            
+            U1 = np.random.uniform(0, 1)
+            U1_0 = f_l1(M1)     
+            U2 = np.random.uniform(0, 1)
+            U2_0 = f_l1(M2)
+            
+            #M1 bifurcutas and M2 not
+            if U1< U1_0 and U2>=U2_0:
+                M_bin = M1  
+                U_bin = U1 
+                U0_bin = U1_0
+                M_comp = M2
+            #M2 bifurcutas and M1 not
+            elif U1>= U1_0 and U2<U2_0:
+                M_bin = M2
+                U_bin = U2
+                U0_bin = U2_0
+                M_comp = M1
+            else: 
+                print 'start again'
+                exit(1)
+                
+           V_bin = np.random.uniform(0, 1)
+           P_bin = 0.2 * P0 * 10**(-5*V_bin) |units.day
+
+           x_pb = np.random.uniform(0, 1)
+           if P_bin > 25|units.day or x_pb > 0.25: 
+                Q_bin = ( (U0_bin-U_bin)/U0_bin )**0.8
+           else:
+                Q_bin = 0.9+0.09*(U0_bin-U_bin)/U0_bin 
+           if Q_bin < 0.01:
+                Q_bin = 0.01                                
+
+            M1_bin = M_bin / (1+Q_bin)
+            M2_bin = M1_bin * Q_bin
+
+            self.in_primary_mass = M1_bin
+            self.in_secondary_mass = M2_bin
+            self.out_mass = M_comp
+            
+            self.in_semi = ((P_bin/2*np.pi)**2 * M_bin*constants.G ) ** (1./3.)
+            self.out_semi = ((P0/2*np.pi)**2 * Mt*constants.G ) ** (1./3.)
+                                                         
+
+        else:
+            print 'not possible'
+            exit(1)
+
+                 
+
 #-------
         
 #-------
@@ -378,7 +470,7 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                     outer_semimajor_axis = triple_system.out_semi, 
                     inner_eccentricity = triple_system.in_ecc, 
                     outer_eccentricity = triple_system.out_ecc, 
-                    mutual_inclination = triple_system.incl, 
+                    relative_inclination = triple_system.incl, 
                     inner_argument_of_pericenter = triple_system.in_aop, 
                     outer_argument_of_pericenter = triple_system.out_aop, 
                     inner_longitude_of_ascending_node = triple_system.in_loan, 
@@ -467,11 +559,11 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
 
 
     if (incl_min < 0.) or (incl_max > np.pi):
-        print 'error: mutual inclination not in allowed range [0, pi]'
+        print 'error: relative inclination not in allowed range [0, pi]'
         exit(1)
 
     if (incl_max < incl_min):
-        print 'error: maximum mutual inclination smaller than minimum mutual inclination'
+        print 'error: maximum relative inclination smaller than minimum relative inclination'
         exit(1)
 
 
@@ -592,12 +684,12 @@ def parse_arguments():
                       
     parser.add_option("--i_min, --I_min",
                       dest="incl_min", type="float", default = 0.0,
-                      help="minimum of mutual inclination [rad] [%default]")
+                      help="minimum of relative inclination [rad] [%default]")
     parser.add_option("--i_max, --I_max",
                       dest="incl_max", type="float", default = np.pi,
-                      help="maximum of mutual inclination [rad] [%default]")
+                      help="maximum of relative inclination [rad] [%default]")
     parser.add_option("--i_distr, --I_distr", dest="incl_distr", type="int", default = 0,
-                      help="mutual inclination distribution [Circular uniform]")
+                      help="relative inclination distribution [Circular uniform]")
 
                       
     parser.add_option("--G_min",

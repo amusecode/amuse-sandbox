@@ -12,12 +12,12 @@ import triple
 #outer_semimajor_axis= 100.0 |units.AU,
 #inner_eccentricity= 0.1, 
 #outer_eccentricity= 0.5,
-#mutual_inclination= 80.0*np.pi/180.0,
+#relative_inclination= 80.0*np.pi/180.0,
 #inner_argument_of_pericenter= 0.1, 
 #outer_argument_of_pericenter= 0.5,
 #inner_longitude_of_ascending_node= 0.0, 
 #outer_longitude_of_ascending_node= 0.0,
-#metallicity= 0.02|units.none,
+#metallicity= 0.02,
 #tend= 5.0 |units.Myr
 
 
@@ -60,7 +60,7 @@ class TestSeBa(TestWithMPI):
         o_out = 0.15
         z = 0.001
         T_end = 1|units.yr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, metallicity = z, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, metallicity = z, tend = T_end)
         
         self.assertEqual(tr.particles[0].child1.child1.mass, M1)        
         self.assertEqual(tr.particles[0].child1.child2.mass, M2)        
@@ -72,7 +72,7 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEqual(tr.particles[0].child1.eccentricity, e_in, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child2.eccentricity, e_out, 4)        
         
-        self.assertAlmostRelativeEqual(tr.particles[0].mutual_inclination, i, 4)        
+        self.assertAlmostRelativeEqual(tr.particles[0].relative_inclination, i, 4)        
 
         self.assertAlmostRelativeEqual(tr.particles[0].child1.argument_of_pericenter, g_in, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child2.argument_of_pericenter, g_out, 4)        
@@ -81,7 +81,7 @@ class TestSeBa(TestWithMPI):
 #        self.assertAlmostRelativeEqual(tr.particles[0].child1.longitude_of_ascending_node, o_in, 4)        
 #        self.assertAlmostRelativeEqual(tr.particles[0].child2.longitude_of_ascending_node, o_out, 4)        
 
-        self.assertEqual(tr.se_code.parameters.metallicity, z)
+        self.assertEqual(tr.stellar_code.parameters.metallicity, z)
         
         self.assertAlmostRelativeEqual(tr.time, 1|units.yr, 4)
         
@@ -105,7 +105,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 60|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
         
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.2964 | units.MSun, 4)        
         self.assertEqual(tr.particles[0].child1.child2.mass, 1. | units.MSun)        
@@ -141,7 +141,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 60|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
             
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.2964 | units.MSun, 4)        
         self.assertEqual(tr.particles[0].child1.child2.mass, 6. | units.MSun)        
@@ -177,24 +177,14 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 80|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
-    
-        print tr.particles[0].child1.child1.mass
-        print tr.particles[0].child1.child2.mass
-        print tr.particles[0].child2.child1.mass
-
-        print tr.particles[0].child1.semimajor_axis
-        print tr.particles[0].child2.semimajor_axis
-
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
         
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.2964 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 1.1432 | units.MSun, 4)        
         self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
         
-#        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 53587 | units.RSun, 4)        
-#        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 5219600 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 53633 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 5224100 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 53587 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 5219600 | units.RSun, 4)              
         
         #under the assumption of no wind accretion
         M_child1 = tr.particles[0].child1.child1.mass + tr.particles[0].child1.child2.mass
@@ -223,7 +213,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 60|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
     
         self.assertEqual(tr.particles[0].child1.child1.mass, 0.1 | units.MSun)        
         self.assertEqual(tr.particles[0].child1.child2.mass, 0.1 | units.MSun)        
@@ -258,7 +248,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 380 | units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 0.419349 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 4.5803 | units.MSun, 4)        
@@ -295,7 +285,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 49|units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.3294 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 11.6590 | units.MSun, 4)        
@@ -332,7 +322,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 49.1|units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.3459 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 11.6423 | units.MSun, 4)        
@@ -370,7 +360,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 50|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.3517 | units.MSun, 4)        
         self.assertEqual(tr.particles[0].child1.child2.mass, 1.0 | units.MSun)        
@@ -404,7 +394,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 50|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
 
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.3517 | units.MSun, 4)        
@@ -438,7 +428,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 3000|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
         
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 0.40135 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 0.31219 | units.MSun, 4)        
@@ -474,7 +464,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 50|units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.34345 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 1.34345 | units.MSun, 4)        
@@ -509,7 +499,7 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 50|units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, mutual_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 6.98888 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 6.98888 | units.MSun, 4)        
@@ -646,13 +636,13 @@ if __name__ == '__main__':
     test = TestSeBa()
 
     # test set up
-#    test.test0()
-#    test.test1()
+    test.test0()
+    test.test1()
 
     # test wind mass loss inner system
 #    test.test2()
 #    test.test3()
-#    test.test4()
+    test.test4()
 
     # test wind mass loss outer system
 #    test.test5()
@@ -661,14 +651,14 @@ if __name__ == '__main__':
 #    test.test6()
 #    test.test7()
 #    test.test8()
-
-    # test common envelope evolution in inner system
+#
+#    # test common envelope evolution in inner system
 #    test.test9() #alpha-ce
 #    test.test10() #gamma-ce
 #    test.test11() #double alpha-ce
-
-    # test contact system in inner system
-    test.test12() #double alpha-ce
-    test.test13() #merger
+#
+#    # test contact system in inner system
+#    test.test12() #double alpha-ce
+#    test.test13() #merger
 
 

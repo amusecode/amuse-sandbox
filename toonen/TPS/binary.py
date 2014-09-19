@@ -148,11 +148,11 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         bs.bin_type = bin_type['merger']      
         return
     else:
-        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
         #check if star changes type     
-        donor_in_se_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
-        self.channel_from_se.copy()
+        donor_in_stellar_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
+        self.channel_from_stellar.copy()
 
         bs.semimajor_axis = a_new
         bs.eccentricity = 0.
@@ -210,11 +210,11 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         bs.bin_type = bin_type['merger']
         return
     else:
-        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+        donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
         #check if star changes type     
-        donor_in_se_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
-        self.channel_from_se.copy()
+        donor_in_stellar_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
+        self.channel_from_stellar.copy()
 
         bs.semimajor_axis = a_new
         bs.eccentricity = 0.
@@ -275,11 +275,11 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
         #check if star changes type     
 
-        donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        donor_in_se_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
-        accretor_in_se_code = accretor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-        accretor_in_se_code.change_mass(-1*accretor.envelope_mass, 0.|units.yr)    
-        self.channel_from_se.copy()
+        donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
+        donor_in_stellar_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
+        accretor_in_stellar_code = accretor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
+        accretor_in_stellar_code.change_mass(-1*accretor.envelope_mass, 0.|units.yr)    
+        self.channel_from_stellar.copy()
 
         bs.semimajor_axis = a_new
         bs.eccentricity = 0.
@@ -455,25 +455,23 @@ def stable_mass_transfer(bs, donor, accretor, self):
     dm_desired = bs.mass_transfer_rate * dt
     if REPORT_FUNCTION_NAMES:
         print bs.mass_transfer_rate, dt, dm_desired
-    donor_in_se_code = donor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-    donor_in_se_code.change_mass(dm_desired, dt)
+    donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
+    donor_in_stellar_code.change_mass(dm_desired, dt)
     
-    # dm != dm_desired e.g. when the envelope of the star is empty
-    dm = donor_in_se_code.mass - Md
+    # dm != dm_desired e.g. when the envelope of the star becomes empty
+    dm = donor_in_stellar_code.mass - Md
     bs.part_dt_mt = 1.
     if dm - dm_desired > numerical_error|units.MSun:
-        print 'WARNING:the envelope is empty, mass transfer rate should be lower or dt should be smaller... '
-        print dm, dm_desired, donor_in_se_code.mass, Md, donor.stellar_type, donor_in_se_code.stellar_type
+#        print 'WARNING:the envelope is empty, mass transfer rate should be lower or dt should be smaller... '
         bs.part_dt_mt = dm/dm_desired
-        print dm, dm_desired, bs.part_dt_mt
         
     # there is an implicit assumption in change_mass that the accreted mass is of solar composition (hydrogen)
-    accretor_in_se_code = accretor.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-#    accretor_in_se_code.change_mass(dm, dt)
+    accretor_in_stellar_code = accretor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
+#    accretor_in_stellar_code.change_mass(dm, dt)
     # for now, only conservative mass transfer   
-    accretor_in_se_code.change_mass(-1.*dm, -1.*dt)
+    accretor_in_stellar_code.change_mass(-1.*dm, -1.*dt)
 
-    self.channel_from_se.copy()
+    self.channel_from_stellar.copy()
 
     Md_new = donor.mass
     Ma_new = accretor.mass
@@ -507,7 +505,7 @@ def semi_detached(bs, donor, accretor, self):
 
            
     #possible problem if companion or tertiary accretes significantly from this
-#    self.update_previous_se_parameters() #previous_mass, previous_radius for safety check
+#    self.update_previous_stellar_parameters() #previous_mass, previous_radius for safety check
 #-------------------------
 
 #-------------------------
@@ -536,6 +534,8 @@ def triple_mass_transfer(bs, donor, accretor, self):
     if bs.is_stable:
         triple_stable_mass_transfer(bs, donor, accretor, self)
         self.first_contact = False
+        
+        # possible the outer binary needs part_dt_mt as well. 
         #adjusting triple is done in secular evolution code
     else:        
         if REPORT_FUNCTION_NAMES:
@@ -590,21 +590,21 @@ def detached(bs, self):
         bs.bin_type = bin_type['detached']
         self.save_snapshot()        
     
-    # wind mass loss is done by se_code
+    # wind mass loss is done by stellar_code
     # wind accretion here:
     # update accretion efficiency of wind mass loss
     if bs.child1.is_star and bs.child2.is_star:
         bs.accretion_efficiency_wind_child1_to_child2 = 0.0
         bs.accretion_efficiency_wind_child2_to_child1 = 0.0
 
-#        child1_in_se_code = bs.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
-#        child2_in_se_code = bs.child2.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#        child1_in_stellar_code = bs.child1.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
+#        child2_in_stellar_code = bs.child2.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
 #
 #        dt = self.time - self.previous_time
 #        dm_child1_to_child2 = -1 * child1.wind_mass_loss_rate * bs.accretion_efficiency_wind_child1_to_child2 * dt
-#        child2_in_se_code.change_mass(dm_child1_to_child2, -1*dt)
+#        child2_in_stellar_code.change_mass(dm_child1_to_child2, -1*dt)
 #        dm_child12to_child1 = -1 * child2.wind_mass_loss_rate * bs.accretion_efficiency_wind_child2_to_child1 * dt
-#        child1_in_se_code.change_mass(dm_child2_to_child1, -1*dt)
+#        child1_in_stellar_code.change_mass(dm_child2_to_child1, -1*dt)
 # check if this indeed is accreted conservatively        
 
 
@@ -614,7 +614,7 @@ def detached(bs, self):
 
         bs.accretion_efficiency_wind_child2_to_child1 = 0.0
         
-#        child1_in_se_code = bs.child1.as_set().get_intersecting_subset_in(self.se_code.particles)[0]
+#        child1_in_stellar_code = bs.child1.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
 #        dt = self.time - self.previous_time
         
          #effect of wind from bs.child2.child1 onto bs.child1
@@ -646,7 +646,7 @@ def detached(bs, self):
 
 #        bs.accretion_efficiency_wind_child2_to_child1 = dm / ( mtr* -1 * dt)
             
-#        child1_in_se_code.change_mass(dm, dt)
+#        child1_in_stellar_code.change_mass(dm, dt)
 # check if this indeed is accreted conservatively        
 
     else:

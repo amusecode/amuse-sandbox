@@ -26,16 +26,13 @@ Author: Silvia
 Date: 20-06-2014
 Topic: Parameters needed for e.g. tides
 **********************
-Done, except for:
-    - apsiodal motion constant (we could possibly calculate this ourselves using MESA)
---
-
+Done
 
  A number of parameters of the stars are needed to calculate the tides, that are not available yet. These are:
     - gyration radius
     - envelope mass
     - envelope radius
-    - apsiodal motion constant (we could possibly calculate this ourselves using MESA)
+    - apsiodal motion constant (we could possibly calculate this ourselves using MESA) (a simple estimate is implemented)
 
 Other necessary parameters are:
     - wind mass loss rate
