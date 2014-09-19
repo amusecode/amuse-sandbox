@@ -640,25 +640,25 @@ if __name__ == '__main__':
     test.test1()
 
     # test wind mass loss inner system
-#    test.test2()
-#    test.test3()
+    test.test2()
+    test.test3()
     test.test4()
 
     # test wind mass loss outer system
-#    test.test5()
+    test.test5()
 
     # test stable mass transfer in inner system
-#    test.test6()
-#    test.test7()
-#    test.test8()
-#
-#    # test common envelope evolution in inner system
-#    test.test9() #alpha-ce
-#    test.test10() #gamma-ce
-#    test.test11() #double alpha-ce
-#
-#    # test contact system in inner system
-#    test.test12() #double alpha-ce
-#    test.test13() #merger
+    test.test6()
+    test.test7()
+    test.test8()
+
+    # test common envelope evolution in inner system
+    test.test9() #alpha-ce
+    test.test10() #gamma-ce
+    test.test11() #double alpha-ce
+
+    # test contact system in inner system
+    test.test12() #double alpha-ce
+    test.test13() #merger
 
 

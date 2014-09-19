@@ -28,7 +28,8 @@
 
 
 
-from amuse.community.seculartriple_TPS.interface import SecularTriple
+#from amuse.community.seculartriple_TPS.interface import SecularTriple
+from seculartriple_TPS.interface import SecularTriple
 from amuse.community.seba.interface import SeBa
 from binary import *
 
@@ -226,7 +227,7 @@ class Triple:
         self.secular_code.parameters.equations_of_motion_specification = 0
         self.secular_code.parameters.include_quadrupole_terms = True
         self.secular_code.parameters.include_octupole_terms = True        
-        self.secular_code.parameters.include_inner_tidal_terms = False #need apsidal motion constant
+        self.secular_code.parameters.include_inner_tidal_terms = False 
         self.secular_code.parameters.include_outer_tidal_terms = False
         self.secular_code.parameters.include_inner_wind_terms = True
         self.secular_code.parameters.include_outer_wind_terms = True
