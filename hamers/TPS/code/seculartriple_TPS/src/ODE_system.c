@@ -776,15 +776,21 @@ int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data_f)
 	data = (UserData) data_f;
 
     /* by default checks are not done (reduces computational cost) */
+    /* setting gout[i] to >0 means no root will be found */
     gout[0] = 1e10;
     gout[1] = 1e10;
     gout[2] = 1e10;
+    gout[3] = 1e10;
+    gout[4] = 1e10;
+    gout[5] = 1e10;
 
     bool check_for_dynamical_stability = data->check_for_dynamical_stability;
     bool check_for_inner_collision = data->check_for_inner_collision;
     bool check_for_outer_collision = data->check_for_outer_collision;
-    bool check_for_inner_RLOF = check_for_inner_RLOF;
-    bool check_for_outer_RLOF = check_for_outer_RLOF;
+    bool check_for_inner_RLOF = data->check_for_inner_RLOF;
+    bool check_for_outer_RLOF = data->check_for_outer_RLOF;
+
+    printf( "test RLOF %s",check_for_outer_RLOF);
 
     double m1 = data->m1;
     double m2 = data->m2;				

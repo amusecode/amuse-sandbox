@@ -13,10 +13,10 @@ Adrian Hamers 16-06-2014
 from amuse.units import units,constants
 import numpy
 
-MAIN_SEQUENCE=1
-CHeB=4
-HeMS=7
-HeWD=10 
+MAIN_SEQUENCE=1|units.stellar_type
+CHeB=4|units.stellar_type
+HeMS=7|units.stellar_type
+HeWD=10|units.stellar_type
 
 def check_for_radiative_damping(stellar_type,mass):
     if (stellar_type==MAIN_SEQUENCE and mass.value_in(units.MSun) >= 1.25):
@@ -115,5 +115,5 @@ def tidal_friction_constant(stellar_type,mass,companion_mass,semimajor_axis,radi
 
     else: ### degenerate damping -- 1984MNRAS.207..433C ###
         tau_degenerate = 1.3e7 | units.yr 
-        k_div_T_tides = (1.0/(3.0*tau_degenerate))*gyration_radius_star1**2*pow(luminosity.value_in(units.MSun)/mass.value_in(units.MSun),5.0/7.0)
+        k_div_T_tides = (1.0/(3.0*tau_degenerate))*gyration_radius_star1**2*pow(luminosity.value_in(units.LSun)/mass.value_in(units.MSun),5.0/7.0)
         return k_div_T_tides
