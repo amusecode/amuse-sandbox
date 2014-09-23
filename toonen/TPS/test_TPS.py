@@ -540,6 +540,8 @@ class TestSeBa(TestWithMPI):
         self.assertEqual(tr.particles[0].child1.child2.mass, 0.1 | units.MSun)        
         self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
 
+        print tr.particles[0].child1.semimajor_axis, tr.particles[0].child2.semimajor_axis
+        print tr.particles[0].child1.eccentricity, tr.particles[0].child2.eccentricity
         self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 6.99056| units.RSun, 4)  
         self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1.e6 | units.RSun, 4)        
         self.assertAlmostRelativeEqual(tr.particles[0].child1.eccentricity, 0., 4)  #eccentricity < 0
@@ -549,8 +551,6 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 1)        
 
         print 'test14: succeeded'
-        print tr.particles[0].child1.semimajor_axis, tr.particles[0].child2.semimajor_axis
-        print tr.particles[0].child1.eccentricity, tr.particles[0].child2.eccentricity
  
 
  
@@ -673,15 +673,15 @@ if __name__ == '__main__':
     test.test0()
     test.test1()
 
-     test wind mass loss inner system
+    # test wind mass loss inner system
     test.test2()
     test.test3()
     test.test4()
 
-     test wind mass loss outer system
+    # test wind mass loss outer system
     test.test5()
 
-     test stable mass transfer in inner system
+    # test stable mass transfer in inner system
     test.test6()
     test.test7()
     test.test8()
