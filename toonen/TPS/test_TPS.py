@@ -678,7 +678,7 @@ if __name__ == '__main__':
     test.test3()
     test.test4()
 
-    # test wind mass loss outer system
+#     test wind mass loss outer system
     test.test5()
 
     # test stable mass transfer in inner system
@@ -694,7 +694,7 @@ if __name__ == '__main__':
     # test contact system in inner system
     test.test12() #double alpha-ce
     test.test13() #merger
-
-    #test tides
+#
+#    #test tides
 #    test.test14()
-
+#

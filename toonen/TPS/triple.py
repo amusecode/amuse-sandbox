@@ -73,6 +73,7 @@ error_dr = 0.2
 minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
+stellar_types_SN_remnants = [13,14]|units.stellar_type # remnant types created through a supernova
 
 
 class Triple:
@@ -385,9 +386,6 @@ class Triple:
         # for the convective envelope radius:
         # the prescription of Hurley, Tout & Pols 2002 is implemented in SeBa, however note that the prescription in BSE is different
         # both parameters don't need to be updated manually anymore
-        if stellar_system == None:
-            stellar_system = self.particles[0]
-                    
         if stellar_system == None:
             stellar_system = self.particles[0]
 
@@ -973,29 +971,38 @@ class Triple:
         if REPORT_TRIPLE_EVOLUTION:
             print "Dt = ", self.stellar_code.particles.time_step, self.tend/100.0
  
+ 
+        if self.time == quantities.zero:
+            #initialization (e.g. time_derivative_of_radius)
+            self.time += 1|units.yr
+            return
+            
 #        during unstable mass transfer, contact_system or other instantaneous interactions: no step in time
         if self.has_donor() and (not self.is_system_stable() or self.has_contact_system()):
             return            
                        
         #maximum time_step            
-        time_step = self.tend - self.time
+        time_step_max = self.tend - self.time
         
         # time_step of stellar evolution
-        time_step =  min(time_step, min(self.stellar_code.particles.time_step))    
+        time_step_stellar_code = self.stellar_code.particles.time_step
                     
         # small time_step during heavy wind mass losses
-        time_step = min(time_step, self.determine_time_step_wind())
+        time_step_wind =  self.determine_time_step_wind()
 
         # small time_step during phases of fast growth (note: not yet during fast shrinkage)
-        time_step = min(time_step, self.determine_time_step_radius_change())           
-            
+        time_step_radius_change = self.determine_time_step_radius_change()        
+        
+        time_step = min(time_step_radius_change, min(time_step_wind, min( min(time_step_stellar_code), time_step_max)))    
+        print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step#, time_step2  
+          
         #during stable mass transfer     
         if self.has_donor():
             time_step = min(time_step, self.determine_time_step_stable_mt())
 
         ### for testing/plotting purposes only ###
 #        time_step = min(time_step, self.tend/100.0)
-    
+#        time_step = min(time_step, min(time_step_stellar_code)/25.)
             
         if time_step < minimum_time_step:
             print 'error small time_step'
@@ -1160,6 +1167,53 @@ class Triple:
                 print 'resolve triple interaction: type of outer system unknown'
                 exit(2)                    
     
+    def safety_check_time_step(self, stellar_system = None):
+
+        if stellar_system == None:
+            stellar_system = self.particles[0]
+
+        if stellar_system.is_container:
+            self.update_stellar_parameters(stellar_system.child2)
+        elif stellar_system.is_star:
+            dm = (stellar_system.previous_mass - stellar_system.mass)/stellar_system.mass
+            if REPORT_TRIPLE_EVOLUTION:
+                print 'wind mass loss rate:', stellar_system.wind_mass_loss_rate,
+                print 'relative wind mass losses:', dm
+
+            if (dm > error_dm) and (not self.has_stellar_type_changed(stellar_system) or stellar_system.stellar_type not in stellar_types_SN_remnants):
+                print 'Change in mass in a single time_step larger then', error_dm
+                print dm, stellar_system.mass, stellar_system.stellar_type
+                exit(1)
+
+            if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
+                dr = (stellar_system.radius - stellar_system.previous_radius)/stellar_system.radius
+
+
+            print 'radius:', stellar_system.radius,
+            print 'change in radius over time:', stellar_system.time_derivative_of_radius,
+            print 'relative change in radius:', dr
+            print 'time_derivative_of_radius:', stellar_system.time_derivative_of_radius
+
+    
+            if REPORT_TRIPLE_EVOLUTION:    
+                print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
+                print 'relative change in radius:', dr
+            if (dr_1 > error_dr):
+                print 'Change in radius in a single time_step larger then', error_dr
+                print dr_1, stellar_system.mass, stellar_system.stellar_type
+                exit(1)
+
+        elif stellar_system.is_binary:
+            self.update_stellar_parameters(stellar_system.child1)        
+            self.update_stellar_parameters(stellar_system.child2)
+            print 'eccentricity:', stellar_system.eccentricity
+            
+        else:
+            print 'safety_check_time_step: structure stellar system unknown'        
+            exit(2)
+    
+#-------------------------    
+
     def evolve_model(self):
         
         # for plotting data
@@ -1251,7 +1305,7 @@ class Triple:
             # do secular evolution
             self.channel_to_secular.copy()   
             if self.instantaneous_evolution == False: 
-                safety_check_time_step(self)
+                self.safety_check_time_step()
                 if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
                     exit(1)
@@ -1351,69 +1405,6 @@ class Triple:
 
 
 
-def safety_check_time_step(triple):
-        dm_1 = (triple.particles[0].child1.child1.previous_mass - triple.particles[0].child1.child1.mass)/triple.particles[0].child1.child1.mass
-        dm_2 = (triple.particles[0].child1.child2.previous_mass - triple.particles[0].child1.child2.mass)/triple.particles[0].child1.child2.mass
-        dm_3 = (triple.particles[0].child2.child1.previous_mass - triple.particles[0].child2.child1.mass)/triple.particles[0].child2.child1.mass
-                
-        if REPORT_TRIPLE_EVOLUTION:
-            print 'wind mass loss rates:', 
-            print triple.particles[0].child1.child1.wind_mass_loss_rate,
-            print triple.particles[0].child1.child2.wind_mass_loss_rate,
-            print triple.particles[0].child2.child1.wind_mass_loss_rate
-            print 'relative wind mass losses:',
-            print dm_1, dm_2, dm_3
-        if (dm_1 > error_dm) or (dm_2 > error_dm) or (dm_3 > error_dm):
-            print 'Change in mass in a single time_step larger then', error_dm
-            print dm_1, dm_2, dm_3
-            print triple.particles[0].child1.child1.stellar_type
-            print triple.particles[0].child1.child2.stellar_type
-            print triple.particles[0].child2.child1.stellar_type
-#            print 'WARNING'
-            exit(1)
-
-
-        if triple.secular_code.parameters.include_inner_tidal_terms or triple.secular_code.parameters.include_outer_tidal_terms:
-            dr_1 = (triple.particles[0].child1.child1.radius - triple.particles[0].child1.child1.previous_radius)/triple.particles[0].child1.child1.radius
-            dr_2 = (triple.particles[0].child1.child2.radius - triple.particles[0].child1.child2.previous_radius)/triple.particles[0].child1.child2.radius
-            dr_3 = (triple.particles[0].child2.child1.radius - triple.particles[0].child2.child1.previous_radius)/triple.particles[0].child2.child1.radius
-    
-
-            print 'radius:', 
-            print triple.particles[0].child1.child1.radius,
-            print triple.particles[0].child1.child2.radius,
-            print triple.particles[0].child2.child1.radius
-            print 'change in radius over time:', 
-            print triple.particles[0].child1.child1.time_derivative_of_radius,
-            print triple.particles[0].child1.child2.time_derivative_of_radius,
-            print triple.particles[0].child2.child1.time_derivative_of_radius
-            print 'relative change in radius:',
-            print dr_1, dr_2, dr_3
-            print 'eccentricities:', triple.particles[0].child1.eccentricity,triple.particles[0].child2.eccentricity
-            print 'envelope mass:',triple.particles[0].child1.child1.envelope_mass,  triple.particles[0].child1.child2.envelope_mass,  triple.particles[0].child2.child1.envelope_mass,  
-            print 'envelope mass:',triple.particles[0].child1.child1.convective_envelope_mass,  triple.particles[0].child1.child2.convective_envelope_mass,  triple.particles[0].child2.child1.convective_envelope_mass
-            print 'envelope radius:',triple.particles[0].child1.child1.convective_envelope_radius,  triple.particles[0].child1.child2.convective_envelope_radius,  triple.particles[0].child2.child1.convective_envelope_radius 
-            print 'stellar type:',triple.particles[0].child1.child1.stellar_type,  triple.particles[0].child1.child2.stellar_type,  triple.particles[0].child2.child1.stellar_type
-
-    
-            if REPORT_TRIPLE_EVOLUTION:    
-                print 'change in radius over time:', 
-                print triple.particles[0].child1.child1.time_derivative_of_radius,
-                print triple.particles[0].child1.child2.time_derivative_of_radius,
-                print triple.particles[0].child2.child1.time_derivative_of_radius
-                print 'relative change in radius:',
-                print dr_1, dr_2, dr_3
-            if (dr_1 > error_dr) or (dr_2 > error_dr) or (dr_3 > error_dr):
-                print 'Change in radius in a single time_step larger then', error_dr
-                print dr_1, dr_2, dr_3
-                print triple.particles[0].child1.child1.stellar_type
-                print triple.particles[0].child1.child2.stellar_type
-                print triple.particles[0].child2.child1.stellar_type
-    #            print 'WARNING'
-                exit(1)
-            
-
-    
 
 class plot_data_container():
     def __init__(self):
@@ -1474,6 +1465,7 @@ def plot_function(triple):
 
 
     plt.plot(times_array_Myr,e_in_array)
+    plt.plot(times_array_Myr,e_in_array, '.')
     plt.xlim(0,t_max_Myr)
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$e_\mathrm{in}$')
