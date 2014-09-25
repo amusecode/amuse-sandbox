@@ -234,11 +234,15 @@ Fixed
 
 
 **********************
-Note number: 
-Author: 
-Date: 
-Topic: 
+Note number: 20
+Author: Silvia
+Date: 25-09-2014
+Topic: object structure 
 **********************
+remove container, remove child 1 and child 2 from container, go directly to upper level stellar system
+adjust resolve_stellar_interaction
+
+
 **********************
 Note number: 
 Author: 

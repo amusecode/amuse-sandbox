@@ -1002,7 +1002,7 @@ class Triple:
 
         ### for testing/plotting purposes only ###
 #        time_step = min(time_step, self.tend/100.0)
-#        time_step = min(time_step, min(time_step_stellar_code)/25.)
+#        time_step = min(time_step, min(time_step_stellar_code)/2.)
             
         if time_step < minimum_time_step:
             print 'error small time_step'
@@ -1173,7 +1173,7 @@ class Triple:
             stellar_system = self.particles[0]
 
         if stellar_system.is_container:
-            self.update_stellar_parameters(stellar_system.child2)
+            self.safety_check_time_step(stellar_system.child2)
         elif stellar_system.is_star:
             dm = (stellar_system.previous_mass - stellar_system.mass)/stellar_system.mass
             if REPORT_TRIPLE_EVOLUTION:
@@ -1198,14 +1198,14 @@ class Triple:
             if REPORT_TRIPLE_EVOLUTION:    
                 print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
                 print 'relative change in radius:', dr
-            if (dr_1 > error_dr):
+            if (dr > error_dr):
                 print 'Change in radius in a single time_step larger then', error_dr
                 print dr_1, stellar_system.mass, stellar_system.stellar_type
                 exit(1)
 
         elif stellar_system.is_binary:
-            self.update_stellar_parameters(stellar_system.child1)        
-            self.update_stellar_parameters(stellar_system.child2)
+            self.safety_check_time_step(stellar_system.child1)        
+            self.safety_check_time_step(stellar_system.child2)
             print 'eccentricity:', stellar_system.eccentricity
             
         else:
@@ -1245,7 +1245,7 @@ class Triple:
         m2_array.append(self.particles[0].child1.child2.mass)
         m3_array.append(self.particles[0].child2.child1.mass)
 
-        print 'kozai timescale:', self.kozai_timescale()      
+        print 'kozai timescale:', self.kozai_timescale(), self.tend    
         self.determine_mass_transfer_timescale()
         self.save_snapshot()        
         while self.time<self.tend:
@@ -1301,7 +1301,7 @@ class Triple:
                 print self.has_triple_mass_transfer()
                 break                                    
                   
-            
+                  
             # do secular evolution
             self.channel_to_secular.copy()   
             if self.instantaneous_evolution == False: 
@@ -1330,25 +1330,22 @@ class Triple:
                     
                     
                     
-            if stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
-                self.particles[0].dynamical_stable = False    
-                print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
-                self.save_snapshot()        
-                break
-            if stop_at_collision and self.secular_code.triples[0].inner_collision == True:
-                self.particles[0].child1.bin_type = bin_type['collision']
-                print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
-                self.save_snapshot()        
-                break
-            if stop_at_collision and self.secular_code.triples[0].outer_collision == True:
-                self.particles[0].child2.bin_type = bin_type['collision']
-                print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
-                self.save_snapshot()        
-                break
-                
-                
-                
-
+                if stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
+                    self.particles[0].dynamical_stable = False    
+                    print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
+                    self.save_snapshot()        
+                    break
+                if stop_at_collision and self.secular_code.triples[0].inner_collision == True:
+                    self.particles[0].child1.bin_type = bin_type['collision']
+                    print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
+                    self.save_snapshot()        
+                    break
+                if stop_at_collision and self.secular_code.triples[0].outer_collision == True:
+                    self.particles[0].child2.bin_type = bin_type['collision']
+                    print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
+                    self.save_snapshot()        
+                    break
+                   
                 self.channel_from_secular.copy()     
             else:        
                 self.secular_code.model_time = self.time
@@ -1357,7 +1354,6 @@ class Triple:
                  
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
             
-
 
             
             # for plotting data
@@ -1739,7 +1735,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             metallicity, tend, number)
 
     triple.evolve_model()
-#    plot_function(triple)
+    plot_function(triple)
 #    triple.print_stellar_system()
     return triple
 #-----
