@@ -784,7 +784,7 @@ class Triple:
         if stellar_system.is_container:
             print '\t'
             print 'stellar system: '
-            print stellar_system.number
+            print stellar_system.number,
             print stellar_system.relative_inclination
             print '\t'
             self.print_stellar_system(stellar_system.child2)
@@ -994,7 +994,7 @@ class Triple:
         time_step_radius_change = self.determine_time_step_radius_change()        
         
         time_step = min(time_step_radius_change, min(time_step_wind, min( min(time_step_stellar_code), time_step_max)))    
-        print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step#, time_step2  
+#        print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step#, time_step2  
           
         #during stable mass transfer     
         if self.has_donor():
@@ -1187,26 +1187,24 @@ class Triple:
 
             if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
                 dr = (stellar_system.radius - stellar_system.previous_radius)/stellar_system.radius
-
-
-            print 'radius:', stellar_system.radius,
-            print 'change in radius over time:', stellar_system.time_derivative_of_radius,
-            print 'relative change in radius:', dr
-            print 'time_derivative_of_radius:', stellar_system.time_derivative_of_radius
-
-    
-            if REPORT_TRIPLE_EVOLUTION:    
-                print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
-                print 'relative change in radius:', dr
-            if (dr > error_dr):
-                print 'Change in radius in a single time_step larger then', error_dr
-                print dr_1, stellar_system.mass, stellar_system.stellar_type
-                exit(1)
+                
+#                print 'radius:', stellar_system.radius,
+#                print 'change in radius over time:', stellar_system.time_derivative_of_radius,
+#                print 'relative change in radius:', dr
+#                print 'time_derivative_of_radius:', stellar_system.time_derivative_of_radius    
+        
+                if REPORT_TRIPLE_EVOLUTION:    
+                    print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
+                    print 'relative change in radius:', dr
+                if (dr > error_dr):
+                    print 'Change in radius in a single time_step larger then', error_dr
+                    print dr_1, stellar_system.mass, stellar_system.stellar_type
+                    exit(1)
 
         elif stellar_system.is_binary:
             self.safety_check_time_step(stellar_system.child1)        
             self.safety_check_time_step(stellar_system.child2)
-            print 'eccentricity:', stellar_system.eccentricity
+#            print 'eccentricity:', stellar_system.eccentricity
             
         else:
             print 'safety_check_time_step: structure stellar system unknown'        
