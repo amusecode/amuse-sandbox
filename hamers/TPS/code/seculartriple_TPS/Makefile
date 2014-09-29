@@ -1,5 +1,5 @@
 ifndef AMUSE_DIR
-    AMUSE_DIR=../../../..
+    AMUSE_DIR=../../../../..
 endif
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
