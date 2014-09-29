@@ -830,7 +830,9 @@ class SecularTriple(InCodeComponentImplementation):
 
             ### extract data from triple ###
             self.time_step = end_time - self.model_time            
-            args = extract_data_from_triple(self,triple)
+
+            inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
+            args = extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3)
 
             ### solve system of ODEs ###
             m1,m2,m3,R1,R2,R3, \
@@ -841,6 +843,10 @@ class SecularTriple(InCodeComponentImplementation):
             end_time_dummy,flag,error = self.evolve(*args)
 #            print 'done',a_in.value_in(units.AU),e_in
 
+            ####################
+            ### root finding ###
+            ####################
+            
             ### dynamical instability ###
             triple.dynamical_instability = False
             if flag==1: 
@@ -850,65 +856,61 @@ class SecularTriple(InCodeComponentImplementation):
             triple.inner_collision = False
             if flag==2: 
                 triple.inner_collision = True
-
+                print 'inner collision'
             ### outer collision ###
             triple.outer_collision = False
             if flag==3: 
                 triple.outer_collision = True
+                print 'outer collision'
 
             ### RLOF star1 ###
-            triple.child1.child1.is_donor = False
+            star1.is_donor = False
             if flag==4: 
-                triple.child1.child1.is_donor = True
+                star1.is_donor = True
                 print 'RLOF star 1'
-
             ### RLOF star2 ###
-            triple.child1.child2.is_donor = False
+            star2.is_donor = False
             if flag==5: 
+                star2.is_donor = True
                 print 'RLOF star 2'            
-                triple.child1.child2.is_donor = True
-
             ### RLOF star3 ###
-            triple.child2.child1.is_donor = False
+            star3.is_donor = False
             if flag==6: 
-                triple.child2.child1.is_donor = True
+                star3.is_donor = True
+                print 'RLOF star 3'            
+
 
             ### update model time ###
             self.model_time = end_time
 
             ### update triple particle ###
             if parameters.include_inner_tidal_terms == True:
-                triple.child1.child1.spin_angular_frequency = spin_angular_frequency1
-                triple.child1.child2.spin_angular_frequency = spin_angular_frequency2
+                star1.spin_angular_frequency = spin_angular_frequency1
+                star2.spin_angular_frequency = spin_angular_frequency2
             if parameters.include_outer_tidal_terms == True:
-                triple.child2.child1.spin_angular_frequency = spin_angular_frequency3
+                star3.spin_angular_frequency = spin_angular_frequency3
 
             if parameters.include_wind_spin_coupling_terms == True:
-                triple.child1.child1.spin_angular_frequency = spin_angular_frequency1
-                triple.child1.child2.spin_angular_frequency = spin_angular_frequency2
-                triple.child2.child1.spin_angular_frequency = spin_angular_frequency3
+                star1.spin_angular_frequency = spin_angular_frequency1
+                star2.spin_angular_frequency = spin_angular_frequency2
+                star3.spin_angular_frequency = spin_angular_frequency3
                                                
-            triple.child1.semimajor_axis = a_in
-            triple.child1.eccentricity = e_in
-            triple.child2.semimajor_axis = a_out
-            triple.child2.eccentricity = e_out
+            inner_binary.semimajor_axis = a_in
+            inner_binary.eccentricity = e_in
+            outer_binary.semimajor_axis = a_out
+            outer_binary.eccentricity = e_out
             triple.relative_inclination = INCL_in
-            triple.child1.argument_of_pericenter = AP_in
-            triple.child2.argument_of_pericenter = AP_out
-            triple.child1.longitude_of_ascending_node = LAN_in
-            triple.child2.longitude_of_ascending_node = LAN_out
+            inner_binary.argument_of_pericenter = AP_in
+            outer_binary.argument_of_pericenter = AP_out
+            inner_binary.longitude_of_ascending_node = LAN_in
+            outer_binary.longitude_of_ascending_node = LAN_out
 
     def give_roche_radii(self,triple):
         if triple is None:
             print 'Please give triple particle'
             return
 
-        inner_binary = triple.child1
-        outer_binary = triple.child2
-
-        star1 = inner_binary.child1
-        star2 = inner_binary.child2
-        star3 = outer_binary.child1
+        inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
 
         m1 = star1.mass
         m2 = star2.mass
@@ -958,17 +960,25 @@ def R_L_eggleton(a,q):
     q_pow_two_third = q_pow_one_third*q_pow_one_third
     return a*0.49*q_pow_two_third/(0.6*q_pow_two_third + numpy.log(1.0 + q_pow_one_third))
 
-def extract_data_from_triple(self,triple):
-    parameters = self.parameters
-    
-    ### general parameters ###
-    inner_binary = triple.child1
-    outer_binary = triple.child2
+def give_binaries_and_stars(self,triple):
+    ### the 'old' method ###
+#    inner_binary = triple.child1
+#    outer_binary = triple.child2
+
+    ### the 'new' method -- removes the superflous 'triple' layer ###
+    inner_binary = triple.child2
+    outer_binary = triple
 
     star1 = inner_binary.child1
     star2 = inner_binary.child2
-    star3 = outer_binary.child1
+    star3 = outer_binary.child1    
 
+    return inner_binary,outer_binary,star1,star2,star3
+
+def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
+    parameters = self.parameters
+    
+    ### general parameters ###
     m1 = star1.mass
     m2 = star2.mass
     m3 = star3.mass
