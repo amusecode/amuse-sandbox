@@ -8,15 +8,23 @@
 #include "cvode/sundials_types.h"			/* definition of type realtype */
 
 #include "helper_routines.h"
+#include "tidal_friction_parameters.h"
 #include "ODE_system.h"
 
-#define CONST_G			    (double)	6.67259e-8
+/* NOTE: the code uses cgs units
+ * numerical values were evaluated
+ * within AMUSE for consistency */
+
+#define CONST_G			    (double)	6.674279999999998e-08
 #define CONST_G_P2          (double)    CONST_G*CONST_G
 #define CONST_G_P3          (double)    CONST_G*CONST_G_P2
 #define CONST_C_LIGHT		(double)	2.99792458e10
 #define CONST_C_LIGHT_P2	(double)	CONST_C_LIGHT*CONST_C_LIGHT
 #define CONST_C_LIGHT_P4	(double)	CONST_C_LIGHT_P2*CONST_C_LIGHT_P2
 #define CONST_C_LIGHT_P5	(double)	CONST_C_LIGHT_P4*CONST_C_LIGHT
+#define CONST_MSUN          (double)    1.98892e33
+#define CONST_R_SUN         (double)    6.955e10
+#define CONST_L_SUN         (double)    3.838999999999999e33
 #define c_1div2             (double)    1.0/2.0
 #define c_1div3             (double)    1.0/3.0
 #define c_1div4             (double)    1.0/4.0
@@ -54,12 +62,18 @@
 #define Ith(v,i)    NV_Ith_S(v,i-1)       		/* Ith numbers components 1..NEQ */
 #define IJth(A,i,j) DENSE_ELEM(A,i-1,j-1) 		/* IJth numbers rows,cols 1..NEQ */
 #ifndef max
-	#define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
+	#define max(a,b) ( ((a) > (b)) ? (a):(b) )
+#endif
+#ifndef min
+    #define min(a,b) ( ((a) < (b)) ? (a):(b) )
 #endif
 
 typedef struct {
+    int stellar_type1,stellar_type2,stellar_type3;
 	double m1,m2,m3;
+    double m1_convective_envelope,m2_convective_envelope,m3_convective_envelope;
     double R1,R2,R3;
+    double R1_convective_envelope,R2_convective_envelope,R3_convective_envelope;
     
     bool include_quadrupole_terms,include_octupole_terms;
     bool include_1PN_inner_terms,include_1PN_outer_terms,include_1PN_inner_outer_terms,include_25PN_inner_terms,include_25PN_outer_terms;
@@ -72,6 +86,7 @@ typedef struct {
     bool check_for_inner_RLOF,check_for_outer_RLOF;
 
     double AMC_star1,AMC_star2,AMC_star3;
+    double luminosity_star1,luminosity_star2,luminosity_star3;
     double gyration_radius_star1,gyration_radius_star2,gyration_radius_star3;
     double k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3;
     
@@ -87,18 +102,22 @@ typedef struct {
 } *UserData;
 
 int evolve(
+    int stellar_type1, int stellar_type2, int stellar_type3,
     double m1, double m2, double m3,
+    double m1_convective_envelope, double m2_convective_envelope, double m3_convective_envelope,
     double R1, double R2, double R3,
+    double R1_convective_envelope, double R2_convective_envelope, double R3_convective_envelope,    
+    double luminosity_star1, double luminosity_star2, double luminosity_star3,
     double spin_angular_frequency1, double spin_angular_frequency2, double spin_angular_frequency3,
     double AMC_star1, double AMC_star2, double AMC_star3,
     double gyration_radius_star1, double gyration_radius_star2, double gyration_radius_star3,
-    double k_div_T_tides_star1, double k_div_T_tides_star2, double k_div_T_tides_star3,
+//    double k_div_T_tides_star1, double k_div_T_tides_star2, double k_div_T_tides_star3,
     double a_in, double a_out,
     double e_in, double e_out,
     double INCL_in, double INCL_out, double AP_in, double AP_out, double LAN_in, double LAN_out,
     bool star1_is_donor, bool star2_is_donor, bool star3_is_donor,
     double wind_mass_loss_rate_star1, double wind_mass_loss_rate_star2, double wind_mass_loss_rate_star3,
-    double time_derivative_of_radius_star1, double time_derivative_of_radius_star2, double time_derivative_of_radius_star3,    
+    double time_derivative_of_radius_star1, double time_derivative_of_radius_star2, double time_derivative_of_radius_star3,
     double inner_mass_transfer_rate, double outer_mass_transfer_rate,
     double inner_accretion_efficiency_wind_child1_to_child2, double inner_accretion_efficiency_wind_child2_to_child1,
     double outer_accretion_efficiency_wind_child1_to_child2,double outer_accretion_efficiency_wind_child2_to_child1,
@@ -112,7 +131,8 @@ int evolve(
     double * e_in_output, double * e_out_output,
     double *INCL_in_output, double *INCL_out_output, double *INCL_in_out_output, double * AP_in_output, double * AP_out_output, double *LAN_in_output, double *LAN_out_output,
     double * t_output,
-    int * output_flag, int * error_flag);
+    int * output_flag, int * error_flag
+);
     
 int get_equations_of_motion_specification(int *relative_tolerance_t);
 int set_equations_of_motion_specification(int relative_tolerance_t);

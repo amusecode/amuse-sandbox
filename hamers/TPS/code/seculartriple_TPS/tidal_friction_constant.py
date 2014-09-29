@@ -106,6 +106,9 @@ def tidal_friction_constant(stellar_type,mass,companion_mass,semimajor_axis,radi
             P_tid = P_tid_s | units.s
 
         tau_convective = pow( (envelope_mass*envelope_radius*(radius - (1.0/2.0)*envelope_radius))/(3.0*luminosity), 1.0/3.0)
+	print 'tau',envelope_mass,envelope_mass*envelope_radius*(radius - (1.0/2.0)*envelope_radius)/(3.0*luminosity)
+
+	#print 'tau convective',tau_convective
         f_convective = (P_tid/(2.0*tau_convective))**2
 
         f_convective = numpy.amin([1.0,f_convective])

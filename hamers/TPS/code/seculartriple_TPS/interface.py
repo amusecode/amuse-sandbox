@@ -6,7 +6,7 @@ Adrian Hamers 24-06-2014
 
 from amuse.community import *
 from amuse.units import units,constants
-import tidal_friction_constant
+#import tidal_friction_constant
 cm = 1e-2*units.m
 g = 1e-3*units.kg
 
@@ -15,16 +15,28 @@ class SecularTripleInterface(CodeInterface):
 
     def __init__(self, **options):
          CodeInterface.__init__(self, **options)
-
+        
     @legacy_function
     def evolve():
         function = LegacyFunctionSpecification()
+        function.addParameter('stellar_type1', dtype='int64', direction=function.IN)
+        function.addParameter('stellar_type2', dtype='int64', direction=function.IN)
+        function.addParameter('stellar_type3', dtype='int64', direction=function.IN)
         function.addParameter('m1', dtype='float64', direction=function.IN)
         function.addParameter('m2', dtype='float64', direction=function.IN)
         function.addParameter('m3', dtype='float64', direction=function.IN)
+        function.addParameter('m1_convective_envelope', dtype='float64', direction=function.IN)
+        function.addParameter('m2_convective_envelope', dtype='float64', direction=function.IN)
+        function.addParameter('m3_convective_envelope', dtype='float64', direction=function.IN)
         function.addParameter('R1', dtype='float64', direction=function.IN)
         function.addParameter('R2', dtype='float64', direction=function.IN)
         function.addParameter('R3', dtype='float64', direction=function.IN)   
+        function.addParameter('R1_convective_envelope', dtype='float64', direction=function.IN)
+        function.addParameter('R2_convective_envelope', dtype='float64', direction=function.IN)
+        function.addParameter('R3_convective_envelope', dtype='float64', direction=function.IN)   
+        function.addParameter('luminosity_star1', dtype='float64', direction=function.IN)
+        function.addParameter('luminosity_star2', dtype='float64', direction=function.IN)
+        function.addParameter('luminosity_star3', dtype='float64', direction=function.IN)   
         function.addParameter('spin_angular_frequency1', dtype='float64', direction=function.IN)   
         function.addParameter('spin_angular_frequency2', dtype='float64', direction=function.IN)   
         function.addParameter('spin_angular_frequency3', dtype='float64', direction=function.IN)                   
@@ -34,9 +46,9 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('gyration_radius_star1', dtype='float64', direction=function.IN)   
         function.addParameter('gyration_radius_star2', dtype='float64', direction=function.IN)   
         function.addParameter('gyration_radius_star3', dtype='float64', direction=function.IN)   
-        function.addParameter('k_div_T_tides_star1', dtype='float64', direction=function.IN)   
-        function.addParameter('k_div_T_tides_star2', dtype='float64', direction=function.IN)   
-        function.addParameter('k_div_T_tides_star3', dtype='float64', direction=function.IN)   
+#        function.addParameter('k_div_T_tides_star1', dtype='float64', direction=function.IN)   
+#        function.addParameter('k_div_T_tides_star2', dtype='float64', direction=function.IN)   
+#        function.addParameter('k_div_T_tides_star3', dtype='float64', direction=function.IN)   
         function.addParameter('a_in', dtype='float64', direction=function.IN)
         function.addParameter('a_out', dtype='float64', direction=function.IN)
         function.addParameter('e_in', dtype='float64', direction=function.IN)
@@ -568,12 +580,24 @@ class SecularTriple(InCodeComponentImplementation):
         object.add_method(
             "evolve",
             (
+                units.stellar_type,         ### stellar_type1
+                units.stellar_type,         ### stellar_type2
+                units.stellar_type,         ### stellar_type3
                 g,                          ### m1
                 g,                          ### m2
                 g,                          ### m3
+                g,                          ### m1_convective_envelope
+                g,                          ### m2_convective_envelope
+                g,                          ### m3_convective_envelope
                 cm,                         ### R1
                 cm,                         ### R2
                 cm,                         ### R3
+                cm,                         ### R1_convective_envelope
+                cm,                         ### R2_convective_envelope
+                cm,                         ### R3_convective_envelope
+                g*cm**2/(units.s**3),       ### luminosity_star1
+                g*cm**2/(units.s**3),       ### luminosity_star2
+                g*cm**2/(units.s**3),       ### luminosity_star3
                 1.0/units.s,                ### spin_angular_frequency1
                 1.0/units.s,                ### spin_angular_frequency2
                 1.0/units.s,                ### spin_angular_frequency3                                
@@ -583,9 +607,9 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### gyration_radius_star1
                 object.NO_UNIT,             ### gyration_radius_star2
                 object.NO_UNIT,             ### gyration_radius_star3
-                1.0/units.s,                ### k_div_T_tides_star1
-                1.0/units.s,                ### k_div_T_tides_star2
-                1.0/units.s,                ### k_div_T_tides_star3                                
+#                1.0/units.s,                ### k_div_T_tides_star1
+#                1.0/units.s,                ### k_div_T_tides_star2
+#                1.0/units.s,                ### k_div_T_tides_star3                                
                 cm,                         ### a_in
                 cm,                         ### a_out
                 object.NO_UNIT,             ### e_in
@@ -815,7 +839,8 @@ class SecularTriple(InCodeComponentImplementation):
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_dummy,flag,error = self.evolve(*args)
-            
+#            print 'done',a_in.value_in(units.AU),e_in
+
             ### dynamical instability ###
             triple.dynamical_instability = False
             if flag==1: 
@@ -951,7 +976,11 @@ def extract_data_from_triple(self,triple):
     R1 = star1.radius
     R2 = star2.radius
     R3 = star3.radius
-                    
+
+    R1 = 1.0 | units.RSun
+    R2 = 0.1 | units.RSun
+    R3 = 0.1 | units.RSun
+
     a_in = inner_binary.semimajor_axis
     e_in = inner_binary.eccentricity
     a_out = outer_binary.semimajor_axis
@@ -1045,20 +1074,24 @@ def extract_data_from_triple(self,triple):
             return
 
     ### tides ###
+    stellar_type1 = stellar_type2 = stellar_type3 = 0 | units.stellar_type
+    m1_convective_envelope = m2_convective_envelope = m3_convective_envelope = 0.0 | units.MSun
+    R1_convective_envelope = R2_convective_envelope = R3_convective_envelope = 0.0 | units.RSun
+    luminosity_star1 = luminosity_star2 = luminosity_star3 = 0.0 | units.LSun
     AMC_star1 = AMC_star2 = AMC_star3 = 0.0
-    k_div_T_tides_star1 = k_div_T_tides_star2 = k_div_T_tides_star3 = 0.0 | 1.0/units.s
+#    k_div_T_tides_star1 = k_div_T_tides_star2 = k_div_T_tides_star3 = 0.0 | 1.0/units.s
     
     if parameters.include_inner_tidal_terms == True:
         try:
             stellar_type1 = star1.stellar_type
             stellar_type2 = star2.stellar_type
-            stellar_type3 = star3.stellar_type                
-            m1_envelope = star1.convective_envelope_mass
-            m2_envelope = star2.convective_envelope_mass
-            m3_envelope = star3.convective_envelope_mass
-            R1_envelope = star1.convective_envelope_radius
-            R2_envelope = star2.convective_envelope_radius
-            R3_envelope = star3.convective_envelope_radius                
+            stellar_type3 = star3.stellar_type
+            m1_convective_envelope = star1.convective_envelope_mass
+            m2_convective_envelope = star2.convective_envelope_mass
+            m3_convective_envelope = star3.convective_envelope_mass
+            R1_convective_envelope = star1.convective_envelope_radius
+            R2_convective_envelope = star2.convective_envelope_radius
+            R3_convective_envelope = star3.convective_envelope_radius                
             luminosity_star1 = star1.luminosity
             luminosity_star2 = star2.luminosity
             luminosity_star3 = star3.luminosity
@@ -1071,21 +1104,44 @@ def extract_data_from_triple(self,triple):
             spin_angular_frequency1 = star1.spin_angular_frequency
             spin_angular_frequency2 = star2.spin_angular_frequency
             spin_angular_frequency3 = star3.spin_angular_frequency
-                
+            
+            ### TODO: implement checks for unphysical input values ###
+            
+            """
+            print 'diag',stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1
             k_div_T_tides_star1 = tidal_friction_constant.tidal_friction_constant(stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1)
             k_div_T_tides_star2 = tidal_friction_constant.tidal_friction_constant(stellar_type2,m2,m1,a_in,R2,m2_envelope,R2_envelope,luminosity_star2,spin_angular_frequency2,gyration_radius_star2)
             k_div_T_tides_star3 = tidal_friction_constant.tidal_friction_constant(stellar_type3,m3,m1+m2,a_out,R3,m3_envelope,R3_envelope,luminosity_star3,spin_angular_frequency3,gyration_radius_star3)
+            
+            print 'k_div_T_tides_star1',k_div_T_tides_star1
+            print 'k_div_T_tides_star2',k_div_T_tides_star2
+            print 'gyration_radius_star1',gyration_radius_star1
+            print 'gyration_radius_star2',gyration_radius_star2
+            k_div_T_tides_star1 = 24679.568923 | 1.0/units.Myr
+            k_div_T_tides_star2 = 409457.80229 | 1.0/units.Myr
+            k_div_T_tides_star3 = 409457.80229 | 1.0/units.Myr
+            gyration_radius_star1 = 0.31502899220
+            gyration_radius_star2 = 1.4454455654 
+            gyration_radius_star3 = 1.4454455654 
+            """
+            
+            
         except AttributeError:
             print "More attributes required for tides"
             return
 
-   
-    args = [m1,m2,m3,
+#    print 'pre',a_in.value_in(units.AU),e_in
+       
+    args = [stellar_type1,stellar_type2,stellar_type3,
+        m1,m2,m3,
+        m1_convective_envelope,m2_convective_envelope,m3_convective_envelope,
         R1,R2,R3,
+        R1_convective_envelope,R2_convective_envelope,R3_convective_envelope,
+        luminosity_star1,luminosity_star2,luminosity_star3,
         spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3,
         AMC_star1,AMC_star2,AMC_star3,
         gyration_radius_star1,gyration_radius_star2,gyration_radius_star3,
-        k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
+#        k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
         a_in,a_out,
         e_in,e_out,
         INCL_in,INCL_out,
@@ -1099,4 +1155,7 @@ def extract_data_from_triple(self,triple):
         inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer,
         inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer,
         self.model_time,self.time_step]
+#    print 'pre2',stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1
+#    print 'pre',k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
+        
     return args

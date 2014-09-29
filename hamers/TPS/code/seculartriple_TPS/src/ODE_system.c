@@ -130,25 +130,35 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	data = (UserData) data_f;
 	
 	/*	extract all constants	*/
+    int stellar_type1 = data->stellar_type1;
+    int stellar_type2 = data->stellar_type2;
+    int stellar_type3 = data->stellar_type3;
 	double m1 = data->m1; // mass
 	double m2 = data->m2;				
 	double m3 = data->m3;		
-
+	double m1_convective_envelope = data->m1_convective_envelope;
+	double m2_convective_envelope = data->m2_convective_envelope;
+	double m3_convective_envelope = data->m3_convective_envelope;
     double R1 = data->R1; // radius
     double R2 = data->R2;
     double R3 = data->R3;
+    double R1_convective_envelope = data->R1_convective_envelope; // radius
+    double R2_convective_envelope = data->R2_convective_envelope;
+    double R3_convective_envelope = data->R3_convective_envelope;
 
     double AMC_star1 = data->AMC_star1; // Apsidal Motion Constant
     double AMC_star2 = data->AMC_star2; // Apsidal Motion Constant
     double AMC_star3 = data->AMC_star3; // Apsidal Motion Constant  
-    
+    double luminosity_star1 = data->luminosity_star1;
+    double luminosity_star2 = data->luminosity_star2;
+    double luminosity_star3 = data->luminosity_star3;
     double gyration_radius_star1 = data->gyration_radius_star1; // gyration radius (NOT squared)     
     double gyration_radius_star2 = data->gyration_radius_star2; // gyration radius (NOT squared)     
     double gyration_radius_star3 = data->gyration_radius_star3; // gyration radius (NOT squared)             
 
-    double k_div_T_tides_star1 = data->k_div_T_tides_star1; // AMC divided by tidal dissipation time-scale
-    double k_div_T_tides_star2 = data->k_div_T_tides_star2;    
-    double k_div_T_tides_star3 = data->k_div_T_tides_star3;
+//    double k_div_T_tides_star1 = data->k_div_T_tides_star1; // AMC divided by tidal dissipation time-scale
+//    double k_div_T_tides_star2 = data->k_div_T_tides_star2;    
+//    double k_div_T_tides_star3 = data->k_div_T_tides_star3;
 
     bool include_quadrupole_terms = data->include_quadrupole_terms;
     bool include_octupole_terms = data->include_octupole_terms;
@@ -312,6 +322,12 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     }
     	
     /* tides quantities */
+    double k_div_T_tides_star1 = compute_k_div_T_tides(stellar_type1,m1,m1_convective_envelope,m2,a_in,R1,R1_convective_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1); // AMC divided by tidal dissipation time-scale
+    double k_div_T_tides_star2 = compute_k_div_T_tides(stellar_type2,m2,m2_convective_envelope,m1,a_in,R2,R2_convective_envelope,luminosity_star2,spin_angular_frequency2,gyration_radius_star2); // AMC divided by tidal dissipation time-scale
+    double k_div_T_tides_star3 = compute_k_div_T_tides(stellar_type3,m3,m3_convective_envelope,m1+m2,a_out,R3,R3_convective_envelope,luminosity_star3,spin_angular_frequency3,gyration_radius_star3); // AMC divided by tidal dissipation time-scale
+
+//    printf("k_div_T %g %g %g \n",k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3);
+
 	double R1_div_a_in = R1/a_in;
 	double R1_div_a_in_p2 = R1_div_a_in*R1_div_a_in;
 	double R1_div_a_in_p5 = R1_div_a_in_p2*R1_div_a_in_p2*R1_div_a_in;

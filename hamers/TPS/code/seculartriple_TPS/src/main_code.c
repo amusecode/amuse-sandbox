@@ -3,14 +3,6 @@
 
 #include "main_code.h"
 
-//#include "cvode/cvode.h"				    /* prototypes for CVODE fcts., consts. */
-//#include "cvode/nvector_serial.h"			/* serial N_Vector types, fcts., macros */
-//#include "cvode/cvode_dense.h"			    /* prototype for CVDense */
-//#include "cvode/sundials_dense.h"			/* definitions DlsMat DENSE_ELEM */
-//#include "cvode/sundials_types.h"			/* definition of type realtype */
-
-
-
 //#define NEQ		    10				        /* number of ODE equations */
 #define RTOL		RCONST(1.0e-10)			/* scalar relative tolerance - acceptable value is 1.0e-10 as determined by trial and error */
 #define ATOL1		RCONST(1.0e-8)
@@ -215,12 +207,16 @@ int set_include_outer_RLOF_terms(int value){
 }
 
 int evolve(
+    int stellar_type1, int stellar_type2, int stellar_type3,
     double m1, double m2, double m3,
+    double m1_convective_envelope, double m2_convective_envelope, double m3_convective_envelope,
     double R1, double R2, double R3,
+    double R1_convective_envelope, double R2_convective_envelope, double R3_convective_envelope,    
+    double luminosity_star1, double luminosity_star2, double luminosity_star3,
     double spin_angular_frequency1, double spin_angular_frequency2, double spin_angular_frequency3,
     double AMC_star1, double AMC_star2, double AMC_star3,
     double gyration_radius_star1, double gyration_radius_star2, double gyration_radius_star3,
-    double k_div_T_tides_star1, double k_div_T_tides_star2, double k_div_T_tides_star3,
+//    double k_div_T_tides_star1, double k_div_T_tides_star2, double k_div_T_tides_star3,
     double a_in, double a_out,
     double e_in, double e_out,
     double INCL_in, double INCL_out, double AP_in, double AP_out, double LAN_in, double LAN_out,
@@ -260,12 +256,22 @@ int evolve(
 	UserData data;
 	data = NULL;
 	data = (UserData) malloc(sizeof *data);
+    
+    data->stellar_type1 = stellar_type1;
+    data->stellar_type2 = stellar_type2;
+    data->stellar_type3 = stellar_type3;
 	data->m1 = m1;
 	data->m2 = m2;
 	data->m3 = m3;
+    data->m1_convective_envelope = m1_convective_envelope;
+    data->m2_convective_envelope = m2_convective_envelope;
+    data->m3_convective_envelope = m3_convective_envelope;
 	data->R1 = R1;
 	data->R2 = R2;
     data->R3 = R3;
+    data->R1_convective_envelope = R1_convective_envelope;
+    data->R2_convective_envelope = R2_convective_envelope;
+    data->R3_convective_envelope = R3_convective_envelope;
 
     data->include_quadrupole_terms = include_quadrupole_terms;
     data->include_octupole_terms = include_octupole_terms;    
@@ -283,9 +289,12 @@ int evolve(
     data->gyration_radius_star1 = gyration_radius_star1; // gyration radius (NOT squared)
     data->gyration_radius_star2 = gyration_radius_star2; // gyration radius (NOT squared)
     data->gyration_radius_star3 = gyration_radius_star3; // gyration radius (NOT squared)
-    data->k_div_T_tides_star1 = k_div_T_tides_star1; // tidal dissipation constant
-    data->k_div_T_tides_star2 = k_div_T_tides_star2; // tidal dissipation constant
-    data->k_div_T_tides_star3 = k_div_T_tides_star3; // tidal dissipation constant
+    data->luminosity_star1 = luminosity_star1;
+    data->luminosity_star2 = luminosity_star2;
+    data->luminosity_star3 = luminosity_star3;
+//    data->k_div_T_tides_star1 = k_div_T_tides_star1; // tidal dissipation constant
+//    data->k_div_T_tides_star2 = k_div_T_tides_star2; // tidal dissipation constant
+//    data->k_div_T_tides_star3 = k_div_T_tides_star3; // tidal dissipation constant
 
     data->include_inner_wind_terms = include_inner_wind_terms;
     data->include_outer_wind_terms = include_outer_wind_terms;
