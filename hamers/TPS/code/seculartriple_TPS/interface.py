@@ -987,10 +987,6 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
     R2 = star2.radius
     R3 = star3.radius
 
-    R1 = 1.0 | units.RSun
-    R2 = 0.1 | units.RSun
-    R3 = 0.1 | units.RSun
-
     a_in = inner_binary.semimajor_axis
     e_in = inner_binary.eccentricity
     a_out = outer_binary.semimajor_axis
