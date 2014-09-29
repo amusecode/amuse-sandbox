@@ -62,24 +62,24 @@ class TestSeBa(TestWithMPI):
         T_end = 1|units.yr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, metallicity = z, tend = T_end)
         
-        self.assertEqual(tr.particles[0].child1.child1.mass, M1)        
-        self.assertEqual(tr.particles[0].child1.child2.mass, M2)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, M3)        
+        self.assertEqual(tr.triple.child2.child1.mass, M1)        
+        self.assertEqual(tr.triple.child2.child2.mass, M2)        
+        self.assertEqual(tr.triple.child1.mass, M3)        
         
-        self.assertEqual(tr.particles[0].child1.semimajor_axis, a_in)        
-        self.assertEqual(tr.particles[0].child2.semimajor_axis, a_out)        
+        self.assertEqual(tr.triple.child2.semimajor_axis, a_in)        
+        self.assertEqual(tr.triple.semimajor_axis, a_out)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.eccentricity, e_in, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.eccentricity, e_out, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, e_in, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.eccentricity, e_out, 4)        
         
-        self.assertAlmostRelativeEqual(tr.particles[0].relative_inclination, i, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.relative_inclination, i, 4)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.argument_of_pericenter, g_in, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.argument_of_pericenter, g_out, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.argument_of_pericenter, g_in, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.argument_of_pericenter, g_out, 4)        
 
         print 'why is o reset to 0 by secular code?'
-#        self.assertAlmostRelativeEqual(tr.particles[0].child1.longitude_of_ascending_node, o_in, 4)        
-#        self.assertAlmostRelativeEqual(tr.particles[0].child2.longitude_of_ascending_node, o_out, 4)        
+#        self.assertAlmostRelativeEqual(tr.triple.child1.longitude_of_ascending_node, o_in, 4)        
+#        self.assertAlmostRelativeEqual(tr.triple.child2.longitude_of_ascending_node, o_out, 4)        
 
         self.assertEqual(tr.stellar_code.parameters.metallicity, z)
         
@@ -107,20 +107,20 @@ class TestSeBa(TestWithMPI):
         T_end = 60|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
         
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.2964 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child1.child2.mass, 1. | units.MSun)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 1. | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.2964 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child2.child2.mass, 1. | units.MSun)        
+        self.assertEqual(tr.triple.child1.mass, 1. | units.MSun)        
         
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 35040 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 2741309 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 35040 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 2741309 | units.RSun, 4)        
         
         #under the assumption of no wind accretion
-        M_child1 = tr.particles[0].child1.child1.mass + tr.particles[0].child1.child2.mass
-        M_child2 = M_child1 + tr.particles[0].child2.child1.mass
+        M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
+        M_child2 = M_child1 + tr.triple.child1.mass
         a_in_final_theory =  a_in * (M1+M2) / M_child1
         a_out_final_theory = a_out * (M1+M2+M3) / M_child2
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 2)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test2: succeeded'
 
@@ -143,20 +143,20 @@ class TestSeBa(TestWithMPI):
         T_end = 60|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
             
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.2964 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child1.child2.mass, 6. | units.MSun)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.2964 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child2.child2.mass, 6. | units.MSun)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
         
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 17846 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1776123 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 17846 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1776123 | units.RSun, 4)        
         
         #under the assumption of no wind accretion
-        M_child1 = tr.particles[0].child1.child1.mass + tr.particles[0].child1.child2.mass
-        M_child2 = M_child1 + tr.particles[0].child2.child1.mass
+        M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
+        M_child2 = M_child1 + tr.triple.child1.mass
         a_in_final_theory =  a_in * (M1+M2) / M_child1
         a_out_final_theory = a_out * (M1+M2+M3) / M_child2
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 2)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
         
         print 'test3: succeeded'
         
@@ -179,20 +179,22 @@ class TestSeBa(TestWithMPI):
         T_end = 80|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
         
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.2964 | units.MSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 1.1432 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.2964 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 1.1432 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
         
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 53587 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 5219600 | units.RSun, 4)              
+#        self.assertAlmostRelativeEqual(tr.triple.child1.semimajor_axis, 53587 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 53633 | units.RSun, 4)        
+#        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 5219600 | units.RSun, 4)              
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 5224100| units.RSun, 4)              
         
         #under the assumption of no wind accretion
-        M_child1 = tr.particles[0].child1.child1.mass + tr.particles[0].child1.child2.mass
-        M_child2 = M_child1 + tr.particles[0].child2.child1.mass
+        M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
+        M_child2 = M_child1 + tr.triple.child1.mass
         a_in_final_theory =  a_in * (M1+M2) / M_child1
         a_out_final_theory = a_out * (M1+M2+M3) / M_child2        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 2)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
         
         print 'test4: succeeded'
         
@@ -215,20 +217,20 @@ class TestSeBa(TestWithMPI):
         T_end = 60|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
     
-        self.assertEqual(tr.particles[0].child1.child1.mass, 0.1 | units.MSun)        
-        self.assertEqual(tr.particles[0].child1.child2.mass, 0.1 | units.MSun)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.child1.mass, 1.2963 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child2.child1.mass, 0.1 | units.MSun)        
+        self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child1.mass, 1.2963 | units.MSun, 4)        
 
-        self.assertEqual(tr.particles[0].child1.semimajor_axis, 1.0| units.RSun)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 4853401 | units.RSun, 4)        
+        self.assertEqual(tr.triple.child2.semimajor_axis, 1.0| units.RSun)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 4853401 | units.RSun, 4)        
         
         #under the assumption of no wind accretion
-        M_child1 = tr.particles[0].child1.child1.mass + tr.particles[0].child1.child2.mass
-        M_child2 = M_child1 + tr.particles[0].child2.child1.mass
+        M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
+        M_child2 = M_child1 + tr.triple.child1.mass
         a_in_final_theory =  a_in * (M1+M2) / M_child1
         a_out_final_theory = a_out * (M1+M2+M3) / M_child2
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 2)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
         
         print 'test5: succeeded'
         
@@ -250,22 +252,22 @@ class TestSeBa(TestWithMPI):
         T_end = 380 | units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 0.419349 | units.MSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 4.5803 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.419349 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 4.5803 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 150.039| units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 150.039| units.RSun, 4)  
         # because of wind mass loss a_out_final != 1e6RSun      
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1000065 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000065 | units.RSun, 4)        
         
         #under the assumption of conservative mass transfer
-        M1f = tr.particles[0].child1.child1.mass
-        M2f = tr.particles[0].child1.child2.mass
-        M3f = tr.particles[0].child2.child1.mass       
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
         a_in_final_theory =  a_in * (M1 * M2 / M1f / M2f)**2 #conservative mass transfer
         a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 1.5)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1.5)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test6: succeeded'
 
@@ -287,22 +289,23 @@ class TestSeBa(TestWithMPI):
         T_end = 49|units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.3294 | units.MSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 11.6590 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3294 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.6590 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 171.95 | units.RSun, 4)  
+#        self.assertAlmostRelativeEqual(tr.triple.child1.semimajor_axis, 171.95 | units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 172.04 | units.RSun, 4)  
         # because of wind mass loss a_out_final != 1e6RSun      
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1000880 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000880 | units.RSun, 4)        
         
         #under the assumption of conservative mass transfer
-        M1f = tr.particles[0].child1.child1.mass
-        M2f = tr.particles[0].child1.child2.mass
-        M3f = tr.particles[0].child2.child1.mass       
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
         a_in_final_theory =  a_in * (M1 * M2 / M1f / M2f)**2 #conservative mass transfer
         a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 1.5)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1.5)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test7: succeeded'
 
@@ -324,23 +327,25 @@ class TestSeBa(TestWithMPI):
         T_end = 49.1|units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.3459 | units.MSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 11.6423 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+#        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3459 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.34561 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.6423 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 731.54 | units.RSun, 4)  
+#        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 731.54 | units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 731.97 | units.RSun, 4)  
         # because of wind mass loss a_out_final != 1e6RSun      
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1000902 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000902 | units.RSun, 4)        
         
         #under the assumption of conservative mass transfer
-        M1f = tr.particles[0].child1.child1.mass
-        M2f = tr.particles[0].child1.child2.mass
-        M3f = tr.particles[0].child2.child1.mass       
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
         a_in_final_theory =  a_in * (M1 * M2 / M1f / M2f)**2 #conservative mass transfer
         a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 1.5)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1.5)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test8: succeeded'
 
@@ -362,18 +367,18 @@ class TestSeBa(TestWithMPI):
         T_end = 50|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.3517 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child1.child2.mass, 1.0 | units.MSun)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3517 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child2.child2.mass, 1.0 | units.MSun)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 3.4474 | units.RSun, 4)    
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 3322817 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 3.4474 | units.RSun, 4)    
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 3322817 | units.RSun, 4)        
         
-        M1f = tr.particles[0].child1.child1.mass
-        M2f = tr.particles[0].child1.child2.mass
-        M3f = tr.particles[0].child2.child1.mass       
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
         a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test9: succeeded'
 
@@ -397,18 +402,18 @@ class TestSeBa(TestWithMPI):
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.3517 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child1.child2.mass, 6.0 | units.MSun)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3517 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child2.child2.mass, 6.0 | units.MSun)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 262.86 | units.RSun, 4)  
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1760013 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 262.86 | units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1760013 | units.RSun, 4)        
         
-        M1f = tr.particles[0].child1.child1.mass
-        M2f = tr.particles[0].child1.child2.mass
-        M3f = tr.particles[0].child2.child1.mass       
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
         a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test10: succeeded'
 
@@ -430,19 +435,19 @@ class TestSeBa(TestWithMPI):
         T_end = 3000|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
         
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 0.40135 | units.MSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 0.31219 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.40135 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 0.31219 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 1.3183 | units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 1.3183 | units.RSun, 4)  
         # because of wind mass loss a_out_final != 1e6RSun      
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 3880131 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 3880131 | units.RSun, 4)        
         
-        M1f = tr.particles[0].child1.child1.mass
-        M2f = tr.particles[0].child1.child2.mass
-        M3f = tr.particles[0].child2.child1.mass       
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
         a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test11: succeeded'
 
@@ -466,19 +471,19 @@ class TestSeBa(TestWithMPI):
         T_end = 50|units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 1.34345 | units.MSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 1.34345 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.34345 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 1.34345 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 0.75302 | units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 0.75302 | units.RSun, 4)  
         # because of wind mass loss a_out_final != 1e6RSun      
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 5088750 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 5088750 | units.RSun, 4)        
         
-        M1f = tr.particles[0].child1.child1.mass
-        M2f = tr.particles[0].child1.child2.mass
-        M3f = tr.particles[0].child2.child1.mass       
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
         a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test12: succeeded'
 
@@ -501,19 +506,19 @@ class TestSeBa(TestWithMPI):
         T_end = 50|units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child1.mass, 6.98888 | units.MSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.child2.mass, 6.98888 | units.MSun, 4)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 6.98888 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 6.98888 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 25.0399| units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 25.0399| units.RSun, 4)  
         # because of wind mass loss a_out_final != 1e6RSun      
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1001585 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1001585 | units.RSun, 4)        
         
-        M1f = tr.particles[0].child1.child1.mass
-        M2f = tr.particles[0].child1.child2.mass
-        M3f = tr.particles[0].child2.child1.mass       
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
         a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, a_out_final_theory, 2)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test13: succeeded'
 
@@ -536,19 +541,19 @@ class TestSeBa(TestWithMPI):
         T_end = 11000|units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
-        self.assertEqual(tr.particles[0].child1.child1.mass, 1. | units.MSun)        
-        self.assertEqual(tr.particles[0].child1.child2.mass, 0.1 | units.MSun)        
-        self.assertEqual(tr.particles[0].child2.child1.mass, 0.08 | units.MSun)        
+        self.assertEqual(tr.triple.child2.child1.mass, 1. | units.MSun)        
+        self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
-        print tr.particles[0].child1.semimajor_axis, tr.particles[0].child2.semimajor_axis
-        print tr.particles[0].child1.eccentricity, tr.particles[0].child2.eccentricity
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, 6.99056| units.RSun, 4)  
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.semimajor_axis, 1.e6 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.eccentricity, 0., 4)  #eccentricity < 0
-        self.assertAlmostRelativeEqual(tr.particles[0].child2.eccentricity, 0., 4)        #eccentricity < 0
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 6.99056| units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1.e6 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0., 4)  #eccentricity < 0
+        self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0., 4)        #eccentricity < 0
 
         a_in_final_theory = a_in * (1-e_in**2)
-        self.assertAlmostRelativeEqual(tr.particles[0].child1.semimajor_axis, a_in_final_theory, 1)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1)        
 
         print 'test14: succeeded'
  
@@ -669,11 +674,11 @@ class TestSeBa(TestWithMPI):
 if __name__ == '__main__':
     test = TestSeBa()
 
-    # test set up
+#     test set up
     test.test0()
     test.test1()
 
-    # test wind mass loss inner system
+#     test wind mass loss inner system
     test.test2()
     test.test3()
     test.test4()
@@ -682,7 +687,7 @@ if __name__ == '__main__':
     test.test5()
 
     # test stable mass transfer in inner system
-    test.test6()
+#    test.test6() #collision
     test.test7()
     test.test8()
 
@@ -694,7 +699,7 @@ if __name__ == '__main__':
     # test contact system in inner system
     test.test12() #double alpha-ce
     test.test13() #merger
-#
+
 #    #test tides
 #    test.test14()
 #

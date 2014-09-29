@@ -68,7 +68,7 @@ def roche_radius_dimensionless(M, m):
     return  0.49*q23/(0.6*q23 + np.log(1 + q13))
 
 def roche_radius(bin, primary, self):
-    if bin.is_binary and primary.is_star:
+    if not bin.is_star and primary.is_star:
         return bin.semimajor_axis * roche_radius_dimensionless(primary.mass, self.get_mass(bin)-primary.mass)
 
     print 'Error: Roche radius can only be determined in a binary'
@@ -100,7 +100,7 @@ def dynamic_timescale(star):
 #-------------------------
 
 #-------------------------
-# functions for mass transfer in a double star
+# functions for mass transfer in a binary
 
 def corotating_spin_angular_frequency_binary(semi, m1, m2):
     return 1./np.sqrt(semi**3/constants.G / (m1+m2))
@@ -423,9 +423,9 @@ def adjust_system_after_ce_in_inner_binary(bs, self):
     while True:
         try:    
             system = system.parent
-            if system.child1.is_binary and system.child2.is_star:
+            if not system.child1.is_star and system.child2.is_star:
                 adjust_triple_after_ce_in_inner_binary(system, system.child1, system.child2, self)                
-            elif system.child2.is_binary and system.child1.is_star:
+            elif not system.child2.is_star and system.child1.is_star:
                 adjust_triple_after_ce_in_inner_binary(system, system.child2, system.child1, self)                            
             else:
                 print 'adjust_system_after_ce_in_inner_binary: type of system unknown'
@@ -489,7 +489,7 @@ def stable_mass_transfer(bs, donor, accretor, self):
 
 
 def semi_detached(bs, donor, accretor, self):
-#only for double stars (consisting of two stars)
+#only for binaries (consisting of two stars)
 
     if REPORT_FUNCTION_NAMES:
         print 'Semi-detached'
@@ -525,7 +525,7 @@ def triple_stable_mass_transfer(bs, donor, accretor, self):
     #implementation is missing
 
 def triple_mass_transfer(bs, donor, accretor, self):
-#only for binaries consisting of a star and a binary/double stars
+#only for stellar systems consisting of a star and a binary
     if REPORT_FUNCTION_NAMES:
         print 'Triple mass transfer'
         bs.semimajor_axis, donor.mass, self.get_mass(accretor), donor.stellar_type
@@ -593,7 +593,7 @@ def detached(bs, self):
     # wind mass loss is done by stellar_code
     # wind accretion here:
     # update accretion efficiency of wind mass loss
-    if bs.child1.is_star and bs.child2.is_star:
+    if self.is_binary(bs):
         bs.accretion_efficiency_wind_child1_to_child2 = 0.0
         bs.accretion_efficiency_wind_child2_to_child1 = 0.0
 
@@ -608,7 +608,7 @@ def detached(bs, self):
 # check if this indeed is accreted conservatively        
 
 
-    elif bs.child1.is_star and self.is_double_star(bs.child2):
+    elif bs.child1.is_star and self.is_binary(bs.child2):
         #Assumption: an inner binary is not effected by wind from an outer star
         bs.accretion_efficiency_wind_child1_to_child2 = 0.0
 
@@ -651,8 +651,7 @@ def detached(bs, self):
 
     else:
         print 'detached: type of system unknown'
-        print bs.child1.is_binary, bs.child1.is_star
-        print bs.child2.is_binary, bs.child2.is_star
+        print  bs.child1.is_star, bs.child2.is_star
         exit(2)                    
               
     #reset parameters after mass transfer
@@ -664,7 +663,7 @@ def resolve_binary_interaction(bs, self):
    if REPORT_FUNCTION_NAMES:
         print 'Resolve binary interaction'
     
-   if bs.is_binary and bs.child1.is_star:
+   if not bs.is_star and bs.child1.is_star:
         if REPORT_BINARY_EVOLUTION:
             Rl1 = roche_radius(bs, bs.child1, self)
             print "Check for RLOF:", bs.child1.mass, bs.child1.previous_mass
@@ -685,7 +684,7 @@ def resolve_binary_interaction(bs, self):
             else:
                 detached(bs, self)
                                         
-        elif bs.child2.is_binary:
+        elif not bs.child2.is_star:
             if REPORT_BINARY_EVOLUTION:
                 print self.get_mass(bs), bs.child1.mass, self.get_mass(bs.child2)
     
@@ -698,15 +697,12 @@ def resolve_binary_interaction(bs, self):
                 
         else:
             print 'resolve binary interaction: type of system unknown'
-            print bs.is_binary, 
-            print bs.child1.is_binary, bs.child1.is_star, 
-            print bs.child2.is_binary, bs.child2.is_star
+            print bs.is_star, bs.child1.is_star, bs.child2.is_star
             exit(2) 
                                
    else:
         print 'resolve binary interaction: type of system unknown'
-        print bs.is_binary, 
-        print bs.child1.is_binary, bs.child1.is_star, bs.child1.is_donor
+        print bs.is_star, bs.child1.is_star, bs.child1.is_donor
         exit(2)                    
 #-------------------------
         
@@ -716,9 +712,9 @@ def mass_transfer_stability(binary, self):
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer stability'
 
-    if binary.child1.is_star and binary.child2.is_star:
+    if self.is_binary(binary):
         if REPORT_MASS_TRANSFER_STABILITY:
-            print "Mass transfer stability: Double star "
+            print "Mass transfer stability: Binary "
             print binary.semimajor_axis, binary.child1.mass, binary.child2.mass, binary.child1.stellar_type, binary.child2.stellar_type
    
         Js_1 = self.stellar_angular_momentum(binary.child1)
@@ -778,7 +774,7 @@ def mass_transfer_stability(binary, self):
             binary.mass_transfer_rate = -1.* max(binary.child1.mass, binary.child2.mass) / mass_transfer_timescale(binary)
             binary.is_stable = True
 
-    elif binary.child1.is_star and binary.child2.is_binary:
+    elif binary.child1.is_star and not binary.child2.is_star:
         if REPORT_MASS_TRANSFER_STABILITY:
             print "Mass transfer stability: Binary "
             print binary.semimajor_axis, binary.child1.mass, self.get_mass(binary.child2), binary.child1.stellar_type
@@ -819,9 +815,7 @@ def mass_transfer_stability(binary, self):
             
     else:
         print 'resolve binary interaction: type of system unknown'
-        print bs.is_binary, 
-        print bs.child1.is_binary, bs.child1.is_star, 
-        print bs.child2.is_binary, bs.child2.is_star
+        print bs.is_star, bs.child1.is_star, bs.child2.is_star
         exit(2) 
             
             
