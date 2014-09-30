@@ -538,7 +538,7 @@ class TestSeBa(TestWithMPI):
         g_out = 0.5*np.pi
         o_in = 0.0
         o_out = 0.0
-        T_end = 11570|units.Myr 
+        T_end = 11000|units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
         self.assertEqual(tr.triple.child2.child1.mass, 1. | units.MSun)        
@@ -675,13 +675,13 @@ if __name__ == '__main__':
     test = TestSeBa()
 
 #     test set up
-#    test.test0()
-#    test.test1()
-#
-##     test wind mass loss inner system
-#    test.test2()
-#    test.test3()
-#    test.test4()
+    test.test0()
+    test.test1()
+
+#     test wind mass loss inner system
+    test.test2()
+    test.test3()
+    test.test4()
 #
 ##     test wind mass loss outer system
 #    test.test5()
@@ -701,5 +701,5 @@ if __name__ == '__main__':
 #    test.test13() #merger
 
 #    #test tides
-    test.test14()
+#    test.test14()
 #

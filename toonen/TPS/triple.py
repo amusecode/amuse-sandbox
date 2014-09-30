@@ -872,13 +872,6 @@ class Triple_Class:
         if REPORT_TRIPLE_EVOLUTION:
             print "Dt = ", self.stellar_code.particles.time_step, self.tend/100.0
  
-        if self.time == quantities.zero:
-            #initialization (e.g. time_derivative_of_radius)
-            #initially triple.child2 is the inner binary
-            P_in = self.orbital_period(self.triple.child2) #period inner binary 
-            self.time += P_in/10.
-            return
-
 #        during unstable mass transfer, contact_system or other instantaneous interactions: no step in time
         if self.has_donor() and (not self.is_system_stable() or self.has_contact_system()):
             return            
@@ -906,6 +899,12 @@ class Triple_Class:
 #        time_step = min(time_step, self.tend/100.0)
 #        time_step = min(time_step, min(time_step_stellar_code)/2.)
             
+        if self.time == quantities.zero:
+            #initialization (e.g. time_derivative_of_radius)
+            #initially triple.child2 is the inner binary
+            P_in = self.orbital_period(self.triple.child2) #period inner binary 
+            time_step = min(P_in/10., time_step)
+
         if time_step < minimum_time_step:
             print 'error small time_step'
             print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step
