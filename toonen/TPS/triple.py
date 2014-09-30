@@ -67,8 +67,8 @@ time_step_factor_stable_mt = 0.01 #1% mass loss during mass transfer
 # 0.01 -> error in the semi-major axis of about 0.5%
 maximum_wind_mass_loss_factor = 0.01 
 error_dm = 0.05
-maximum_radius_change_factor = 0.05
-error_dr = 0.2
+maximum_radius_change_factor = 0.005
+error_dr = 0.05
 minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
@@ -592,6 +592,7 @@ class Triple_Class:
                 star = self.triple.child2
                 bin = self.triple.child1
 
+
            P_in = self.orbital_period(bin) #period inner binary 
            P_out = self.orbital_period(self.triple)#period outer binary 
            return alpha_kozai * P_out**2 / P_in * (self.get_mass(self.triple) / self.get_mass(star)) * (1-self.triple.eccentricity**2)**1.5       
@@ -867,12 +868,13 @@ class Triple_Class:
         if REPORT_TRIPLE_EVOLUTION:
             print "Dt = ", self.stellar_code.particles.time_step, self.tend/100.0
  
- 
-#        if self.time == quantities.zero:
-#            #initialization (e.g. time_derivative_of_radius)
-#            self.time += 1|units.yr
-#            return
-            
+        if self.time == quantities.zero:
+            #initialization (e.g. time_derivative_of_radius)
+            #initially triple.child2 is the inner binary
+            P_in = self.orbital_period(self.triple.child2) #period inner binary 
+            self.time += P_in/10.
+            return
+
 #        during unstable mass transfer, contact_system or other instantaneous interactions: no step in time
         if self.has_donor() and (not self.is_system_stable() or self.has_contact_system()):
             return            
@@ -887,8 +889,7 @@ class Triple_Class:
         time_step_wind =  self.determine_time_step_wind()
 
         # small time_step during phases of fast growth (note: not yet during fast shrinkage)
-#        time_step_radius_change = self.determine_time_step_radius_change()        
-        time_step_radius_change = np.inf |units.Myr        
+        time_step_radius_change = self.determine_time_step_radius_change()             
         
         time_step = min(time_step_radius_change, min(time_step_wind, min( min(time_step_stellar_code), time_step_max)))    
 #        print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step#, time_step2  
@@ -899,7 +900,7 @@ class Triple_Class:
 
         ### for testing/plotting purposes only ###
 #        time_step = min(time_step, self.tend/100.0)
-#        time_step = min(time_step, min(time_step_stellar_code)/3.)
+#        time_step = min(time_step, min(time_step_stellar_code)/2.)
             
         if time_step < minimum_time_step:
             print 'error small time_step'
@@ -1661,7 +1662,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             metallicity, tend, number)
 
     triple_class_object.evolve_model()
-#    plot_function(triple_class_object)
+    plot_function(triple_class_object)
 #    triple_class_object.print_stellar_system()
     return triple_class_object
 #-----
@@ -1681,13 +1682,13 @@ def parse_arguments():
                       dest="outer_mass", type="float", default = 0.5|units.MSun,
                       help="outer mass [%default]")
 
-    parser.add_option("-A", unit=units.AU,
+    parser.add_option("-A", unit=units.RSun,
                       dest="inner_semimajor_axis", type="float", 
-                      default = 1.0 |units.AU,
+                      default = 200.0 |units.RSun,
                       help="inner semi major axis [%default]")
-    parser.add_option("-a", unit=units.AU,
+    parser.add_option("-a", unit=units.RSun,
                       dest="outer_semimajor_axis", type="float", 
-                      default = 100.0 |units.AU,
+                      default = 20000.0 |units.RSun,
                       help="outer semi major axis [%default]")
     parser.add_option("-E",
                       dest="inner_eccentricity", type="float", default = 0.1,
