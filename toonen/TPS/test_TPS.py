@@ -111,8 +111,8 @@ class TestSeBa(TestWithMPI):
         self.assertEqual(tr.triple.child2.child2.mass, 1. | units.MSun)        
         self.assertEqual(tr.triple.child1.mass, 1. | units.MSun)        
         
-        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 35040 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 2741309 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 35015 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 2739617 | units.RSun, 4)        
         
         #under the assumption of no wind accretion
         M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
@@ -147,8 +147,8 @@ class TestSeBa(TestWithMPI):
         self.assertEqual(tr.triple.child2.child2.mass, 6. | units.MSun)        
         self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
         
-        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 17846 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1776123 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 17838 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1775327 | units.RSun, 4)        
         
         #under the assumption of no wind accretion
         M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
@@ -178,15 +178,13 @@ class TestSeBa(TestWithMPI):
         o_out = 0.0
         T_end = 80|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
-        
+
         self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.2964 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 1.1432 | units.MSun, 4)        
         self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
         
-#        self.assertAlmostRelativeEqual(tr.triple.child1.semimajor_axis, 53587 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 53633 | units.RSun, 4)        
-#        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 5219600 | units.RSun, 4)              
-        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 5224100| units.RSun, 4)              
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 53608 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis,  5221675| units.RSun, 4)              
         
         #under the assumption of no wind accretion
         M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
@@ -219,10 +217,10 @@ class TestSeBa(TestWithMPI):
     
         self.assertEqual(tr.triple.child2.child1.mass, 0.1 | units.MSun)        
         self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
-        self.assertAlmostRelativeEqual(tr.triple.child1.mass, 1.2963 | units.MSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child1.mass, 1.2964 | units.MSun, 4)        
 
         self.assertEqual(tr.triple.child2.semimajor_axis, 1.0| units.RSun)        
-        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 4853401 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 4849289 | units.RSun, 4)        
         
         #under the assumption of no wind accretion
         M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
@@ -684,22 +682,22 @@ if __name__ == '__main__':
     test.test4()
 #
 ##     test wind mass loss outer system
-#    test.test5()
-#
-#    # test stable mass transfer in inner system
-##    test.test6() #collision
-#    test.test7()
-#    test.test8()
-#
-#    # test common envelope evolution in inner system
-#    test.test9() #alpha-ce
-#    test.test10() #gamma-ce
-#    test.test11() #double alpha-ce
-#
-#    # test contact system in inner system
-#    test.test12() #double alpha-ce
-#    test.test13() #merger
+    test.test5()
 
+    # test stable mass transfer in inner system
+#    test.test6() #collision
+    test.test7()
+    test.test8()
+
+    # test common envelope evolution in inner system
+    test.test9() #alpha-ce
+    test.test10() #gamma-ce
+    test.test11() #double alpha-ce
+
+    # test contact system in inner system
+    test.test12() #double alpha-ce
+    test.test13() #merger
+#
 #    #test tides
-#    test.test14()
+##    test.test14()
 #

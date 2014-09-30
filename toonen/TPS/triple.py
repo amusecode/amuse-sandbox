@@ -889,7 +889,7 @@ class Triple_Class:
         time_step_radius_change = self.determine_time_step_radius_change()             
         
         time_step = min(time_step_radius_change, min(time_step_wind, min( min(time_step_stellar_code), time_step_max)))    
-#        print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step#, time_step2  
+        print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step#, time_step2  
           
         #during stable mass transfer     
         if self.has_donor():
@@ -901,9 +901,12 @@ class Triple_Class:
             
         if self.time == quantities.zero:
             #initialization (e.g. time_derivative_of_radius)
-            #initially triple.child2 is the inner binary
-            P_in = self.orbital_period(self.triple.child2) #period inner binary 
-            time_step = min(P_in/10., time_step)
+            P_out = self.orbital_period(self.triple) #period outer binary 
+            # do not take 0.1*P_in -> resonance -> large error
+            time_step = min(P_out, time_step)
+            
+#            self.time += min(P_out, time_step)
+#            return
 
         if time_step < minimum_time_step:
             print 'error small time_step'
@@ -1383,7 +1386,7 @@ def plot_function(triple):
     plot_a_in.set_ylabel('$a_\mathrm{in}$')
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
 
-    generic_plot_name = '_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(maximum_radius_change_factor)
+    generic_plot_name = '_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(maximum_radius_change_factor)+'_edr'+str(error_dr)
     plt.savefig('plots/orbit/TPS_inner_orbit'+generic_plot_name+'.pdf')
     plt.show()
 
@@ -1665,7 +1668,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             metallicity, tend, number)
 
     triple_class_object.evolve_model()
-    plot_function(triple_class_object)
+#    plot_function(triple_class_object)
 #    triple_class_object.print_stellar_system()
     return triple_class_object
 #-----
