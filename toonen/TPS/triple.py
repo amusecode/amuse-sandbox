@@ -29,8 +29,9 @@
 
 from amuse.community.seba.interface import SeBa
 from binary import *
-import sys 
-sys.path.insert(1, '../../hamers/TPS/code')
+
+import os, sys
+sys.path.insert(1, os.environ.get('AMUSE_DIR')+'/sandbox/hamers/TPS/code')
 from seculartriple_TPS.interface import SecularTriple
 
 from amuse.units import units, constants

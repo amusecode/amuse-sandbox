@@ -673,31 +673,31 @@ if __name__ == '__main__':
     test = TestSeBa()
 
 #     test set up
-    test.test0()
-    test.test1()
-
-#     test wind mass loss inner system
-    test.test2()
-    test.test3()
-    test.test4()
+#    test.test0()
+#    test.test1()
 #
-##     test wind mass loss outer system
-    test.test5()
-
-    # test stable mass transfer in inner system
-#    test.test6() #collision
-    test.test7()
-    test.test8()
-
-    # test common envelope evolution in inner system
-    test.test9() #alpha-ce
-    test.test10() #gamma-ce
-    test.test11() #double alpha-ce
-
-    # test contact system in inner system
-    test.test12() #double alpha-ce
-    test.test13() #merger
+##     test wind mass loss inner system
+#    test.test2()
+#    test.test3()
+#    test.test4()
+##
+###     test wind mass loss outer system
+#    test.test5()
 #
-#    #test tides
-##    test.test14()
+#    # test stable mass transfer in inner system
+##    test.test6() #collision
+#    test.test7()
+#    test.test8()
 #
+#    # test common envelope evolution in inner system
+#    test.test9() #alpha-ce
+#    test.test10() #gamma-ce
+#    test.test11() #double alpha-ce
+#
+#    # test contact system in inner system
+#    test.test12() #double alpha-ce
+#    test.test13() #merger
+##
+##    #test tides
+    test.test14()
+##
