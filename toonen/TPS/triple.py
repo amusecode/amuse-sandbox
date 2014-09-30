@@ -73,7 +73,7 @@ minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
 stellar_types_SN_remnants = [13,14]|units.stellar_type # remnant types created through a supernova
-
+minimum_outer_eccentricity = 1.e-3
 
 class Triple_Class:
     #-------
@@ -86,7 +86,7 @@ class Triple_Class:
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity, tend, number):      
             
-        self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
+        outer_eccentricity = self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
             relative_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)   
@@ -216,7 +216,7 @@ class Triple_Class:
         self.secular_code.parameters.equations_of_motion_specification = 0
         self.secular_code.parameters.include_quadrupole_terms = True
         self.secular_code.parameters.include_octupole_terms = True        
-        self.secular_code.parameters.include_inner_tidal_terms = False 
+        self.secular_code.parameters.include_inner_tidal_terms = False
         self.secular_code.parameters.include_outer_tidal_terms = False
         self.secular_code.parameters.include_inner_wind_terms = True
         self.secular_code.parameters.include_outer_wind_terms = True
@@ -271,6 +271,8 @@ class Triple_Class:
         if (outer_eccentricity < 0.) or (outer_eccentricity > 1.):
             print 'error: outer eccentricity not in allowed range'
             exit(1)
+        if (outer_eccentricity < minimum_outer_eccentricity):
+            outer_eccentricity = minimum_outer_eccentricity
     
         if (relative_inclination < 0.) or (relative_inclination > 2.*np.pi):
             print 'error: relative inclination not in allowed range'
@@ -289,6 +291,8 @@ class Triple_Class:
         if (outer_longitude_of_ascending_node < 0.) or (outer_longitude_of_ascending_node > 2*np.pi):
             print 'error: outer longitude of ascending node not in allowed range'
             exit(1)
+            
+        return outer_eccentricity            
     #-------
 
     #-------

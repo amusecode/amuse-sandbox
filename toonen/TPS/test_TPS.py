@@ -532,13 +532,13 @@ class TestSeBa(TestWithMPI):
         a_in = 20|units.RSun
         a_out = 1.e6|units.RSun
         e_in = 0.8
-        e_out = 0.0
+        e_out = 1.e-5
         i = 0*np.pi/180.0
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
         o_in = 0.0
         o_out = 0.0
-        T_end = 11000|units.Myr 
+        T_end = 11570|units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
         self.assertEqual(tr.triple.child2.child1.mass, 1. | units.MSun)        
@@ -675,31 +675,31 @@ if __name__ == '__main__':
     test = TestSeBa()
 
 #     test set up
-    test.test0()
-    test.test1()
-
-#     test wind mass loss inner system
-    test.test2()
-    test.test3()
-    test.test4()
-
-#     test wind mass loss outer system
-    test.test5()
-
-    # test stable mass transfer in inner system
-#    test.test6() #collision
-    test.test7()
-    test.test8()
-
-    # test common envelope evolution in inner system
-    test.test9() #alpha-ce
-    test.test10() #gamma-ce
-    test.test11() #double alpha-ce
-
-    # test contact system in inner system
-    test.test12() #double alpha-ce
-    test.test13() #merger
+#    test.test0()
+#    test.test1()
+#
+##     test wind mass loss inner system
+#    test.test2()
+#    test.test3()
+#    test.test4()
+#
+##     test wind mass loss outer system
+#    test.test5()
+#
+#    # test stable mass transfer in inner system
+##    test.test6() #collision
+#    test.test7()
+#    test.test8()
+#
+#    # test common envelope evolution in inner system
+#    test.test9() #alpha-ce
+#    test.test10() #gamma-ce
+#    test.test11() #double alpha-ce
+#
+#    # test contact system in inner system
+#    test.test12() #double alpha-ce
+#    test.test13() #merger
 
 #    #test tides
-#    test.test14()
+    test.test14()
 #
