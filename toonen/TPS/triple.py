@@ -231,8 +231,8 @@ class Triple_Class:
         self.secular_code.parameters.check_for_dynamical_stability = True
         self.secular_code.parameters.check_for_inner_collision = True
         self.secular_code.parameters.check_for_outer_collision = True
-        self.secular_code.parameters.check_for_inner_RLOF = False ### work in progress
-        self.secular_code.parameters.check_for_outer_RLOF = False ### work in progress
+        self.secular_code.parameters.check_for_inner_RLOF = True 
+        self.secular_code.parameters.check_for_outer_RLOF = True 
 
         self.channel_from_secular = self.secular_code.triples.new_channel_to(triple_set)
         self.channel_to_secular = triple_set.new_channel_to(self.secular_code.triples)
@@ -1279,6 +1279,11 @@ class Triple_Class:
                     self.save_snapshot()        
                     break
                    
+                 #When the secular code discovers RLOF, the orbital simulation stops. 
+                 #The stellar evolution has evolved to far in time. For now this is not compensated. 
+                if self.has_donor() and self.time != self.secular_code.model_time:
+                    self.secular_code.model_time = self.time               
+
                 self.channel_from_secular.copy()     
             else:        
                 self.secular_code.model_time = self.time
