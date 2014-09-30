@@ -19,9 +19,9 @@ class SecularTripleInterface(CodeInterface):
     @legacy_function
     def evolve():
         function = LegacyFunctionSpecification()
-        function.addParameter('stellar_type1', dtype='int64', direction=function.IN)
-        function.addParameter('stellar_type2', dtype='int64', direction=function.IN)
-        function.addParameter('stellar_type3', dtype='int64', direction=function.IN)
+        function.addParameter('stellar_type1', dtype='int32', direction=function.IN)
+        function.addParameter('stellar_type2', dtype='int32', direction=function.IN)
+        function.addParameter('stellar_type3', dtype='int32', direction=function.IN)
         function.addParameter('m1', dtype='float64', direction=function.IN)
         function.addParameter('m2', dtype='float64', direction=function.IN)
         function.addParameter('m3', dtype='float64', direction=function.IN)
@@ -986,6 +986,10 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
     R1 = star1.radius
     R2 = star2.radius
     R3 = star3.radius
+
+    R1 = 1.0 | units.RSun
+    R2 = 0.1 | units.RSun
+    R3 = 0.1 | units.RSun
 
     a_in = inner_binary.semimajor_axis
     e_in = inner_binary.eccentricity
