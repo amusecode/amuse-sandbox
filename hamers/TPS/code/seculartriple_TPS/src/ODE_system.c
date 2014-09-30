@@ -806,8 +806,6 @@ int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data_f)
     bool check_for_inner_RLOF = data->check_for_inner_RLOF;
     bool check_for_outer_RLOF = data->check_for_outer_RLOF;
 
-    printf( "test RLOF %s",check_for_outer_RLOF);
-
     double m1 = data->m1;
     double m2 = data->m2;				
     double m3 = data->m3;		
@@ -870,13 +868,13 @@ int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data_f)
     }
     if (check_for_outer_RLOF == TRUE)
     {
+
         double spin_angular_frequency3 = Ith(yev,10);
         double spin_angular_frequency_outer_orbit_periapse = sqrt( CONST_G*(m1+m2+m3)*(1.0+e_out)/(rp_out*rp_out*rp_out) );        
         double f3 = spin_angular_frequency3/spin_angular_frequency_outer_orbit_periapse;
         
 //        double roche_radius_pericenter_outer_star3 = roche_radius_pericenter_eggleton(rp_out, m3/(m1+m2));        
         double roche_radius_pericenter_outer_star3 = roche_radius_pericenter_sepinsky(rp_out, m3/(m1+m2), e_out, f3);
-
         gout[5] = R3 - roche_radius_pericenter_outer_star3;
     }            
     
