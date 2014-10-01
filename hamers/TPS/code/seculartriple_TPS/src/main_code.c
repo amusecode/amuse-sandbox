@@ -10,7 +10,7 @@
 #define ATOL3		RCONST(1.0e-8)
 #define ATOL4		RCONST(1.0e-8)
 #define ATOL5		RCONST(1.0e1)
-#define ATOL6		RCONST(1.0e-8)
+#define ATOL6		RCONST(1.0e1)
 #define ATOL7		RCONST(1.0e-8)
 #define ATOL8		RCONST(1.0e-8)	
 #define ATOL9		RCONST(1.0e-8)				
@@ -388,7 +388,8 @@ int evolve(
         Ith(abstol,10) = ATOL10;
 
         cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-        flag = CVodeInit(cvode_mem, fev_delaunay, t, yev);        
+//        flag = CVodeInit(cvode_mem, fev_delaunay, t, yev);        
+        flag = CVodeInit(cvode_mem, fev_delaunay, 0.0, yev);        
         
     }
     else
@@ -484,7 +485,9 @@ int evolve(
 //	int output_flag = 0;
 //	int error_flag = 0;
 
-	flag_s = CVode(cvode_mem, t_end, yev_out, &t_end_cvode, CV_NORMAL);	
+//	flag_s = CVode(cvode_mem, t_end, yev_out, &t_end_cvode, CV_NORMAL);	
+	flag_s = CVode(cvode_mem, dt, yev_out, &t_end_cvode, CV_NORMAL);	
+    
 	if (flag_s == CV_SUCCESS)
 	{
 		*output_flag = 0;

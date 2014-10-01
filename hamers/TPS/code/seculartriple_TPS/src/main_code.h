@@ -15,6 +15,18 @@
  * numerical values were evaluated
  * within AMUSE for consistency */
 
+#define CONST_G			    (double)	3.94852492465e+13
+#define CONST_G_P2          (double)    CONST_G*CONST_G
+#define CONST_G_P3          (double)    CONST_G*CONST_G_P2
+#define CONST_C_LIGHT		(double)	63239726386.8
+#define CONST_C_LIGHT_P2	(double)	CONST_C_LIGHT*CONST_C_LIGHT
+#define CONST_C_LIGHT_P4	(double)	CONST_C_LIGHT_P2*CONST_C_LIGHT_P2
+#define CONST_C_LIGHT_P5	(double)	CONST_C_LIGHT_P4*CONST_C_LIGHT
+#define CONST_MSUN          (double)    1.0
+#define CONST_R_SUN         (double)    0.00464913034382
+#define CONST_L_SUN         (double)    2.71040410975e+14
+
+#ifdef IGNORE
 #define CONST_G			    (double)	6.674279999999998e-08
 #define CONST_G_P2          (double)    CONST_G*CONST_G
 #define CONST_G_P3          (double)    CONST_G*CONST_G_P2
@@ -25,6 +37,8 @@
 #define CONST_MSUN          (double)    1.98892e33
 #define CONST_R_SUN         (double)    6.955e10
 #define CONST_L_SUN         (double)    3.838999999999999e33
+#endif
+
 #define c_1div2             (double)    1.0/2.0
 #define c_1div3             (double)    1.0/3.0
 #define c_1div4             (double)    1.0/4.0

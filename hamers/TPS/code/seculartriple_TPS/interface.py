@@ -7,8 +7,12 @@ Adrian Hamers 24-06-2014
 from amuse.community import *
 from amuse.units import units,constants
 #import tidal_friction_constant
-cm = 1e-2*units.m
-g = 1e-3*units.kg
+#cm = 1e-2*units.m
+#g = 1e-3*units.kg
+
+unit_l = units.AU
+unit_m = units.MSun
+unit_t = 1.0e6*units.yr
 
 class SecularTripleInterface(CodeInterface):
     include_headers = ['src/main_code.h','src/ODE_system.h']
@@ -576,31 +580,31 @@ class SecularTriple(InCodeComponentImplementation):
             default_value = False
         )    
     def define_methods(self, object):
-
+        unit_lum = unit_m*unit_l**2/(unit_t**3)
         object.add_method(
             "evolve",
             (
                 units.stellar_type,         ### stellar_type1
                 units.stellar_type,         ### stellar_type2
                 units.stellar_type,         ### stellar_type3
-                g,                          ### m1
-                g,                          ### m2
-                g,                          ### m3
-                g,                          ### m1_convective_envelope
-                g,                          ### m2_convective_envelope
-                g,                          ### m3_convective_envelope
-                cm,                         ### R1
-                cm,                         ### R2
-                cm,                         ### R3
-                cm,                         ### R1_convective_envelope
-                cm,                         ### R2_convective_envelope
-                cm,                         ### R3_convective_envelope
-                g*cm**2/(units.s**3),       ### luminosity_star1
-                g*cm**2/(units.s**3),       ### luminosity_star2
-                g*cm**2/(units.s**3),       ### luminosity_star3
-                1.0/units.s,                ### spin_angular_frequency1
-                1.0/units.s,                ### spin_angular_frequency2
-                1.0/units.s,                ### spin_angular_frequency3                                
+                unit_m,                     ### m1
+                unit_m,                     ### m2
+                unit_m,                     ### m3
+                unit_m,                     ### m1_convective_envelope
+                unit_m,                     ### m2_convective_envelope
+                unit_m,                     ### m3_convective_envelope
+                unit_l,                     ### R1
+                unit_l,                     ### R2
+                unit_l,                     ### R3
+                unit_l,                     ### R1_convective_envelope
+                unit_l,                     ### R2_convective_envelope
+                unit_l,                     ### R3_convective_envelope
+                unit_lum,                   ### luminosity_star1
+                unit_lum,                   ### luminosity_star2
+                unit_lum,                   ### luminosity_star3
+                1.0/unit_t,                 ### spin_angular_frequency1
+                1.0/unit_t,                 ### spin_angular_frequency2
+                1.0/unit_t,                 ### spin_angular_frequency3                                
                 object.NO_UNIT,             ### AMC_star1
                 object.NO_UNIT,             ### AMC_star2
                 object.NO_UNIT,             ### AMC_star3
@@ -610,8 +614,8 @@ class SecularTriple(InCodeComponentImplementation):
 #                1.0/units.s,                ### k_div_T_tides_star1
 #                1.0/units.s,                ### k_div_T_tides_star2
 #                1.0/units.s,                ### k_div_T_tides_star3                                
-                cm,                         ### a_in
-                cm,                         ### a_out
+                unit_l,                     ### a_in
+                unit_l,                     ### a_out
                 object.NO_UNIT,             ### e_in
                 object.NO_UNIT,             ### e_out
                 object.NO_UNIT,             ### INCL_in
@@ -623,14 +627,14 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### star1_is_donor
                 object.NO_UNIT,             ### star2_is_donor
                 object.NO_UNIT,             ### star3_is_donor
-                g/units.s,                  ### wind_mass_loss_rate_star1
-                g/units.s,                  ### wind_mass_loss_rate_star2
-                g/units.s,                  ### wind_mass_loss_rate_star3                                
-                cm/units.s,                 ### time_derivative_of_radius_star1
-                cm/units.s,                 ### time_derivative_of_radius_star2
-                cm/units.s,                 ### time_derivative_of_radius_star3                                
-                g/units.s,                  ### inner_mass_transfer_rate                                
-                g/units.s,                  ### outer_mass_transfer_rate                                                
+                unit_m/unit_t,              ### wind_mass_loss_rate_star1
+                unit_m/unit_t,              ### wind_mass_loss_rate_star2
+                unit_m/unit_t,              ### wind_mass_loss_rate_star3
+                unit_l/unit_t,              ### time_derivative_of_radius_star1
+                unit_l/unit_t,              ### time_derivative_of_radius_star2
+                unit_l/unit_t,              ### time_derivative_of_radius_star3
+                unit_m/unit_t,              ### inner_mass_transfer_rate                                
+                unit_m/unit_t,              ### outer_mass_transfer_rate                                
                 object.NO_UNIT,             ### inner_accretion_efficiency_wind_child1_to_child2
                 object.NO_UNIT,             ### inner_accretion_efficiency_wind_child2_to_child1
                 object.NO_UNIT,             ### outer_accretion_efficiency_wind_child1_to_child2
@@ -639,21 +643,21 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### outer_accretion_efficiency_mass_transfer
                 object.NO_UNIT,             ### inner_specific_AM_loss_mass_transfer
                 object.NO_UNIT,             ### outer_specific_AM_loss_mass_transfer
-                units.s,                    ### t
-                units.s,                    ### dt
+                unit_t,                     ### t
+                unit_t,                     ### dt
             ),
             (
-                g,                          ### m1_output
-                g,                          ### m2_output
-                g,                          ### m3_output
-                cm,                         ### R1_output
-                cm,                         ### R2_output
-                cm,                         ### R3_output
-                1.0/units.s,                ### spin_angular_frequency1_output
-                1.0/units.s,                ### spin_angular_frequency2_output
-                1.0/units.s,                ### spin_angular_frequency3_output                         
-                cm,                         ### a_in_output
-                cm,                         ### a_out_output
+                unit_m,                     ### m1_output
+                unit_m,                     ### m2_output
+                unit_m,                     ### m3_output
+                unit_l,                     ### R1_output
+                unit_l,                     ### R2_output
+                unit_l,                     ### R3_output
+                1.0/unit_t,                 ### spin_angular_frequency1_output
+                1.0/unit_t,                 ### spin_angular_frequency2_output
+                1.0/unit_t,                 ### spin_angular_frequency3_output                         
+                unit_l,                     ### a_in_output
+                unit_l,                     ### a_out_output
                 object.NO_UNIT,             ### e_in_output
                 object.NO_UNIT,             ### e_out_output
                 object.NO_UNIT,             ### INCL_in_output
@@ -663,7 +667,7 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### AP_out_output                                
                 object.NO_UNIT,             ### LAN_in_output
                 object.NO_UNIT,             ### LAN_out_output                                
-                units.s,                    ### t_output
+                unit_t,                     ### t_output
                 object.NO_UNIT,             ### output_flag
                 object.NO_UNIT,             ### error_flag
                 object.ERROR_CODE,
@@ -672,13 +676,13 @@ class SecularTriple(InCodeComponentImplementation):
         object.add_method(
             "roche_radius_pericenter_sepinsky",
             (
-                cm,                         ### rp
+                unit_l,                     ### rp
                 object.NO_UNIT,             ### q
                 object.NO_UNIT,             ### e
                 object.NO_UNIT,             ### f
             ),
             (
-                cm,                         ### Roche radius
+                unit_l,                     ### Roche radius
             )
         )
 
@@ -841,7 +845,7 @@ class SecularTriple(InCodeComponentImplementation):
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_dummy,flag,error = self.evolve(*args)
-#            print 'done',a_in.value_in(units.AU),e_in
+            print 'done',a_in.value_in(units.AU),e_in
 
             ####################
             ### root finding ###
@@ -987,10 +991,6 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
     R2 = star2.radius
     R3 = star3.radius
 
-    R1 = 1.0 | units.RSun
-    R2 = 0.1 | units.RSun
-    R3 = 0.1 | units.RSun
-
     a_in = inner_binary.semimajor_axis
     e_in = inner_binary.eccentricity
     a_out = outer_binary.semimajor_axis
@@ -1114,7 +1114,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             spin_angular_frequency1 = star1.spin_angular_frequency
             spin_angular_frequency2 = star2.spin_angular_frequency
             spin_angular_frequency3 = star3.spin_angular_frequency
-            
+
             ### TODO: implement checks for unphysical input values ###
             
             """
@@ -1140,7 +1140,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             print "More attributes required for tides"
             return
 
-#    print 'pre',a_in.value_in(units.AU),e_in
+    print 'pre',a_in.value_in(units.AU),e_in
        
     args = [stellar_type1,stellar_type2,stellar_type3,
         m1,m2,m3,
@@ -1168,4 +1168,5 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
 #    print 'pre2',stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1
 #    print 'pre',k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
         
+#    print 'args',args
     return args
