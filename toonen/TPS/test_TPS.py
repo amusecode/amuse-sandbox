@@ -4,23 +4,6 @@ import numpy as np
 
 import triple
 
-#default values
-#inner_primary_mass= 1.3|units.MSun, 
-#inner_secondary_mass= 0.5|units.MSun, 
-#outer_mass= 0.5|units.MSun,
-#inner_semimajor_axis= 1.0 |units.AU, 
-#outer_semimajor_axis= 100.0 |units.AU,
-#inner_eccentricity= 0.1, 
-#outer_eccentricity= 0.5,
-#relative_inclination= 80.0*np.pi/180.0,
-#inner_argument_of_pericenter= 0.1, 
-#outer_argument_of_pericenter= 0.5,
-#inner_longitude_of_ascending_node= 0.0, 
-#outer_longitude_of_ascending_node= 0.0,
-#metallicity= 0.02,
-#tend= 5.0 |units.Myr
-
-
 class TestSeBa(TestWithMPI):
     def __init__(self):
         print 'initializing...'
@@ -536,19 +519,20 @@ class TestSeBa(TestWithMPI):
         g_out = 0.5*np.pi
         o_in = 0.0
         o_out = 0.0
-        T_end = 11000|units.Myr 
+        T_end = 11050|units.Myr 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
-        self.assertEqual(tr.triple.child2.child1.mass, 1. | units.MSun)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.99997 | units.MSun, 4)        
         self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
         self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
 
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
         print tr.triple.child2.eccentricity, tr.triple.eccentricity
-        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 6.99056| units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 7.0995| units.RSun, 4)  
         self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1.e6 | units.RSun, 4)        
-        self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0., 4)  #eccentricity < 0
-        self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0., 4)        #eccentricity < 0
+        self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0., 4)  
+        self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0.001, 4)        
+
 
         a_in_final_theory = a_in * (1-e_in**2)
         self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1)        
@@ -556,7 +540,83 @@ class TestSeBa(TestWithMPI):
         print 'test14: succeeded'
  
 
+         #test tides
+    def test15(self):
+        print 'test15'
+
+        M1 = 1.|units.MSun
+        M2 = 0.1|units.MSun
+        M3 = 0.08|units.MSun
+        a_in = 35|units.RSun
+#        a_in = 20|units.RSun
+        a_out = 1.e6|units.RSun
+        e_in = 0.8
+        e_out = 1.e-5
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        o_in = 0.0
+        o_out = 0.0
+        T_end = 20000|units.Myr 
+        dr = 0.005 #0.0005
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
+
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.99997 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 7.0995| units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1.e6 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0., 4)  
+        self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0.001, 4)        
+
+
+        a_in_final_theory = a_in * (1-e_in**2)
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1)        
+
+        print 'test15: succeeded'
  
+
+    def test16(self):
+        print 'test16'
+
+        M1 = 1.|units.MSun
+        M2 = 0.1|units.MSun
+        M3 = 0.08|units.MSun
+        a_in = 20|units.RSun
+#        a_in = 20|units.RSun
+        a_out = 1.e6|units.RSun
+        e_in = 0.0
+        e_out = 1.e-5
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        o_in = 0.0
+        o_out = 0.0
+        T_end = 2000|units.Myr 
+        dr = 0.005 #0.0005
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
+
+        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.99997 | units.MSun, 4)        
+        self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
+        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 7.0995| units.RSun, 4)  
+        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1.e6 | units.RSun, 4)        
+        self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0., 4)  
+        self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0.001, 4)        
+
+
+        a_in_final_theory = a_in * (1-e_in**2)
+        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1)        
+
+        print 'test16: succeeded'
+ 
+
         
         
         
@@ -699,5 +759,7 @@ if __name__ == '__main__':
 #    test.test13() #merger
 ##
 ##    #test tides
-    test.test14()
+#    test.test14()
+#    test.test15()
+    test.test16()
 ##
