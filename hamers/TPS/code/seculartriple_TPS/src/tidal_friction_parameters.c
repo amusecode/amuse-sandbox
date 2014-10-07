@@ -129,6 +129,7 @@ double compute_k_div_T_tides
     else if (USE_CONVECTIVE_DAMPING == TRUE) // convective damping
     {
         double P_orb = 2.0*M_PI*sqrt((semimajor_axis*semimajor_axis*semimajor_axis)/(CONST_G*(mass + companion_mass)));
+//        printf("a %g\n",semimajor_axis);
         double P_spin,P_tid;
         
         if (spin_angular_frequency == 0.0)

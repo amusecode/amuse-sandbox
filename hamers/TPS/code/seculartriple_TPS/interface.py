@@ -408,7 +408,35 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('include_outer_RLOF_terms', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
+
+    @legacy_function
+    def set_include_linear_mass_change():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_linear_mass_change', dtype='bool',direction=function.IN,description = "..")
+        function.result_type = 'int32'
+        return function    
         
+    @legacy_function
+    def get_include_linear_mass_change():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_linear_mass_change', dtype='bool',direction=function.OUT,description = "..")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_include_linear_radius_change():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_linear_radius_change', dtype='bool',direction=function.IN,description = "..")
+        function.result_type = 'int32'
+        return function    
+        
+    @legacy_function
+    def get_include_linear_radius_change():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_linear_radius_change', dtype='bool',direction=function.OUT,description = "..")
+        function.result_type = 'int32'
+        return function
+
 class SecularTriple(InCodeComponentImplementation):
 
     def __init__(self, **options):
@@ -579,6 +607,21 @@ class SecularTriple(InCodeComponentImplementation):
             "..", 
             default_value = False
         )    
+        object.add_method_parameter(
+            "get_include_linear_mass_change",
+            "set_include_linear_mass_change",
+            "include_linear_mass_change",
+            "..", 
+            default_value = False
+        )            
+        object.add_method_parameter(
+            "get_include_linear_radius_change",
+            "set_include_linear_radius_change",
+            "include_linear_radius_change",
+            "..", 
+            default_value = False
+        )            
+
     def define_methods(self, object):
         unit_lum = unit_m*unit_l**2/(unit_t**3)
         object.add_method(
@@ -1003,6 +1046,14 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
     LAN_in = inner_binary.longitude_of_ascending_node
     LAN_out = outer_binary.longitude_of_ascending_node        
 
+    try:
+        time_derivative_of_radius_star1 = star1.time_derivative_of_radius
+        time_derivative_of_radius_star2 = star2.time_derivative_of_radius
+        time_derivative_of_radius_star3 = star3.time_derivative_of_radius
+    except AttributeError:
+        print 'seculartriple needs time_derivative_of_radius for all three stars! exiting'
+        exit(-1)
+
     ### mass variation parameters ###
     star1_is_donor = star2_is_donor = star3_is_donor = False
     wind_mass_loss_rate_star1 = wind_mass_loss_rate_star2 = wind_mass_loss_rate_star3 = 0.0 | units.MSun/units.yr
@@ -1019,16 +1070,16 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             inner_accretion_efficiency_wind_child1_to_child2 = inner_binary.accretion_efficiency_wind_child1_to_child2
             inner_accretion_efficiency_wind_child2_to_child1 = inner_binary.accretion_efficiency_wind_child2_to_child1
         except AttributeError:
-            print "More attributes required for inner wind"
-            return
+            print "More attributes required for inner wind! exiting"
+            exit(-1)
     if parameters.include_outer_wind_terms == True:
         try:
             wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate                    
             outer_accretion_efficiency_wind_child1_to_child2 = outer_binary.accretion_efficiency_wind_child1_to_child2
             outer_accretion_efficiency_wind_child2_to_child1 = outer_binary.accretion_efficiency_wind_child2_to_child1
         except AttributeError:
-            print "More attributes required for outer wind"
-            return
+            print "More attributes required for outer wind! exiting"
+            exit(-1)
     if parameters.include_inner_RLOF_terms == True:
         try:
             star1_is_donor = star1.is_donor
@@ -1037,8 +1088,8 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             inner_accretion_efficiency_mass_transfer = inner_binary.accretion_efficiency_mass_transfer
             inner_specific_AM_loss_mass_transfer = inner_binary.specific_AM_loss_mass_transfer
         except AttributeError:
-            print "More attributes required for inner RLOF"
-            return
+            print "More attributes required for inner RLOF! exiting"
+            exit(-1)
     if parameters.include_outer_RLOF_terms == True:
         try:
             star3_is_donor = star3.is_donor            
@@ -1046,8 +1097,8 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             outer_accretion_efficiency_mass_transfer = outer_binary.accretion_efficiency_mass_transfer
             outer_specific_AM_loss_mass_transfer = outer_binary.specific_AM_loss_mass_transfer
         except AttributeError:
-            print "More attributes required for outer RLOF"
-            return
+            print "More attributes required for outer RLOF! exiting"
+            exit(-1)
 
     ### RLOF checks ###
     spin_angular_frequency1 = spin_angular_frequency2 = spin_angular_frequency3 = 0.0 | 1.0/units.s
@@ -1057,14 +1108,14 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             spin_angular_frequency1 = star1.spin_angular_frequency
             spin_angular_frequency2 = star2.spin_angular_frequency
         except AttributeError:
-            print "More attributes required for inner RLOF check"
-            return
+            print "More attributes required for inner RLOF check! exiting"
+            exit(-1)
     if parameters.check_for_outer_RLOF == True:
         try:
             spin_angular_frequency3 = star3.spin_angular_frequency
         except AttributeError:
-            print "More attributes required for outer RLOF check"
-            return
+            print "More attributes required for outer RLOF check! exiting"
+            exit(-1)
 
     ### wind-spin coupling ###
     time_derivative_of_radius_star1=time_derivative_of_radius_star2=time_derivative_of_radius_star3 = 0.0 | units.RSun/units.s
@@ -1073,15 +1124,12 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             spin_angular_frequency1 = star1.spin_angular_frequency
             spin_angular_frequency2 = star2.spin_angular_frequency
             spin_angular_frequency3 = star3.spin_angular_frequency
-            time_derivative_of_radius_star1 = star1.time_derivative_of_radius
-            time_derivative_of_radius_star2 = star2.time_derivative_of_radius
-            time_derivative_of_radius_star3 = star3.time_derivative_of_radius
             gyration_radius_star1 = star1.gyration_radius
             gyration_radius_star2 = star2.gyration_radius                    
             gyration_radius_star3 = star3.gyration_radius                    
         except AttributeError:
-            print "More attributes required for wind-spin coupling terms"
-            return
+            print "More attributes required for wind-spin coupling terms! exiting"
+            exit(-1)
 
     ### tides ###
     stellar_type1 = stellar_type2 = stellar_type3 = 0 | units.stellar_type
@@ -1137,8 +1185,28 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             
             
         except AttributeError:
-            print "More attributes required for tides"
-            return
+            print "More attributes required for tides! exiting"
+            exit(-1)
+
+        if (m1_convective_envelope.value_in(unit_m)<0):
+            print 'm1_convective_envelope must be positive! exiting'
+            exit(-1)
+        if (m2_convective_envelope.value_in(unit_m)<0):
+            print 'm2_convective_envelope must be positive! exiting'
+            exit(-1)
+        if (m3_convective_envelope.value_in(unit_m)<0):
+            print 'm3_convective_envelope must be positive! exiting'
+            exit(-1)
+
+        if (R1_convective_envelope.value_in(unit_l)<0):
+            print 'R1_convective_envelope must be positive! exiting'
+            exit(-1)
+        if (R2_convective_envelope.value_in(unit_l)<0):
+            print 'R2_convective_envelope must be positive! exiting'
+            exit(-1)
+        if (R3_convective_envelope.value_in(unit_l)<0):
+            print 'R3_convective_envelope must be positive! exiting'
+            exit(-1)
 
     print 'pre',a_in.value_in(units.AU),e_in
        

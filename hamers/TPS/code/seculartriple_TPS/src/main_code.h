@@ -11,6 +11,8 @@
 #include "tidal_friction_parameters.h"
 #include "ODE_system.h"
 
+//#define COMPUTE_M_DOTS
+
 /* NOTE: the code uses cgs units
  * numerical values were evaluated
  * within AMUSE for consistency */
@@ -83,6 +85,8 @@
 #endif
 
 typedef struct {
+    double dt; // the global time-step
+    
     int stellar_type1,stellar_type2,stellar_type3;
 	double m1,m2,m3;
     double m1_convective_envelope,m2_convective_envelope,m3_convective_envelope;
@@ -98,6 +102,7 @@ typedef struct {
     bool check_for_dynamical_stability;
     bool check_for_inner_collision,check_for_outer_collision;
     bool check_for_inner_RLOF,check_for_outer_RLOF;
+    bool include_linear_mass_change,include_linear_radius_change;
 
     double AMC_star1,AMC_star2,AMC_star3;
     double luminosity_star1,luminosity_star2,luminosity_star3;
@@ -188,5 +193,9 @@ int get_include_inner_RLOF_terms(int *value);
 int set_include_inner_RLOF_terms(int value);
 int get_include_outer_RLOF_terms(int *value);
 int set_include_outer_RLOF_terms(int value);
+int get_include_linear_mass_change(int *value);
+int set_include_linear_mass_change(int value);
+int get_include_linear_radius_change(int *value);
+int set_include_linear_radius_change(int value);
 int get_relative_tolerance(double *relative_tolerance_t);
 int set_relative_tolerance(double relative_tolerance_t);

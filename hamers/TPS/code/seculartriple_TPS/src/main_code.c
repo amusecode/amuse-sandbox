@@ -31,6 +31,7 @@ bool include_inner_tidal_terms,include_outer_tidal_terms;
 bool include_inner_wind_terms,include_outer_wind_terms;
 bool include_wind_spin_coupling_terms;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
+bool include_linear_mass_change,include_linear_radius_change;
 double relative_tolerance = 1.0e-10;
 
 int get_equations_of_motion_specification(int *equations_of_motion_specification_t)
@@ -205,6 +206,22 @@ int set_include_outer_RLOF_terms(int value){
     include_outer_RLOF_terms = value == 1;
     return 0;
 }
+int get_include_linear_mass_change(int *value){
+    *value = include_linear_mass_change ? 1 : 0;
+    return 0;
+}
+int set_include_linear_mass_change(int value){
+    include_linear_mass_change = value == 1;
+    return 0;
+}
+int get_include_linear_radius_change(int *value){
+    *value = include_linear_radius_change ? 1 : 0;
+    return 0;
+}
+int set_include_linear_radius_change(int value){
+    include_linear_radius_change = value == 1;
+    return 0;
+}
 
 int evolve(
     int stellar_type1, int stellar_type2, int stellar_type3,
@@ -257,6 +274,8 @@ int evolve(
 	data = NULL;
 	data = (UserData) malloc(sizeof *data);
     
+    data->dt = dt; // the global time-step
+    
     data->stellar_type1 = stellar_type1;
     data->stellar_type2 = stellar_type2;
     data->stellar_type3 = stellar_type3;
@@ -295,6 +314,9 @@ int evolve(
 //    data->k_div_T_tides_star1 = k_div_T_tides_star1; // tidal dissipation constant
 //    data->k_div_T_tides_star2 = k_div_T_tides_star2; // tidal dissipation constant
 //    data->k_div_T_tides_star3 = k_div_T_tides_star3; // tidal dissipation constant
+
+    data->include_linear_mass_change = include_linear_mass_change;
+    data->include_linear_radius_change = include_linear_radius_change;
 
     data->include_inner_wind_terms = include_inner_wind_terms;
     data->include_outer_wind_terms = include_outer_wind_terms;
@@ -388,8 +410,9 @@ int evolve(
         Ith(abstol,10) = ATOL10;
 
         cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-//        flag = CVodeInit(cvode_mem, fev_delaunay, t, yev);        
-        flag = CVodeInit(cvode_mem, fev_delaunay, 0.0, yev);        
+//        flag = CVodeInit(cvode_mem, fev_delaunay, t, yev);       
+        double start_time = 0.0;
+        flag = CVodeInit(cvode_mem, fev_delaunay, start_time, yev);
         
     }
     else
