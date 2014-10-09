@@ -7,6 +7,8 @@ REPORT_MASS_TRANSFER_STABILITY = False
 
 #constants
 numerical_error  = 1.e-8
+minimum_eccentricity = 1.e-3
+
 
 which_common_envelope = 2
 #0 alpha + dce
@@ -16,12 +18,15 @@ const_common_envelope_efficiency = 4.0 #1.0, 4 for now for easier testing with S
 const_envelope_structure_parameter = 0.5
 const_common_envelope_efficiency_gamma = 1.75
 
-stellar_types_remnants = [10,11,12,13,14]|units.stellar_type
+stellar_types_compact_objects = [10,11,12,13,14]|units.stellar_type
 stellar_types_giants = [2,3,4,5,6,8,9]|units.stellar_type
 q_crit = 3.
 q_crit_giants_conv_env = 0.9
 stellar_types_giants_conv_env = [3,5,6,8,9]|units.stellar_type
 nucleair_efficiency = 0.007 # nuc. energy production eff, Delta E = 0.007 Mc^2
+
+
+
     
 
 #dictionaries
@@ -155,7 +160,7 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         self.channel_from_stellar.copy()
 
         bs.semimajor_axis = a_new
-        bs.eccentricity = 0.
+        bs.eccentricity = minimum_eccentricity
 #        bs.argument_of_pericenter = 
 #        bs.inner_longitude_of_ascending_node =  
 
@@ -217,7 +222,7 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         self.channel_from_stellar.copy()
 
         bs.semimajor_axis = a_new
-        bs.eccentricity = 0.
+        bs.eccentricity = minimum_eccentricity
 #        bs.argument_of_pericenter = 
 #        bs.inner_longitude_of_ascending_node =  
 
@@ -282,7 +287,7 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         self.channel_from_stellar.copy()
 
         bs.semimajor_axis = a_new
-        bs.eccentricity = 0.
+        bs.eccentricity = minimum_eccentricity
 #        bs.argument_of_pericenter = 
 #        bs.inner_longitude_of_ascending_node =  
 
@@ -336,7 +341,7 @@ def which_common_envelope_phase(bs, donor, accretor, self):
         if donor.stellar_type in stellar_types_giants and accretor.stellar_type in stellar_types_giants:
             #giant+giant
             double_common_envelope_energy_balance(bs, donor, accretor, self)
-        elif donor.stellar_type in stellar_types_remnants or accretor.stellar_type in stellar_types_remnants:
+        elif donor.stellar_type in stellar_types_compact_objects or accretor.stellar_type in stellar_types_compact_objects:
             #giant+remnant
             common_envelope_energy_balance(bs, donor, accretor, self)
         elif Js >= Jb/3. :            
@@ -404,7 +409,7 @@ def adjust_triple_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
     
     a_new = adiabatic_expansion_due_to_mass_loss(bs.semimajor_axis, M_com_after_ce, M_com_before_ce, M_accretor_after_ce, M_accretor_before_ce)
     bs.semimajor_axis = a_new
-    bs.eccentricity = 0.
+#    bs.eccentricity = minimum_eccentricity
 #    bs.argument_of_pericenter = 
 #    bs.inner_longitude_of_ascending_node =  
 #    bs.child1.spin_angular_frequency = 

@@ -201,7 +201,7 @@ Author: Silvia
 Date: 17-09-2014
 Topic: 1PN inner outer term
 **********************
-The stability criteion is valid for q<5.
+The stability criterion is valid for q<5.
 
 
 **********************
@@ -210,6 +210,92 @@ Author:
 Date: 
 Topic: 
 **********************
+for tides the radius should be constant -> small enough timesteps
+I've tried the minimum of:
+    dt < f * R/Rdot
+    dt < f' * sqrt(R/Rdubbeldot) 
+    met f=f'= 0.005 (code shown below)
+
+but leads to very long simulations (hours) for
+
+
+        M1 = 5.|units.MSun                      4 |units.MSun
+        M2 = 0.1|units.MSun
+        M3 = 0.08|units.MSun
+        a_in = 1.e6|units.RSun
+        a_out = 1.e10|units.RSun
+        e_in, e_out = 0.0
+        i, o_in, o_out = 0
+        g_in, g_out = 0.5*np.pi
+        T_end = 125|units.Myr                   220 |units.Myr
+  
+I've settled for   
+      dt < f * R/Rdot * Rdot_prev/Rdot which seems to work fine. However small timesteps on the agb, smaller then the inner period. Are equations are not valid on these timescales (orbital averaging). 
+
+    def determine_time_step_radius_change(self, stellar_system = None):
+    #note: returned value can be inf when the change in radius <= 0
+        #radius is only necessary for tides
+        if not self.secular_code.parameters.include_inner_tidal_terms and not self.secular_code.parameters.include_outer_tidal_terms:
+            return np.inf |units.Myr
+    
+        if stellar_system == None:
+            stellar_system = self.triple
+            
+        if stellar_system.is_star:
+            dt = np.inf |units.Myr
+            if stellar_system.previous_stellar_type == 3|units.stellar_type and stellar_system.stellar_type == 4|units.stellar_type:
+                #during transition from first giant branch to core helium burning the radius can change discontinuous
+                dt = np.inf |units.Myr
+            else:
+                if stellar_system.time_derivative_of_radius != quantities.zero:
+                   dt = abs(maximum_radius_change_factor0*stellar_system.radius / stellar_system.time_derivative_of_radius)
+            if REPORT_DT:
+                print "Dt_radius_change_star = ", dt
+            return dt 
+        else:
+            dt1 = self.determine_time_step_radius_change(stellar_system.child1)        
+            dt2 = self.determine_time_step_radius_change(stellar_system.child2)
+            if REPORT_DT:
+                print "Dt_radius_change_binary = ", dt1, dt2
+            return min(dt1, dt2) 
+
+
+
+
+    def determine_time_step_radius_change2(self, stellar_system = None):
+    #note: returned value can be inf when the change in radius <= 0
+        #radius is only necessary for tides
+        if not self.secular_code.parameters.include_inner_tidal_terms and not self.secular_code.parameters.include_outer_tidal_terms:
+            return np.inf |units.Myr
+    
+        if stellar_system == None:
+            stellar_system = self.triple
+            
+        if stellar_system.is_star:
+            dt = np.inf |units.Myr
+            if stellar_system.previous_stellar_type == 3|units.stellar_type and stellar_system.stellar_type == 4|units.stellar_type:
+                #during transition from first giant branch to core helium burning the radius can change discontinuous
+                dt = np.inf |units.Myr
+            elif stellar_system.stellar_type in stellar_types_remnants and stellar_system.previous_stellar_type != stellar_system.stellar_type:
+                #transition to helium star, helium giant, wd, ns or bh
+                dt = np.inf |units.Myr
+            else:
+                time_step = self.time - self.previous_time
+                double_time_derivative_of_radius = (stellar_system.time_derivative_of_radius - stellar_system.previous_time_derivative_of_radius)/time_step
+                if double_time_derivative_of_radius != quantities.zero:
+                    dt = self.maximum_radius_change_factor*np.sqrt(abs(stellar_system.radius / double_time_derivative_of_radius))
+
+
+            if REPORT_DT:
+                print "Dt_radius_change_star = ", dt
+            return dt 
+        else:
+            dt1 = self.determine_time_step_radius_change2(stellar_system.child1)        
+            dt2 = self.determine_time_step_radius_change2(stellar_system.child2)
+            if REPORT_DT:
+                print "Dt_radius_change_binary2 = ", dt1, dt2
+            return min(dt1, dt2) 
+    
 
 
 **********************

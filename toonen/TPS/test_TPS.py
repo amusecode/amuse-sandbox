@@ -348,6 +348,14 @@ class TestSeBa(TestWithMPI):
         T_end = 50|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
+        a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
+        print a_out_final_theory        
+        
         self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3517 | units.MSun, 4)        
         self.assertEqual(tr.triple.child2.child2.mass, 1.0 | units.MSun)        
         self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
@@ -383,6 +391,14 @@ class TestSeBa(TestWithMPI):
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
 
 
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
+        a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
+        print a_out_final_theory        
+
         self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3517 | units.MSun, 4)        
         self.assertEqual(tr.triple.child2.child2.mass, 6.0 | units.MSun)        
         self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
@@ -416,6 +432,15 @@ class TestSeBa(TestWithMPI):
         T_end = 3000|units.Myr
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
         
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
+        a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
+        print a_out_final_theory        
+
+
         self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.40135 | units.MSun, 4)        
         self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 0.31219 | units.MSun, 4)        
         self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
@@ -737,29 +762,29 @@ if __name__ == '__main__':
 #    test.test1()
 #
 ##     test wind mass loss inner system
-#    test.test2()
-#    test.test3()
-#    test.test4()
+    test.test2()
+    test.test3()
+    test.test4()
 ##
 ###     test wind mass loss outer system
-#    test.test5()
+    test.test5()
 #
 #    # test stable mass transfer in inner system
 ##    test.test6() #collision
-#    test.test7()
-#    test.test8()
+    test.test7()
+    test.test8()
 #
 #    # test common envelope evolution in inner system
-#    test.test9() #alpha-ce
-#    test.test10() #gamma-ce
-#    test.test11() #double alpha-ce
+    test.test9() #alpha-ce
+    test.test10() #gamma-ce
+    test.test11() #double alpha-ce
 #
 #    # test contact system in inner system
-#    test.test12() #double alpha-ce
-#    test.test13() #merger
+    test.test12() #double alpha-ce
+    test.test13() #merger
 ##
 ##    #test tides
 #    test.test14()
 #    test.test15()
-    test.test16()
+#    test.tesst16()
 ##
