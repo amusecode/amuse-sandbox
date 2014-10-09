@@ -225,7 +225,7 @@ class Triple_Class:
         self.secular_code.parameters.equations_of_motion_specification = 0
         self.secular_code.parameters.include_quadrupole_terms = True
         self.secular_code.parameters.include_octupole_terms = True        
-        self.secular_code.parameters.include_inner_tidal_terms = False
+        self.secular_code.parameters.include_inner_tidal_terms = True
         self.secular_code.parameters.include_outer_tidal_terms = False
         self.secular_code.parameters.include_inner_wind_terms = True
         self.secular_code.parameters.include_outer_wind_terms = True
@@ -869,8 +869,8 @@ class Triple_Class:
                 print "Dt_radius_change_star = ", dt
             return dt 
         else:
-            dt1 = self.determine_time_step_radius_change3(stellar_system.child1)        
-            dt2 = self.determine_time_step_radius_change3(stellar_system.child2)
+            dt1 = self.determine_time_step_radius_change(stellar_system.child1)        
+            dt2 = self.determine_time_step_radius_change(stellar_system.child2)
             if REPORT_DT:
                 print "Dt_radius_change_binary = ", dt1, dt2
             return min(dt1, dt2) 
