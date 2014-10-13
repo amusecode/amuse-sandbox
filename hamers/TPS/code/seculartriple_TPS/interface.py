@@ -1046,12 +1046,13 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
     LAN_in = inner_binary.longitude_of_ascending_node
     LAN_out = outer_binary.longitude_of_ascending_node        
 
+    time_derivative_of_radius_star1=time_derivative_of_radius_star2=time_derivative_of_radius_star3 = 0.0 | units.RSun/units.s
     try:
         time_derivative_of_radius_star1 = star1.time_derivative_of_radius
         time_derivative_of_radius_star2 = star2.time_derivative_of_radius
         time_derivative_of_radius_star3 = star3.time_derivative_of_radius
     except AttributeError:
-        print 'seculartriple needs time_derivative_of_radius for all three stars! exiting'
+        print 'SecularTriple needs time_derivative_of_radius for all three stars! exiting'
         exit(-1)
 
     ### mass variation parameters ###
@@ -1118,7 +1119,6 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             exit(-1)
 
     ### wind-spin coupling ###
-    time_derivative_of_radius_star1=time_derivative_of_radius_star2=time_derivative_of_radius_star3 = 0.0 | units.RSun/units.s
     if parameters.include_wind_spin_coupling_terms == True:
         try:
             spin_angular_frequency1 = star1.spin_angular_frequency

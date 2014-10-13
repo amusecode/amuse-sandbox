@@ -85,7 +85,7 @@
 #endif
 
 typedef struct {
-    double dt; // the global time-step
+    double global_time_step; // the global time-step
     
     int stellar_type1,stellar_type2,stellar_type3;
 	double m1,m2,m3;
@@ -152,7 +152,7 @@ int evolve(
     double * t_output,
     int * output_flag, int * error_flag
 );
-    
+static int check_flag(void *flagvalue, char *funcname, int opt);
 int get_equations_of_motion_specification(int *relative_tolerance_t);
 int set_equations_of_motion_specification(int relative_tolerance_t);
 int get_check_for_dynamical_stability(int *value);

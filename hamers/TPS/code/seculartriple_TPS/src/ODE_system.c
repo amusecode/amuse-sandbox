@@ -130,7 +130,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	data = (UserData) data_f;
 	
 	/*	extract all constants	*/
-    double dt = data->dt; // the global time-step
+    double global_time_step = data->global_time_step; // the global time-step
     
     int stellar_type1 = data->stellar_type1;
     int stellar_type2 = data->stellar_type2;
@@ -232,7 +232,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
      * q_end = q_begin + q_dot*dt, where dt is the global time-step
      * hence q(t) = q_end + q_dot*(t-dt) */
 
-    double t_dif = t-dt;
+    double t_dif = t - global_time_step;
     if (include_linear_mass_change == TRUE)
     {
         m1 += m1_dot*t_dif;
