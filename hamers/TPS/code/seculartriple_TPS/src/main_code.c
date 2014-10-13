@@ -354,6 +354,9 @@ int evolve(
         *a_in_output = Ith(yev_out,5);
         *a_out_output = Ith(yev_out,6);        
 
+        if (*e_in_output<=tiny_double) { *e_in_output = tiny_double; }
+        if (*e_out_output<=tiny_double) { *e_out_output = tiny_double; }    
+
         cos_INCL_in_out_output = Ith(yev_out,7);
 
         if (cos_INCL_in_out_output > 1.0)
