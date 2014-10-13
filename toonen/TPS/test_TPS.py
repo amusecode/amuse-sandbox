@@ -610,8 +610,7 @@ class TestSeBa(TestWithMPI):
         M1 = 1.|units.MSun
         M2 = 0.1|units.MSun
         M3 = 0.08|units.MSun
-        a_in = 20|units.RSun
-#        a_in = 20|units.RSun
+        a_in = 12.545|units.RSun #30 |units.RSun
         a_out = 1.e6|units.RSun
         e_in = 0.0
         e_out = 1.e-5
@@ -620,8 +619,8 @@ class TestSeBa(TestWithMPI):
         g_out = 0.5*np.pi
         o_in = 0.0
         o_out = 0.0
-        T_end = 2000|units.Myr 
-        dr = 0.005 #0.0005
+        T_end = 11300|units.Myr 
+        dr = 0.005 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
 
         self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.99997 | units.MSun, 4)        
@@ -786,5 +785,5 @@ if __name__ == '__main__':
 ##    #test tides
 #    test.test14()
     test.test15()
-#    test.tesst16()
+#    test.test16()
 ##

@@ -142,7 +142,7 @@ class Triple_Class:
         # default now corotating
         corotating_angular_frequency_inner = corotating_spin_angular_frequency_binary(inner_semimajor_axis, stars[0].mass, stars[1].mass)
         corotating_angular_frequency_outer = corotating_spin_angular_frequency_binary(outer_semimajor_axis, stars[0].mass+stars[1].mass, stars[2].mass)
-
+        
         stars[0].spin_angular_frequency = corotating_angular_frequency_inner 
         stars[1].spin_angular_frequency = corotating_angular_frequency_inner 
         stars[2].spin_angular_frequency = corotating_angular_frequency_outer
@@ -219,13 +219,13 @@ class Triple_Class:
 
       
     def setup_secular_code(self, triple_set):
-#        self.secular_code = SecularTriple(redirection='none')
-        self.secular_code = SecularTriple()
+        self.secular_code = SecularTriple(redirection='none')
+#        self.secular_code = SecularTriple()
         self.secular_code.triples.add_particles(triple_set)
         self.secular_code.parameters.equations_of_motion_specification = 0
         self.secular_code.parameters.include_quadrupole_terms = True
         self.secular_code.parameters.include_octupole_terms = True        
-        self.secular_code.parameters.include_inner_tidal_terms = True
+        self.secular_code.parameters.include_inner_tidal_terms = False
         self.secular_code.parameters.include_outer_tidal_terms = False
         self.secular_code.parameters.include_inner_wind_terms = True
         self.secular_code.parameters.include_outer_wind_terms = True
@@ -236,6 +236,7 @@ class Triple_Class:
         self.secular_code.parameters.include_1PN_inner_outer_terms = False ### warning: probably broken
         self.secular_code.parameters.include_25PN_inner_terms = False
         self.secular_code.parameters.include_25PN_outer_terms = False
+        self.secular_code.parameters.include_wind_spin_coupling_terms = False
 
         self.secular_code.parameters.check_for_dynamical_stability = True
         self.secular_code.parameters.check_for_inner_collision = True
@@ -857,11 +858,11 @@ class Triple_Class:
                     if abs(growth_factor) > 1: 
                        growth_factor = 1./growth_factor 
                        
-                    print 'dt3', stellar_system.time_derivative_of_radius,
-                    print stellar_system.previous_time_derivative_of_radius 
-                    print stellar_system.stellar_type, stellar_system.previous_stellar_type
-                    print growth_factor, stellar_system.radius
-    
+#                    print 'dt3', stellar_system.time_derivative_of_radius,
+#                    print stellar_system.previous_time_derivative_of_radius 
+#                    print stellar_system.stellar_type, stellar_system.previous_stellar_type
+#                    print growth_factor, stellar_system.radius
+#    
                     dt = abs(growth_factor * self.maximum_radius_change_factor*stellar_system.radius / stellar_system.time_derivative_of_radius)
 
 
@@ -925,7 +926,7 @@ class Triple_Class:
         time_step_radius_change = self.determine_time_step_radius_change()             
         
         time_step = min(time_step_radius_change, min(time_step_wind, min( min(time_step_stellar_code), time_step_max)))    
-#        print 'time:', time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step
+        print 'time:', time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step
           
         #during stable mass transfer     
         if self.has_donor():
@@ -948,8 +949,7 @@ class Triple_Class:
         if time_step < minimum_time_step:
             print 'error small time_step'
             print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step
-            exit(1)    
-#        time_step = max(time_step, minimum_time_step)  
+        time_step = max(time_step, minimum_time_step)  
 
         return time_step
     #-------
@@ -1530,12 +1530,23 @@ def plot_function(triple):
     plt.savefig('plots/orbit/semi_in_time_'+generic_plot_name+'.pdf')
     plt.show()
 
-    plt.plot(times_array_Myr,spin1_array)
-    plt.plot(times_array_Myr,spin1_array, '.')
-    plt.plot(times_array_Myr,spin2_array)
-    plt.plot(times_array_Myr,spin2_array, '.')
-    plt.plot(times_array_Myr,spin3_array)
-    plt.plot(times_array_Myr,spin3_array, '.')
+
+    constants = 6283728.92847 # constants.G #in au and solar mass per Myr
+    corot_spin_inner = 1./np.sqrt(a_in_array_AU**3/(m1_array+m2_array))*constants
+    corot_spin_outer = 1./np.sqrt(a_out_array_AU**3/(m1_array+m2_array+m3_array))*constants
+
+    plt.plot(times_array_Myr,spin1_array, 'b-')
+    plt.plot(times_array_Myr,spin1_array, 'b.')
+    plt.plot(times_array_Myr,spin2_array, 'g-')
+    plt.plot(times_array_Myr,spin2_array, 'g.')
+    plt.plot(times_array_Myr,spin3_array, 'r-')
+    plt.plot(times_array_Myr,spin3_array, 'r.')
+
+    plt.plot(times_array_Myr,corot_spin_inner, 'c-')
+    plt.plot(times_array_Myr,corot_spin_inner, 'c.')
+    plt.plot(times_array_Myr,corot_spin_outer, 'm-')
+    plt.plot(times_array_Myr,corot_spin_outer, 'm.')
+    
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$spin$')
     plt.savefig('plots/orbit/spin_time_'+generic_plot_name+'.pdf')
