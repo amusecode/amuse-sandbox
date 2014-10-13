@@ -178,6 +178,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     bool include_inner_wind_terms = data->include_inner_wind_terms;
     bool include_outer_wind_terms = data->include_outer_wind_terms;
     bool include_wind_spin_coupling_terms = data->include_wind_spin_coupling_terms;
+    bool include_spin_radius_mass_coupling_terms = data->include_spin_radius_mass_coupling_terms;
     bool include_inner_RLOF_terms = data->include_inner_RLOF_terms;
     bool include_outer_RLOF_terms = data->include_outer_RLOF_terms;
     bool star1_is_donor = data->star1_is_donor;
@@ -232,7 +233,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
      * q_end = q_begin + q_dot*dt, where dt is the global time-step
      * hence q(t) = q_end + q_dot*(t-dt) */
 
-    double t_dif = t - global_time_step;
+    double t_dif = t-global_time_step;
     if (include_linear_mass_change == TRUE)
     {
         m1 += m1_dot*t_dif;
@@ -743,7 +744,11 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     {
         spin_angular_frequency1_dot_wind_spin_coupling = spin_angular_frequency_dot_wind_spin_coupling(spin_angular_frequency1,m1,wind_mass_loss_rate_star1,gyration_radius_star1,R1,R1_dot);
     }
-    double spin_angular_frequency1_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency1,m1,m1_dot,R1,R1_dot);
+    double spin_angular_frequency1_dot_mass_radius_changes = 0.0;
+    if (include_spin_radius_mass_coupling_terms == TRUE)
+    {
+        spin_angular_frequency1_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency1,m1,m1_dot,R1,R1_dot);
+    }
 	Ith(ydot,8) = spin_angular_frequency1_dot_tides + spin_angular_frequency1_dot_wind_spin_coupling + spin_angular_frequency1_dot_mass_radius_changes;
     
 
@@ -762,7 +767,11 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     {
         spin_angular_frequency2_dot_wind_spin_coupling = spin_angular_frequency_dot_wind_spin_coupling(spin_angular_frequency2,m2,wind_mass_loss_rate_star2,gyration_radius_star2,R2,R2_dot);
     }
-    double spin_angular_frequency2_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency2,m2,m2_dot,R2,R2_dot);
+    double spin_angular_frequency2_dot_mass_radius_changes = 0.0;
+    if (include_spin_radius_mass_coupling_terms == TRUE)
+    {
+        spin_angular_frequency2_dot_mass_radius_changes = spin_angular_frequency2_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency2,m2,m2_dot,R2,R2_dot);
+    }
 	Ith(ydot,9) = spin_angular_frequency2_dot_tides + spin_angular_frequency2_dot_wind_spin_coupling + spin_angular_frequency2_dot_mass_radius_changes;
 
 
@@ -781,7 +790,11 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     {
         spin_angular_frequency3_dot_wind_spin_coupling = spin_angular_frequency_dot_wind_spin_coupling(spin_angular_frequency3,m3,wind_mass_loss_rate_star3,gyration_radius_star3,R3,R3_dot);
     }
-    double spin_angular_frequency3_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency3,m3,m3_dot,R3,R3_dot);
+    double spin_angular_frequency3_dot_mass_radius_changes = 0.0;
+    if (include_spin_radius_mass_coupling_terms == TRUE)
+    {
+        spin_angular_frequency3_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency3,m3,m3_dot,R3,R3_dot);
+    }
 	Ith(ydot,10) = spin_angular_frequency3_dot_tides + spin_angular_frequency3_dot_wind_spin_coupling + spin_angular_frequency3_dot_mass_radius_changes;
     
 	return 0;

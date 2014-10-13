@@ -94,6 +94,7 @@ typedef struct {
     bool include_inner_tidal_terms,include_outer_tidal_terms;
     bool include_inner_wind_terms,include_outer_wind_terms;
     bool include_wind_spin_coupling_terms;
+    bool include_spin_radius_mass_coupling_terms;
     bool include_inner_RLOF_terms,include_outer_RLOF_terms;
     bool check_for_dynamical_stability;
     bool check_for_inner_collision,check_for_outer_collision;
@@ -187,6 +188,8 @@ int get_include_outer_wind_terms(int *value);
 int set_include_outer_wind_terms(int value);
 int get_include_wind_spin_coupling_terms(int *value);
 int set_include_wind_spin_coupling_terms(int value);
+int get_include_spin_radius_mass_coupling_terms(int *value);
+int set_include_spin_radius_mass_coupling_terms(int value);
 int get_include_inner_RLOF_terms(int *value);
 int set_include_inner_RLOF_terms(int value);
 int get_include_outer_RLOF_terms(int *value);

@@ -30,6 +30,7 @@ bool include_1PN_inner_terms,include_1PN_outer_terms,include_1PN_inner_outer_ter
 bool include_inner_tidal_terms,include_outer_tidal_terms;
 bool include_inner_wind_terms,include_outer_wind_terms;
 bool include_wind_spin_coupling_terms;
+bool include_spin_radius_mass_coupling_terms;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
 bool include_linear_mass_change,include_linear_radius_change;
 double relative_tolerance = 1.0e-10;
@@ -134,6 +135,7 @@ int evolve(
     data->include_inner_RLOF_terms = include_inner_RLOF_terms;
     data->include_outer_RLOF_terms = include_outer_RLOF_terms;
     data->include_wind_spin_coupling_terms = include_wind_spin_coupling_terms;
+    data->include_spin_radius_mass_coupling_terms = include_spin_radius_mass_coupling_terms;
     data->star1_is_donor = star1_is_donor;
     data->star2_is_donor = star2_is_donor;
     data->star3_is_donor = star3_is_donor;
@@ -588,6 +590,14 @@ int get_include_wind_spin_coupling_terms(int *value){
 }
 int set_include_wind_spin_coupling_terms(int value){
     include_wind_spin_coupling_terms = value == 1;
+    return 0;
+}
+int get_include_spin_radius_mass_coupling_terms(int *value){
+    *value = include_spin_radius_mass_coupling_terms ? 1 : 0;
+    return 0;
+}
+int set_include_spin_radius_mass_coupling_terms(int value){
+    include_spin_radius_mass_coupling_terms = value == 1;
     return 0;
 }
 int get_include_inner_RLOF_terms(int *value){

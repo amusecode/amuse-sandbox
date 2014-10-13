@@ -396,6 +396,20 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
+    def set_include_spin_radius_mass_coupling_terms():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_spin_radius_mass_coupling_terms', dtype='bool',direction=function.IN,description = "..")
+        function.result_type = 'int32'
+        return function    
+        
+    @legacy_function
+    def get_include_spin_radius_mass_coupling_terms():
+        function = LegacyFunctionSpecification()
+        function.addParameter('include_spin_radius_mass_coupling_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def set_include_inner_RLOF_terms():
         function = LegacyFunctionSpecification()
         function.addParameter('include_inner_RLOF_terms', dtype='bool',direction=function.IN,description = "..")
@@ -611,6 +625,13 @@ class SecularTriple(InCodeComponentImplementation):
             "get_include_wind_spin_coupling_terms",
             "set_include_wind_spin_coupling_terms",
             "include_wind_spin_coupling_terms",
+            "..", 
+            default_value = False
+        )        
+        object.add_method_parameter(
+            "get_include_spin_radius_mass_coupling_terms",
+            "set_include_spin_radius_mass_coupling_terms",
+            "include_spin_radius_mass_coupling_terms",
             "..", 
             default_value = False
         )        
@@ -962,7 +983,12 @@ class SecularTriple(InCodeComponentImplementation):
                 star1.spin_angular_frequency = spin_angular_frequency1
                 star2.spin_angular_frequency = spin_angular_frequency2
                 star3.spin_angular_frequency = spin_angular_frequency3
-                                               
+
+            if parameters.include_spin_radius_mass_coupling_terms == True:
+                star1.spin_angular_frequency = spin_angular_frequency1
+                star2.spin_angular_frequency = spin_angular_frequency2
+                star3.spin_angular_frequency = spin_angular_frequency3
+
             inner_binary.semimajor_axis = a_in
             inner_binary.eccentricity = e_in
             outer_binary.semimajor_axis = a_out
@@ -1152,6 +1178,16 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             print "More attributes required for wind-spin coupling terms! exiting"
             exit(-1)
 
+    ### spin-radius-mass coupling ###
+    if parameters.include_spin_radius_mass_coupling_terms == True:
+        try:
+            spin_angular_frequency1 = star1.spin_angular_frequency
+            spin_angular_frequency2 = star2.spin_angular_frequency
+            spin_angular_frequency3 = star3.spin_angular_frequency
+        except AttributeError:
+            print "More attributes required for spin-radius-mass coupling terms! exiting"
+            exit(-1)
+            
     ### tides ###
     stellar_type1 = stellar_type2 = stellar_type3 = 0 | units.stellar_type
     m1_convective_envelope = m2_convective_envelope = m3_convective_envelope = 0.0 | units.MSun
