@@ -33,6 +33,7 @@ bool include_wind_spin_coupling_terms;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
 bool include_linear_mass_change,include_linear_radius_change;
 double relative_tolerance = 1.0e-10;
+double input_precision = 1.0e-14;
 
 
 int evolve(
@@ -67,17 +68,15 @@ int evolve(
     double * t_output,
     int * output_flag, int * error_flag)
 {
-    double tiny_double = 1.0e-14;
-    if (e_in==0.0) { e_in = tiny_double; }
-    if (e_out==0.0) {e_out = tiny_double; }
-    if (INCL_in==0.0) { INCL_in = tiny_double; }
-    if (INCL_out==0.0) { INCL_out = tiny_double; }
-    if (AP_in==0.0) { AP_in = tiny_double; }
-    if (AP_out==0.0) { AP_out = tiny_double; }
-    if (LAN_in==0.0) { LAN_in = tiny_double; }
-    if (LAN_out==0.0) { LAN_out = tiny_double; }
-
+    double tiny_double = input_precision;
     if (e_in<=tiny_double) { e_in = tiny_double; }
+    if (e_out<=tiny_double) { e_out = tiny_double; }    
+    if (INCL_in<=tiny_double) { INCL_in = tiny_double; }
+    if (INCL_out<=tiny_double) { INCL_out = tiny_double; }
+    if (AP_in<=tiny_double) { AP_in = tiny_double; }
+    if (AP_out<=tiny_double) { AP_out = tiny_double; }
+    if (LAN_in<=tiny_double) { LAN_in = tiny_double; }
+    if (LAN_out<=tiny_double) { LAN_out = tiny_double; }
 
     /*********************************************************************
      * ODE parameters *
@@ -321,7 +320,7 @@ int evolve(
 		*error_flag = flag_s;
 
 
-    /**********
+    /**********1.0e-14
      * output *
      * ********/
      
@@ -440,6 +439,16 @@ int get_relative_tolerance(double *relative_tolerance_t)
 int set_relative_tolerance(double relative_tolerance_t)
 {
     relative_tolerance = relative_tolerance_t;
+    return 0;
+}
+int get_input_precision(double *input_precision_t)
+{
+    *input_precision_t = relative_tolerance;
+    return 0;
+}
+int set_input_precision(double input_precision_t)
+{
+    input_precision = input_precision_t;
     return 0;
 }
 int get_check_for_dynamical_stability(int *value){

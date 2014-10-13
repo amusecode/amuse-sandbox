@@ -135,6 +135,20 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
+    def get_input_precision():
+        function = LegacyFunctionSpecification()
+        function.addParameter('input_precision', dtype='float64',direction=function.OUT,description = "Relative tolerance, default 1e-10")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_input_precision():
+        function = LegacyFunctionSpecification()
+        function.addParameter('input_precision', dtype='float64',direction=function.IN,description = "Relative tolerance, default 1e-10")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def get_equations_of_motion_specification():
         function = LegacyFunctionSpecification()
         function.addParameter('equations_of_motion_specification', dtype='int32',direction=function.OUT,description = "...")
@@ -458,8 +472,15 @@ class SecularTriple(InCodeComponentImplementation):
             "set_relative_tolerance",
             "relative_tolerance",
             "Relative tolerance, default 1e-10",
-            default_value = 0
+            default_value = 1.0e-10
         )
+        object.add_method_parameter(
+            "get_input_precision",
+            "set_input_precision",
+            "input_precision",
+            "Input_precision, default 1e-14",
+            default_value = 1.0e-14
+        )        
         object.add_method_parameter(
             "get_equations_of_motion_specification",
             "set_equations_of_motion_specification",
@@ -888,7 +909,7 @@ class SecularTriple(InCodeComponentImplementation):
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_dummy,flag,error = self.evolve(*args)
-            print 'done',a_in.value_in(units.AU),e_in
+            print 'SecularTriple -- done; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out
 
             ####################
             ### root finding ###
@@ -1208,7 +1229,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             print 'R3_convective_envelope must be positive! exiting'
             exit(-1)
 
-    print 'pre',a_in.value_in(units.AU),e_in
+    print 'SecularTriple -- initialization; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out
        
     args = [stellar_type1,stellar_type2,stellar_type3,
         m1,m2,m3,

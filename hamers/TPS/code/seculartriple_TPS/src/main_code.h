@@ -13,10 +13,6 @@
 
 //#define COMPUTE_M_DOTS
 
-/* NOTE: the code uses cgs units
- * numerical values were evaluated
- * within AMUSE for consistency */
-
 #define CONST_G			    (double)	3.94852492465e+13
 #define CONST_G_P2          (double)    CONST_G*CONST_G
 #define CONST_G_P3          (double)    CONST_G*CONST_G_P2
@@ -155,6 +151,8 @@ int evolve(
 static int check_flag(void *flagvalue, char *funcname, int opt);
 int get_equations_of_motion_specification(int *relative_tolerance_t);
 int set_equations_of_motion_specification(int relative_tolerance_t);
+int get_input_precision(double *input_precision_t);
+int set_input_precision(double input_precision_t);
 int get_check_for_dynamical_stability(int *value);
 int set_check_for_dynamical_stability(int value);
 int get_check_for_inner_collision(int *value);
