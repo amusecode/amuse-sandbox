@@ -60,11 +60,8 @@ stop_at_dynamical_instability = True # this should always be true!
 stop_at_mass_transfer = False
 no_stellar_evolution = False
 
-
-file_name = "triple.hdf"
-file_type = "hdf5"
-#file_name = "triple.txt"
-#file_type = "txt"
+file_name = "triple.hdf" #"triple.txt"
+file_type = "hdf5" #"txt"
 
 #constants
 time_step_factor_stable_mt = 0.01 #1% mass loss during mass transfer
@@ -109,7 +106,7 @@ class Triple_Class:
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)
         
-        self.first_contact = True # not used at the moment, how to reset ?
+        self.first_contact = False 
         self.instantaneous_evolution = False # no secular evolution        
         self.tend = tend #...
         self.time = 0.0|units.yr
@@ -219,30 +216,39 @@ class Triple_Class:
 
       
     def setup_secular_code(self, triple_set):
-        self.secular_code = SecularTriple(redirection='none')
-#        self.secular_code = SecularTriple()
+        self.secular_code = SecularTriple()
+#        self.secular_code = SecularTriple(redirection='none')
         self.secular_code.triples.add_particles(triple_set)
         self.secular_code.parameters.equations_of_motion_specification = 0
         self.secular_code.parameters.include_quadrupole_terms = True
         self.secular_code.parameters.include_octupole_terms = True        
-        self.secular_code.parameters.include_inner_tidal_terms = False
-        self.secular_code.parameters.include_outer_tidal_terms = False
         self.secular_code.parameters.include_inner_wind_terms = True
         self.secular_code.parameters.include_outer_wind_terms = True
         self.secular_code.parameters.include_inner_RLOF_terms = True
         self.secular_code.parameters.include_outer_RLOF_terms = True
+        self.secular_code.parameters.include_spin_radius_mass_coupling_terms = False
+        self.secular_code.parameters.include_magnetic_braking_terms = False # not tested
+
+        self.secular_code.parameters.include_inner_tidal_terms = False
+        self.secular_code.parameters.include_outer_tidal_terms = False
+
         self.secular_code.parameters.include_1PN_inner_terms = False
         self.secular_code.parameters.include_1PN_outer_terms = False
         self.secular_code.parameters.include_1PN_inner_outer_terms = False ### warning: probably broken
         self.secular_code.parameters.include_25PN_inner_terms = False
         self.secular_code.parameters.include_25PN_outer_terms = False
-        self.secular_code.parameters.include_wind_spin_coupling_terms = False
 
         self.secular_code.parameters.check_for_dynamical_stability = True
         self.secular_code.parameters.check_for_inner_collision = True
         self.secular_code.parameters.check_for_outer_collision = True
-        self.secular_code.parameters.check_for_inner_RLOF = True 
+        self.secular_code.parameters.check_for_inner_RLOF = False 
         self.secular_code.parameters.check_for_outer_RLOF = True 
+
+         # accuracy of secular code
+#        self.secular_code.parameters.input_precision = standard 1.0e-14
+#        self.secular_code.parameters.relative_tolerance = 1.0e-10
+        self.secular_code.parameters.include_linear_mass_change = True #needed for Jspin conservation
+        self.secular_code.parameters.include_linear_radius_change = True #needed for Jspin conservation
 
         self.channel_from_secular = self.secular_code.triples.new_channel_to(triple_set)
         self.channel_to_secular = triple_set.new_channel_to(self.secular_code.triples)
@@ -572,13 +578,13 @@ class Triple_Class:
     
         return J
     
-    def stellar_angular_momentum(self, ss):
+    def spin_angular_momentum(self, ss):
         if ss.is_star:
             moment_of_inertia = ss.gyration_radius**2 * ss.mass * ss.radius**2
             Jstar = moment_of_inertia * ss.spin_angular_frequency
             return Jstar            
         else:
-            print 'stellar_angular_momentum: structure stellar system unknown'        
+            print 'spin_angular_momentum: structure stellar system unknown'        
             exit(2)
             
     def apsidal_motion_constant(self, star):
@@ -631,15 +637,25 @@ class Triple_Class:
                 print 'Roche lobe radii:', Rl1, Rl2
                 print 'Stellar radii:', self.triple.child1.radius, self.triple.child2.radius
             
+            first_RLOF = []
             if self.triple.child1.radius >= Rl1:
+                if not self.triple.child1.is_donor:
+                    first_RLOF.append(True)
                 self.triple.child1.is_donor = True
             else:                                                         
-               self.triple.child1.child1.is_donor = False
+               self.triple.child1.is_donor = False
 
             if self.triple.child2.radius >= Rl2:
+                if not self.triple.child2.is_donor:
+                    first_RLOF.append(True)
                 self.triple.child2.is_donor = True
             else:                                                         
-               self.triple.child1.child2.is_donor = False
+               self.triple.child2.is_donor = False
+               
+            self.first_contact = False
+            if any(first_RLOF):
+                self.first_contact = True
+               
  
         elif self.is_triple():
             if self.triple.child1.is_star:
@@ -655,16 +671,32 @@ class Triple_Class:
                 print 'Roche lobe radii:', Rl1, Rl2, Rl3
                 print 'Stellar radii:', bin.child1.radius, bin.child2.radius, star.radius
 
-            bin.child1.is_donor = False
-            bin.child2.is_donor = False
-            star.is_donor = False
-            
+
+            first_RLOF = []
             if bin.child1.radius >= Rl1:
+                if not bin.child1.is_donor:
+                    first_RLOF.append(True)
                 bin.child1.is_donor = True
+            else:
+                bin.child1.is_donor = False
+            
             if bin.child2.radius >= Rl2:
+                if not bin.child2.is_donor:
+                    first_RLOF.append(True)
                 bin.child2.is_donor = True
+            else:
+                bin.child2.is_donor = False
+            
             if star.radius >= Rl3:
+                if not star.is_donor:
+                    first_RLOF.append(True)
                 star.is_donor = True
+            else:
+                star.is_donor = False
+
+            self.first_contact = False
+            if any(first_RLOF):
+                self.first_contact = True
                 
             if star.is_donor and (bin.child1.is_donor or bin.child2.is_donor):
                 print 'RLOF in inner and outer binary'
@@ -837,33 +869,31 @@ class Triple_Class:
 
 
     def determine_time_step_radius_change(self, stellar_system = None):
-    #note: returned value can be inf when the change in radius <= 0
+        #note: returned value can be inf when the change in radius <= 0
         #radius is only necessary for tides
         if not self.secular_code.parameters.include_inner_tidal_terms and not self.secular_code.parameters.include_outer_tidal_terms:
             return np.inf |units.Myr
-    
+
         if stellar_system == None:
             stellar_system = self.triple
             
         if stellar_system.is_star:
             dt = np.inf |units.Myr
-            if stellar_system.previous_stellar_type == 3|units.stellar_type and stellar_system.stellar_type == 4|units.stellar_type:
-                #during transition from first giant branch to core helium burning the radius can change discontinuous
-                dt = np.inf |units.Myr
-            else:
-                if stellar_system.time_derivative_of_radius != quantities.zero:
-                    growth_factor = 1
-                    if stellar_system.previous_time_derivative_of_radius != quantities.zero:
-                        growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius
+            if stellar_system.time_derivative_of_radius != quantities.zero:
+                growth_factor = 0.1
+                if stellar_system.previous_time_derivative_of_radius != quantities.zero:
+                    growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius
                     if abs(growth_factor) > 1: 
-                       growth_factor = 1./growth_factor 
-                       
-#                    print 'dt3', stellar_system.time_derivative_of_radius,
-#                    print stellar_system.previous_time_derivative_of_radius 
-#                    print stellar_system.stellar_type, stellar_system.previous_stellar_type
-#                    print growth_factor, stellar_system.radius
-#    
-                    dt = abs(growth_factor * self.maximum_radius_change_factor*stellar_system.radius / stellar_system.time_derivative_of_radius)
+                        growth_factor = 1./growth_factor 
+                    if stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
+                        return minimum_time_step                              
+                                   
+#                print 'dt radius change:', stellar_system.time_derivative_of_radius, stellar_system.previous_time_derivative_of_radius 
+#                print stellar_system.stellar_type, stellar_system.previous_stellar_type
+#                print growth_factor, stellar_system.radius
+#                print stellar_system.mass, stellar_system.previous_mass
+    
+                dt = abs(growth_factor * self.maximum_radius_change_factor*stellar_system.radius / stellar_system.time_derivative_of_radius)
 
 
             if REPORT_DT:
@@ -875,8 +905,6 @@ class Triple_Class:
             if REPORT_DT:
                 print "Dt_radius_change_binary = ", dt1, dt2
             return min(dt1, dt2) 
-
-
 
  
     def determine_time_step_stable_mt(self, stellar_system = None):
@@ -910,7 +938,6 @@ class Triple_Class:
 
 #        during unstable mass transfer, contact_system or other instantaneous interactions: no step in time
         if self.has_donor() and (not self.is_system_stable() or self.has_contact_system()):
-            print 'instan'
             return minimum_time_step#0.0|units.yr -> problem for time_derivative_of_radius         
                        
         #maximum time_step            
@@ -1155,7 +1182,7 @@ class Triple_Class:
                 print 'wind mass loss rate:', stellar_system.wind_mass_loss_rate,
                 print 'relative wind mass losses:', dm
 
-            if (dm > error_dm) and not (stellar_system.stellar_type == stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
+            if (dm > error_dm) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
                 print 'Change in mass in a single time_step larger then', error_dm
                 print dm, stellar_system.mass, stellar_system.stellar_type
                 exit(1)
@@ -1166,8 +1193,8 @@ class Triple_Class:
                 if REPORT_TRIPLE_EVOLUTION:    
                     print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
                     print 'relative change in radius:', dr
-
-                if (dr > error_dr) and not (stellar_system.stellar_type == stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_remnants):
+    
+                if (dr > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_remnants):
                     print 'Change in radius in a single time_step larger then', error_dr
                     print dr, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
                     exit(1)
@@ -1230,7 +1257,7 @@ class Triple_Class:
                 self.save_snapshot()        
         
 
-            self.check_for_RLOF()   
+   
             dt = self.determine_time_step()  
             if not no_stellar_evolution: 
                 self.update_previous_stellar_parameters()
@@ -1280,9 +1307,6 @@ class Triple_Class:
             #do stellar interaction
             if REPORT_TRIPLE_EVOLUTION:
                 print 'Stellar interaction'
-
-
-                
             self.determine_mass_transfer_timescale()
             self.resolve_stellar_interaction()
 #            if  self.stellar_code.stopping_condition.supernova_detection.is_set():
@@ -1303,12 +1327,22 @@ class Triple_Class:
                 print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'
                 break
   
-                    
-            # do secular evolution
-            if REPORT_TRIPLE_EVOLUTION:
+#
+#            if self.has_donor():
+#                print 'has donor'
+#            else:
+#                self.check_for_RLOF()
+#                if self.has_donor():
+#                    print 'first rlof', self.first_contact, self.has_donor(), self.instantaneous_evolution
+
+            self.check_for_RLOF()
+                   
+            if self.instantaneous_evolution == False and self.first_contact == False: 
+                # do secular evolution
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'Secular evolution'
                 print 'Secular evolution'
-            self.channel_to_secular.copy()   
-            if self.instantaneous_evolution == False: 
+                self.channel_to_secular.copy()
                 self.safety_check_time_step()
                 if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
@@ -1358,18 +1392,18 @@ class Triple_Class:
                     print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
                     self.save_snapshot()        
                     break
-                   
+
                  #When the secular code discovers RLOF, the orbital simulation stops. 
                  #The stellar evolution has evolved to far in time. For now this is not compensated. 
                 if self.has_donor() and self.time != self.secular_code.model_time:
                     self.secular_code.model_time = self.time               
 
                 self.channel_from_secular.copy()     
-            else:        
+            else:
+                print 'skip secular', self.instantaneous_evolution, self.first_contact        
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
-                 
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
             
 
@@ -1468,14 +1502,14 @@ def plot_function(triple):
     r3_array = triple.plot_data.r3_array
     
     
-    generic_plot_name = 'M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(triple.maximum_radius_change_factor)+'_edr'+str(error_dr)
-    f = open(generic_plot_name+'.txt','w')
-    for i in range(len(times_array_Myr)):
-        f.write( str(times_array_Myr[i]) + '\t'+str(e_in_array[i]) + '\t'+ str(a_in_array_AU[i]) + '\t')
-        f.write(str(e_out_array[i]) + '\t' + str(a_out_array_AU[i]) + '\t')
-        f.write(str(r1_array[i]) + '\t' + str(r2_array[i]) + '\t' + str(r3_array[i]) + '\t')
-        f.write('\n')
-    f.close()
+    generic_name = 'M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(triple.maximum_radius_change_factor)+'_edr'+str(error_dr)
+#    f = open(generic_name+'.txt','w')
+#    for i in range(len(times_array_Myr)):
+#        f.write( str(times_array_Myr[i]) + '\t'+str(e_in_array[i]) + '\t'+ str(a_in_array_AU[i]) + '\t')
+#        f.write(str(e_out_array[i]) + '\t' + str(a_out_array_AU[i]) + '\t')
+#        f.write(str(r1_array[i]) + '\t' + str(r2_array[i]) + '\t' + str(r3_array[i]) + '\t')
+#        f.write('\n')
+#    f.close()
 
 
     figure = plt.figure(figsize=(10,13))
@@ -1507,8 +1541,7 @@ def plot_function(triple):
     plot_a_in.set_ylabel('$a_\mathrm{in}$')
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
 
-    generic_plot_name = '_M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(triple.maximum_radius_change_factor)+'_edr'+str(error_dr)
-    plt.savefig('plots/orbit/TPS_inner_orbit'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/TPS_inner_orbit'+generic_name+'.pdf')
     plt.show()
 
 
@@ -1519,7 +1552,7 @@ def plot_function(triple):
     plt.xlim(0,t_max_Myr)
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$e_\mathrm{in}$')
-    plt.savefig('plots/orbit/e_in_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/e_in_time_'+generic_name+'.pdf')
     plt.show()
 
 
@@ -1527,7 +1560,7 @@ def plot_function(triple):
     plt.plot(times_array_Myr,a_in_array_AU, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$a_\mathrm{in}$')
-    plt.savefig('plots/orbit/semi_in_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/semi_in_time_'+generic_name+'.pdf')
     plt.show()
 
 
@@ -1549,7 +1582,7 @@ def plot_function(triple):
     
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$spin$')
-    plt.savefig('plots/orbit/spin_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/spin_time_'+generic_name+'.pdf')
     plt.show()
 
 
@@ -1563,7 +1596,7 @@ def plot_function(triple):
     plt.plot(times_array_Myr,J_orb, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$J orbit$')
-    plt.savefig('plots/orbit/Jorbit_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/Jorbit_time_'+generic_name+'.pdf')
     plt.show()
 
     plt.plot(times_array_Myr,J_spin1)
@@ -1574,7 +1607,7 @@ def plot_function(triple):
     plt.plot(times_array_Myr,J_spin3, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$J spin$')
-    plt.savefig('plots/orbit/Jspin_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/Jspin_time_'+generic_name+'.pdf')
     plt.show()
 
     plt.semilogy(times_array_Myr,r1_array)
@@ -1585,7 +1618,7 @@ def plot_function(triple):
     plt.semilogy(times_array_Myr,r3_array, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$radius$')
-    plt.savefig('plots/orbit/radius_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/radius_time_'+generic_name+'.pdf')
     plt.show()
     
     dr1_array =r1_array[1:]-r1_array[:-1]
@@ -1600,7 +1633,7 @@ def plot_function(triple):
     plt.semilogy(times_array_Myr[1:], dr3_array/dt_array, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$dr/dt$')
-    plt.savefig('plots/orbit/drdt_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/drdt_time_'+generic_name+'.pdf')
     plt.show()
 
 
@@ -1614,7 +1647,7 @@ def plot_function(triple):
     plt.semilogy(times_array_Myr[1:], dr3_array/r3_array[1:], '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$dr/r$')
-    plt.savefig('plots/orbit/dr_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/dr_time_'+generic_name+'.pdf')
     plt.show()
 
 
@@ -1626,7 +1659,7 @@ def plot_function(triple):
     plt.semilogy(times_array_Myr[1:], dt_array, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$dt$')
-    plt.savefig('plots/orbit/dt_time_'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/dt_time_'+generic_name+'.pdf')
     plt.show()
 
 
@@ -1640,14 +1673,14 @@ def plot_function(triple):
 #    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*Mtot[:-1]/Mtot[1:], '.')
 #    plt.xlabel('$t/\mathrm{Myr}$')
 #    plt.ylabel('$a_\mathrm{in}$')
-#    plt.savefig('plots/orbit/semi_inner_wind'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/semi_inner_wind'+generic_name+'.pdf')
 #    plt.show()
 #    
 #    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot/a_in_array_AU)
 #    plt.plot(times_array_Myr, a_in_array_AU[0]*Mtot[0]/Mtot/a_in_array_AU, '.')
 #    plt.ylabel('$relative error a_\mathrm{in}$')
 #    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.savefig('plots/orbit/semi_inner_rel_wind'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/semi_inner_rel_wind'+generic_name+'.pdf')
 #    plt.show()
 
 
@@ -1660,14 +1693,14 @@ def plot_function(triple):
 #    plt.plot(times_array_Myr[1:], a_in_array_AU[:-1]*(m1_array[:-1]*m2_array[:-1]/m1_array[1:]/m2_array[1:])**2, 'r.')
 #    plt.xlabel('$t/\mathrm{Myr}$')
 #    plt.ylabel('$a_\mathrm{in}$')
-#    plt.savefig('plots/orbit/semi_inner_cons_mt'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/semi_inner_cons_mt'+generic_name+'.pdf')
 #    plt.show()
 #    
 #    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2/a_in_array_AU)
 #    plt.plot(times_array_Myr, a_in_array_AU[0]*(m1_array[0]*m2_array[0]/m1_array/m2_array)**2/a_in_array_AU, '.')
 #    plt.ylabel('$relative error a_\mathrm{in}$')
 #    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.savefig('plots/orbit/semi_inner_rel_cons_mt'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/semi_inner_rel_cons_mt'+generic_name+'.pdf')
 #    plt.show()
 
 
@@ -1750,7 +1783,7 @@ def plot_function(triple):
     plot_a_out.set_ylabel('$a_\mathrm{out}$')
 
     figure.subplots_adjust(left=0.2, right=0.85, top=0.8, bottom=0.15)
-    plt.savefig('plots/orbit/TPS_outer_orbit'+generic_plot_name+'.pdf')
+    plt.savefig('plots/orbit/TPS_outer_orbit'+generic_name+'.pdf')
     plt.show()
 
 
@@ -1759,7 +1792,7 @@ def plot_function(triple):
 #    plt.xlim(0,t_max_Myr)
 #    plt.xlabel('$t/\mathrm{Myr}$')
 #    plt.ylabel('$e_\mathrm{out}$')
-#    plt.savefig('plots/orbit/e_out_time_'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/e_out_time_'+generic_name+'.pdf')
 #    plt.show()
 
 
@@ -1772,14 +1805,14 @@ def plot_function(triple):
 #    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*Mtott[:-1]/Mtott[1:], '.')
 #    plt.xlabel('$t/\mathrm{Myr}$')
 #    plt.ylabel('$a_\mathrm{out}$')
-#    plt.savefig('plots/orbit/semi_outer_wind'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/semi_outer_wind'+generic_name+'.pdf')
 #    plt.show()
 #
 #    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU)
 #    plt.plot(times_array_Myr, a_out_array_AU[0]*Mtott[0]/Mtott/a_out_array_AU, '.')
 #    plt.ylabel('$relative error a_\mathrm{out}$')
 #    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.savefig('plots/orbit/semi_outer_rel_wind'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/semi_outer_rel_wind'+generic_name+'.pdf')
 #    plt.show()
 #
 #    m_in_array = m1_array+m2_array
@@ -1791,14 +1824,14 @@ def plot_function(triple):
 #    plt.plot(times_array_Myr[1:], a_out_array_AU[:-1]*(m_in_array[:-1]*m3_array[:-1]/m_in_array[1:]/m3_array[1:])**2, 'r.')
 #    plt.xlabel('$t/\mathrm{Myr}$')
 #    plt.ylabel('$a_\mathrm{out}$')
-#    plt.savefig('plots/orbit/semi_outer_cons_mt'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/semi_outer_cons_mt'+generic_name+'.pdf')
 #    plt.show()
 #
 #    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2/a_out_array_AU)
 #    plt.plot(times_array_Myr, a_out_array_AU[0]*(m_in_array[0]*m3_array[0]/m_in_array/m3_array)**2/a_out_array_AU, '.')
 #    plt.ylabel('$relative error a_\mathrm{out}$')
 #    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.savefig('plots/orbit/semi_outer_rel_cons_mt'+generic_plot_name+'.pdf')
+#    plt.savefig('plots/orbit/semi_outer_rel_cons_mt'+generic_name+'.pdf')
 #    plt.show()
 #
 
@@ -1896,7 +1929,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             metallicity, tend, number, maximum_radius_change_factor)
 
     triple_class_object.evolve_model()
-    plot_function(triple_class_object)
+#    plot_function(triple_class_object)
 #    triple_class_object.print_stellar_system()
     return triple_class_object
 #-----

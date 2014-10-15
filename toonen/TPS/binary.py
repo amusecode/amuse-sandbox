@@ -144,9 +144,9 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
 
     Rl_donor_new = roche_radius_dimensionless(donor.core_mass, accretor.mass)*a_new
     Rl_accretor_new = roche_radius_dimensionless(accretor.mass, donor.core_mass)*a_new    
-    
+       
     if (donor.core_radius > Rl_donor_new) or (accretor.radius > Rl_accretor_new):
-        print 'Merger in inner binary through common envelope phase (energy balance)'
+        print 'Merger in inner binary through common envelope phase (angular momentum balance)'
         print 'donor:', donor.core_radius, Rl_donor_new
         print 'accretor:', accretor.radius, Rl_accretor_new
         
@@ -333,8 +333,8 @@ def which_common_envelope_phase(bs, donor, accretor, self):
         else:
             common_envelope_angular_momentum_balance(bs, donor, accretor, self)
     elif which_common_envelope == 2:
-        Js_d = self.stellar_angular_momentum(donor)
-        Js_a = self.stellar_angular_momentum(accretor)        
+        Js_d = self.spin_angular_momentum(donor)
+        Js_a = self.spin_angular_momentum(accretor)        
         Jb = self.orbital_angular_momentum(bs)
         Js = max(Js_d, Js_a)
         print "Darwin Riemann instability? donor/accretor:", Js_d, Js_a, Jb, Jb/3.        
@@ -718,13 +718,14 @@ def mass_transfer_stability(binary, self):
         print 'Mass transfer stability'
 
     if self.is_binary(binary):
+        Js_1 = self.spin_angular_momentum(binary.child1)
+        Js_2 = self.spin_angular_momentum(binary.child2)        
+        Jb = self.orbital_angular_momentum(binary)
         if REPORT_MASS_TRANSFER_STABILITY:
             print "Mass transfer stability: Binary "
             print binary.semimajor_axis, binary.child1.mass, binary.child2.mass, binary.child1.stellar_type, binary.child2.stellar_type
-   
-        Js_1 = self.stellar_angular_momentum(binary.child1)
-        Js_2 = self.stellar_angular_momentum(binary.child2)        
-        Jb = self.orbital_angular_momentum(binary)
+            print binary.child1.spin_angular_frequency, binary.child2.spin_angular_frequency
+            print Js_1, Js_2, Jb, Jb/3.   
         
         Js = max(Js_1, Js_2)
         if Js >= Jb/3. :
@@ -784,7 +785,7 @@ def mass_transfer_stability(binary, self):
             print "Mass transfer stability: Binary "
             print binary.semimajor_axis, binary.child1.mass, self.get_mass(binary.child2), binary.child1.stellar_type
     
-        Js = self.stellar_angular_momentum(binary.child1)
+        Js = self.spin_angular_momentum(binary.child1)
         Jb = self.orbital_angular_momentum(binary)
         
         if Js >= Jb/3. :
