@@ -929,7 +929,7 @@ class SecularTriple(InCodeComponentImplementation):
             a_in,a_out,e_in,e_out, \
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
-            end_time_dummy,flag,error = self.evolve(*args)
+            end_time_cvode,flag,error = self.evolve(*args)
             print 'SecularTriple -- done; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out
 
             ####################
@@ -970,7 +970,7 @@ class SecularTriple(InCodeComponentImplementation):
 
 
             ### update model time ###
-            self.model_time = end_time
+            self.model_time += end_time_cvode
 
             ### update triple particle ###
             if parameters.include_inner_tidal_terms == True:
@@ -1289,7 +1289,8 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
         outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1,
         inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer,
         inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer,
-        self.model_time,self.time_step]
+        self.model_time,self.time_step] ### NOTE: only time_step is used at the moment
+        
 #    print 'pre2',stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1
 #    print 'pre',k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
         
