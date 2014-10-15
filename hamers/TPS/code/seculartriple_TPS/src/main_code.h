@@ -93,7 +93,7 @@ typedef struct {
     bool include_1PN_inner_terms,include_1PN_outer_terms,include_1PN_inner_outer_terms,include_25PN_inner_terms,include_25PN_outer_terms;
     bool include_inner_tidal_terms,include_outer_tidal_terms;
     bool include_inner_wind_terms,include_outer_wind_terms;
-    bool include_wind_spin_coupling_terms;
+    bool include_magnetic_braking_terms;
     bool include_spin_radius_mass_coupling_terms;
     bool include_inner_RLOF_terms,include_outer_RLOF_terms;
     bool check_for_dynamical_stability;
@@ -150,6 +150,7 @@ int evolve(
     int * output_flag, int * error_flag
 );
 static int check_flag(void *flagvalue, char *funcname, int opt);
+void error_handling_function(int error_code, const char *module, const char *function, char *message, void *data_f);
 int get_equations_of_motion_specification(int *relative_tolerance_t);
 int set_equations_of_motion_specification(int relative_tolerance_t);
 int get_input_precision(double *input_precision_t);
@@ -186,8 +187,8 @@ int get_include_inner_wind_terms(int *value);
 int set_include_inner_wind_terms(int value);
 int get_include_outer_wind_terms(int *value);
 int set_include_outer_wind_terms(int value);
-int get_include_wind_spin_coupling_terms(int *value);
-int set_include_wind_spin_coupling_terms(int value);
+int get_include_magnetic_braking_terms(int *value);
+int set_include_magnetic_braking_terms(int value);
 int get_include_spin_radius_mass_coupling_terms(int *value);
 int set_include_spin_radius_mass_coupling_terms(int value);
 int get_include_inner_RLOF_terms(int *value);

@@ -382,16 +382,16 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
-    def set_include_wind_spin_coupling_terms():
+    def set_include_magnetic_braking_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_wind_spin_coupling_terms', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('include_magnetic_braking_terms', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
-    def get_include_wind_spin_coupling_terms():
+    def get_include_magnetic_braking_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_wind_spin_coupling_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('include_magnetic_braking_terms', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
@@ -622,9 +622,9 @@ class SecularTriple(InCodeComponentImplementation):
             default_value = False
         )
         object.add_method_parameter(
-            "get_include_wind_spin_coupling_terms",
-            "set_include_wind_spin_coupling_terms",
-            "include_wind_spin_coupling_terms",
+            "get_include_magnetic_braking_terms",
+            "set_include_magnetic_braking_terms",
+            "include_magnetic_braking_terms",
             "..", 
             default_value = False
         )        
@@ -979,7 +979,7 @@ class SecularTriple(InCodeComponentImplementation):
             if parameters.include_outer_tidal_terms == True:
                 star3.spin_angular_frequency = spin_angular_frequency3
 
-            if parameters.include_wind_spin_coupling_terms == True:
+            if parameters.include_magnetic_braking_terms == True:
                 star1.spin_angular_frequency = spin_angular_frequency1
                 star2.spin_angular_frequency = spin_angular_frequency2
                 star3.spin_angular_frequency = spin_angular_frequency3
@@ -1081,11 +1081,19 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
     R2 = star2.radius
     R3 = star3.radius
 
+    RL1,RL2,RL3 = self.give_roche_radii(triple)
+    if (R1>=RL1 and star1.is_donor == False):
+        print 'warning: R1>=RL1 at initialisation while star1.is_donor = False'
+    if (R2>=RL2 and star2.is_donor == False):
+        print 'warning: R2>=RL3 at initialisation while star2.is_donor = False'
+    if (R3>=RL3 and star3.is_donor == False):
+        print 'warning: R3>=RL3 at initialisation while star3.is_donor = False'
+
     a_in = inner_binary.semimajor_axis
     e_in = inner_binary.eccentricity
     a_out = outer_binary.semimajor_axis
     e_out = outer_binary.eccentricity
-        
+
     INCL_in = triple.relative_inclination
     INCL_out = 0.0
     AP_in = inner_binary.argument_of_pericenter
@@ -1093,18 +1101,27 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
     LAN_in = inner_binary.longitude_of_ascending_node
     LAN_out = outer_binary.longitude_of_ascending_node        
 
+    wind_mass_loss_rate_star1 = wind_mass_loss_rate_star2 = wind_mass_loss_rate_star3 = 0.0 | units.MSun/units.yr
+    if parameters.include_linear_mass_change == True:
+        try:
+            wind_mass_loss_rate_star1 = star1.wind_mass_loss_rate
+            wind_mass_loss_rate_star2 = star2.wind_mass_loss_rate
+            wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate
+        except AttributeError:
+            print 'SecularTriple needs mass time_derivative_of_mass for all three stars if include_linear_mass_change==True! exiting'
+            exit(-1)
     time_derivative_of_radius_star1=time_derivative_of_radius_star2=time_derivative_of_radius_star3 = 0.0 | units.RSun/units.s
-    try:
-        time_derivative_of_radius_star1 = star1.time_derivative_of_radius
-        time_derivative_of_radius_star2 = star2.time_derivative_of_radius
-        time_derivative_of_radius_star3 = star3.time_derivative_of_radius
-    except AttributeError:
-        print 'SecularTriple needs time_derivative_of_radius for all three stars! exiting'
-        exit(-1)
+    if parameters.include_linear_radius_change == True:
+        try:
+            time_derivative_of_radius_star1 = star1.time_derivative_of_radius
+            time_derivative_of_radius_star2 = star2.time_derivative_of_radius
+            time_derivative_of_radius_star3 = star3.time_derivative_of_radius
+        except AttributeError:
+            print 'SecularTriple needs time_derivative_of_radius for all three stars if include_linear_radius_change==True! exiting'
+            exit(-1)
 
     ### mass variation parameters ###
-    star1_is_donor = star2_is_donor = star3_is_donor = False
-    wind_mass_loss_rate_star1 = wind_mass_loss_rate_star2 = wind_mass_loss_rate_star3 = 0.0 | units.MSun/units.yr
+#    star1_is_donor = star2_is_donor = star3_is_donor = False
     inner_mass_transfer_rate = outer_mass_transfer_rate = 0.0 | units.MSun/units.yr
     inner_accretion_efficiency_wind_child1_to_child2 = inner_accretion_efficiency_wind_child2_to_child1 = 0.0
     outer_accretion_efficiency_wind_child1_to_child2 = outer_accretion_efficiency_wind_child2_to_child1 = 0.0
@@ -1165,17 +1182,20 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             print "More attributes required for outer RLOF check! exiting"
             exit(-1)
 
-    ### wind-spin coupling ###
-    if parameters.include_wind_spin_coupling_terms == True:
+    ### magnetic braking ###
+    if parameters.include_magnetic_braking_terms == True:
         try:
             spin_angular_frequency1 = star1.spin_angular_frequency
             spin_angular_frequency2 = star2.spin_angular_frequency
             spin_angular_frequency3 = star3.spin_angular_frequency
+            wind_mass_loss_rate_star1 = star1.wind_mass_loss_rate
+            wind_mass_loss_rate_star2 = star2.wind_mass_loss_rate
+            wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate
             gyration_radius_star1 = star1.gyration_radius
             gyration_radius_star2 = star2.gyration_radius                    
             gyration_radius_star3 = star3.gyration_radius                    
         except AttributeError:
-            print "More attributes required for wind-spin coupling terms! exiting"
+            print "More attributes required for magnetic braking terms! exiting"
             exit(-1)
 
     ### spin-radius-mass coupling ###
@@ -1184,6 +1204,12 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             spin_angular_frequency1 = star1.spin_angular_frequency
             spin_angular_frequency2 = star2.spin_angular_frequency
             spin_angular_frequency3 = star3.spin_angular_frequency
+            wind_mass_loss_rate_star1 = star1.wind_mass_loss_rate
+            wind_mass_loss_rate_star2 = star2.wind_mass_loss_rate
+            wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate
+            time_derivative_of_radius_star1 = star1.time_derivative_of_radius
+            time_derivative_of_radius_star2 = star2.time_derivative_of_radius
+            time_derivative_of_radius_star3 = star3.time_derivative_of_radius            
         except AttributeError:
             print "More attributes required for spin-radius-mass coupling terms! exiting"
             exit(-1)
