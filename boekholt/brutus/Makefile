@@ -24,7 +24,7 @@ CXX = $(MPICXX)
 
 CXXFLAGS ?= -Wall -g -O2 
 
-CXXFLAGS += $(MPFR_FLAGS) -std=gnu++0x
+CXXFLAGS += $(MPFR_FLAGS) -std=c++0x
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
