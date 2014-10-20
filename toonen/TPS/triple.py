@@ -74,6 +74,7 @@ error_dr = 0.01
 minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
+maximum_time_step_factor = 100.
 
 stellar_types_SN_remnants = [13,14]|units.stellar_type # remnant types created through a supernova
 stellar_types_remnants = [7,8,9,10,11,12,13,14]|units.stellar_type
@@ -198,6 +199,7 @@ class Triple_Class:
     #setup community codes
     def setup_stellar_code(self, metallicity, stars):
         self.stellar_code = SeBa()
+#        self.stellar_code = SeBa(redirection='none')
 
         #stopping conditions:
 #        print self.stellar_code.stopping_conditions
@@ -226,7 +228,7 @@ class Triple_Class:
         self.secular_code.parameters.include_outer_wind_terms = True
         self.secular_code.parameters.include_inner_RLOF_terms = True
         self.secular_code.parameters.include_outer_RLOF_terms = True
-        self.secular_code.parameters.include_spin_radius_mass_coupling_terms = False
+        self.secular_code.parameters.include_spin_radius_mass_coupling_terms = True
         self.secular_code.parameters.include_magnetic_braking_terms = False # not tested
 
         self.secular_code.parameters.include_inner_tidal_terms = False
@@ -241,7 +243,7 @@ class Triple_Class:
         self.secular_code.parameters.check_for_dynamical_stability = True
         self.secular_code.parameters.check_for_inner_collision = True
         self.secular_code.parameters.check_for_outer_collision = True
-        self.secular_code.parameters.check_for_inner_RLOF = False 
+        self.secular_code.parameters.check_for_inner_RLOF = True 
         self.secular_code.parameters.check_for_outer_RLOF = True 
 
          # accuracy of secular code
@@ -588,7 +590,7 @@ class Triple_Class:
             exit(2)
             
     def apsidal_motion_constant(self, star):
-        if star.stellar_type in [13]|units.stellar_type: #ns
+        if star.stellar_type in [13, 14]|units.stellar_type: #ns
             #based on Brooke & Olle 1955, for n=1 polytrope
             return 0.260
     
@@ -880,19 +882,31 @@ class Triple_Class:
         if stellar_system.is_star:
             dt = np.inf |units.Myr
             if stellar_system.time_derivative_of_radius != quantities.zero:
-                growth_factor = 0.1
-                if stellar_system.previous_time_derivative_of_radius != quantities.zero:
-                    growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius
-                    if abs(growth_factor) > 1: 
-                        growth_factor = 1./growth_factor 
-                    if stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
-                        return minimum_time_step                              
+                growth_factor = 1. # Rdot < Rdot_prev
+                if stellar_system.time_derivative_of_radius > stellar_system.previous_time_derivative_of_radius:
+                    if stellar_system.previous_time_derivative_of_radius == quantities.zero:
+                        growth_factor = 0.1
+                    elif stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
+                        growth_factor = 0.01
+                    elif stellar_system.time_derivative_of_radius > quantities.zero:
+                        growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius 
+                    else:
+                        growth_factor = stellar_system.time_derivative_of_radius/stellar_system.previous_time_derivative_of_radius 
+
+
+#                growth_factor = 0.1
+#                if stellar_system.previous_time_derivative_of_radius != quantities.zero:
+#                    growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius
+#                    if abs(growth_factor) > 1: 
+#                        growth_factor = 1./growth_factor 
+#                    if stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
+#                        growth_factor = growth_factor * 0.01                        
                                    
-#                print 'dt radius change:', stellar_system.time_derivative_of_radius, stellar_system.previous_time_derivative_of_radius 
-#                print stellar_system.stellar_type, stellar_system.previous_stellar_type
-#                print growth_factor, stellar_system.radius
-#                print stellar_system.mass, stellar_system.previous_mass
-    
+                print 'dt radius change:', stellar_system.time_derivative_of_radius, stellar_system.previous_time_derivative_of_radius 
+                print stellar_system.stellar_type, stellar_system.previous_stellar_type
+                print growth_factor, stellar_system.radius
+                print stellar_system.mass, stellar_system.previous_mass
+
                 dt = abs(growth_factor * self.maximum_radius_change_factor*stellar_system.radius / stellar_system.time_derivative_of_radius)
 
 
@@ -906,6 +920,42 @@ class Triple_Class:
                 print "Dt_radius_change_binary = ", dt1, dt2
             return min(dt1, dt2) 
 
+ 
+#    def determine_time_step_radius_change2(self, stellar_system = None):
+#    #note: returned value can be inf when the change in radius <= 0
+#        #radius is only necessary for tides
+#        if not self.secular_code.parameters.include_inner_tidal_terms and not self.secular_code.parameters.include_outer_tidal_terms:
+#            return np.inf |units.Myr
+#    
+#        if stellar_system == None:
+#            stellar_system = self.triple
+#            
+#        if stellar_system.is_star:
+#            dt = np.inf |units.Myr
+#            if stellar_system.previous_stellar_type == 3|units.stellar_type and stellar_system.stellar_type == 4|units.stellar_type:
+#                #during transition from first giant branch to core helium burning the radius can change discontinuous
+#                dt = np.inf |units.Myr
+#            elif stellar_system.stellar_type in stellar_types_remnants and stellar_system.previous_stellar_type != stellar_system.stellar_type:
+#                #transition to helium star, helium giant, wd, ns or bh
+#                dt = np.inf |units.Myr
+#            else:
+#                time_step = self.time - self.previous_time
+#                double_time_derivative_of_radius = (stellar_system.time_derivative_of_radius - stellar_system.previous_time_derivative_of_radius)/time_step
+#                if double_time_derivative_of_radius != quantities.zero:
+#                    dt = self.maximum_radius_change_factor*np.sqrt(abs(stellar_system.radius / double_time_derivative_of_radius))
+#
+#
+#            if REPORT_DT:
+#                print "Dt_radius_change_star = ", dt
+#            return dt 
+#        else:
+#            dt1 = self.determine_time_step_radius_change2(stellar_system.child1)        
+#            dt2 = self.determine_time_step_radius_change2(stellar_system.child2)
+#            if REPORT_DT:
+#                print "Dt_radius_change_binary2 = ", dt1, dt2
+#            return min(dt1, dt2) 
+
+ 
  
     def determine_time_step_stable_mt(self, stellar_system = None):
     #note: returned value can be inf when the mass_transfer_rate = 0 
@@ -954,28 +1004,26 @@ class Triple_Class:
         
         time_step = min(time_step_radius_change, min(time_step_wind, min( min(time_step_stellar_code), time_step_max)))    
         print 'time:', time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step
-          
+                
         #during stable mass transfer     
         if self.has_donor():
             time_step = min(time_step, self.determine_time_step_stable_mt())
-
-        ### for testing/plotting purposes only ###
-#        time_step = min(time_step, self.tend/100.0)
-#        time_step = min(time_step, min(time_step_stellar_code)/2.)
-            
+           
         if self.time == quantities.zero:
             print 'First timestep - outer period'
             #initialization (e.g. time_derivative_of_radius)
             P_out = self.orbital_period(self.triple) #period outer binary 
             # do not take 0.1*P_in -> resonance -> large error
             time_step = min(min(P_out, time_step), 1.|units.yr)
-            
-#            self.time += min(P_out, time_step)
-#            return
+        else:
+            previous_time_step = self.time - self.previous_time
+            print previous_time_step, maximum_time_step_factor*previous_time_step, time_step
+            time_step = min(time_step, maximum_time_step_factor*previous_time_step)  
+                    
 
-        if time_step < minimum_time_step:
-            print 'error small time_step'
-            print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step
+#        if time_step < minimum_time_step:
+#            print 'error small time_step'
+#            print time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step
         time_step = max(time_step, minimum_time_step)  
 
         return time_step
@@ -1188,15 +1236,16 @@ class Triple_Class:
                 exit(1)
 
             if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
+#            if 1>0:
                 dr = (stellar_system.radius - stellar_system.previous_radius)/stellar_system.radius
-                
+
                 if REPORT_TRIPLE_EVOLUTION:    
                     print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
                     print 'relative change in radius:', dr
     
                 if (dr > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_remnants):
                     print 'Change in radius in a single time_step larger then', error_dr
-                    print dr, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
+                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
                     exit(1)
 
         else:
@@ -1265,7 +1314,7 @@ class Triple_Class:
             self.time += dt            
             
             print '\n\ntime:', self.time, self.has_donor()            
-    
+
             #do stellar evolution 
             if not no_stellar_evolution: 
                 if REPORT_TRIPLE_EVOLUTION:
@@ -1327,21 +1376,12 @@ class Triple_Class:
                 print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'
                 break
   
-#
-#            if self.has_donor():
-#                print 'has donor'
-#            else:
-#                self.check_for_RLOF()
-#                if self.has_donor():
-#                    print 'first rlof', self.first_contact, self.has_donor(), self.instantaneous_evolution
-
             self.check_for_RLOF()
                    
             if self.instantaneous_evolution == False and self.first_contact == False: 
                 # do secular evolution
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Secular evolution'
-                print 'Secular evolution'
                 self.channel_to_secular.copy()
                 self.safety_check_time_step()
                 if not self.is_triple:# e.g. binaries
@@ -1503,13 +1543,13 @@ def plot_function(triple):
     
     
     generic_name = 'M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(triple.maximum_radius_change_factor)+'_edr'+str(error_dr)
-#    f = open(generic_name+'.txt','w')
-#    for i in range(len(times_array_Myr)):
-#        f.write( str(times_array_Myr[i]) + '\t'+str(e_in_array[i]) + '\t'+ str(a_in_array_AU[i]) + '\t')
-#        f.write(str(e_out_array[i]) + '\t' + str(a_out_array_AU[i]) + '\t')
-#        f.write(str(r1_array[i]) + '\t' + str(r2_array[i]) + '\t' + str(r3_array[i]) + '\t')
-#        f.write('\n')
-#    f.close()
+    f = open(generic_name+'.txt','w')
+    for i in range(len(times_array_Myr)):
+        f.write( str(times_array_Myr[i]) + '\t'+str(e_in_array[i]) + '\t'+ str(a_in_array_AU[i]) + '\t')
+        f.write(str(e_out_array[i]) + '\t' + str(a_out_array_AU[i]) + '\t')
+        f.write(str(r1_array[i]) + '\t' + str(r2_array[i]) + '\t' + str(r3_array[i]) + '\t')
+        f.write('\n')
+    f.close()
 
 
     figure = plt.figure(figsize=(10,13))
@@ -1576,9 +1616,9 @@ def plot_function(triple):
     plt.plot(times_array_Myr,spin3_array, 'r.')
 
     plt.plot(times_array_Myr,corot_spin_inner, 'c-')
-    plt.plot(times_array_Myr,corot_spin_inner, 'c.')
+    plt.plot(times_array_Myr,corot_spin_inner, 'c,')
     plt.plot(times_array_Myr,corot_spin_outer, 'm-')
-    plt.plot(times_array_Myr,corot_spin_outer, 'm.')
+    plt.plot(times_array_Myr,corot_spin_outer, 'm,')
     
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$spin$')
@@ -1651,6 +1691,53 @@ def plot_function(triple):
     plt.show()
 
 
+
+    dm1_array =m1_array[:-1]-m1_array[1:]
+    dm2_array =m2_array[:-1]-m2_array[1:]
+    dm3_array =m3_array[:-1]-m3_array[1:]
+    print m1_array
+    print ' '
+    print m2_array
+    print ' '
+    print m3_array
+    print ' '
+    print dm1_array, dm2_array, dm3_array
+    
+    plt.plot(times_array_Myr[1:], m1_array[1:])
+    plt.plot(times_array_Myr[1:], m1_array[1:], '.')
+    plt.plot(times_array_Myr[1:], m2_array[1:])
+    plt.plot(times_array_Myr[1:], m2_array[1:], '.')
+    plt.plot(times_array_Myr[1:], m3_array[1:])
+    plt.plot(times_array_Myr[1:], m3_array[1:], '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$mass$')
+    plt.savefig('plots/orbit/mass_time_'+generic_name+'.pdf')
+    plt.show()
+
+
+    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array, '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$dm/dt$')
+    plt.savefig('plots/orbit/dmdt_time_'+generic_name+'.pdf')
+    plt.show()
+
+    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:])
+    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:], '.')
+    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:])
+    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:], '.')
+    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:])
+    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:], '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$dm/m$')
+    plt.savefig('plots/orbit/dm_time_'+generic_name+'.pdf')
+    plt.show()
+
+ 
     plt.semilogy(times_array_Myr[1:], dt_array)
     plt.semilogy(times_array_Myr[1:], dt_array, '.')
     plt.semilogy(times_array_Myr[1:], dt_array)
@@ -1661,6 +1748,9 @@ def plot_function(triple):
     plt.ylabel('$dt$')
     plt.savefig('plots/orbit/dt_time_'+generic_name+'.pdf')
     plt.show()
+
+
+
 
 
 #   wind a = ai * Mti/Mt
