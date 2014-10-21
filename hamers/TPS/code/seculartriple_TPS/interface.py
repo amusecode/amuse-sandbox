@@ -953,22 +953,31 @@ class SecularTriple(InCodeComponentImplementation):
                 print 'outer collision'
 
             ### RLOF star1 ###
-            star1.is_donor = False
             if flag==4: 
                 star1.is_donor = True
-                print 'RLOF star 1'
+                print 'star 1 has filled its Roche Lobe during secular integration'
+            if flag==-4: 
+                star1.is_donor = False
+                print 'star 1 no longer fills its Roche Lobe during secular integration'
+
             ### RLOF star2 ###
-            star2.is_donor = False
             if flag==5: 
                 star2.is_donor = True
-                print 'RLOF star 2'            
+                print 'star 2 has filled its Roche Lobe during secular integration'
+            if flag==-5: 
+                star2.is_donor = False
+                print 'star 2 no longer fills its Roche Lobe during secular integration'
+
             ### RLOF star3 ###
-            star3.is_donor = False
             if flag==6: 
                 star3.is_donor = True
-                print 'RLOF star 3'            
+                print 'star 3 has filled its Roche Lobe during secular integration'
+            if flag==-6: 
+                star3.is_donor = False
+                print 'star 3 no longer fills its Roche Lobe during secular integration'
 
-
+            triple.error_flag_secular = error
+            
             ### update model time ###
             self.model_time += end_time_cvode
 

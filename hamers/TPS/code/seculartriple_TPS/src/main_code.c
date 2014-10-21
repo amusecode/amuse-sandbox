@@ -303,18 +303,30 @@ int evolve(
 		{
 			*output_flag = 3;
 		}    
-		if (rootsfound[3] == 1 || rootsfound[3] == -1) // RLOF star1 -- think about increasing case
-		{
-			*output_flag = 4;
-		}    
-		if (rootsfound[4] == 1 || rootsfound[4] == -1) // RLOF star2 -- think about increasing case
-		{
-			*output_flag = 5;
-		}    
-		if (rootsfound[5] == 1 || rootsfound[5] == -1) // RLOF star3 -- think about increasing case
-		{
-			*output_flag = 6;
-		}    
+        if (rootsfound[3] == 1)
+        {
+            *output_flag = 4; // star 1 now fills its Roche Lobe: R-R_L was negative, has become positive
+        }
+        if (rootsfound[3] == -1)
+        {
+            *output_flag = -4; // star 1 no longer fills its Roche Lobe: R-R_L was positive, has become negative
+        }
+        if (rootsfound[4] == 1)
+        {
+            *output_flag = 5; // star 2 now fills its Roche Lobe: R-R_L was negative, has become positive
+        }
+        if (rootsfound[4] == -1)
+        {
+            *output_flag = -5; // star 2 no longer fills its Roche Lobe: R-R_L was positive, has become negative
+        }
+        if (rootsfound[5] == 1)
+        {
+            *output_flag = 6; // star 3 now fills its Roche Lobe: R-R_L was negative, has become positive
+        }
+        if (rootsfound[5] == -1)
+        {
+            *output_flag = -6; // star 3 no longer fills its Roche Lobe: R-R_L was positive, has become negative
+        }
 		*error_flag = 0;
 	}
 	else
