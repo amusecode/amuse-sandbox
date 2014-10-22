@@ -100,6 +100,8 @@ typedef struct {
     bool check_for_inner_collision,check_for_outer_collision;
     bool check_for_inner_RLOF,check_for_outer_RLOF;
     bool include_linear_mass_change,include_linear_radius_change;
+    
+    bool stop_after_error_bool;
 
     double AMC_star1,AMC_star2,AMC_star3;
     double luminosity_star1,luminosity_star2,luminosity_star3;

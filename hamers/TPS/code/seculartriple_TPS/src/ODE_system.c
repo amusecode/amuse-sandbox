@@ -12,6 +12,7 @@ int fev_triad(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	UserData data;
 	data = (UserData) data_f;
 	
+  
 	/*	Constants which appear in the ODE right hand sides	*/
 	double m1 = data->m1;					
 	double m2 = data->m2;				
@@ -129,7 +130,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	UserData data;
 	data = (UserData) data_f;
 	
-	/*	extract all constants	*/
+    /*	extract all constants	*/
     double global_time_step = data->global_time_step; // the global time-step
     
     int stellar_type1 = data->stellar_type1;
@@ -268,6 +269,20 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	double e_in = 1.0 - pow(10.0,x);
 	double e_out = 1.0 - pow(10.0,y);
 
+    /* premature return values */
+    if (e_in <= 0.0)
+    {
+        return 1;
+    }
+    if (e_out <= 0.0)
+    {
+        return 1;
+    }
+    if (data->stop_after_error_bool == TRUE)
+    {
+        printf("error occured -- stopping integration\n");
+        return -1;
+    }
 
     /********************************
      * preamble: derived quantities *

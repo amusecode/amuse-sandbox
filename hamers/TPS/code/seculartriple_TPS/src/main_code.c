@@ -88,6 +88,8 @@ int evolve(
     
     data->global_time_step = global_time_step;
     
+    data->stop_after_error_bool = FALSE;
+    
     data->stellar_type1 = stellar_type1;
     data->stellar_type2 = stellar_type2;
     data->stellar_type3 = stellar_type3;
@@ -283,12 +285,12 @@ int evolve(
 
 	flag_s = CVode(cvode_mem, t_end, yev_out, &t_end_cvode, CV_NORMAL);	
     
-	if (flag_s == CV_SUCCESS)
+	if (flag_s == CV_SUCCESS) // successfully integrated for global time-step
 	{
 		*output_flag = 0;
 		*error_flag = 0;
 	}
-	else if (flag_s == CV_ROOT_RETURN)
+	else if (flag_s == CV_ROOT_RETURN) // root was found
 	{
 		CVodeGetRootInfo(cvode_mem,rootsfound);
 		if (rootsfound[0] == 1 || rootsfound[0] == -1) // dynamical instability
@@ -329,10 +331,17 @@ int evolve(
         }
 		*error_flag = 0;
 	}
-	else
+	else if (flag_s == CV_WARNING) // integration successfull, but warnings occured
+    {
 		*output_flag = 99;
 		*error_flag = flag_s;
-
+    }
+    else // fatal error(s) occurred
+    {
+		*output_flag = flag_s;
+		*error_flag = flag_s;
+    }
+    
 
     /**********1.0e-14
      * output *
@@ -407,6 +416,11 @@ int evolve(
         exit(-1);
     }
 
+    N_VDestroy_Serial(yev);
+    N_VDestroy_Serial(yev_out);
+    N_VDestroy_Serial(abstol);
+    CVodeFree(&cvode_mem);
+
 	return 0;
 }
 
@@ -443,6 +457,7 @@ void error_handling_function(int error_code, const char *module, const char *fun
     printf("error_handling_function error %d\n",error_code);
     UserData data;
 	data = (UserData) data_f;
+//    data->stop_after_error_bool = TRUE;
 }
 
 int get_equations_of_motion_specification(int *equations_of_motion_specification_t)
