@@ -329,7 +329,7 @@ int evolve(
         {
             *output_flag = -6; // star 3 no longer fills its Roche Lobe: R-R_L was positive, has become negative
         }
-		*error_flag = 0;
+		*error_flag = 2;
 	}
 	else if (flag_s == CV_WARNING) // integration successfull, but warnings occured
     {
