@@ -11,8 +11,6 @@
 #include "tidal_friction_parameters.h"
 #include "ODE_system.h"
 
-//#define COMPUTE_M_DOTS
-
 #define CONST_G			    (double)	3.94852492465e+13
 #define CONST_G_P2          (double)    CONST_G*CONST_G
 #define CONST_G_P3          (double)    CONST_G*CONST_G_P2

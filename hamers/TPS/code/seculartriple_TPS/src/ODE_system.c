@@ -4,126 +4,6 @@
 
 #include "main_code.h"
 
-
-/* Alternative formulation of the equations of motion based on triad of orbital vectors, not yet fully implemented */
-int fev_triad(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
-{
-	
-	UserData data;
-	data = (UserData) data_f;
-	
-  
-	/*	Constants which appear in the ODE right hand sides	*/
-	double m1 = data->m1;					
-	double m2 = data->m2;				
-	double m3 = data->m3;				
-
-   
-    double x_in_vec[3], x_out_vec[3];
-    double e_in_vec[3], e_out_vec[3];    
-    double h_in_vec[3], h_out_vec[3];
-    int i=0;
-    for (i=0; i<3; i++)
-    {
-        x_in_vec[i] = Ith(yev,i+1);
-        x_out_vec[i] = Ith(yev,i+4);
-        h_in_vec[i] = Ith(yev,i+7);
-        h_out_vec[i] = Ith(yev,i+10);
-
-        Ith(ydot,i+13) = 0.0; // reserved for stellar spin vectors
-        Ith(ydot,i+16) = 0.0;
-    }
-    double x_in = norm3(x_in_vec);
-    double x_out = norm3(x_out_vec);
-    double e_in = 1.0 - exp(x_in);
-    double e_out = 1.0 - exp(x_out);
-    
-    double e_in_vec_unit[3], e_out_vec_unit[3];
-    double h_in_vec_unit[3], h_out_vec_unit[3];
-    double h_in = norm3(h_in_vec);
-    double h_out = norm3(h_out_vec);
-    for (i=0; i<3; i++)
-    {
-        e_in_vec_unit[i] = x_in_vec[i]/x_in;
-        e_out_vec_unit[i] = x_out_vec[i]/x_out;
-        h_in_vec_unit[i] = h_in_vec[i]/h_in;
-        h_out_vec_unit[i] = h_out_vec[i]/h_out;
-    }
-    
-    double q_in_vec_unit[3], q_out_vec_unit[3];
-    cross3(h_in_vec_unit,e_in_vec_unit,q_in_vec_unit);
-    cross3(h_out_vec_unit,e_out_vec_unit,q_out_vec_unit);
-    
-    double e_in_p2 = e_in*e_in;
-    double e_out_p2 = e_out*e_out;
-    double l_in_p2 = 1.0 - e_in_p2;
-    double l_out_p2 = 1.0 - e_out_p2;
-    double l_in = sqrt(l_in_p2);
-    double l_out = sqrt(l_out_p2);
-    double l_in_p3 = l_in*l_in_p2;
-    double l_out_p3 = l_out*l_out_p2;
-    double a_in = h_in*h_in*(m1+m2)/( CONST_G*m1*m1*m2*m2*l_in_p2 );
-    double a_out = h_out*h_out*(m1+m2+m3)/( CONST_G*(m1+m2)*(m1+m2)*m3*m3*l_out_p2 );
-    
-    double phi_0 = (3.0*CONST_G/4.0)*(a_in*a_in/(a_out*a_out*a_out))*(m1*m2*m3)/(m1+m2);
-    double eps_oct = (25.0/16.0)*(a_in/a_out)*(e_out/(1.0-e_out_p2))*(m1-m2)/(m1+m2);
-    double tau1 = h_in/(sqrt(1.0-e_in_p2)*phi_0);
-    double tau_out = h_out/(sqrt(1.0-e_out_p2)*phi_0);
-    
-    /******************
-     * tidal friction *
-     * ****************/
-    double tF1 = 0.0;
-    double tF2 = 0.0;
-    
-    double e_in_p4 = e_in_p2*e_in_p2;
-    double e_in_p6 = e_in_p2*e_in_p4;
-    
-    double V1 = (9.0/tF1)*0.0;
-    double V2 = 0.0;
-    double W1 = 0.0;
-    double W2 = 0.0;
-    double X1 = 0.0;
-    double X2 = 0.0;
-    double Y1 = 0.0;
-    double Y2 = 0.0;
-    double Z1 = 0.0;
-    double Z2 = 0.0;
-
-    /************
-     * PN terms *
-     * **********/
-    double Z_1PN_in = (3.0*sqrt(CONST_G)*CONST_G)*(m1+m2)*sqrt(m1+m2)/( a_in*a_in*sqrt(a_in)*CONST_C_LIGHT_P2*l_in_p2 );
-     
-    /********************
-     * right-hand sides *
-     ********************/
-    double de_in_vec_dt[3], de_out_vec_dt[3];
-    double dh_in_vec_dt[3], dh_out_vec_dt[3];
-    double ds1_vec_dt[3], ds2_vec_dt[3];
-    
-    double h_in_vec_unit_cross_h_out_vec_unit[3];
-    double h_in_vec_unit_cross_e_out_vec_unit[3];
-    double e_in_vec_unit_cross_h_out_vec_unit[3];
-    double e_in_vec_unit_cross_e_out_vec_unit[3];
-    
-    // all dot products below involve unit vectors //
-    double e_in_dot_h_out = dot3(e_in_vec_unit,h_out_vec_unit);
-    double e_in_dot_e_out = dot3(e_in_vec_unit,e_out_vec_unit);
-    double h_in_dot_h_out = dot3(h_in_vec_unit,h_out_vec_unit);
-    double h_in_dot_e_out = dot3(h_in_vec_unit,e_out_vec_unit);
-    
-    double scalar_grad_e_in_phi_oct_h_in_cross_h_out = (-1.0/l_out_p3)*( 5.0*e_in_dot_h_out*e_in - 2.0*eps_oct*(7.0*e_in_dot_h_out*e_in*e_in_dot_e_out*e_in - l_in_p2*h_in_dot_h_out*h_in_dot_e_out) );
-//    double scalar_grad_e1_phi_oct_h1_cross_e2 = (eps_oct/l2_p3)*( (c_1div5
-    
-    for (i=0; i<3; i++)
-    {
-        de_in_vec_dt[i] = (Z1 + Z2 + Z_1PN_in)*e_in*q_in_vec_unit[i] - (Y1 + Y2)*e_in*h_in_vec_unit[i] - (V1 + V2)*e_in_vec_unit[i] \
-            + (1.0/tau1)*( l_in ) ;
-    }
-}    
-	
-/* Equations of motion in terms of orbital elements */
 int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 {
     
@@ -136,16 +16,16 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     int stellar_type1 = data->stellar_type1;
     int stellar_type2 = data->stellar_type2;
     int stellar_type3 = data->stellar_type3;
-	double m1 = data->m1; // mass -- at the END of the global time-step
+	double m1 = data->m1; // masses -- at the END of the global time-step
 	double m2 = data->m2;				
 	double m3 = data->m3;		
 	double m1_convective_envelope = data->m1_convective_envelope;
 	double m2_convective_envelope = data->m2_convective_envelope;
 	double m3_convective_envelope = data->m3_convective_envelope;
-    double R1 = data->R1; // radius -- at the END of the global time-step
+    double R1 = data->R1; // radii -- at the END of the global time-step
     double R2 = data->R2;
     double R3 = data->R3;
-    double R1_convective_envelope = data->R1_convective_envelope; // radius
+    double R1_convective_envelope = data->R1_convective_envelope; // convective envelope radii
     double R2_convective_envelope = data->R2_convective_envelope;
     double R3_convective_envelope = data->R3_convective_envelope;
 
@@ -159,6 +39,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double gyration_radius_star2 = data->gyration_radius_star2; // gyration radius (NOT squared)     
     double gyration_radius_star3 = data->gyration_radius_star3; // gyration radius (NOT squared)             
 
+    /* NOTE: k_div_T_tides_stari is not assumed to be constant during the integration */
 //    double k_div_T_tides_star1 = data->k_div_T_tides_star1; // AMC divided by tidal dissipation time-scale
 //    double k_div_T_tides_star2 = data->k_div_T_tides_star2;    
 //    double k_div_T_tides_star3 = data->k_div_T_tides_star3;
@@ -202,37 +83,43 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double inner_specific_AM_loss_mass_transfer = data->inner_specific_AM_loss_mass_transfer;
     double outer_specific_AM_loss_mass_transfer = data->outer_specific_AM_loss_mass_transfer;
 
-    /* M_DOTS */
-//    double m1_dot = 0.0;
-//    double m2_dot = 0.0;
-//    double m3_dot = 0.0;
+    /******************
+     * compute mdots *
+     *****************/
+    
+     /* assumptions:
+     * - in inner binary, child1 is star1 & child2 is star2
+     * - wind mass loss rates are always negative
+     * - mass transfer rates are always negative
+     */
+
+    /* wind mass loss */
     double m1_dot = wind_mass_loss_rate_star1;
     double m2_dot = wind_mass_loss_rate_star2;
     double m3_dot = wind_mass_loss_rate_star3;
 
-#ifdef COMPUTE_M_DOTS // WARNING: most likely broken at the moment
-    /* Assumptions:
-     * wind mass loss rates are always negative
-     * mass transfer rates are always negative
-     */
+    m1_dot += -inner_accretion_efficiency_wind_child2_to_child1*wind_mass_loss_rate_star2; // wind from star2 to star1; minus sign because wind mass loss rates are always negative
+    m2_dot += -inner_accretion_efficiency_wind_child1_to_child2*wind_mass_loss_rate_star1; // wind from star1 to star2; minus sign because wind mass loss rates are always negative    
+    
+    /* mass transfer */
+    double temp = inner_accretion_efficiency_mass_transfer*inner_mass_transfer_rate;
+    if (star1_is_donor == TRUE)
+    {
+        m1_dot += temp;
+        m2_dot += -temp;
+    }
+    else if (star2_is_donor == TRUE)
+    {
+        m1_dot += -temp;
+        m2_dot += temp;
+    }
 
-    double mass_transfer_sign = 1.0;
-
-    m1_dot += (wind_mass_loss_rate_star1 - inner_accretion_efficiency_wind_child2_to_child1*wind_mass_loss_rate_star1);
-    if (star1_is_donor == TRUE) { mass_transfer_sign = 1.0; }
-    else { mass_transfer_sign = -1.0; }
-    m1_dot += mass_transfer_sign*inner_accretion_efficiency_mass_transfer*inner_mass_transfer_rate;
-
-    m2_dot += (wind_mass_loss_rate_star2 - inner_accretion_efficiency_wind_child1_to_child2*wind_mass_loss_rate_star2);
-    if (star2_is_donor == TRUE) { mass_transfer_sign = 1.0; }
-    else { mass_transfer_sign = -1.0; }
-    m2_dot += mass_transfer_sign*inner_accretion_efficiency_mass_transfer*inner_mass_transfer_rate;
-
-    m3_dot += wind_mass_loss_rate_star3;
-#endif
-
-    /* m_i & R_i at this point are the FINAL values
-     * let q denote either m_i or R_i, then
+    /*******************************************
+     * compute time-dependent masses and radii *
+     *******************************************/
+     
+    /* masses and radii extracted above are the FINAL values
+     * let q denote either mi or Ri, then
      * q(t) = q_begin + q_dot*t, where t the time relative to the time for which q = q_begin
      * q_end = q_begin + q_dot*dt, where dt is the global time-step
      * hence q(t) = q_end + q_dot*(t-dt) */
@@ -365,7 +252,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	double cos_2g_in = cos(2.0*g_in);
 	double cos_g_out = cos(g_out);
 	
-	/*	required for octupole order terms	*/
+	/*	required for octupole-order terms	*/
 	double B = 2.0 + 5.0*e_in_p2 - 7.0*e_in_p2*cos_2g_in;
 	double A = 4.0 + 3.0*e_in_p2 - c_5div2*B*sinitot_p2;
 	double cosphi = -cos_g_in*cos_g_out - cositot*sin_g_in*sin_g_out;
@@ -461,7 +348,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	
     
     /******************************************************
-     * the actual calcuations of the ODE right-hand-sides *
+     * the actual calculations of the ODE right-hand-sides *
      * ****************************************************/
      	
 
@@ -735,10 +622,10 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	Ith(ydot,6) = a_out_dot_GR_25PN_out + a_out_dot_tides + a_out_dot_wind + a_out_dot_mass_transfer;
 
 
-    /************************************
-     * cositot_dot                      *
-     * due to triple interaction only!  *
-     * **********************************/
+    /**********************************************
+     * cositot_dot                                *
+     * due to dynamical triple interaction only!  *
+     * ********************************************/
 
 	double G_in_dot = -G_in*e_in*(e_in_dot_newtonian+e_in_dot_GR_1PN_in_out)/l_in_p2;
 	double G_out_dot = -G_out*e_out*e_out_dot_newtonian/l_out_p2;
@@ -859,6 +746,7 @@ double spin_angular_frequency_dot_magnetic_braking(double spin_angular_frequency
     return spin_angular_frequency*(wind_mass_loss_rate/mass)*c_2div3/(gyration_radius*gyration_radius);
 }
 
+/* effect of mass & radius changes on stellar spin -- assuming that the spin angular momentum remains constant */
 double spin_angular_frequency_dot_mass_radius_changes(double spin_angular_frequency, double m, double m_dot, double R, double R_dot)
 {
     return -spin_angular_frequency*(m_dot/m + 2.0*R_dot/R);
@@ -1060,6 +948,7 @@ double roche_radius_pericenter_sepinsky(double rp, double q, double e, double f)
     }
     if (ratio == 0.0)
     {
+        printf("unrecoverable error occurred in function roche_radius_pericenter_sepinsky in ODE_system.c\n");
         exit(-1);
     }
     

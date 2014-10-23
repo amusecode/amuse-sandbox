@@ -1148,9 +1148,11 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             exit(-1)
     if parameters.include_outer_wind_terms == True:
         try:
-            wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate                    
+            wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate
+            inner_mass_transfer_rate = inner_binary.mass_transfer_rate
             outer_accretion_efficiency_wind_child1_to_child2 = outer_binary.accretion_efficiency_wind_child1_to_child2
             outer_accretion_efficiency_wind_child2_to_child1 = outer_binary.accretion_efficiency_wind_child2_to_child1
+            
         except AttributeError:
             print "More attributes required for outer wind! exiting"
             exit(-1)
@@ -1301,7 +1303,13 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             exit(-1)
 
     print 'SecularTriple -- initialization; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out
-       
+
+    if ((star1.is_donor == False) and (star2.is_donor == False)):
+        inner_mass_transfer_rate = 0.0 | units.MSun/units.yr
+
+    if (star3.is_donor == False):
+        outer_mass_transfer_rate = 0.0 | units.MSun/units.yr
+
     args = [stellar_type1,stellar_type2,stellar_type3,
         m1,m2,m3,
         m1_convective_envelope,m2_convective_envelope,m3_convective_envelope,
