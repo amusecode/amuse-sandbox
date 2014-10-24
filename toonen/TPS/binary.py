@@ -6,8 +6,8 @@ REPORT_FUNCTION_NAMES = False
 REPORT_MASS_TRANSFER_STABILITY = False
 
 #constants
-numerical_error  = 1.e-8
-minimum_eccentricity = 1.e-3
+numerical_error  = 1.e-6
+minimum_eccentricity = 1.e-7
 
 
 which_common_envelope = 2

@@ -23,10 +23,12 @@
 ##            --A_min    lower limit for the inner semi-major axis [5]
 ##            --A_distr  inner semi-major axis option: 0) logFlat distribution [default]
 ##                                                     1) Constant semi-major axis
+##                                                     2) Tokovinin
 ##            --a_max    upper limit for the outer semi-major axis [5e6 RSun]
 ##            --a_min    lower limit for the outer semi-major axis [5 RSun]
 ##            --a_distr  outer semi-major axis option: 0) logFlat distribution [default]
 ##                                                     1) Constant semi-major axis
+##                                                     2) Tokovinin
 ##            --E_max    upper limit for the inner eccentricity [1.]
 ##            --E_min    lower limit for the inner eccentricity [0.]
 ##            --E_distr  inner eccentricity option: 0) Thermal [default]
@@ -69,6 +71,7 @@ from amuse.units.optparse import OptionParser
 from amuse.units import units, constants
 from amuse.support.console import set_printing_strategy
 import numpy as np
+from scipy.interpolate import interp1d
 
 from amuse.ic.kroupa import new_kroupa_mass_distribution
 from amuse.ic.scalo import new_scalo_mass_distribution
@@ -83,31 +86,19 @@ max_mass = 100 |units.MSun
 
 
 def flat_distr(lower, upper):
-    if lower.unit != upper.unit:
-        print 'flat_distr: different units'
-        exit(1)    
-    return np.random.uniform(lower.number, upper.number)|lower.unit
+    return np.random.uniform(lower, upper)
 
 def log_flat_distr(lower, upper):
-    if lower.unit != upper.unit:
-        print 'log_flat_distr: different units'
-        exit(1)    
-    return 10**np.random.uniform(np.log10(lower.number), np.log10(upper.number))|lower.unit
+    lower_RSun = lower.value_in(units.RSun)
+    upper_RSun = upper.value_in(units.RSun)
+    x= np.random.uniform(np.log10(lower_RSun), np.log10(upper_RSun))
+    return (10**x)|units.RSun 
+    
 
-def thermal_distr(lower, upper): #unit is missing for eccentricity
-#    if lower.unit != upper.unit:
-#        print 'thermal_distr: different units'
-#        exit(1)    
-#    return np.sqrt(np.random.uniform(lower.number, upper.number))|lower.unit
+def thermal_distr(lower, upper): 
     return np.sqrt(np.random.uniform(lower, upper))
 
-def circular_uniform_distr(lower, upper): #unit is missing for inclination
-#    print lower, upper
-#    if lower.unit != upper.unit:
-#        print 'circular_uniform_distr: different units'
-#        exit(1)    
-#    return np.arccos(np.random.uniform(np.cos(lower.number), np.cos(upper.number)))|lower.unit
-
+def circular_uniform_distr(lower, upper): 
     return np.arccos(np.random.uniform(np.cos(lower), np.cos(upper)))
 
 def eggleton_mass_distr(lower_mass, upper_mass):
@@ -140,7 +131,11 @@ class Generate_initial_triple:
                         in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr):
                         
                         if in_primary_mass_distr == 5:
-                            self.generate_mass_and_semi_eggleton()                            
+                            convergence = False
+                            while convergence == False:
+                                convergence = self.generate_mass_and_semi_eggleton(in_primary_mass_max, in_primary_mass_min, in_semi_max, in_semi_min, 
+                    out_semi_max, out_semi_min)                            
+#                                   print convergence
                         else:    
                             self.generate_mass(in_primary_mass_max, in_primary_mass_min, 
                                 in_mass_ratio_max, in_mass_ratio_min,
@@ -200,8 +195,8 @@ class Generate_initial_triple:
         else: 
             if in_mass_ratio_distr == 1:# Kroupa 2001 
                 self.in_secondary_mass = new_kroupa_mass_distribution(1, in_primary_mass_max)[0]
-                while self.in_secondary_mass < in_primary_mass_min:
-                        self.in_secondary_mass = new_kroupa_mass_distribution(1, in_primary_mass_max)[0]
+#                while self.in_secondary_mass < in_primary_mass_min:
+#                        self.in_secondary_mass = new_kroupa_mass_distribution(1, in_primary_mass_max)[0]
             else: # flat distribution
                in_mass_ratio = flat_distr(in_mass_ratio_min, in_mass_ratio_max)
                self.in_secondary_mass = in_mass_ratio * self.in_primary_mass        
@@ -213,8 +208,8 @@ class Generate_initial_triple:
         else: 
             if out_mass_ratio_distr == 1:# Kroupa 2001 
                 self.out_mass = new_kroupa_mass_distribution(1, in_primary_mass_max)[0]
-                while self.out_mass < in_primary_mass_min:
-                        self.out_mass = new_kroupa_mass_distribution(1, in_primary_mass_max)[0]
+#                while self.out_mass < in_primary_mass_min:
+#                        self.out_mass = new_kroupa_mass_distribution(1, in_primary_mass_max)[0]
             else: # flat distribution
                out_mass_ratio = flat_distr(out_mass_ratio_min, out_mass_ratio_max)
                self.out_mass = out_mass_ratio * (self.in_primary_mass + self.in_secondary_mass)
@@ -232,10 +227,20 @@ class Generate_initial_triple:
                 print 'TPS::generate_semi: unambiguous choise of constant semi-major axis'
                 print '--A_min option to set the value of the semi-major axis in the inner binary'                
                 self.in_semi = in_semi_min
+            elif in_semi_distr == 2: #Tokovinin
+                self.in_semi = 0.|units.RSun
+                while (self.in_semi < in_semi_min or self.in_semi > in_semi_max):
+                    logP = np.random.normal(5, 2.3, 1)
+                    P = (10**logP)|units.day
+                    self.in_semi = ((P/2/np.pi)**2 * constants.G* (self.in_primary_mass + self.in_secondary_mass))**(1./3.)  
+                    if logP < -0.3 or logP > 10:#truncation of Gaussian wings
+                        self.in_semi = 0.|units.RSun
             else: # log flat distribution
                  maximal_semi = min(in_semi_max, out_semi_max)
+                 print in_semi_max, out_semi_max
                  self.in_semi = log_flat_distr(in_semi_min, maximal_semi)
                         
+        
                         
         if out_semi_max == out_semi_min:
             self.out_semi = out_semi_min
@@ -244,6 +249,33 @@ class Generate_initial_triple:
                 print 'TPS::generate_semi: unambiguous choise of constant semi-major axis'
                 print '--a_min option to set the value of the semi-major axis in the outer binary'                
                 self.out_semi = out_semi_min
+            elif out_semi_distr == 2: #Tokovinin
+                self.out_semi = 0.|units.RSun
+                while (self.out_semi < out_semi_min or self.out_semi > in_semi_max):
+                    logP_out = np.random.normal(5, 2.3, 1)
+                    P_out = (10**logP_out)|units.day
+                    self.out_semi = ((P_out/2/np.pi)**2 * constants.G* (self.in_primary_mass + self.in_secondary_mass + self.out_mass))**(1./3.)                    
+                    if logP_out < -0.3 or logP_out > 10:#truncation of Gaussian wings
+                        self.out_semi = 0.|units.RSun
+                    if logP_out < 3: # no bifurcation
+                        self.out_semi = 0.|units.RSun
+
+                #note:overwrites the inner orbital separation
+                self.in_semi = 0.|units.RSun
+                while (self.in_semi < in_semi_min or self.in_semi > in_semi_max):
+                    logP_in = np.random.normal(5, 2.3, 1)
+                    P_in = (10**logP_in)|units.day
+                    self.in_semi = ((P_in/2/np.pi)**2 * constants.G* (self.in_primary_mass + self.in_secondary_mass))**(1./3.)                    
+                    if logP_in < -0.3 or logP_in > 10:#truncation of Gaussian wings
+                        self.in_semi = 0.|units.RSun
+
+                    dlogP = logP_out - logP_in #unstable
+                    if dlogP < 0.7:
+                        self.in_semi = 0.|units.RSun   
+                    elif dlogP < 1.7:
+                        x = np.random.uniform(0, 1, 1)
+                        if dlogP - 0.7 > x:
+                            self.in_semi = 0.|units.RSun   
             else: # log flat distribution
                  minimal_semi = max(out_semi_min, self.in_semi) # outer orbit is always larger then inner orbit
                  self.out_semi = log_flat_distr(minimal_semi, out_semi_max)
@@ -332,8 +364,9 @@ class Generate_initial_triple:
 #-------
 
 # Eggleton 2009, 399, 1471
-    def generate_mass_and_semi_eggleton(self):
-        U0_mass = [0. .01, .09, .32, 1., 3.2, 11, 32, np.inf]|units.MSun
+    def generate_mass_and_semi_eggleton(self, in_primary_mass_max, in_primary_mass_min, in_semi_max, in_semi_min, 
+                        out_semi_max, out_semi_min):
+        U0_mass = [0., .01, .09, .32, 1., 3.2, 11, 32, np.inf]|units.MSun
         U0_l0 = [0.40, 0.40, 0.40, 0.40, 0.50, 0.75, 0.88, 0.94, 0.96]        U0_l1 = [0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.20, 0.60, 0.80]        U0_l2 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.20, 0.33, 0.82, 0.90]        U0_l3 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]
               
         Mt = eggleton_mass_distr(0.1|units.MSun, 100|units.MSun)
@@ -349,10 +382,10 @@ class Generate_initial_triple:
         
         
         
-         if U < U0:
+        if U < U0:
             V = np.random.uniform(0, 1)
             P0 = 1.e5 * V**2 / (1-V)**2.5 |units.day
-            while P > 1e10|units.day:             
+            while P0 > 1e10|units.day:             
                 V = np.random.uniform(0, 1)
                 P0 = 1.e5 * V**2 / (1-V)**2.5|units.day
 
@@ -385,19 +418,20 @@ class Generate_initial_triple:
                 U_bin = U2
                 U0_bin = U2_0
                 M_comp = M1
-            else: 
-                print 'start again'
-                exit(1)
+            else: #two bifurcations -> higher order multiplicity
+#                print U1, U1_0, U2, U2_0
+#                exit(1)
+                 return False
                 
-           V_bin = np.random.uniform(0, 1)
-           P_bin = 0.2 * P0 * 10**(-5*V_bin) |units.day
+            V_bin = np.random.uniform(0, 1)
+            P_bin = 0.2 * P0 * 10**(-5*V_bin) |units.day
 
-           x_pb = np.random.uniform(0, 1)
-           if P_bin > 25|units.day or x_pb > 0.25: 
+            x_pb = np.random.uniform(0, 1)
+            if P_bin > 25|units.day or x_pb > 0.25: 
                 Q_bin = ( (U0_bin-U_bin)/U0_bin )**0.8
-           else:
+            else:
                 Q_bin = 0.9+0.09*(U0_bin-U_bin)/U0_bin 
-           if Q_bin < 0.01:
+            if Q_bin < 0.01:
                 Q_bin = 0.01                                
 
             M1_bin = M_bin / (1+Q_bin)
@@ -409,8 +443,15 @@ class Generate_initial_triple:
             
             self.in_semi = ((P_bin/2*np.pi)**2 * M_bin*constants.G ) ** (1./3.)
             self.out_semi = ((P0/2*np.pi)**2 * Mt*constants.G ) ** (1./3.)
+      
+            if self.in_primary_mass < in_primary_mass_min or self.in_primary_mass > in_primary_mass_max:
+                return False 
+            if self.in_semi < in_semi_min or self.in_semi > in_semi_max:
+                return False
+            if self.out_semi < out_semi_min or self.out_semi > out_semi_max:
+                return False
                                                          
-
+            return True
         else:
             print 'not possible'
             exit(1)
@@ -461,21 +502,21 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                     in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr)
         
 #        triple_system.print_triple()
-        
+        print triple_system.in_primary_mass
         number_of_system = initial_number + i_n
-        triple.main(inner_primary_mass = triple_system.in_primary_mass, 
-                    inner_secondary_mass = triple_system.in_secondary_mass, 
-                    outer_mass = triple_system.out_mass, 
-                    inner_semimajor_axis = triple_system.in_semi, 
-                    outer_semimajor_axis = triple_system.out_semi, 
-                    inner_eccentricity = triple_system.in_ecc, 
-                    outer_eccentricity = triple_system.out_ecc, 
-                    relative_inclination = triple_system.incl, 
-                    inner_argument_of_pericenter = triple_system.in_aop, 
-                    outer_argument_of_pericenter = triple_system.out_aop, 
-                    inner_longitude_of_ascending_node = triple_system.in_loan, 
-                    outer_longitude_of_ascending_node = triple_system.out_loan, 
-                    metallicity = metallicity, tend = tend, number = number_of_system)                        
+#        triple.main(inner_primary_mass = triple_system.in_primary_mass, 
+#                    inner_secondary_mass = triple_system.in_secondary_mass, 
+#                    outer_mass = triple_system.out_mass, 
+#                    inner_semimajor_axis = triple_system.in_semi, 
+#                    outer_semimajor_axis = triple_system.out_semi, 
+#                    inner_eccentricity = triple_system.in_ecc, 
+#                    outer_eccentricity = triple_system.out_ecc, 
+#                    relative_inclination = triple_system.incl, 
+#                    inner_argument_of_pericenter = triple_system.in_aop, 
+#                    outer_argument_of_pericenter = triple_system.out_aop, 
+#                    inner_longitude_of_ascending_node = triple_system.in_loan, 
+#                    outer_longitude_of_ascending_node = triple_system.out_loan, 
+#                    metallicity = metallicity, tend = tend, number = number_of_system)                        
                                 
 
 def test_initial_parameters(in_primary_mass_max, in_primary_mass_min, 
@@ -621,20 +662,16 @@ def parse_arguments():
     parser.add_option("--M_distr", dest="in_primary_mass_distr", type="int", default = 0,
                       help="inner primary mass distribution [Kroupa]")
                       
-    parser.add_option("--Q_max", unit=units.none, 
-                      dest="in_mass_ratio_max", type="float", default = 1.0 |units.none,
+    parser.add_option("--Q_max", dest="in_mass_ratio_max", type="float", default = 1.0,
                       help="maximum of inner mass ratio [%default]")
-    parser.add_option("--Q_min", unit=units.none, 
-                      dest="in_mass_ratio_min", type="float", default = 0. |units.none,
+    parser.add_option("--Q_min", dest="in_mass_ratio_min", type="float", default = 0.,
                       help="minimum of inner mass ratio [%default]")
     parser.add_option("--Q_distr", dest="in_mass_ratio_distr", type="int", default = 0,
                       help="inner mass ratio distribution [Flat]")
 
-    parser.add_option("--q_max", unit=units.none, 
-                      dest="out_mass_ratio_max", type="float", default = 1.0 |units.none,
+    parser.add_option("--q_max", dest="out_mass_ratio_max", type="float", default = 1.0,
                       help="maximum of outer mass ratio [%default]")
-    parser.add_option("--q_min", unit=units.none, 
-                      dest="out_mass_ratio_min", type="float", default = 0. |units.none,
+    parser.add_option("--q_min", dest="out_mass_ratio_min", type="float", default = 0.,
                       help="minimum of outer mass ratio [%default]")
     parser.add_option("--q_distr", dest="out_mass_ratio_distr", type="int", default = 0,
                       help="outer mass ratio distribution [Flat]")

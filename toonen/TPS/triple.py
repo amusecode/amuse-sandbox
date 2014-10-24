@@ -673,7 +673,6 @@ class Triple_Class:
                 print 'Roche lobe radii:', Rl1, Rl2, Rl3
                 print 'Stellar radii:', bin.child1.radius, bin.child2.radius, star.radius
 
-
             first_RLOF = []
             if bin.child1.radius >= Rl1:
                 if not bin.child1.is_donor:
@@ -873,8 +872,8 @@ class Triple_Class:
     def determine_time_step_radius_change(self, stellar_system = None):
         #note: returned value can be inf when the change in radius <= 0
         #radius is only necessary for tides
-        if not self.secular_code.parameters.include_inner_tidal_terms and not self.secular_code.parameters.include_outer_tidal_terms:
-            return np.inf |units.Myr
+#        if not self.secular_code.parameters.include_inner_tidal_terms and not self.secular_code.parameters.include_outer_tidal_terms:
+#            return np.inf |units.Myr
 
         if stellar_system == None:
             stellar_system = self.triple
@@ -1235,18 +1234,16 @@ class Triple_Class:
                 print dm, stellar_system.mass, stellar_system.stellar_type
                 exit(1)
 
-            if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
-#            if 1>0:
-                dr = (stellar_system.radius - stellar_system.previous_radius)/stellar_system.radius
+            dr = (stellar_system.radius - stellar_system.previous_radius)/stellar_system.radius
 
-                if REPORT_TRIPLE_EVOLUTION:    
-                    print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
-                    print 'relative change in radius:', dr
-    
-                if (dr > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_remnants):
-                    print 'Change in radius in a single time_step larger then', error_dr
-                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
-                    exit(1)
+            if REPORT_TRIPLE_EVOLUTION:    
+                print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
+                print 'relative change in radius:', dr
+
+            if (dr > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_remnants):
+                print 'Change in radius in a single time_step larger then', error_dr
+                print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
+                exit(1)
 
         else:
             self.safety_check_time_step(stellar_system.child1)        
@@ -1351,7 +1348,6 @@ class Triple_Class:
                 print self.has_triple_mass_transfer()
                 break                                    
 
-
             
             #do stellar interaction
             if REPORT_TRIPLE_EVOLUTION:
@@ -1377,7 +1373,7 @@ class Triple_Class:
                 break
   
             self.check_for_RLOF()
-                   
+            
             if self.instantaneous_evolution == False and self.first_contact == False: 
                 # do secular evolution
                 if REPORT_TRIPLE_EVOLUTION:
@@ -1394,8 +1390,18 @@ class Triple_Class:
                     full_dt = self.time - self.previous_time
                     self.secular_code.evolve_model(self.previous_time + full_dt * self.triple.child2.part_dt_mt)
 
+                    self.channel_from_secular.copy()
+                    if self.triple.error_flag_secular < 0:
+                        print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
+                        print self.triple.error_flag_secular
+                        self.save_snapshot()        
+                        break
+                        
                     if self.has_donor():
                         print 'After partial timestep the system should be detached...'
+                        self.check_for_RLOF()
+                        self.channel_from_secular.copy()
+                        self.check_for_RLOF()
                         exit(1)
                     # not necessary because secular code reset is_donor and therefore the mass transfer rate is not used if the system is detached    
 #                    self.triple.child2.mass_transfer_rate =  0.0 | units.MSun/units.yr 
@@ -1438,14 +1444,20 @@ class Triple_Class:
                 if self.has_donor() and self.time != self.secular_code.model_time:
                     self.secular_code.model_time = self.time               
 
-                self.channel_from_secular.copy()     
+                self.channel_from_secular.copy()  
+                if self.triple.error_flag_secular < 0:
+                    print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
+                    print self.triple.error_flag_secular
+                    self.save_snapshot()        
+                    break
+                   
             else:
                 print 'skip secular', self.instantaneous_evolution, self.first_contact        
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
-            
+            self.check_for_RLOF()
 
             
             # for plotting data
@@ -1543,13 +1555,13 @@ def plot_function(triple):
     
     
     generic_name = 'M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(triple.maximum_radius_change_factor)+'_edr'+str(error_dr)
-    f = open(generic_name+'.txt','w')
-    for i in range(len(times_array_Myr)):
-        f.write( str(times_array_Myr[i]) + '\t'+str(e_in_array[i]) + '\t'+ str(a_in_array_AU[i]) + '\t')
-        f.write(str(e_out_array[i]) + '\t' + str(a_out_array_AU[i]) + '\t')
-        f.write(str(r1_array[i]) + '\t' + str(r2_array[i]) + '\t' + str(r3_array[i]) + '\t')
-        f.write('\n')
-    f.close()
+#    f = open(generic_name+'.txt','w')
+#    for i in range(len(times_array_Myr)):
+#        f.write( str(times_array_Myr[i]) + '\t'+str(e_in_array[i]) + '\t'+ str(a_in_array_AU[i]) + '\t')
+#        f.write(str(e_out_array[i]) + '\t' + str(a_out_array_AU[i]) + '\t')
+#        f.write(str(r1_array[i]) + '\t' + str(r2_array[i]) + '\t' + str(r3_array[i]) + '\t')
+#        f.write('\n')
+#    f.close()
 
 
     figure = plt.figure(figsize=(10,13))
@@ -1695,13 +1707,6 @@ def plot_function(triple):
     dm1_array =m1_array[:-1]-m1_array[1:]
     dm2_array =m2_array[:-1]-m2_array[1:]
     dm3_array =m3_array[:-1]-m3_array[1:]
-    print m1_array
-    print ' '
-    print m2_array
-    print ' '
-    print m3_array
-    print ' '
-    print dm1_array, dm2_array, dm3_array
     
     plt.plot(times_array_Myr[1:], m1_array[1:])
     plt.plot(times_array_Myr[1:], m1_array[1:], '.')
@@ -2019,7 +2024,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             metallicity, tend, number, maximum_radius_change_factor)
 
     triple_class_object.evolve_model()
-#    plot_function(triple_class_object)
+    plot_function(triple_class_object)
 #    triple_class_object.print_stellar_system()
     return triple_class_object
 #-----
@@ -2096,6 +2101,7 @@ if __name__ == '__main__':
     triple_class_object = Triple_Class(**options)
     triple_class_object.evolve_model()
 #    triple_class_object.print_stellar_system()
-    plot_function(triple_class_object)
+#    plot_function(triple_class_object)
+    print 'succesfully finished'
 
 
