@@ -2,10 +2,13 @@
 
 import getopt
 import string
-from pylab import *
 import re
 import numpy
 from math import log10
+# Allow headless runs of matplotlib.
+import matplotlib as mpl
+mpl.use('PDF')
+from matplotlib.pyplot import *
 
 # Display a time sequence from a (not yet standard) AMUSE log file.
 
@@ -83,7 +86,7 @@ if __name__ == '__main__':
             plot(tlist, qplot[:,i], lt, linewidth=1.0)
     xlabel('time')
     ylabel(quantity)
-    show()
-    savefig("%s.pdf" % quantity, format='pdf')
+    outfilename = infile.split(".")[0] + "_" + quantity + ".pdf"
+    savefig(outfilename, format='pdf')
 else:
     print 'No data to plot.'

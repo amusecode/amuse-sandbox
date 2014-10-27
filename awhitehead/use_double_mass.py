@@ -113,7 +113,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     for r in lagr.number: print "%.8f" % r,
     print ''
     kT = T/N
-    #Nmul,Nbin,Emul = gravity.pretty_print_multiples(pre, kT, dcen)
+    Nmul,Nbin,Emul = gravity.pretty_print_multiples(pre, kT, dcen)
     print pre+"Nmul=", Nmul
     print pre+"Nbin=", Nbin
     print pre+"Emul= %.5f" % Emul.number
@@ -268,32 +268,7 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
 
                 nbin += 1
 
-                mass = stars[i].mass
-                #new_mass = numpy.random.uniform()*mass	# uniform q?
-                new_mass = mass	# uniform q?
-                mbin = mass + new_mass
-                fac = new_mass/mbin
-                E = Emin + numpy.random.uniform()*(Emax-Emin)
-                a = 0.5*nbody_system.G*mass*new_mass/E
-
-                kep.initialize_from_elements(mbin, a, ecc)
-                dr = quantities.AdaptingVectorQuantity()
-                dr.extend(kep.get_separation_vector())
-                dv = quantities.AdaptingVectorQuantity()
-                dv.extend(kep.get_velocity_vector())
-
-                newstar = datamodel.Particles(1)
-                newstar.mass = new_mass
-                newstar.position = stars[i].position + (1-fac)*dr
-                newstar.velocity = stars[i].velocity + (1-fac)*dv
-                # stars[i].mass = mass
-                stars[i].position = stars[i].position - fac*dr
-                stars[i].velocity = stars[i].velocity - fac*dv
-
-                id_count += 1
-                newstar.id = id_count
-                stars.add_particles(newstar)
-                added_mass += new_mass
+                stars[i].mass = stars[i].mass * 2.0
 
                 if nbin >= number_of_binaries: break
 
@@ -302,8 +277,6 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
             print 'created', nbin, 'binaries'
             sys.stdout.flush()
 
-            stars.mass = stars.mass * total_mass/(total_mass+added_mass)
-            number_of_stars += nbin
     elif restart_file is not None:
         pass
     else:
@@ -418,10 +391,9 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     multiples_code = multiples.Multiples(gravity, new_smalln, kep)
 
     multiples_code.neighbor_distance_factor = 1.0
-    multiples_code.neighbor_veto = True
+    multiples_code.neighbor_veto = False
     #multiples_code.neighbor_distance_factor = 2.0
     #multiples_code.neighbor_veto = True
-    multiples_code.retain_binary_apocenter = False
 
     print ''
     print 'multiples_code.initial_scale_factor =', \
@@ -445,7 +417,13 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
 
     pre = "%%% "
     E0,cpu0 = print_log(pre, time, multiples_code)
-    
+
+
+    print "&&&&&&&&&&&&&&"
+    for s in stars:
+        print s.id, s.mass, s.radius
+    print "&&&&&&&&&&&&&&"
+
     while time < end_time:
 
         time += delta_t
