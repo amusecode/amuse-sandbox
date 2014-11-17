@@ -103,12 +103,12 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     
     /* mass transfer */
     double temp = inner_accretion_efficiency_mass_transfer*inner_mass_transfer_rate;
-    if (star1_is_donor == TRUE)
+    if (star1_is_donor == TRUE)  // m1 transfers mass; m2 gains a fraction of this
     {
         m1_dot += temp;
         m2_dot += -temp;
     }
-    else if (star2_is_donor == TRUE)
+    else if (star2_is_donor == TRUE) // m2 transfers mass; m1 gains a fraction of this
     {
         m1_dot += -temp;
         m2_dot += temp;
@@ -157,13 +157,15 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 	double e_out = 1.0 - pow(10.0,y);
 
     /* premature return values */
-    if (e_in <= 0.0)
+    if (e_in < 0.0)
     {
-        return 1;
+        printf("e_in<=0 %g \n",e_in);
+//        return 1;
     }
-    if (e_out <= 0.0)
+    if (e_out < 0.0)
     {
-        return 1;
+        printf("e_out<=0\n");
+//        return 1;
     }
     if (data->stop_after_error_bool == TRUE)
     {
@@ -381,7 +383,15 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
             - c_11div18*l_in_p3*f_tides4_in*spin_angular_frequency1_div_n_in);
         double e_in_dot_tides_star2 = -27.0*(1.0+m1_div_m2)*m1_div_m2_times_R2_div_a_in_p6_times_k_div_T_tides_star2*R2_div_a_in_p2*e_in*pow(l_in,-13.0)*(f_tides3_in \
             - c_11div18*l_in_p3*f_tides4_in*spin_angular_frequency2_div_n_in);            
+
+        if (e_in <= 0.0)
+        {
+            printf("e_in_dot_tides %g\n",e_in_dot_tides_star1);
+            
+        }
+
         e_in_dot_tides = e_in_dot_tides_star1 + e_in_dot_tides_star2;
+
     }
     
     /* mass transfer */

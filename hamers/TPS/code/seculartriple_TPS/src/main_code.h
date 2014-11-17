@@ -147,7 +147,7 @@ int evolve(
     double * e_in_output, double * e_out_output,
     double *INCL_in_output, double *INCL_out_output, double *INCL_in_out_output, double * AP_in_output, double * AP_out_output, double *LAN_in_output, double *LAN_out_output,
     double * t_output,
-    int * output_flag, int * error_flag
+    int * CVODE_flag, int * root_finding_flag
 );
 static int check_flag(void *flagvalue, char *funcname, int opt);
 void error_handling_function(int error_code, const char *module, const char *function, char *message, void *data_f);

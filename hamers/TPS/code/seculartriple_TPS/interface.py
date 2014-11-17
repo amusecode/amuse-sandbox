@@ -14,6 +14,32 @@ unit_l = units.AU
 unit_m = units.MSun
 unit_t = 1.0e6*units.yr
 
+### CVODE flags ###
+CV_SUCCESS=0
+CV_ROOT_RETURN=2
+CV_WARNING=99
+CV_TOO_MUCH_WORK=-1
+CV_TOO_MUCH_ACC=-2
+CV_ERR_FAILURE=-3
+CV_CONV_FAILURE=-4
+CV_LINIT_FAIL=-5
+CV_LSETUP_FAIL=-6
+CV_LSOLVE_FAIL=-7
+CV_RHSFUNC_FAIL=-8
+CV_FIRST_RHSFUNC_ERR=-9
+CV_REPTD_RHSFUNC_ERR=-10
+CV_UNREC_RHSFUNC_ERR=-11
+CV_RTFUNC_FAIL=-12
+CV_MEM_FAIL=-20
+CV_MEM_NULL=-21
+CV_ILL_INPUT=-22
+CV_NO_MALLOC=-23
+CV_BAD_K=-24
+CV_BAD_T=-25
+CV_BAD_DKY=-26
+CV_TOO_CLOSE=-27
+
+
 class SecularTripleInterface(CodeInterface):
     include_headers = ['src/main_code.h','src/ODE_system.h']
 
@@ -105,8 +131,8 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('LAN_in_output', dtype='float64', direction=function.OUT)
         function.addParameter('LAN_out_output', dtype='float64', direction=function.OUT)
         function.addParameter('t_output', dtype='float64', direction=function.OUT)
-        function.addParameter('output_flag', dtype='int32', direction=function.OUT)
-        function.addParameter('error_flag', dtype='int32', direction=function.OUT)
+        function.addParameter('CVODE_flag', dtype='int32', direction=function.OUT)
+        function.addParameter('root_finding_flag', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
@@ -753,8 +779,8 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### LAN_in_output
                 object.NO_UNIT,             ### LAN_out_output                                
                 unit_t,                     ### t_output
-                object.NO_UNIT,             ### output_flag
-                object.NO_UNIT,             ### error_flag
+                object.NO_UNIT,             ### CVODE_flag
+                object.NO_UNIT,             ### root_finding_flag
                 object.ERROR_CODE,
             )
         )
@@ -929,55 +955,59 @@ class SecularTriple(InCodeComponentImplementation):
             a_in,a_out,e_in,e_out, \
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
-            end_time_cvode,flag,error = self.evolve(*args)
+            end_time_cvode,CVODE_flag,root_finding_flag = self.evolve(*args)
             print 'SecularTriple -- done; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out
+
+            print_CVODE_output(CVODE_flag)
+            triple.error_flag_secular = CVODE_flag
 
             ####################
             ### root finding ###
             ####################
-            
-            ### dynamical instability ###
             triple.dynamical_instability = False
-            if flag==1: 
-                triple.dynamical_instability = True
-
-            ### inner collision ###
             triple.inner_collision = False
-            if flag==2: 
-                triple.inner_collision = True
-                print 'inner collision'
-            ### outer collision ###
             triple.outer_collision = False
-            if flag==3: 
-                triple.outer_collision = True
-                print 'outer collision'
+                                            
+            if CVODE_flag==CV_ROOT_RETURN:
+                
+                ### dynamical instability ###
+                if root_finding_flag==1:
+                    print 'triple dynamical instability'
+                    triple.dynamical_instability = True
+    
+                ### inner collision ###
+                if root_finding_flag==2: 
+                    triple.inner_collision = True
+                    print 'inner collision'
+                ### outer collision ###
+                if root_finding_flag==3: 
+                    triple.outer_collision = True
+                    print 'outer collision'
+    
+                ### RLOF star1 ###
+                if root_finding_flag==4: 
+                    star1.is_donor = True
+                    print 'star 1 has filled its Roche Lobe during secular integration'
+                if root_finding_flag==-4: 
+                    star1.is_donor = False
+                    print 'star 1 no longer fills its Roche Lobe during secular integration'
+    
+                ### RLOF star2 ###
+                if root_finding_flag==5: 
+                    star2.is_donor = True
+                    print 'star 2 has filled its Roche Lobe during secular integration'
+                if root_finding_flag==-5: 
+                    star2.is_donor = False
+                    print 'star 2 no longer fills its Roche Lobe during secular integration'
+    
+                ### RLOF star3 ###
+                if root_finding_flag==6: 
+                    star3.is_donor = True
+                    print 'star 3 has filled its Roche Lobe during secular integration'
+                if root_finding_flag==-6: 
+                    star3.is_donor = False
+                    print 'star 3 no longer fills its Roche Lobe during secular integration'
 
-            ### RLOF star1 ###
-            if flag==4: 
-                star1.is_donor = True
-                print 'star 1 has filled its Roche Lobe during secular integration'
-            if flag==-4: 
-                star1.is_donor = False
-                print 'star 1 no longer fills its Roche Lobe during secular integration'
-
-            ### RLOF star2 ###
-            if flag==5: 
-                star2.is_donor = True
-                print 'star 2 has filled its Roche Lobe during secular integration'
-            if flag==-5: 
-                star2.is_donor = False
-                print 'star 2 no longer fills its Roche Lobe during secular integration'
-
-            ### RLOF star3 ###
-            if flag==6: 
-                star3.is_donor = True
-                print 'star 3 has filled its Roche Lobe during secular integration'
-            if flag==-6: 
-                star3.is_donor = False
-                print 'star 3 no longer fills its Roche Lobe during secular integration'
-
-            triple.error_flag_secular = error
-            
             ### update model time ###
             self.model_time += end_time_cvode
 
@@ -1057,6 +1087,59 @@ class SecularTriple(InCodeComponentImplementation):
             print 'ratios',R_L_star1/R_L_eggleton(a_in,m1/m2),R_L_star2/R_L_eggleton(a_in,m2/m1),R_L_star3/R_L_eggleton(a_out,m3/(m1+m2))
         
         return R_L_star1,R_L_star2,R_L_star3
+
+def print_CVODE_output(CVODE_flag):
+
+    if CVODE_flag==CV_SUCCESS:
+        print "Secular integration proceeded successfully."
+    elif CVODE_flag==CV_ROOT_RETURN:
+        print "Root was found during secular integration."
+    elif CVODE_flag==CV_WARNING:
+        print "(Recoverable) warnings occurred during secular integration."
+    if CVODE_flag<0:
+        if CVODE_flag==CV_TOO_MUCH_WORK:
+            message = "too many steps were taken during secular integration."
+        elif CVODE_flag==CV_TOO_MUCH_ACC:
+            message = "required accuracy could not be obtained."
+        elif CVODE_flag==CV_ERR_FAILURE:
+            message = "error test failures occurred too many times during one internal time-step or minimum step size was reached."
+        elif CVODE_flag==CV_CONV_FAILURE:
+            message = "convergence test failures occurred too many times during one internal time-step or minimum step size was reached."
+        elif CVODE_flag==CV_LINIT_FAIL:    
+            message = "the linear solver's initialization function failed."
+        elif CVODE_flag==CV_LSETUP_FAIL:    
+            message = "the linear solver's setup function failed in an unrecoverable manner."
+        elif CVODE_flag==CV_LSOLVE_FAIL:    
+            message = "the linear solver's solve function failed in an unrecoverable manner."
+        elif CVODE_flag==CV_RHSFUNC_FAIL:
+            message = "the right-hand side function failed in an unrecoverable manner."
+        elif CVODE_flag==CV_FIRST_RHSFUNC_ERR:    
+            message = "the right-hand side function failed at the first call."
+        elif CVODE_flag==CV_REPTD_RHSFUNC_ERR:    
+            message = "the right-hand side function had repetead recoverable errors."
+        elif CVODE_flag==CV_UNREC_RHSFUNC_ERR:    
+            message = "the right-hand side function had a recoverable error, but no recovery is possible."
+        elif CVODE_flag==CV_RTFUNC_FAIL:    
+            message = "the rootfinding function failed in an unrecoverable manner."
+        elif CVODE_flag==CV_MEM_FAIL:    
+            message = "a memory allocation failed."
+        elif CVODE_flag==CV_MEM_NULL:    
+            message = "the cvode mem argument was NULL."
+        elif CVODE_flag==CV_ILL_INPUT:    
+            message = "one of the function inputs is illegal."
+        elif CVODE_flag==CV_NO_MALLOC:    
+            message = "the cvode memory block was not allocated by a call to CVodeMalloc."
+        elif CVODE_flag==CV_BAD_K:    
+            message = "the derivative order k is larger than the order used."
+        elif CVODE_flag==CV_BAD_T:    
+            message = "the time t is outside the last step taken."
+        elif CVODE_flag==CV_BAD_DKY:    
+            message = "the output derivative vector is NULL."
+        elif CVODE_flag==CV_TOO_CLOSE:    
+            message = "the output and initial times are too close to each other."
+        else:
+            message = "unknown error."
+        print "Unrecoverable error occurred during secular integration (CVODE_flag ",str(CVODE_flag),"): ",message
 
 def R_L_eggleton(a,q):
     q_pow_one_third = pow(q,1.0/3.0)

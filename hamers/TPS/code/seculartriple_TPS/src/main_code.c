@@ -19,6 +19,7 @@
 #define MAXNUMSTEPS 	5e8					/* maximum number of internal steps */
 #define MAXTIME		RCONST(13.7e9*365.25*24.0*3600.0)	/* maximum integration time */
 #define MAXNUMCONVFAIL	20					/* maximum number of convergence failures */
+#define MAXERRTESTFAILS 20
 
 /*	interface parameters	*/
 int equations_of_motion_specification = 0;
@@ -67,7 +68,7 @@ int evolve(
     double * e_in_output, double * e_out_output,
     double *INCL_in_output, double *INCL_out_output, double *INCL_in_out_output, double * AP_in_output, double * AP_out_output, double *LAN_in_output, double *LAN_out_output,
     double * t_output,
-    int * output_flag, int * error_flag)
+    int * CVODE_flag, int * root_finding_flag)
 {
     double tiny_double = input_precision;
     if (e_in<=tiny_double) { e_in = tiny_double; }
@@ -271,9 +272,18 @@ int evolve(
 
 	flag = CVodeSetMaxConvFails(cvode_mem, MAXNUMCONVFAIL);
 	if (check_flag(&flag, "CVodeSetMaxConvFails", 1)) return 1;
-			
+
+	flag = CVodeSetMaxErrTestFails(cvode_mem, MAXERRTESTFAILS);
+	if (check_flag(&flag, "CVodeSetMaxErrTestFails", 1)) return 1;
+
 	flag = CVodeSetUserData(cvode_mem, data);
-	if (check_flag(&flag, "CVodeSetUsetData", 1)) return 1;
+	if (check_flag(&flag, "CVodeSetUserData", 1)) return 1;
+
+	flag = CVodeSetStabLimDet(cvode_mem, TRUE);
+	if (check_flag(&flag, "CVodeSetStabLimDet", 1)) return 1;
+
+	flag = CVodeSetMaxOrd(cvode_mem, 5);
+	if (check_flag(&flag, "CVodeSetMaxOrd", 1)) return 1;
 
 	int nroot = 6;
 	int rootsfound[nroot];
@@ -287,63 +297,67 @@ int evolve(
     
 	if (flag_s == CV_SUCCESS) // successfully integrated for global time-step
 	{
-		*output_flag = 0;
-		*error_flag = 0;
+		*CVODE_flag = 0;
+        *root_finding_flag = 0;        
 	}
 	else if (flag_s == CV_ROOT_RETURN) // root was found
 	{
 		CVodeGetRootInfo(cvode_mem,rootsfound);
 		if (rootsfound[0] == 1 || rootsfound[0] == -1) // dynamical instability
 		{
-			*output_flag = 1;
+			*root_finding_flag = 1;
 		}
 		if (rootsfound[1] == 1 || rootsfound[1] == -1) // collision in inner binary
 		{
-			*output_flag = 2;
+			*root_finding_flag = 2;
 		}
 		if (rootsfound[2] == 1 || rootsfound[2] == -1) // collision in outer binary -- see ODE_system.c for what this means
 		{
-			*output_flag = 3;
+			*root_finding_flag = 3;
 		}    
         if (rootsfound[3] == 1)
         {
-            *output_flag = 4; // star 1 now fills its Roche Lobe: R-R_L was negative, has become positive
+            *root_finding_flag = 4; // star 1 now fills its Roche Lobe: R-R_L was negative, has become positive
         }
         if (rootsfound[3] == -1)
         {
-            *output_flag = -4; // star 1 no longer fills its Roche Lobe: R-R_L was positive, has become negative
+            *root_finding_flag = -4; // star 1 no longer fills its Roche Lobe: R-R_L was positive, has become negative
         }
         if (rootsfound[4] == 1)
         {
-            *output_flag = 5; // star 2 now fills its Roche Lobe: R-R_L was negative, has become positive
+            *root_finding_flag = 5; // star 2 now fills its Roche Lobe: R-R_L was negative, has become positive
         }
         if (rootsfound[4] == -1)
         {
-            *output_flag = -5; // star 2 no longer fills its Roche Lobe: R-R_L was positive, has become negative
+            *root_finding_flag = -5; // star 2 no longer fills its Roche Lobe: R-R_L was positive, has become negative
         }
         if (rootsfound[5] == 1)
         {
-            *output_flag = 6; // star 3 now fills its Roche Lobe: R-R_L was negative, has become positive
+            *root_finding_flag = 6; // star 3 now fills its Roche Lobe: R-R_L was negative, has become positive
         }
         if (rootsfound[5] == -1)
         {
-            *output_flag = -6; // star 3 no longer fills its Roche Lobe: R-R_L was positive, has become negative
+            *root_finding_flag = -6; // star 3 no longer fills its Roche Lobe: R-R_L was positive, has become negative
         }
-		*error_flag = 2;
+		*CVODE_flag = CV_ROOT_RETURN; // indicates root was found
 	}
 	else if (flag_s == CV_WARNING) // integration successfull, but warnings occured
     {
-		*output_flag = 99;
-		*error_flag = flag_s;
+		*CVODE_flag = CV_WARNING;
+		*root_finding_flag = flag_s;
     }
-    else // fatal error(s) occurred
+    else if (flag_s < 0) // fatal error(s) occurred
     {
-		*output_flag = flag_s;
-		*error_flag = flag_s;
+		*CVODE_flag = flag_s;
+		*root_finding_flag = 0.0;
     }
-    
+    else
+    {
+        printf("unknown CVODE output code %d\n",flag_s);
+        exit(-1);
+    }
 
-    /**********1.0e-14
+    /**********
      * output *
      * ********/
      
