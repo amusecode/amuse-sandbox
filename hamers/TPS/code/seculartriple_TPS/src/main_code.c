@@ -35,8 +35,8 @@ bool include_spin_radius_mass_coupling_terms;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
 bool include_linear_mass_change,include_linear_radius_change;
 double relative_tolerance = 1.0e-10;
-double input_precision = 1.0e-14;
-
+double input_precision = 1.0e-5;
+int linear_solver = 0;
 
 int evolve(
     int stellar_type1, int stellar_type2, int stellar_type3,
@@ -251,10 +251,40 @@ int evolve(
 
     flag = CVodeSVtolerances(cvode_mem, relative_tolerance, abstol);
 	if (check_flag(&flag, "CVodeSVtolerances", 1)) return 1;
-	
-	flag = CVDense(cvode_mem, NEQ);
-	if (check_flag(&flag, "CVDense", 1)) return 1;
-  
+
+    /****** specify linear solver ******/
+    if (linear_solver == 0) // default solver
+    {
+        flag = CVDense(cvode_mem, NEQ);
+    	if (check_flag(&flag, "CVDense", 1)) return 1;
+    }
+    if (linear_solver == 1)
+    {
+        flag = CVDiag(cvode_mem);
+        if (check_flag(&flag, "CVDiag", 1)) return 1;
+    }
+    if (linear_solver == 2) // placeholder for CVBand; not yet implemented
+    {
+        //flag = CVBand(cvode_mem);
+        //if (check_flag(&flag, "CVBand", 1)) return 1;
+    }
+    if (linear_solver == 3)
+    {
+        flag = CVSpgmr(cvode_mem, PREC_NONE, CVSPILS_MAXL);
+        if (check_flag(&flag, "CVSpgmr", 1)) return 1;
+
+    }
+    if (linear_solver == 4)
+    {
+        flag = CVSpbcg(cvode_mem, PREC_NONE, CVSPILS_MAXL);
+        if (check_flag(&flag, "CVSpbcg", 1)) return 1;
+    }
+    if (linear_solver == 5)
+    {
+        flag = CVSptfqmr(cvode_mem, PREC_NONE, CVSPILS_MAXL);
+        if (check_flag(&flag, "CVSptfqmr", 1)) return 1;
+    }
+
 	flag = CVodeSetInitStep(cvode_mem, INITIAL_ODE_TIME_STEP);
 	if (check_flag(&flag, "CVodeSetInitStep", 1)) return 1;
 		
@@ -502,6 +532,16 @@ int get_input_precision(double *input_precision_t)
 int set_input_precision(double input_precision_t)
 {
     input_precision = input_precision_t;
+    return 0;
+}
+int get_linear_solver(int *linear_solver_t)
+{
+    *linear_solver_t = linear_solver;
+    return 0;
+}
+int set_linear_solver(int linear_solver_t)
+{
+    linear_solver = linear_solver_t;
     return 0;
 }
 int get_check_for_dynamical_stability(int *value){

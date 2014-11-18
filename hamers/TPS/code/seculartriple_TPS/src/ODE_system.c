@@ -386,7 +386,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 
         if (e_in <= 0.0)
         {
-            printf("e_in_dot_tides %g\n",e_in_dot_tides_star1);
+//            printf("e_in_dot_tides %g\n",e_in_dot_tides_star1);
             
         }
 

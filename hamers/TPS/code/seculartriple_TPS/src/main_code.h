@@ -1,12 +1,38 @@
 #include <math.h>
 #include <cstdlib>
 
+/*********
+ * CVODE *
+ *********/
+ 
+/* general */
 #include "cvode/cvode.h"					/* prototypes for CVODE fcts., consts. */
 #include "cvode/nvector_serial.h"			/* serial N_Vector types, fcts., macros */
-#include "cvode/cvode_dense.h"				/* prototype for CVDense */
 #include "cvode/sundials_dense.h"			/* definitions DlsMat DENSE_ELEM */
 #include "cvode/sundials_types.h"			/* definition of type realtype */
+#include "cvode/sundials_math.h"
 
+/* linear solvers */
+#include "cvode/cvode_dense.h"				
+#include "cvode/cvode_diag.h"
+#include "cvode/cvode_spgmr.h"
+#include "cvode/cvode_spbcgs.h"
+#include "cvode/cvode_sptfqmr.h"
+
+/* macros */
+#define Ith(v,i)    NV_Ith_S(v,i-1)       		/* Ith numbers components 1..NEQ */
+#define IJth(A,i,j) DENSE_ELEM(A,i-1,j-1) 		/* IJth numbers rows,cols 1..NEQ */
+#ifndef max
+	#define max(a,b) ( ((a) > (b)) ? (a):(b) )
+#endif
+#ifndef min
+    #define min(a,b) ( ((a) < (b)) ? (a):(b) )
+#endif
+
+/*********
+ * other *
+ * *******/
+ 
 #include "helper_routines.h"
 #include "tidal_friction_parameters.h"
 #include "ODE_system.h"
@@ -67,16 +93,6 @@
 #define c_185div16          (double)    185.0/16.0
 #define c_255div8           (double)    255.0/8.0
 #define c_304div15          (double)    304.0/15.0
-
-/*	ODE solver related quantities	*/
-#define Ith(v,i)    NV_Ith_S(v,i-1)       		/* Ith numbers components 1..NEQ */
-#define IJth(A,i,j) DENSE_ELEM(A,i-1,j-1) 		/* IJth numbers rows,cols 1..NEQ */
-#ifndef max
-	#define max(a,b) ( ((a) > (b)) ? (a):(b) )
-#endif
-#ifndef min
-    #define min(a,b) ( ((a) < (b)) ? (a):(b) )
-#endif
 
 typedef struct {
     double global_time_step; // the global time-step
@@ -155,6 +171,8 @@ int get_equations_of_motion_specification(int *relative_tolerance_t);
 int set_equations_of_motion_specification(int relative_tolerance_t);
 int get_input_precision(double *input_precision_t);
 int set_input_precision(double input_precision_t);
+int get_linear_solver(int *linear_solver_t);
+int set_linear_solver(int linear_solver_t);
 int get_check_for_dynamical_stability(int *value);
 int set_check_for_dynamical_stability(int value);
 int get_check_for_inner_collision(int *value);

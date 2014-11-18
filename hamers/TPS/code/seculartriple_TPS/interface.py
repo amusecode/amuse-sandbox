@@ -175,6 +175,20 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
+    def get_linear_solver():
+        function = LegacyFunctionSpecification()
+        function.addParameter('linear_solver', dtype='int32',direction=function.OUT,description = "linear solver")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_linear_solver():
+        function = LegacyFunctionSpecification()
+        function.addParameter('linear_solver', dtype='int32',direction=function.IN,description = "linear solver")
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
     def get_equations_of_motion_specification():
         function = LegacyFunctionSpecification()
         function.addParameter('equations_of_motion_specification', dtype='int32',direction=function.OUT,description = "...")
@@ -518,9 +532,16 @@ class SecularTriple(InCodeComponentImplementation):
             "get_input_precision",
             "set_input_precision",
             "input_precision",
-            "Input_precision, default 1e-14",
-            default_value = 1.0e-14
+            "Input_precision, default 1e-5",
+            default_value = 1.0e-5
         )        
+        object.add_method_parameter(
+            "get_linear_solver",
+            "set_linear_solver",
+            "linear_solver",
+            "linear_solver, default 0",
+            default_value = 0
+        )             
         object.add_method_parameter(
             "get_equations_of_motion_specification",
             "set_equations_of_motion_specification",
