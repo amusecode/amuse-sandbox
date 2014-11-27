@@ -1,15 +1,14 @@
 """
 Interface for SecularTriple
+Designed to work together with TPS
 
-Adrian Hamers 24-06-2014
+Adrian Hamers 27-11-2014
 """
 
 from amuse.community import *
 from amuse.units import units,constants
-#import tidal_friction_constant
-#cm = 1e-2*units.m
-#g = 1e-3*units.kg
 
+### units used internally in the ODE solver ###
 unit_l = units.AU
 unit_m = units.MSun
 unit_t = 1.0e6*units.yr
@@ -510,7 +509,7 @@ class SecularTriple(InCodeComponentImplementation):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self,  SecularTripleInterface(**options), **options)
         self.model_time = 0.0 | units.Myr
-
+        self.evolve_further_after_root_was_found = False
     def define_parameters(self, object):
         
         object.add_method_parameter(
@@ -956,7 +955,7 @@ class SecularTriple(InCodeComponentImplementation):
 
     def evolve_model(self,end_time):
         if end_time is None:
-            print 'Please specify end time!'
+            print 'SecularTriple -- please specify end time!'
             return
 
         parameters = self.parameters
@@ -968,7 +967,7 @@ class SecularTriple(InCodeComponentImplementation):
             self.time_step = end_time - self.model_time            
 
             inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
-            args = extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3)
+            args = extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2,star3)
 
             ### solve system of ODEs ###
             m1,m2,m3,R1,R2,R3, \
@@ -977,7 +976,7 @@ class SecularTriple(InCodeComponentImplementation):
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_cvode,CVODE_flag,root_finding_flag = self.evolve(*args)
-            print 'SecularTriple -- done; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out
+            print 'SecularTriple -- done; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in
 
             print_CVODE_output(CVODE_flag)
             triple.error_flag_secular = CVODE_flag
@@ -988,46 +987,54 @@ class SecularTriple(InCodeComponentImplementation):
             triple.dynamical_instability = False
             triple.inner_collision = False
             triple.outer_collision = False
-                                            
+            
+            ### The secular code will stop the integration if a root is found.
+            ### In some cases, it is desirable to, nevertheless, continue integrating
+            ### until the end time originally specified from triple.py.
+            ### In those cases, evolve_further_until_original_end_time is to be set to `True'.
+
             if CVODE_flag==CV_ROOT_RETURN:
                 
                 ### dynamical instability ###
                 if root_finding_flag==1:
-                    print 'triple dynamical instability'
+                    print 'SecularTriple -- triple dynamical instability'
                     triple.dynamical_instability = True
     
                 ### inner collision ###
                 if root_finding_flag==2: 
                     triple.inner_collision = True
-                    print 'inner collision'
+                    print 'SecularTriple --inner collision'
                 ### outer collision ###
                 if root_finding_flag==3: 
                     triple.outer_collision = True
-                    print 'outer collision'
+                    print 'SecularTriple --outer collision'
     
                 ### RLOF star1 ###
                 if root_finding_flag==4: 
                     star1.is_donor = True
-                    print 'star 1 has filled its Roche Lobe during secular integration'
+                    print 'SecularTriple -- star 1 has filled its Roche Lobe during secular integration'
                 if root_finding_flag==-4: 
                     star1.is_donor = False
-                    print 'star 1 no longer fills its Roche Lobe during secular integration'
+                    print 'SecularTriple -- star 1 no longer fills its Roche Lobe during secular integration'
+                    self.evolve_further_after_root_was_found = True
     
                 ### RLOF star2 ###
                 if root_finding_flag==5: 
                     star2.is_donor = True
-                    print 'star 2 has filled its Roche Lobe during secular integration'
+                    print 'SecularTriple -- star 2 has filled its Roche Lobe during secular integration'
                 if root_finding_flag==-5: 
                     star2.is_donor = False
-                    print 'star 2 no longer fills its Roche Lobe during secular integration'
+                    print 'SecularTriple -- star 2 no longer fills its Roche Lobe during secular integration'
+                    self.evolve_further_after_root_was_found = True
     
                 ### RLOF star3 ###
                 if root_finding_flag==6: 
                     star3.is_donor = True
-                    print 'star 3 has filled its Roche Lobe during secular integration'
+                    print 'SecularTriple -- star 3 has filled its Roche Lobe during secular integration'
                 if root_finding_flag==-6: 
                     star3.is_donor = False
-                    print 'star 3 no longer fills its Roche Lobe during secular integration'
+                    print 'SecularTriple -- star 3 no longer fills its Roche Lobe during secular integration'
+                    self.evolve_further_after_root_was_found = True
 
             ### update model time ###
             self.model_time += end_time_cvode
@@ -1059,9 +1066,28 @@ class SecularTriple(InCodeComponentImplementation):
             inner_binary.longitude_of_ascending_node = LAN_in
             outer_binary.longitude_of_ascending_node = LAN_out
 
+            if self.evolve_further_after_root_was_found == True:
+                original_time_step = self.time_step ### time-step given from triple.py
+                old_secular_time_step = end_time_cvode ### time-step made by secular code until root was found
+                new_secular_time_step = original_time_step - old_secular_time_step ### the remaining time that the secular code should integrate for
+                new_end_time = self.model_time + new_secular_time_step
+
+                print 'SecularTriple -- root was found at t = ',self.model_time,'; integrating further until end time t = ',new_end_time,', specified from triple.py'
+                if root_finding_flag==-4 or root_finding_flag==-5:
+                    parameters.check_for_inner_RLOF = False ### in the remaining time, do not check for RLOF
+                if root_finding_flag==-6:
+                    parameters.check_for_outer_RLOF = False ### in the remaining time, do not check for RLOF
+                self.evolve_further_after_root_was_found = False
+                self.evolve_model(new_end_time)
+                
+                if root_finding_flag==-4 or root_finding_flag==-5:
+                    parameters.check_for_inner_RLOF = True ### check for RLOF again in the next call by triple.py
+                if root_finding_flag==-6:
+                    parameters.check_for_outer_RLOF = True ### check for RLOF again in the next call by triple.py
+                
     def give_roche_radii(self,triple):
         if triple is None:
-            print 'Please give triple particle'
+            print 'SecularTriple -- please give triple particle'
             return
 
         inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
@@ -1112,11 +1138,11 @@ class SecularTriple(InCodeComponentImplementation):
 def print_CVODE_output(CVODE_flag):
 
     if CVODE_flag==CV_SUCCESS:
-        print "Secular integration proceeded successfully."
+        print "SecularTriple -- secular integration proceeded successfully."
     elif CVODE_flag==CV_ROOT_RETURN:
-        print "Root was found during secular integration."
+        print "SecularTriple -- root was found during secular integration."
     elif CVODE_flag==CV_WARNING:
-        print "(Recoverable) warnings occurred during secular integration."
+        print "SecularTriple -- (recoverable) warnings occurred during secular integration."
     if CVODE_flag<0:
         if CVODE_flag==CV_TOO_MUCH_WORK:
             message = "too many steps were taken during secular integration."
@@ -1160,7 +1186,7 @@ def print_CVODE_output(CVODE_flag):
             message = "the output and initial times are too close to each other."
         else:
             message = "unknown error."
-        print "Unrecoverable error occurred during secular integration (CVODE_flag ",str(CVODE_flag),"): ",message
+        print "SecularTriple -- unrecoverable error occurred during secular integration (CVODE_flag ",str(CVODE_flag),"): ",message
 
 def R_L_eggleton(a,q):
     q_pow_one_third = pow(q,1.0/3.0)
@@ -1182,7 +1208,7 @@ def give_binaries_and_stars(self,triple):
 
     return inner_binary,outer_binary,star1,star2,star3
 
-def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
+def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2,star3):
     parameters = self.parameters
     
     ### general parameters ###
@@ -1196,11 +1222,11 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
 
     RL1,RL2,RL3 = self.give_roche_radii(triple)
     if (R1>=RL1 and star1.is_donor == False):
-        print 'warning: R1>=RL1 at initialisation while star1.is_donor = False'
+        print 'SecularTriple -- warning: R1>=RL1 at initialisation while star1.is_donor = False'
     if (R2>=RL2 and star2.is_donor == False):
-        print 'warning: R2>=RL3 at initialisation while star2.is_donor = False'
+        print 'SecularTriple -- warning: R2>=RL3 at initialisation while star2.is_donor = False'
     if (R3>=RL3 and star3.is_donor == False):
-        print 'warning: R3>=RL3 at initialisation while star3.is_donor = False'
+        print 'SecularTriple -- warning: R3>=RL3 at initialisation while star3.is_donor = False'
 
     a_in = inner_binary.semimajor_axis
     e_in = inner_binary.eccentricity
@@ -1221,7 +1247,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             wind_mass_loss_rate_star2 = star2.wind_mass_loss_rate
             wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate
         except AttributeError:
-            print 'SecularTriple needs mass time_derivative_of_mass for all three stars if include_linear_mass_change==True! exiting'
+            print 'SecularTriple -- mass time_derivative_of_mass is needed for all three stars if include_linear_mass_change==True! exiting'
             exit(-1)
     time_derivative_of_radius_star1=time_derivative_of_radius_star2=time_derivative_of_radius_star3 = 0.0 | units.RSun/units.s
     if parameters.include_linear_radius_change == True:
@@ -1230,7 +1256,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             time_derivative_of_radius_star2 = star2.time_derivative_of_radius
             time_derivative_of_radius_star3 = star3.time_derivative_of_radius
         except AttributeError:
-            print 'SecularTriple needs time_derivative_of_radius for all three stars if include_linear_radius_change==True! exiting'
+            print 'SecularTriple -- time_derivative_of_radius is needed for all three stars if include_linear_radius_change==True! exiting'
             exit(-1)
 
     ### mass variation parameters ###
@@ -1248,7 +1274,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             inner_accretion_efficiency_wind_child1_to_child2 = inner_binary.accretion_efficiency_wind_child1_to_child2
             inner_accretion_efficiency_wind_child2_to_child1 = inner_binary.accretion_efficiency_wind_child2_to_child1
         except AttributeError:
-            print "More attributes required for inner wind! exiting"
+            print "SecularTriple -- more attributes required for inner wind! exiting"
             exit(-1)
     if parameters.include_outer_wind_terms == True:
         try:
@@ -1258,7 +1284,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             outer_accretion_efficiency_wind_child2_to_child1 = outer_binary.accretion_efficiency_wind_child2_to_child1
             
         except AttributeError:
-            print "More attributes required for outer wind! exiting"
+            print "SecularTriple -- more attributes required for outer wind! exiting"
             exit(-1)
     if parameters.include_inner_RLOF_terms == True:
         try:
@@ -1268,7 +1294,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             inner_accretion_efficiency_mass_transfer = inner_binary.accretion_efficiency_mass_transfer
             inner_specific_AM_loss_mass_transfer = inner_binary.specific_AM_loss_mass_transfer
         except AttributeError:
-            print "More attributes required for inner RLOF! exiting"
+            print "SecularTriple -- more attributes required for inner RLOF! exiting"
             exit(-1)
     if parameters.include_outer_RLOF_terms == True:
         try:
@@ -1277,7 +1303,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             outer_accretion_efficiency_mass_transfer = outer_binary.accretion_efficiency_mass_transfer
             outer_specific_AM_loss_mass_transfer = outer_binary.specific_AM_loss_mass_transfer
         except AttributeError:
-            print "More attributes required for outer RLOF! exiting"
+            print "SecularTriple -- more attributes required for outer RLOF! exiting"
             exit(-1)
 
     ### RLOF checks ###
@@ -1288,13 +1314,13 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             spin_angular_frequency1 = star1.spin_angular_frequency
             spin_angular_frequency2 = star2.spin_angular_frequency
         except AttributeError:
-            print "More attributes required for inner RLOF check! exiting"
+            print "SecularTriple -- more attributes required for inner RLOF check! exiting"
             exit(-1)
     if parameters.check_for_outer_RLOF == True:
         try:
             spin_angular_frequency3 = star3.spin_angular_frequency
         except AttributeError:
-            print "More attributes required for outer RLOF check! exiting"
+            print "SecularTriple -- more attributes required for outer RLOF check! exiting"
             exit(-1)
 
     ### magnetic braking ###
@@ -1310,7 +1336,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             gyration_radius_star2 = star2.gyration_radius                    
             gyration_radius_star3 = star3.gyration_radius                    
         except AttributeError:
-            print "More attributes required for magnetic braking terms! exiting"
+            print "SecularTriple -- more attributes required for magnetic braking terms! exiting"
             exit(-1)
 
     ### spin-radius-mass coupling ###
@@ -1326,7 +1352,7 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             time_derivative_of_radius_star2 = star2.time_derivative_of_radius
             time_derivative_of_radius_star3 = star3.time_derivative_of_radius            
         except AttributeError:
-            print "More attributes required for spin-radius-mass coupling terms! exiting"
+            print "SecularTriple -- more attributes required for spin-radius-mass coupling terms! exiting"
             exit(-1)
             
     ### tides ###
@@ -1383,30 +1409,30 @@ def extract_data(self,triple,inner_binary,outer_binary,star1,star2,star3):
             
             
         except AttributeError:
-            print "More attributes required for tides! exiting"
+            print "SecularTriple -- more attributes required for tides! exiting"
             exit(-1)
 
         if (m1_convective_envelope.value_in(unit_m)<0):
-            print 'm1_convective_envelope must be positive! exiting'
+            print 'SecularTriple -- m1_convective_envelope must be positive! exiting'
             exit(-1)
         if (m2_convective_envelope.value_in(unit_m)<0):
-            print 'm2_convective_envelope must be positive! exiting'
+            print 'SecularTriple -- m2_convective_envelope must be positive! exiting'
             exit(-1)
         if (m3_convective_envelope.value_in(unit_m)<0):
-            print 'm3_convective_envelope must be positive! exiting'
+            print 'SecularTriple -- m3_convective_envelope must be positive! exiting'
             exit(-1)
 
         if (R1_convective_envelope.value_in(unit_l)<0):
-            print 'R1_convective_envelope must be positive! exiting'
+            print 'SecularTriple -- R1_convective_envelope must be positive! exiting'
             exit(-1)
         if (R2_convective_envelope.value_in(unit_l)<0):
-            print 'R2_convective_envelope must be positive! exiting'
+            print 'SecularTriple -- R2_convective_envelope must be positive! exiting'
             exit(-1)
         if (R3_convective_envelope.value_in(unit_l)<0):
-            print 'R3_convective_envelope must be positive! exiting'
+            print 'SecularTriple -- R3_convective_envelope must be positive! exiting'
             exit(-1)
 
-    print 'SecularTriple -- initialization; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out
+    print 'SecularTriple -- initialization; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in
 
     if ((star1.is_donor == False) and (star2.is_donor == False)):
         inner_mass_transfer_rate = 0.0 | units.MSun/units.yr
