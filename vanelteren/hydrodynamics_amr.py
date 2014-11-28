@@ -69,7 +69,7 @@ def refine_grid(code, grid, offset, factor = 2):
 def amr_wave_filter(level):
     return 1.0e-2
     
-def lohnen_error_estimation(grid, attributes):
+def lohner_error_estimation(grid, attributes):
     result = 0.0
     shape = grid.shape
     dimensions = 1
@@ -217,22 +217,19 @@ def lohnen_error_estimation(grid, attributes):
                     kmin02 = kmax02 = kmin12 = kmax12 = None
                  
                 ssvalue = sum_value[imin12:imax12,jmin12:jmax12,kmin12:kmax12]  + sum_value[imin02:imax02,jmin02:jmax02,kmin02:kmax02]
-                #tmp = (diff_value + (amr_wave_filter(1) * ssvalue)**2)
                 tmp = (diff_value + (amr_wave_filter(1) * ssvalue))**2
                 if denominator is None:
                     denominator = tmp
                 else:
                     denominator += tmp
         result += numpy.sqrt(numerator / (denominator.maximum(1e-6 | denominator.unit)))
-        
-        #result += numpy.sqrt((1.0 |numerator.unit) / (denominator.maximum(1e-6 | denominator.unit)))
     return result
         
 class LohnenErrorEstimationTests(TestCase):
     def test1(self):
         input = Grid.create((7,6,5), [7,6,5] | generic_unit_system.length)
         input.rho = 0.0 | generic_unit_system.density
-        error = lohnen_error_estimation(input, ["rho",])
+        error = lohner_error_estimation(input, ["rho",])
         self.assertEquals(error, 0)
         
     def test2(self):
@@ -244,17 +241,17 @@ class LohnenErrorEstimationTests(TestCase):
         code.parameters.maximum_number_of_grid_levels = 2
         for grid in code.itergrids():
             copy = grid.copy()
-            copy.rho = 1.0 + 0.5 * (numpy.sin(copy.x/(12.0 | generic_unit_system.length)*  2 * numpy.pi)) | generic_unit_system.density
+            copy.rho = (1.0 + (0.5 * (numpy.sin(copy.x/(12.0 | generic_unit_system.length)*  2 * numpy.pi)))) | generic_unit_system.density
             channel = copy.new_channel_to(grid)
             channel.copy()
         must_refine = code.refine_grid()
         print must_refine
             
             
-        grid = Grid.create((44,1,1), [12,12,12] | generic_unit_system.length)
+        grid = Grid.create((84,1,1), [12,12,12] | generic_unit_system.length)
         r = ((grid.x**2  + grid.y**2)).sqrt()
         grid.rho = 1.0 + 0.5 * (numpy.sin(grid.x/(12.0 | generic_unit_system.length)*  2 * numpy.pi)) | generic_unit_system.density
-        error = lohnen_error_estimation(grid, ["rho",])
+        error = lohner_error_estimation(grid, ["rho",])
         
         rho = grid[2:-2,:,:].rho[...,...,0].value_in(generic_unit_system.density)
         rho = error[...,...,0]
@@ -557,7 +554,9 @@ class HydrodynamcisAMR(object):
         self.min_timestep = None
         self.channels = []
         self.nodes = []
-        self.max_levels = 1
+        self.max_levels = 4
+        
+        self.step = 0
     
     def set_parameters(self):
         for node in self.nodes:
@@ -635,6 +634,7 @@ class HydrodynamcisAMR(object):
         self.copy_to_boundary_cells()
         
     def copy_to_boundary_cells(self):
+        print "copy to boundary..."
         if 0:
             pool = AsyncRequestsPool()
             def handle_result(request, group, offsets):
@@ -700,6 +700,8 @@ class HydrodynamcisAMR(object):
             #print len(self.channels)
             for channel in self.channels:
                 channel.copy()
+        
+        print "copy to boundary...done"
     
     def setup_codes(self):
         
@@ -761,7 +763,6 @@ class HydrodynamcisAMR(object):
             
         code = self.nodes[0].code
         t_unit = code.get_timestep().unit
-        step = 0
         while ((code.model_time - time)/time) < -1e-14:
             timesteps = [] | t_unit
             for x in self.nodes:
@@ -789,10 +790,12 @@ class HydrodynamcisAMR(object):
             
            
             self.copy_to_boundary_cells()
-            step += 1
-            
-            self.refine_grid()
-            code = self.nodes[0].code
+            self.step += 1
+            if self.step % 5 == 0:
+                print "refining the grid...", self.step,  code.model_time
+                has_refined = self.refine_grid()
+                print "...done refined = ", has_refined
+                code = self.nodes[0].code
             
     def itergrids(self):
         for x in self.nodes:
@@ -801,91 +804,68 @@ class HydrodynamcisAMR(object):
                     yield OffsetGrid(grid, x.offset)
                     
     def refine_grid(self):
-        if 1: return False
         refined_nodes = []
         is_refined = False
         for x in self.nodes:
-            if not x.is_ghost:
-                split_in_x, split_in_y, split_in_z = x.cellsize > (self.cellsize / 2**self.max_levels)
-                drhox = 0.0
-                drhoy = 0.0
-                drhoz = 0.0
-                for grid in x.code.itergrids():
-                    drhodx = grid.rho[1:,...,...] - grid.rho[:-1,...,...]
-                    drhox = max(drhox, numpy.abs(drhodx.max() / grid.rho.mean()))
-                    if grid.shape[1] > 1:
-                        drhody = grid.rho[...,1:,...] - grid.rho[...,:-1,...]
-                        drhoy = max(drhoy, numpy.abs(drhody.max() / grid.rho.mean()))
-                    if grid.shape[2] > 1:
-                        drhodz = grid.rho[...,...,1:] - grid.rho[...,...,:-1]
-                        drhoz = max(drhoz, numpy.abs(drhodz.max() / grid.rho.mean()))
-                split_in_x = split_in_x and drhox > 0.1
-                split_in_y = split_in_y and drhoy > 0.1
-                split_in_z = split_in_z and drhoz > 0.1
-                if split_in_x:
-                    if split_in_y:
-                        refined_nodes.append(x)
-                    else:
-                        refined_nodes.append(x)
-                elif split_in_y:
-                    if 1:
-                        is_refined = True
-                        code = self.create_new_code()
-                        code.parameters.mesh_size = numpy.asarray(self.mesh_size)
-                        code.parameters.mesh_length = x.size / (1.,2.,1.0)
-                        code.parameters.x_boundary_conditions = ("interface","interface")
-                        if x.number_of_grid_points[1] > 1:
-                            code.parameters.y_boundary_conditions = ("interface","interface")
-                        else:
-                            code.parameters.y_boundary_conditions = ("periodic","periodic")
-                        if x.number_of_grid_points[2] > 1:
-                            code.parameters.z_boundary_conditions = ("interface","interface")
-                        else:
-                            code.parameters.z_boundary_conditions = ("periodic","periodic")
-                        code.stopping_conditions.number_of_steps_detection.enable()
-                        
-                        code.commit_parameters()
-                        for grid in code.itergrids():
-                            channel = HydroStateChannel(x.code, code, grid, x.offset - x.offset, 1)
-                            channel.copy()
-                        
-                        node = Node(code, x.offset, False)
-                        node.setup()
-                        refined_nodes.append(node)
-                        
-                        code = self.create_new_code()
-                        code.parameters.mesh_size = numpy.asarray(self.mesh_size)
-                        code.parameters.mesh_length = x.size / (1.,2.,1.0)
-                        code.parameters.x_boundary_conditions = ("interface","interface")
-                        if x.number_of_grid_points[1] > 1:
-                            code.parameters.y_boundary_conditions = ("interface","interface")
-                        else:
-                            code.parameters.y_boundary_conditions = ("periodic","periodic")
-                        if x.number_of_grid_points[2] > 1:
-                            code.parameters.z_boundary_conditions = ("interface","interface")
-                        else:
-                            code.parameters.z_boundary_conditions = ("periodic","periodic")
-                        code.stopping_conditions.number_of_steps_detection.enable()
-                        
-                        code.commit_parameters()
-                        
-                        for grid in code.itergrids():
-                            channel = HydroStateChannel(x.code, code, grid, (x.size * (0.0, 0.5,0.0)), 1)
-                            channel.copy()
-                        
-                        node = Node(code, x.offset + (x.size * (0.0, 0.5,0.0)), False)
-                        node.setup()
-                        refined_nodes.append(node)
-                        x.code.stop()
-                    else:
-                        refined_nodes.append(x)
-                elif split_in_z:
-                    refined_nodes.append(x)
+            if x.is_ghost:
+                continue
+            can_refine = numpy.all(x.cellsize > (self.cellsize / 2**self.max_levels))
+            if not can_refine: 
+                refined_nodes.append(x)
+                continue
+            must_refine = False
+            for grid in x.code.itergrids():
+                copy = grid.copy()
+                error = lohner_error_estimation(copy, ["rho", "rhovx", "rhovy", "rhovz", "energy"])
+                if numpy.any(error > 0.5):
+                    must_refine |= True
+            if must_refine:
+                if 1:
+                    is_refined = True
+                    factor = (2.,1.,1.)
+                    maxi = maxj = maxk = 1
+                    maxi = 2
+                    if self.mesh_size[1] > 1:
+                        factor = (2.,2.,1.)
+                        maxj = 2
+                    if self.mesh_size[2] > 1:
+                        factor = (2.,2.,2.)
+                        maxk = 2
+                    print factor
+                    
+                    for i in range(maxi):
+                        for j in range(maxj):
+                            for k in range(maxk):
+                                code = self.create_new_code()
+                                code.parameters.mesh_size = numpy.asarray(self.mesh_size)
+                                code.parameters.mesh_length = x.size / factor
+                                code.parameters.x_boundary_conditions = ("interface","interface")
+                                if x.number_of_grid_points[1] > 1:
+                                    code.parameters.y_boundary_conditions = ("interface","interface")
+                                else:
+                                    code.parameters.y_boundary_conditions = ("periodic","periodic")
+                                if x.number_of_grid_points[2] > 1:
+                                    code.parameters.z_boundary_conditions = ("interface","interface")
+                                else:
+                                    code.parameters.z_boundary_conditions = ("periodic","periodic")
+                                code.stopping_conditions.number_of_steps_detection.enable()
+                    
+                                code.commit_parameters()
+                                for grid in code.itergrids():
+                                    channel = HydroStateChannel(x.code, code, grid, (x.size * (i*0.5, j*0.5, k*0.5)), 1)
+                                    channel.copy()
+                                
+                                node = Node(code, x.offset + (x.size * (i*0.5, j*0.5, k*0.5)), False)
+                                node.setup()
+                                refined_nodes.append(node)
+                    x.code.stop()
                 else:
                     refined_nodes.append(x)
+            else:
+                refined_nodes.append(x)
     
         if is_refined:
-            ghost_nodes = self.new_ghost_nodes()
+            ghost_nodes = self.new_ghost_nodes(refined_nodes)
             nodes = []
             nodes.extend(refined_nodes)
             nodes.extend(ghost_nodes)

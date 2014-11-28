@@ -56,8 +56,8 @@ def initialize_grid(grid):
     vx = 0.5 | speed
     p = 2.5 | (mass / (length * time**2))
     
-    outerregion = numpy.logical_or(grid.y <= 0.35 | length, grid.y >= 0.85 | length)
-    innerregion = numpy.logical_and(grid.y > 0.35 | length, grid.y < 0.85 | length)
+    outerregion = numpy.logical_or(grid.y <= 0.25 | length, grid.y >= 0.75 | length)
+    innerregion = numpy.logical_and(grid.y > 0.25 | length, grid.y  < 0.75 | length)
     
     grid[outerregion].rho = 1  | density
     grid[outerregion].rhovx =  vx * grid[outerregion].rho
