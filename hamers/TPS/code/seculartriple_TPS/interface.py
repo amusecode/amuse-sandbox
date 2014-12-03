@@ -1073,18 +1073,28 @@ class SecularTriple(InCodeComponentImplementation):
                 new_end_time = self.model_time + new_secular_time_step
 
                 print 'SecularTriple -- root was found at t = ',self.model_time,'; integrating further until end time t = ',new_end_time,', specified from triple.py'
-                if root_finding_flag==-4 or root_finding_flag==-5:
+                if root_finding_flag==-4:
                     parameters.check_for_inner_RLOF = False ### in the remaining time, do not check for RLOF
+                    star1.is_donor = True ### however, for consistency with the stellar evolution code, do take into account effect of RLOF on the orbit
+                if root_finding_flag==-5:
+                    parameters.check_for_inner_RLOF = False ### in the remaining time, do not check for RLOF
+                    star2.is_donor = True ### however, for consistency with the stellar evolution code, do take into account effect of RLOF on the orbit
                 if root_finding_flag==-6:
                     parameters.check_for_outer_RLOF = False ### in the remaining time, do not check for RLOF
+                    star3.is_donor = True
                 self.evolve_further_after_root_was_found = False
                 self.evolve_model(new_end_time)
-                
-                if root_finding_flag==-4 or root_finding_flag==-5:
+
+                if root_finding_flag==-4:
                     parameters.check_for_inner_RLOF = True ### check for RLOF again in the next call by triple.py
+                    star1.is_donor = False ### for next call by triple.py
+                if root_finding_flag==-5:
+                    parameters.check_for_inner_RLOF = True ### check for RLOF again in the next call by triple.py
+                    star2.is_donor = False ### for next call by triple.py
                 if root_finding_flag==-6:
                     parameters.check_for_outer_RLOF = True ### check for RLOF again in the next call by triple.py
-                
+                    star3.is_donor = False ### for next call by triple.py
+
     def give_roche_radii(self,triple):
         if triple is None:
             print 'SecularTriple -- please give triple particle'
@@ -1138,14 +1148,14 @@ class SecularTriple(InCodeComponentImplementation):
 def print_CVODE_output(CVODE_flag):
 
     if CVODE_flag==CV_SUCCESS:
-        print "SecularTriple -- secular integration proceeded successfully."
+        print "SecularTriple -- ODE integration proceeded successfully."
     elif CVODE_flag==CV_ROOT_RETURN:
-        print "SecularTriple -- root was found during secular integration."
+        print "SecularTriple -- root was found during ODE integration."
     elif CVODE_flag==CV_WARNING:
-        print "SecularTriple -- (recoverable) warnings occurred during secular integration."
+        print "SecularTriple -- (recoverable) warnings occurred during ODE integration."
     if CVODE_flag<0:
         if CVODE_flag==CV_TOO_MUCH_WORK:
-            message = "too many steps were taken during secular integration."
+            message = "too many steps were taken during ODE integration."
         elif CVODE_flag==CV_TOO_MUCH_ACC:
             message = "required accuracy could not be obtained."
         elif CVODE_flag==CV_ERR_FAILURE:
