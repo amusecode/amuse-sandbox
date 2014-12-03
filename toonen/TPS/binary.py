@@ -7,7 +7,7 @@ REPORT_MASS_TRANSFER_STABILITY = False
 
 #constants
 numerical_error  = 1.e-6
-minimum_eccentricity = 1.e-7
+minimum_eccentricity = 1.e-5
 
 
 which_common_envelope = 2
@@ -88,9 +88,11 @@ def nuclear_evolution_timescale(star):
         return (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr)
     else: #t_nuc ~ delta t * R/ delta R, other prescription gave long timescales in SeBa which destables the mass transfer
         t_nuc = star.radius / star.time_derivative_of_radius
-        if t_nuc < 0:
-            print 'Nuclear evolution timescale < 0'
-            exit(1)
+        
+        #when star is shrinking
+        if t_nuc < quantities.zero:
+#            t_nuc = 0.1*main_sequence_time() # in SeBa
+            t_nuc = 0.1*star.age         
         return t_nuc
 
 def kelvin_helmholds_timescale(star):
@@ -312,6 +314,8 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
 def which_common_envelope_phase(bs, donor, accretor, self):
     if REPORT_FUNCTION_NAMES:
         print 'Which common envelope phase'
+        print 'donor:', donor.stellar_type
+        print 'accretor:', accretor.stellar_type        
 
     if donor.stellar_type not in stellar_types_giants and accretor.stellar_type not in stellar_types_giants:
 #        possible options: MS+MS, MS+remnant, remnant+remnant,
@@ -489,8 +493,6 @@ def stable_mass_transfer(bs, donor, accretor, self):
         exit(1)
         
     bs.accretion_efficiency_mass_transfer = accretion_efficiency
-
-
 
 
 def semi_detached(bs, donor, accretor, self):
@@ -765,27 +767,42 @@ def mass_transfer_stability(binary, self):
         elif binary.child1.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor1 stable "
-            binary.mass_transfer_rate = -1.* binary.child1.mass / mass_transfer_timescale(binary)         
+            binary.mass_transfer_rate = -1.* binary.child1.mass / mass_transfer_timescale(binary, binary.child1)         
             binary.is_stable = True
         elif binary.child2.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor2 stable"
-            binary.mass_transfer_rate = -1.* binary.child2.mass / mass_transfer_timescale(binary)         
+            binary.mass_transfer_rate = -1.* binary.child2.mass / mass_transfer_timescale(binary, binary.child2)         
             binary.is_stable = True
             
         else:     
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Detached"
             #detached system
-            binary.mass_transfer_rate = -1.* max(binary.child1.mass, binary.child2.mass) / mass_transfer_timescale(binary)
+            mt1 = -1.* binary.child1.mass / mass_transfer_timescale(binary, binary.child1)
+            mt2 = -1.* binary.child2.mass / mass_transfer_timescale(binary, binary.child2)  
+            binary.mass_transfer_rate = max(abs(mt1), abs(mt2))
             binary.is_stable = True
 
-    elif binary.child1.is_star and not binary.child2.is_star:
+    else:
+        if binary.child1.is_star and not binary.child2.is_star:
+            star = binary.child1
+            companion = binary.child2
+        elif binary.child2.is_star and not binary.child1.is_star:
+            star = binary.child2
+            companion = binary.child1
+        else: 
+            print 'resolve binary interaction: type of system unknown'
+            print bs.is_star, bs.child1.is_star, bs.child2.is_star
+            exit(2) 
+
+        
+            
         if REPORT_MASS_TRANSFER_STABILITY:
             print "Mass transfer stability: Binary "
-            print binary.semimajor_axis, binary.child1.mass, self.get_mass(binary.child2), binary.child1.stellar_type
+            print binary.semimajor_axis, self.get_mass(companion), star.mass, star.stellar_type
     
-        Js = self.spin_angular_momentum(binary.child1)
+        Js = self.spin_angular_momentum(star)
         Jb = self.orbital_angular_momentum(binary)
         
         if Js >= Jb/3. :
@@ -794,57 +811,48 @@ def mass_transfer_stability(binary, self):
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr  
             binary.is_stable = False          
             
-        elif binary.child1.is_donor and binary.child1.mass > self.get_mass(binary.child2)*q_crit:
+        elif star.is_donor and star.mass > self.get_mass(companion)*q_crit:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonor1>3*Macc"
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = False
             
-        elif binary.child1.is_donor and binary.child1.stellar_type in stellar_types_giants_conv_env and binary.child1.mass > self.get_mass(binary.child2)*q_crit_giants_conv_env:
+        elif star.is_donor and star.stellar_type in stellar_types_giants_conv_env and star.mass > self.get_mass(companion)*q_crit_giants_conv_env:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonorgiant1>Macc "
             binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
             binary.is_stable = False
             
-        elif binary.child1.is_donor:
+        elif star.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Donor1 stable "
-            binary.mass_transfer_rate = -1.* binary.child1.mass / mass_transfer_timescale(binary)         
+            binary.mass_transfer_rate = -1.* star.mass / mass_transfer_timescale(binary, star)         
             binary.is_stable = True
             
         else:                     
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Detached"
             #detached system
-            binary.mass_transfer_rate = -1.* binary.child1.mass / mass_transfer_timescale(binary)
+            binary.mass_transfer_rate = -1.* star.mass / mass_transfer_timescale(binary, star)
             binary.is_stable = True
-            
-    else:
-        print 'resolve binary interaction: type of system unknown'
-        print bs.is_star, bs.child1.is_star, bs.child2.is_star
-        exit(2) 
-            
+                        
             
        
        
-def mass_transfer_timescale(binary):
+def mass_transfer_timescale(binary, star):
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer timescale'
-
-    #For now thermal timescale donor
-    mtt1 = np.inf |units.Myr
-    mtt2 = np.inf |units.Myr
-    if binary.child1.is_star:
-        mtt1 = kelvin_helmholds_timescale(binary.child1)
-    if binary.child2.is_star:
-        mtt2 = kelvin_helmholds_timescale(binary.child2)
-        
-    mtt = min(mtt1, mtt2)
-    if mtt == np.inf|units.Myr:
+    
+    if not star.is_star:
         print 'mass transfer timescale: type of system unknown'
-        print 'no stars in binary'
+        print 'donor star is not a star'
+        exit(2)
+    
+    #For now thermal timescale donor
+    mtt = kelvin_helmholds_timescale(star)
+#    mtt = nuclear_evolution_timescale(star)
 
-    return mtt        
+    return mtt
 #-------------------------
         
         
