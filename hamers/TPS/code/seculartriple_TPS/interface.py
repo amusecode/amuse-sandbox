@@ -509,7 +509,8 @@ class SecularTriple(InCodeComponentImplementation):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self,  SecularTripleInterface(**options), **options)
         self.model_time = 0.0 | units.Myr
-        self.evolve_further_after_root_was_found = False
+        self.evolve_further_after_root_was_found = False ### in some cases, it is desirable to integrate until the given end time, despite the finding of a root
+        self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = True ### this may seem like a strange `feature', but exists for consistency with the stellar/binary evolution code
     def define_parameters(self, object):
         
         object.add_method_parameter(
@@ -1072,28 +1073,40 @@ class SecularTriple(InCodeComponentImplementation):
                 new_secular_time_step = original_time_step - old_secular_time_step ### the remaining time that the secular code should integrate for
                 new_end_time = self.model_time + new_secular_time_step
 
-                print 'SecularTriple -- root was found at t = ',self.model_time,'; integrating further until end time t = ',new_end_time,', specified from triple.py'
+                if self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe == False:
+                    string = "NOT"
+                else:
+                    string = ""
+                print 'SecularTriple -- root was found at t = ',self.model_time,'; integrating further until end time t = ',new_end_time,', specified from triple.py; RLOF is ',string,' taken into account.'
+                
+                ### In the remaining time, do not check for RLOF.
+                ### However, for consistency with the stellar/binary evolution code, if the latter assumed RLOF from the beginning of the time-step, do take into account effect of RLOF on the orbit.
                 if root_finding_flag==-4:
-                    parameters.check_for_inner_RLOF = False ### in the remaining time, do not check for RLOF
-                    star1.is_donor = True ### however, for consistency with the stellar evolution code, do take into account effect of RLOF on the orbit
+                    parameters.check_for_inner_RLOF = False 
+                    if self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe == True:
+                        star1.is_donor = True 
                 if root_finding_flag==-5:
-                    parameters.check_for_inner_RLOF = False ### in the remaining time, do not check for RLOF
-                    star2.is_donor = True ### however, for consistency with the stellar evolution code, do take into account effect of RLOF on the orbit
+                    parameters.check_for_inner_RLOF = False
+                    if self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe == True:
+                        star2.is_donor = True
                 if root_finding_flag==-6:
-                    parameters.check_for_outer_RLOF = False ### in the remaining time, do not check for RLOF
-                    star3.is_donor = True
+                    parameters.check_for_outer_RLOF = False
+                    if self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe == True:
+                        star3.is_donor = True
                 self.evolve_further_after_root_was_found = False
                 self.evolve_model(new_end_time)
 
+                ### Check for RLOF again in the next call by triple.py -- this parameter must originally have been True, otherwise a root could never have been found in the first place.
+                ### Set is_donor to False for next call by triple.py.
                 if root_finding_flag==-4:
-                    parameters.check_for_inner_RLOF = True ### check for RLOF again in the next call by triple.py
-                    star1.is_donor = False ### for next call by triple.py
+                    parameters.check_for_inner_RLOF = True 
+                    star1.is_donor = False
                 if root_finding_flag==-5:
-                    parameters.check_for_inner_RLOF = True ### check for RLOF again in the next call by triple.py
-                    star2.is_donor = False ### for next call by triple.py
+                    parameters.check_for_inner_RLOF = True
+                    star2.is_donor = False
                 if root_finding_flag==-6:
-                    parameters.check_for_outer_RLOF = True ### check for RLOF again in the next call by triple.py
-                    star3.is_donor = False ### for next call by triple.py
+                    parameters.check_for_outer_RLOF = True
+                    star3.is_donor = False
 
     def give_roche_radii(self,triple):
         if triple is None:
@@ -1230,13 +1243,20 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
     R2 = star2.radius
     R3 = star3.radius
 
+    ### By default, RLOF is taken into account for the remaining integration time if
+    ### a root is found corresponding to the Roche lobe no longer being filled.
+    ### However, in the latter case, if initially R>RL and is_donor = False, then RLOF is not taken into account during the remaining integration.
+    self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = True
     RL1,RL2,RL3 = self.give_roche_radii(triple)
     if (R1>=RL1 and star1.is_donor == False):
-        print 'SecularTriple -- warning: R1>=RL1 at initialisation while star1.is_donor = False'
+        print 'SecularTriple -- warning: R1>=RL1 at initialisation while star1.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
+        self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False
     if (R2>=RL2 and star2.is_donor == False):
-        print 'SecularTriple -- warning: R2>=RL3 at initialisation while star2.is_donor = False'
+        print 'SecularTriple -- warning: R2>=RL2 at initialisation while star2.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
+        self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False
     if (R3>=RL3 and star3.is_donor == False):
-        print 'SecularTriple -- warning: R3>=RL3 at initialisation while star3.is_donor = False'
+        print 'SecularTriple -- warning: R3>=RL3 at initialisation while star3.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
+        self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False
 
     a_in = inner_binary.semimajor_axis
     e_in = inner_binary.eccentricity
