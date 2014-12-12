@@ -43,18 +43,20 @@
 ##                                                  1) Constant inclination
 ##            --G_max    upper limit for the inner argument of pericenter []
 ##            --G_min    lower limit for the inner argument of pericenter []
-##            --G_distr  inner argument of pericenter option: 0) Uniform [default]
+##            --G_distr  inner argument of pericenter option: 0) Circular uniform distribution [default]
 ##                                                            1) Constant argument of pericenter
 ##            --g_max    upper limit for the outer argument of pericenter []
 ##            --g_min    lower limit for the outer argument of pericenter []
-##            --g_distr  outer argument of pericenter option: 0) Uniform [default]
+##            --g_distr  outer argument of pericenter option: 0) Circular uniform distribution [default]
 ##                                                            1) Constant argument of pericenter
 ##            --O_max    upper limit for the inner longitude of ascending node []
 ##            --O_min    lower limit for the inner longitude of ascending node []
-##            --O_distr  inner longitude of ascending node option: 0) ? [default]
+##            --O_distr  inner longitude of ascending node option: 0) Circular uniform distribution [default]
+##                                                            1) Constant longitude of ascending nodes
 ##            --o_max    upper limit for the outer longitude of ascending node []
 ##            --o_min    lower limit for the outer longitude of ascending node []
-##            --o_distr  outer longitude of ascending node option: 0) ? [default]
+##            --o_distr  outer longitude of ascending node option: 0) Circular uniform distribution [default]
+##                                                            1) Constant longitude of ascending nodes
 ##            -T or -t   binary end time. [13500 Myr]
 ##            -z         metallicity of stars  [0.02 Solar] 
 ##            -n         number of triples to be simulated.  [1]
@@ -94,13 +96,6 @@ def log_flat_distr(lower, upper):
     x= np.random.uniform(np.log10(lower_RSun), np.log10(upper_RSun))
     return (10**x)|units.RSun 
     
-
-def thermal_distr(lower, upper): 
-    return np.sqrt(np.random.uniform(lower, upper))
-
-def circular_uniform_distr(lower, upper): 
-    return np.arccos(np.random.uniform(np.cos(lower), np.cos(upper)))
-
 def eggleton_mass_distr(lower_mass, upper_mass):
     turnover_mass = 0.3|units.MSun
     power = 0.85
@@ -237,7 +232,6 @@ class Generate_initial_triple:
                         self.in_semi = 0.|units.RSun
             else: # log flat distribution
                  maximal_semi = min(in_semi_max, out_semi_max)
-                 print in_semi_max, out_semi_max
                  self.in_semi = log_flat_distr(in_semi_min, maximal_semi)
                         
         
@@ -301,8 +295,7 @@ class Generate_initial_triple:
                 print '--E_min option to set the value of the eccentricity in the inner binary'                
                 self.in_ecc = in_ecc_min
             else: #Thermal distribution
-                 self.in_ecc = thermal_distr(in_ecc_min, in_ecc_max)
-                 
+                 self.in_ecc = np.sqrt(np.random.uniform(in_ecc_min, in_ecc_max))
                  
         if out_ecc_max == out_ecc_min:
             self.out_ecc = out_ecc_min
@@ -312,20 +305,20 @@ class Generate_initial_triple:
                 print '--e_min option to set the value of eccentricity in the outer binary'                
                 self.out_ecc = out_ecc_min
             else: #Thermal distribution
-                 self.out_ecc = thermal_distr(out_ecc_min, out_ecc_max)
+                 self.out_ecc = np.sqrt(np.random.uniform(out_ecc_min, out_ecc_max))
 
 
     def generate_incl(self, incl_max, incl_min, incl_distr):
         if incl_max == incl_min:
-            self.incl = incl_min
+            self.incl = incl_min           
         else:
             if incl_distr == 1: #Constant 
                 print 'TPS::generate_incl: unambiguous choise of constant relative inclination'
                 print '--i_min option to set the value of the relative inclination in the inner triple'                
                 self.incl = incl_min
-            else: #Circular uniform distribution
-                 self.incl = circular_uniform_distr(incl_min, incl_max)
-
+            else: #Circular uniform distribution between 0-pi/2
+                 self.incl = np.arccos(np.random.uniform(np.cos(incl_min), np.cos(incl_max)))
+                 
     def generate_aop(self,
                         in_aop_max, in_aop_min, 
                         out_aop_max, out_aop_min,
@@ -338,9 +331,9 @@ class Generate_initial_triple:
                 print 'TPS::generate_aop: unambiguous choise of constant argument of pericenter'
                 print '--G_min option to set the value of the argument of pericenter of the inner binary'                
                 self.in_aop = in_aop_min
-            else: #Uniform distribution
-#                 self.in_aop = flat_distr(in_aop_min, in_aop_max)
-                 self.in_aop = np.random.uniform(in_aop_min, in_aop_max) # unit is missing
+            else: #Circular uniform distribution between 0-pi/2
+                 self.in_aop = np.arccos(np.random.uniform(np.cos(in_aop_min), np.cos(in_aop_max)))
+                     
                  
         if out_aop_max == out_aop_min:
             self.out_aop = out_aop_min
@@ -349,17 +342,38 @@ class Generate_initial_triple:
                 print 'TPS::generate_aop: unambiguous choise of constant argument of pericenter'
                 print '--g_min option to set the value of the argument of pericenter of the outer binary'                
                 self.out_aop = out_aop_min
-            else: #Uniform distribution
-#                 self.out_aop = flat_distr(out_aop_min, out_aop_max)
-                 self.out_aop = np.random.uniform(out_aop_min, out_aop_max) # unit is missing
-                 
+            else: #Circular uniform distribution between 0-pi/2
+                 self.out_aop = np.arccos(np.random.uniform(np.cos(out_aop_min), np.cos(out_aop_max)))
+                
 
     def generate_loan(self,
                         in_loan_max, in_loan_min,                   
                         out_loan_max, out_loan_min,
                         in_loan_distr, out_loan_distr):                                
-        self.in_loan = 0.
-        self.out_loan = 0.
+
+
+        if in_loan_max == in_loan_min:
+            self.in_loan = in_loan_min
+        else:
+            if in_loan_distr == 1: #Constant 
+                print 'TPS::generate_loan: unambiguous choise of constant longitude of ascending nodes'
+                print '--O_min option to set the value of the argument of pericenter of the inner binary'                
+                self.in_loan = in_loan_min
+            else: #Circular uniform distribution between 0-pi
+                 self.in_loan = np.arccos(np.random.uniform(np.cos(in_loan_min), np.cos(in_loan_max)))
+                     
+                 
+        if out_loan_max == out_loan_min:
+            self.out_loan = out_loan_min
+        else:
+            if out_loan_distr == 1: #Constant 
+                print 'TPS::generate_loan: unambiguous choise of constant longitude of ascending nodes'
+                print '--o_min option to set the value of the argument of pericenter of the outer binary'                
+                self.out_loan = out_loan_min
+            else: #Circular uniform distribution between 0-pi
+                 self.out_loan = np.arccos(np.random.uniform(np.cos(in_loan_min), np.cos(in_loan_max)))
+      
+        
 
 #-------
 
@@ -488,7 +502,6 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
 
     
     for i_n in range(number):
-        print 'new triple, number:', initial_number+i_n
         triple_system = Generate_initial_triple(in_primary_mass_max, in_primary_mass_min, 
                     in_mass_ratio_max, in_mass_ratio_min, 
                     out_mass_ratio_max, out_mass_ratio_min, 
@@ -501,8 +514,8 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                     in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                     in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr)
         
-#        triple_system.print_triple()
-        print triple_system.in_primary_mass
+        triple_system.print_triple()
+#        print triple_system.in_primary_mass
         number_of_system = initial_number + i_n
 #        triple.main(inner_primary_mass = triple_system.in_primary_mass, 
 #                    inner_secondary_mass = triple_system.in_secondary_mass, 
@@ -599,8 +612,8 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
         exit(1)
 
 
-    if (incl_min < 0.) or (incl_max > np.pi):
-        print 'error: relative inclination not in allowed range [0, pi]'
+    if (incl_min < 0.) or (incl_max > np.pi/2.):
+        print 'error: relative inclination not in allowed range [0, pi/2.]'
         exit(1)
 
     if (incl_max < incl_min):
@@ -609,12 +622,12 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
 
 
 
-    if (in_aop_min < 0.) or (in_aop_max > 2*np.pi):
-        print 'error: inner argument of pericenter not in allowed range [0,2*pi]'
+    if (in_aop_min < 0.) or (in_aop_max > np.pi/2.):
+        print 'error: inner argument of pericenter not in allowed range [0,pi/2]'
         exit(1)
 
-    if (out_aop_min < 0.) or (out_aop_max > 2*np.pi):
-        print 'error: outer argument of pericenter not in allowed range [0,2*pi]'
+    if (out_aop_min < 0.) or (out_aop_max > np.pi/2.):
+        print 'error: outer argument of pericenter not in allowed range [0,pi/2]'
         exit(1)
 
     if (in_aop_max < in_aop_min):
@@ -626,12 +639,12 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
         exit(1)
 
 
-    if (in_loan_min < 0.) or (in_loan_max > 2*np.pi):
-        print 'error: inner longitude of ascending node not in allowed range [0,2*pi]'
+    if (in_loan_min < 0.) or (in_loan_max > np.pi):
+        print 'error: inner longitude of ascending node not in allowed range [0,pi]'
         exit(1)
 
-    if (out_loan_min < 0.) or (out_loan_max > 2*np.pi):
-        print 'error: outer longitude of ascending node not in allowed range [0,2*pi]'
+    if (out_loan_min < 0.) or (out_loan_max > np.pi):
+        print 'error: outer longitude of ascending node not in allowed range [0,pi]'
         exit(1)
 
     if (in_loan_max < in_loan_min):
@@ -723,7 +736,7 @@ def parse_arguments():
                       dest="incl_min", type="float", default = 0.0,
                       help="minimum of relative inclination [rad] [%default]")
     parser.add_option("--i_max, --I_max",
-                      dest="incl_max", type="float", default = np.pi,
+                      dest="incl_max", type="float", default = np.pi/2.,
                       help="maximum of relative inclination [rad] [%default]")
     parser.add_option("--i_distr, --I_distr", dest="incl_distr", type="int", default = 0,
                       help="relative inclination distribution [Circular uniform]")
@@ -733,37 +746,37 @@ def parse_arguments():
                       dest="in_aop_min", type="float", default = 0.,
                       help="minimum of inner argument of pericenter [rad] [%default]")
     parser.add_option("--G_max",
-                      dest="in_aop_max", type="float", default = 2*np.pi,
+                      dest="in_aop_max", type="float", default = np.pi/2.,
                       help="maximum of inner argument of pericenter [rad] [%default]")
     parser.add_option("--G_distr", dest="in_aop_distr", type="int", default = 0,
-                      help="inner argument of pericenter distribution [Uniform]")
+                      help="inner argument of pericenter distribution [Circular uniform]")
 
     parser.add_option("--g_min",
-                      dest="out_aop_min", type="float", default = 0.5,
+                      dest="out_aop_min", type="float", default = 0.,
                       help="minimum of outer argument of pericenter [rad] [%default]")
     parser.add_option("--g_max",
-                      dest="out_aop_max", type="float", default = 0.5,
+                      dest="out_aop_max", type="float", default = np.pi/2.,
                       help="maximum of outer argument of pericenter [rad] [%default]")
     parser.add_option("--g_distr", dest="out_aop_distr", type="int", default = 0,
-                      help="outer argument of pericenter distribution [Uniform]")
+                      help="outer argument of pericenter distribution [Circular uniform]")
                       
     parser.add_option("--O_min",
                       dest="in_loan_min", type="float", default = 0,
                       help="minimum of inner longitude of ascending node [rad] [%default]")
     parser.add_option("--O_max",
-                      dest="in_loan_max", type="float", default = 0,
+                      dest="in_loan_max", type="float", default = np.pi,
                       help="maximum of inner longitude of ascending node [rad] [%default]")
     parser.add_option("--O_distr", dest="in_loan_distr", type="int", default = 0,
-                      help="inner longitude of ascending node distribution [?]")
+                      help="inner longitude of ascending node distribution [Circular uniform]")
 
     parser.add_option("--o_min",
                       dest="out_loan_min", type="float", default = 0,
                       help="minimum of outer longitude of ascending node [rad] [%default]")
     parser.add_option("--o_max",
-                      dest="out_loan_max", type="float", default = 0,
+                      dest="out_loan_max", type="float", default = np.pi,
                       help="maximum of outer longitude of ascending node [rad] [%default]")
     parser.add_option("--o_distr", dest="out_loan_distr", type="int", default = 0,
-                      help="outer longitude of ascending node distribution [?]")
+                      help="outer longitude of ascending node distribution [Circular uniform]")
                       
     parser.add_option("-t", "-T", unit=units.Myr, 
                       dest="tend", type="float", default = 13500|units.Myr,

@@ -781,7 +781,7 @@ def mass_transfer_stability(binary, self):
             #detached system
             mt1 = -1.* binary.child1.mass / mass_transfer_timescale(binary, binary.child1)
             mt2 = -1.* binary.child2.mass / mass_transfer_timescale(binary, binary.child2)  
-            binary.mass_transfer_rate = max(abs(mt1), abs(mt2))
+            binary.mass_transfer_rate = min(mt1, mt2) # minimum because mt<0
             binary.is_stable = True
 
     else:
