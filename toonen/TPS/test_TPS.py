@@ -90,7 +90,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 60|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -138,7 +139,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 220|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -187,7 +189,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 60|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
             
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -235,7 +238,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 80|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -283,7 +287,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 60|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
     
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -330,7 +335,8 @@ class TestSeBa(TestWithMPI):
 #        T_end = 378.5 | units.Myr 
 #        T_end = 380 | units.Myr 
         T_end = 385 | units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -380,7 +386,8 @@ class TestSeBa(TestWithMPI):
 #        T_end = 49.045|units.Myr #nucl mt
         T_end = 49.096|units.Myr 
 #        T_end = 48.96|units.Myr# until RLOF
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -429,7 +436,8 @@ class TestSeBa(TestWithMPI):
         o_out = 0.0
 #        T_end = 49.1|units.Myr 
         T_end = 50|units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -476,7 +484,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 50|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -518,7 +527,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 50|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -564,7 +574,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 3000|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
         
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -607,7 +618,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 50|units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -620,9 +632,9 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 1.3442 | units.MSun, 2)        
             self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
     
-            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 0.72579 | units.RSun, 2)  
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 0.7572 | units.RSun, 2)  
             # because of wind mass loss a_out_final != 1e6RSun      
-            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 5085785 | units.RSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 5092547 | units.RSun, 2)        
 
 
         M1f = tr.triple.child2.child1.mass
@@ -652,7 +664,8 @@ class TestSeBa(TestWithMPI):
         o_in = 0.0
         o_out = 0.0
         T_end = 50|units.Myr 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, tidal_terms = tidal_terms)
 
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -701,7 +714,7 @@ class TestSeBa(TestWithMPI):
         o_out = 0.0
 #        T_end = 11050|units.Myr 
         T_end = 12500|units.Myr #SecularTriple -- unrecoverable error occurred during secular integration (CVODE_flag  -4 ):  convergence test failures occurred too many times during one internal time-step or minimum step size was reached. Error in secular code at time/Myr =  11594.7250756 
-        dr = 0.001 # 0.005 
+        dr = 0.005 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -879,7 +892,8 @@ class TestSeBa(TestWithMPI):
         o_out = 0.0
         T_end = 12500|units.Myr 
         dr = 0.005 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -940,7 +954,8 @@ class TestSeBa(TestWithMPI):
         o_out = 0.0
         T_end = 125|units.Myr
         dr = 0.005
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -952,15 +967,15 @@ class TestSeBa(TestWithMPI):
             self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
             self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
             
-            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 46155| units.RSun, 2)  
-            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 43714421128. | units.RSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 46716.| units.RSun, 2)  
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 44236004807. | units.RSun, 2)        
             self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 1.00e-5, 2)  
             self.assertAlmostRelativeEqual(tr.triple.eccentricity, 1.00e-5, 2)        
     
 #            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 37118045560.| 1./units.Myr, 2)
 #            self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 44765.1| 1./units.Myr, 2)
 #            self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 4.51154e-05| 1./units.Myr, 2)
-            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 28694968059.| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 28991621040.| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 44765| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 4.5115e-05| 1./units.Myr, 2)
 
@@ -971,7 +986,8 @@ class TestSeBa(TestWithMPI):
         a_out_final_theory = a_out * (M1+M2+M3) / M_child2
         print a_in_final_theory, a_out_final_theory
         if test_asserts:   
-            print 'why so low accuracy?'
+#            print 'why so low accuracy?'-> because somewhere on the rgb star starts expanding rapidly
+#                                this sudden change is resolved better with small timesteps from dt_radius_change
             self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1.5)        
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 1.5)        
 
@@ -1005,7 +1021,8 @@ class TestSeBa(TestWithMPI):
         o_out = 0.0
         T_end = 220|units.Myr
         dr = 0.005
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
@@ -1118,22 +1135,8 @@ class TestSeBa(TestWithMPI):
         o_out = 0.0
         T_end = 5|units.Myr 
         dr = 0.005 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
-#        M1 = 0.1|units.MSun
-#        M2 = 0.09|units.MSun
-#        M3 = 0.08|units.MSun
-#        a_in = 5 |units.RSun
-#        a_out = 1.e6|units.RSun
-#        e_in = 0.0
-#        e_out = 0.0
-#        i = 0*np.pi/180.0
-#        g_in = 0.5*np.pi
-#        g_out = 0.5*np.pi
-#        o_in = 0.0
-#        o_out = 0.0
-#        T_end = 15500|units.Myr 
-#        dr = 0.005 
-#        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr)
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end, maximum_radius_change_factor=dr, tidal_terms = tidal_terms)
 
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -1148,17 +1151,13 @@ class TestSeBa(TestWithMPI):
             
             self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 200.| units.RSun, 2)  
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 20000. | units.RSun, 2)        
-            self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0.7474, 2)  
+            self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0.77086, 2)  
             self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0.49903, 2)        
     
             #initially 9402668 and 10628, difference due to rdot
             self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 9396370.| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 9402526| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 10628| 1./units.Myr, 2)
-
-
-
-
         
         print 'test21: succeeded'
 
@@ -1178,33 +1177,33 @@ if __name__ == '__main__':
 #    test.test2_alt()
 #    test.test3()
 #    test.test4()
-##
-###test wind mass loss outer system
+###
+####test wind mass loss outer system
 #    test.test5()
-
-#test stable mass transfer in inner system 
+#
+##test stable mass transfer in inner system 
 #    test.test6() 
 #    test.test7()
 #    test.test8()
-    
-#test common envelope evolution in inner system
+#    
+##test common envelope evolution in inner system
 #    test.test9() #alpha-ce - need tides to bring the system into corotation -> DR
 #    test.test10() #gamma-ce
 #    test.test11() #double alpha-ce
-#
-## test contact system in inner system
+##
+#### test contact system in inner system
 #    test.test12() #double alpha-ce
 #    test.test13() #merger
-
-
-##    #test tides
+#
+#
+###    #test tides
 #    test.test14() #merger 
 #    test.test15() 
 #    test.test16() # darwin-riemann instability
 #    test.test17() # no darwin-riemann instability
-#
-#
-###  #test spin-r coupling
+##
+##
+####  #test spin-r coupling
 #    test.test18()
 #    test.test19()
 #    test.test19_alt()
