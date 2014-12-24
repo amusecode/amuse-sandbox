@@ -1,5 +1,6 @@
 import numpy
 import os
+import os.path
 import random
 import sys
 import pickle
@@ -20,6 +21,8 @@ from amuse.datamodel import particle_attributes as pa
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
+
+import multiples_restart_functions as MRest
 
 from amuse import io
 
@@ -212,9 +215,12 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     gravity.initialize_code()
     gravity.parameters.set_defaults()
 
+    kep = Kepler(redirection = "none")
+    kep.initialize_code()
+
     #-----------------------------------------------------------------
 
-    if infile is None and stars is None:
+    if (restart_file is None or not os.path.exists(restart_file+".stars.hdf5")) and infile is None and stars is None:
 
         print "making a Plummer model"
         stars = new_plummer_model(number_of_stars)
@@ -247,9 +253,6 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
 
             # Turn selected stars into binary components.
             # Only tested for equal-mass case.
-
-            kep = Kepler(redirection = "none")
-            kep.initialize_code()
 
             added_mass = 0.0 | nbody_system.mass
 
@@ -304,8 +307,18 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
 
             stars.mass = stars.mass * total_mass/(total_mass+added_mass)
             number_of_stars += nbin
-    elif restart_file is not None:
-        pass
+            Xtra=numpy.zeros(2)
+
+    elif restart_file is not None and os.path.exists(restart_file+".stars.hdf5"):
+        stars, time, multiples_code, Xtra = MRest.read_state_from_file(restart_file, gravity, new_smalln, kep)
+        channel = gravity.particles.new_channel_to(stars)
+        print "Restart detected.  Loading parameters from restart."
+        new_end = options.t_end
+        new_write = options.write_file
+        new_read = options.restart_file
+        time, options = read_options_from_file(options.restart_file)
+        options.t_end = new_end
+        options.write_file = new_write
     else:
 
         # Read the input data.  Units are dynamical (sorry).
@@ -464,7 +477,8 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
 
         print_log(pre, time, multiples_code, E0, cpu0)
         stars.savepoint(time)
-        write_state_to_file(time, stars, multiples_code, options)
+        write_options_to_file(options.restart_file, options, time, backup=1)
+        MRest.write_state_to_file(time, stars, gravity, multiples_code, options.restart_file, Xtra, backup=1)
         sys.stdout.flush()
 
     #-----------------------------------------------------------------
@@ -539,6 +553,22 @@ def write_star(s, f):
     vx,vy,vz = s.velocity.number
     f.write('%d %.15g %.15g %.15g %.15g %.15g %.15g %.15g\n' \
 		%(s.id, s.mass.number, x, y, z, vx, vy, vz))
+
+def write_options_to_file(write_file, options, time, backup=0):
+    config_opt= {'time' : time,
+              'options': pickle.dumps(options)
+    }
+    with open(write_file + ".options", "wb") as f:
+        pickle.dump(config_opt, f)
+    print "Command Line Arguments saved successfully"
+    if backup == 1:
+        with open(write_file + ".backup.options", "wb") as f:
+            pickle.dump(config_opt, f)
+        print "Command Line Arguments backed up successfully"
+
+def read_options_from_file(restart_file):
+    with open(restart_file + ".options", "rb") as f:
+        config_opt = pickle.load(f)
 
 if __name__ == '__main__':
 
