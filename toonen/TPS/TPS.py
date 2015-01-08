@@ -497,7 +497,9 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                         in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr,
                         in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                         in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr,                                                                     
-                        metallicity, tend, number, initial_number, stop_at_merger_or_disruption, seed):
+                        metallicity, tend, number, initial_number, stop_at_merger_or_disruption, seed,
+                        stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
+                        stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer):
 
 
     
@@ -515,21 +517,23 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                     in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr)
         
         triple_system.print_triple()
-#        print triple_system.in_primary_mass
         number_of_system = initial_number + i_n
-#        triple.main(inner_primary_mass = triple_system.in_primary_mass, 
-#                    inner_secondary_mass = triple_system.in_secondary_mass, 
-#                    outer_mass = triple_system.out_mass, 
-#                    inner_semimajor_axis = triple_system.in_semi, 
-#                    outer_semimajor_axis = triple_system.out_semi, 
-#                    inner_eccentricity = triple_system.in_ecc, 
-#                    outer_eccentricity = triple_system.out_ecc, 
-#                    relative_inclination = triple_system.incl, 
-#                    inner_argument_of_pericenter = triple_system.in_aop, 
-#                    outer_argument_of_pericenter = triple_system.out_aop, 
-#                    inner_longitude_of_ascending_node = triple_system.in_loan, 
-#                    outer_longitude_of_ascending_node = triple_system.out_loan, 
-#                    metallicity = metallicity, tend = tend, number = number_of_system)                        
+        triple.main(inner_primary_mass = triple_system.in_primary_mass, 
+                    inner_secondary_mass = triple_system.in_secondary_mass, 
+                    outer_mass = triple_system.out_mass, 
+                    inner_semimajor_axis = triple_system.in_semi, 
+                    outer_semimajor_axis = triple_system.out_semi, 
+                    inner_eccentricity = triple_system.in_ecc, 
+                    outer_eccentricity = triple_system.out_ecc, 
+                    relative_inclination = triple_system.incl, 
+                    inner_argument_of_pericenter = triple_system.in_aop, 
+                    outer_argument_of_pericenter = triple_system.out_aop, 
+                    inner_longitude_of_ascending_node = triple_system.in_loan, 
+                    outer_longitude_of_ascending_node = triple_system.out_loan, 
+                    metallicity = metallicity, tend = tend, number = number_of_system, 
+                    stop_at_merger = stop_at_merger, stop_at_disintegrated = stop_at_disintegrated,
+                    stop_at_triple_mass_transfer = stop_at_triple_mass_transfer, stop_at_collision = stop_at_collision, 
+                    stop_at_dynamical_instability = stop_at_dynamical_instability, stop_at_mass_transfer = stop_at_mass_transfer)                        
                                 
 
 def test_initial_parameters(in_primary_mass_max, in_primary_mass_min, 
@@ -795,7 +799,19 @@ def parse_arguments():
                       dest="seed", type="float", default = 0.|units.none,
                       help="seed [%default] %unit")
 #    int actual_seed = srandinter(input_seed);
-
+    parser.add_option("--stop_at_merger", dest="stop_at_merger", action="store_false", default = True, 
+                      help="stop at merger [%default] %unit")
+    parser.add_option("--stop_at_disintegrated", dest="stop_at_disintegrated", action="store_false", default = True,
+                      help="stop at disintegrated [%default] %unit")
+    parser.add_option("--stop_at_triple_mass_transfer", dest="stop_at_triple_mass_transfer", action="store_false", default = True,
+                      help="stop at triple mass transfer [%default] %unit")
+    parser.add_option("--stop_at_collision", dest="stop_at_collision", action="store_false",default = True,
+                      help="stop at collision [%default] %unit")
+    parser.add_option("--stop_at_dynamical_instability", dest="stop_at_dynamical_instability", action="store_false", default = True,
+                      help="stop at dynamical instability [%default] %unit")
+    parser.add_option("--stop_at_mass_transfer", dest="stop_at_mass_transfer", action="store_true", default = False,
+                      help="stop at mass transfer [%default] %unit")
+ 
 
 
     options, args = parser.parse_args()

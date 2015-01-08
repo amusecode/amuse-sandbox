@@ -49,15 +49,6 @@ import numpy as np
 REPORT_TRIPLE_EVOLUTION = False 
 REPORT_DT = False 
 
-#stopping conditions
-#for the moment these are global variables, and not interface parameters, as we cannot simulate them
-stop_at_merger = True # as implementation is missing, e.g. secular code not adjusted
-stop_at_disintegrated = True # as implementation is missing, e.g. secular code not adjusted
-stop_at_triple_mass_transfer = True # as implementation is missing 
-stop_at_collision = True # as implementation is missing
-stop_at_dynamical_instability = True # this should always be true!
-
-stop_at_mass_transfer = False
 no_stellar_evolution = False
 
 file_name = "triple.hdf" #"triple.txt"
@@ -94,7 +85,12 @@ class Triple_Class:
             relative_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
-            metallicity, tend, number, maximum_radius_change_factor, tidal_terms):      
+            metallicity, tend, number, maximum_radius_change_factor, tidal_terms,      
+            stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
+            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer):
+
+        self.set_stopping_conditions(stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
+            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer)
             
         inner_eccentricity, outer_eccentricity = self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
@@ -133,6 +129,32 @@ class Triple_Class:
         self.update_stellar_parameters() 
         self.update_time_derivative_of_radius()
 
+    def set_stopping_conditions(self, stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
+            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer):
+
+        if stop_at_merger == False:
+            print 'stop_at_merger = False not possible yet, implementation is missing' 
+            exit(1)
+        if stop_at_disintegrated == False:
+            print 'stop_at_disintegrated = False not possible yet, implementation is missing' 
+            exit(1)
+        if stop_at_triple_mass_transfer == False:
+            print 'stop_at_triple_mass_transfer = False not possible yet, implementation is missing' 
+            exit(1)
+        if stop_at_collision == False:
+            print 'stop_at_collision = False not possible yet, implementation is missing' 
+            exit(1)
+        if stop_at_dynamical_instability == False:
+            print 'stop_at_dynamical_instability = False not possible' 
+            exit(1)
+                            
+        self.stop_at_merger = stop_at_merger            
+        self.stop_at_disintegrated = stop_at_disintegrated            
+        self.stop_at_triple_mass_transfer = stop_at_triple_mass_transfer            
+        self.stop_at_collision = stop_at_collision            
+        self.stop_at_dynamical_instability = stop_at_dynamical_instability            
+        self.stop_at_mass_transfer = stop_at_mass_transfer            
+            
 
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass, inner_semimajor_axis, outer_semimajor_axis):
         stars = Particles(3)
@@ -1387,11 +1409,11 @@ class Triple_Class:
 #                self.secular_code.model_time = self.time
 #                continue # the while loop, skip resolve_stellar_interaction and secular evolution
             
-            if stop_at_mass_transfer and self.has_donor():
+            if self.stop_at_mass_transfer and self.has_donor():
                 print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)
                 self.save_snapshot()        
                 break             
-            if stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
+            if self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
                 print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
                 #it's possible that there is mass transfer in the inner and outer binary
                 print self.triple.child2.bin_type
@@ -1417,10 +1439,10 @@ class Triple_Class:
 #                self.secular_code.model_time = self.time
 #                continue # the while loop, skip resolve_stellar_interaction and secular evolution
 
-            if stop_at_merger and self.has_merger():
+            if self.stop_at_merger and self.has_merger():
                 print 'Merger at time/Myr = ",self.time.value_in(units.Myr)'
                 break    
-            if stop_at_disintegrated and self.has_disintegrated():
+            if self.stop_at_disintegrated and self.has_disintegrated():
                 print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'
                 break
             
@@ -1478,21 +1500,21 @@ class Triple_Class:
                  #The stellar evolution has evolved to far in time. For now this is not compensated. 
                     self.secular_code.model_time = self.time                     
 
-                if stop_at_mass_transfer and self.has_donor():
+                if self.stop_at_mass_transfer and self.has_donor():
                     print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)
                     self.save_snapshot()        
                     break             
-                if stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
+                if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
                     self.triple.dynamically_stable = False    
                     print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
                     self.save_snapshot()        
                     break
-                if stop_at_collision and self.secular_code.triples[0].inner_collision == True:
+                if self.stop_at_collision and self.secular_code.triples[0].inner_collision == True:
                     self.triple.child2.bin_type = bin_type['collision']
                     print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
                     self.save_snapshot()        
                     break
-                if stop_at_collision and self.secular_code.triples[0].outer_collision == True:
+                if self.stop_at_collision and self.secular_code.triples[0].outer_collision == True:
                     self.triple.bin_type = bin_type['collision']
                     print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
                     self.save_snapshot()        
@@ -2085,7 +2107,9 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             inner_longitude_of_ascending_node= 0.0, outer_longitude_of_ascending_node= 0.0,
             metallicity= 0.02,
             tend= 5.0 |units.Myr, number = 0, maximum_radius_change_factor = 0.005,
-            tidal_terms = True):
+            tidal_terms = True,
+            stop_at_merger = True, stop_at_disintegrated = True, stop_at_triple_mass_transfer = True,
+            stop_at_collision = True, stop_at_dynamical_instability = True, stop_at_mass_transfer = False):
 
 
     set_printing_strategy("custom", 
@@ -2107,7 +2131,9 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             relative_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
-            metallicity, tend, number, maximum_radius_change_factor, tidal_terms)
+            metallicity, tend, number, maximum_radius_change_factor, tidal_terms, 
+            stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
+            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer)
 
 
     triple_class_object.evolve_model()
@@ -2169,11 +2195,24 @@ def parse_arguments():
                       help="number of system [%default]")
     parser.add_option("-r", dest="maximum_radius_change_factor", type="float", default = 0.005,
                       help="maximum_radius_change_factor [%default] %unit")
-    parser.add_option("--tidal", dest="tidal_terms", action="store_false",
+    parser.add_option("--tidal", dest="tidal_terms", action="store_false", default = True, 
                       help="tidal terms included [%default] %unit")
+    parser.add_option("--stop_at_merger", dest="stop_at_merger", action="store_false", default = True, 
+                      help="stop at merger [%default] %unit")
+    parser.add_option("--stop_at_disintegrated", dest="stop_at_disintegrated", action="store_false", default = True,
+                      help="stop at disintegrated [%default] %unit")
+    parser.add_option("--stop_at_triple_mass_transfer", dest="stop_at_triple_mass_transfer", action="store_false", default = True,
+                      help="stop at triple mass transfer [%default] %unit")
+    parser.add_option("--stop_at_collision", dest="stop_at_collision", action="store_false",default = True,
+                      help="stop at collision [%default] %unit")
+    parser.add_option("--stop_at_dynamical_instability", dest="stop_at_dynamical_instability", action="store_false", default = True,
+                      help="stop at dynamical instability [%default] %unit")
+    parser.add_option("--stop_at_mass_transfer", dest="stop_at_mass_transfer", action="store_true", default = False,
+                      help="stop at mass transfer [%default] %unit")
+                      
+                      
     options, args = parser.parse_args()
     return options.__dict__
-
 
 
 if __name__ == '__main__':
@@ -2188,7 +2227,7 @@ if __name__ == '__main__':
     triple_class_object = Triple_Class(**options)
     triple_class_object.evolve_model()
 #    triple_class_object.print_stellar_system()
-    plot_function(triple_class_object)
+#    plot_function(triple_class_object)
 
     if REPORT_TRIPLE_EVOLUTION:
         print 'succesfully finished'

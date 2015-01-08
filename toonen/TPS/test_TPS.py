@@ -1182,7 +1182,7 @@ if __name__ == '__main__':
 #    test.test5()
 #
 ##test stable mass transfer in inner system 
-#    test.test6() 
+    test.test6() 
 #    test.test7()
 #    test.test8()
 #    
@@ -1211,7 +1211,7 @@ if __name__ == '__main__':
 
 
     #test kozai
-    test.test21()
+#    test.test21()
 
 
 # test dt 
