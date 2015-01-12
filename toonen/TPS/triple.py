@@ -46,13 +46,18 @@ from math import sqrt
 import numpy as np
 
 
+
 REPORT_TRIPLE_EVOLUTION = False 
 REPORT_DT = False 
 
 no_stellar_evolution = False
 
-file_name = "triple.hdf" #"triple.txt"
-file_type = "hdf5" #"txt"
+
+#file_name = "triple.txt"
+#file_name = "test.txt"
+#file_type = "txt"
+file_name = "triple.hdf" 
+file_type = "hdf5"
 
 #constants
 time_step_factor_stable_mt = 0.01 #1% mass loss during mass transfer
@@ -69,7 +74,6 @@ maximum_time_step_factor = 100.
 #Rl_fraction = 0.9#1.0-10.*error_dr # ratio or star radius over Roche lobe at which time step is decreased
                               # radius grows maximally by error_dr
 time_step_factor_kozai = 0.025 # 0.2*0.1, 0.2-> for error in kozai timescale, 0.1-> 10 steps per cycle
-
 
 
 stellar_types_SN_remnants = [13,14]|units.stellar_type # remnant types created through a supernova
@@ -118,7 +122,7 @@ class Triple_Class:
         self.triple = bins[1]
         self.triple.relative_inclination = relative_inclination 
         self.triple.is_star = False
-        self.triple.dynamically_stable = True 
+        self.triple.dynamical_instability = False 
         self.triple.number = number 
         
         self.setup_stellar_code(metallicity, stars)
@@ -884,12 +888,20 @@ class Triple_Class:
         if stellar_system == None:
             stellar_system = self.triple
 
+        file_name2 = file_name
+        import os.path
+        while (os.path.isfile(file_name2)):
+            file_name2 = file_name2+str(1) 
+
         if file_type == 'txt':
             parents = self.remove_parents()
-            write_set_to_file(self.triple.as_set(), file_name, file_type) 
+            write_set_to_file(self.triple.as_set(), file_name2, file_type) 
             self.set_parents(parents)
+
         else:
             write_set_to_file(self.triple.as_set(), file_name, file_type, version='2.0') 
+
+
 
     #some minor parameters are missing:
 #        self.first_contact = True 
@@ -1373,12 +1385,12 @@ class Triple_Class:
         
         if REPORT_TRIPLE_EVOLUTION:
             print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend    
-        print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend    
+        print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend, self.triple.number   
         self.determine_mass_transfer_timescale()
         self.save_snapshot()    
         while self.time<self.tend:
             if self.has_stellar_type_changed() or self.has_kozai_type_changed():
-                self.save_snapshot()        
+                self.save_snapshot()             
    
             dt = self.determine_time_step()  
             if not no_stellar_evolution: 
@@ -1489,8 +1501,7 @@ class Triple_Class:
                     
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Secular evolution finished'
-                    
-
+    
                 if self.time - self.secular_code.model_time < -1*numerical_error|units.Myr:
                     print 'triple time < sec time: should not be possible', self.time, self.secular_code.model_time
                     exit(1)

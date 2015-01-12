@@ -61,9 +61,14 @@
 ##            -z         metallicity of stars  [0.02 Solar] 
 ##            -n         number of triples to be simulated.  [1]
 ##            -N         number of initial triple.  [0]
-
+##            --stop_at_merger                  stopping condition at merger [True]
+##            --stop_at_disintegrated           stopping condition at disintegration [True]
+##            --stop_at_triple_mass_transfer    stopping condition at mass transfer in outer binary [True]
+##            --stop_at_collision               stopping condition at collision [True]
+##            --stop_at_dynamical_instability   stopping condition at dynamical instability [True]
+##            --stop_at_mass_transfer           stopping condition at mass transfer [False]
+         
 #not implemented yet
-##            -D        stopping condition at merger or disruption [False]
 ##            -s         random seed
 
 
@@ -84,7 +89,6 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
-
 
 
 def flat_distr(lower, upper):
@@ -497,7 +501,7 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                         in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr,
                         in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                         in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr,                                                                     
-                        metallicity, tend, number, initial_number, stop_at_merger_or_disruption, seed,
+                        metallicity, tend, number, initial_number, seed,
                         stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
                         stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer):
 
@@ -547,7 +551,9 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
                         in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr,
                         in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                         in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr,                   
-                        metallicity, tend, number, initial_number, stop_at_merger_or_disruption, seed):
+                        metallicity, tend, number, initial_number, seed,
+                        stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
+                        stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer):
 
     if (in_primary_mass_min < min_mass) or (in_primary_mass_max > max_mass):
         print 'error: inner primary mass not in allowed range [', min_mass, ',', max_mass, ']'
@@ -792,9 +798,6 @@ def parse_arguments():
                       help="number of systems [%default]")
     parser.add_option("-N", dest="initial_number", type="int", default = 0,
                       help="number of initial system [%default]")
-    parser.add_option("-D", unit=units.none, 
-                      dest="stop_at_merger_or_disruption", type="int", default = 0|units.none,
-                      help="stop at merger or disruption [%default] %unit") #should be bool
     parser.add_option("-s", unit=units.none, 
                       dest="seed", type="float", default = 0.|units.none,
                       help="seed [%default] %unit")
