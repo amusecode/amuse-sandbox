@@ -70,6 +70,7 @@
 #define c_1div8             (double)    1.0/8.0
 #define c_1div16            (double)    1.0/16.0
 #define c_2div3             (double)    2.0/3.0
+#define c_2div5             (double)    2.0/5.0
 #define c_3div2             (double)    3.0/2.0
 #define c_3div5             (double)    3.0/5.0
 #define c_3div8             (double)    3.0/8.0
@@ -219,3 +220,5 @@ int get_include_linear_radius_change(int *value);
 int set_include_linear_radius_change(int value);
 int get_relative_tolerance(double *relative_tolerance_t);
 int set_relative_tolerance(double relative_tolerance_t);
+int get_check_for_dynamical_stability_at_initialisation(int *value);
+int set_check_for_dynamical_stability_at_initialisation(int value);

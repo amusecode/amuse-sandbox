@@ -34,6 +34,7 @@ bool include_magnetic_braking_terms;
 bool include_spin_radius_mass_coupling_terms;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
 bool include_linear_mass_change,include_linear_radius_change;
+bool check_for_dynamical_stability_at_initialisation = true;
 double relative_tolerance = 1.0e-10;
 double input_precision = 1.0e-5;
 int linear_solver = 0;
@@ -718,5 +719,13 @@ int get_include_linear_radius_change(int *value){
 }
 int set_include_linear_radius_change(int value){
     include_linear_radius_change = value == 1;
+    return 0;
+}
+int get_check_for_dynamical_stability_at_initialisation(int *value){
+    *value = check_for_dynamical_stability_at_initialisation ? 1 : 0;
+    return 0;
+}
+int set_check_for_dynamical_stability_at_initialisation(int value){
+    check_for_dynamical_stability_at_initialisation = value == 1;
     return 0;
 }

@@ -136,6 +136,17 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
+    def a_out_div_a_in_dynamical_stability():
+        function = LegacyFunctionSpecification()
+        function.addParameter('m1', dtype='float64', direction=function.IN)
+        function.addParameter('m2', dtype='float64', direction=function.IN)
+        function.addParameter('m3', dtype='float64', direction=function.IN)
+        function.addParameter('e_out', dtype='float64', direction=function.IN)
+        function.addParameter('itot', dtype='float64', direction=function.IN)        
+        function.result_type = 'float64'
+        return function
+
+    @legacy_function
     def roche_radius_pericenter_sepinsky():
         function = LegacyFunctionSpecification()
         function.addParameter('rp', dtype='float64', direction=function.IN)
@@ -503,6 +514,20 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('include_linear_radius_change', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
+        
+    @legacy_function
+    def set_check_for_dynamical_stability_at_initialisation():
+        function = LegacyFunctionSpecification()
+        function.addParameter('check_for_dynamical_stability_at_initialisation', dtype='bool',direction=function.IN,description = "..")
+        function.result_type = 'int32'
+        return function    
+
+    @legacy_function
+    def get_check_for_dynamical_stability_at_initialisation():
+        function = LegacyFunctionSpecification()
+        function.addParameter('check_for_dynamical_stability_at_initialisation', dtype='bool',direction=function.OUT,description = "..")
+        function.result_type = 'int32'
+        return function
 
 class SecularTriple(InCodeComponentImplementation):
 
@@ -709,7 +734,14 @@ class SecularTriple(InCodeComponentImplementation):
             "include_linear_radius_change",
             "..", 
             default_value = False
-        )            
+        )   
+        object.add_method_parameter(
+            "get_check_for_dynamical_stability_at_initialisation",
+            "set_check_for_dynamical_stability_at_initialisation",
+            "check_for_dynamical_stability_at_initialisation",
+            "..", 
+            default_value = True
+        )                  
 
     def define_methods(self, object):
         unit_lum = unit_m*unit_l**2/(unit_t**3)
@@ -805,6 +837,20 @@ class SecularTriple(InCodeComponentImplementation):
                 object.ERROR_CODE,
             )
         )
+        object.add_method(
+            "a_out_div_a_in_dynamical_stability",
+            (
+                unit_m,                     ### m1
+                unit_m,                     ### m2
+                unit_m,                     ### m3
+                object.NO_UNIT,             ### e_out
+                object.NO_UNIT,             ### itot -- NOTE: should be in radians
+            ),
+            (
+                object.NO_UNIT,             ### a_out/a_in for dynamical stability
+            )
+        )
+
         object.add_method(
             "roche_radius_pericenter_sepinsky",
             (
@@ -968,7 +1014,9 @@ class SecularTriple(InCodeComponentImplementation):
             self.time_step = end_time - self.model_time            
 
             inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
-            args = extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2,star3)
+            args,skip_integration = extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2,star3)
+            if skip_integration == True: 
+                continue
 
             ### solve system of ODEs ###
             m1,m2,m3,R1,R2,R3, \
@@ -1233,6 +1281,7 @@ def give_binaries_and_stars(self,triple):
 
 def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2,star3):
     parameters = self.parameters
+    skip_integration = False ### if True, no integration will be done in evolve function
     
     ### general parameters ###
     m1 = star1.mass
@@ -1263,12 +1312,22 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
     a_out = outer_binary.semimajor_axis
     e_out = outer_binary.eccentricity
 
-    INCL_in = triple.relative_inclination
+    INCL_in = triple.relative_inclination ### in radians
     INCL_out = 0.0
     AP_in = inner_binary.argument_of_pericenter
     AP_out = outer_binary.argument_of_pericenter
     LAN_in = inner_binary.longitude_of_ascending_node
     LAN_out = outer_binary.longitude_of_ascending_node        
+
+    ### if enabled, check for dynamical stability at initialisation ###
+    if parameters.check_for_dynamical_stability_at_initialisation == True:
+        a_out_div_a_in_dynamical_stability = self.a_out_div_a_in_dynamical_stability(m1,m2,m3,e_out,triple.relative_inclination)
+        if a_out/a_in <= a_out_div_a_in_dynamical_stability:
+            print 'SecularTriple -- code parameter "check_for_dynamical_stability_at_initialisation" = True'
+            print 'SecularTriple -- given system is initially dynamically unstable: a_out/a_in = ',a_out/a_in,', whereas for dynamical stability, a_out/a_in should be > ',a_out_div_a_in_dynamical_stability
+            print 'SecularTriple -- no integration will be carried out'
+            skip_integration = True
+            triple.dynamical_instability = True
 
     wind_mass_loss_rate_star1 = wind_mass_loss_rate_star2 = wind_mass_loss_rate_star3 = 0.0 | units.MSun/units.yr
     if parameters.include_linear_mass_change == True:
@@ -1498,4 +1557,4 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
 #    print 'pre',k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
         
 #    print 'args',args
-    return args
+    return args,skip_integration

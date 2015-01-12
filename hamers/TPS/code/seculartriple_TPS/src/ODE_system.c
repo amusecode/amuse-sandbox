@@ -821,10 +821,9 @@ int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data_f)
         /*  at the moment: uses Mardling & Aarseth criterion (2001MNRAS.321..398M) */
         /*  in future other criteria could be implemented as well */
 
-        double q_out = m3/(m1+m2);
         double itot = acos(Ith(yev,7));
-        double a_out_div_a_in_crit = (1.0/(1.0-e_out))*2.8*pow( (1.0+q_out)*(1.0+e_out)/sqrt(1.0-e_out),2.0/5.0)*(1.0 - 0.3*itot/M_PI);
-    
+        double a_out_div_a_in_crit = a_out_div_a_in_dynamical_stability(m1,m2,m3,e_out,itot);
+        
         gout[0] = fabs(a_out/a_in - a_out_div_a_in_crit);
     }
 
@@ -873,6 +872,26 @@ int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data_f)
     
 	return 0;
 }
+
+double a_out_div_a_in_dynamical_stability(double m1, double m2, double m3, double e_out, double itot)
+{
+    /* wrapper used in interface.py */
+    
+    return a_out_div_a_in_dynamical_stability_mardling_aarseth_01(m1,m2,m3,e_out,itot);
+}
+
+double a_out_div_a_in_dynamical_stability_mardling_aarseth_01(double m1, double m2, double m3, double e_out, double itot)
+{
+    /* Mardling & Aarseth criterion (2001MNRAS.321..398M) 
+     * including the `ad hoc' inclination factor
+     * itot is assumed to be in radians! */
+     
+    double q_out = m3/(m1+m2);
+    double a_out_div_a_in_crit = (1.0/(1.0-e_out))*2.8*pow( (1.0+q_out)*(1.0+e_out)/sqrt(1.0-e_out),c_2div5)*(1.0 - 0.3*itot/M_PI);
+    
+    return a_out_div_a_in_crit;
+}
+
 double roche_radius_pericenter_eggleton(double rp, double q)
 {
     /* 2007ApJ...660.1624S Eqs. (45) */    
