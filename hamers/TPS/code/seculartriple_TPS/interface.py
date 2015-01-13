@@ -1001,22 +1001,16 @@ class SecularTriple(InCodeComponentImplementation):
     def define_particle_sets(self,object):
         object.define_inmemory_set('triples')
 
-    def commit_particles(self):
-        try: 
-            parameters = self.parameters
-            check_for_dynamical_stability_at_initialisation = parameters.check_for_dynamical_stability_at_initialisation
-        except AttributeError:
-            check_for_dynamical_stability_at_initialisation = True
+    def check_for_dynamical_stability(self):
+
+        for index_triple, triple in enumerate(self.triples):
+            inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
+            m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary)
             
-        if check_for_dynamical_stability_at_initialisation == True:
-            for index_triple, triple in enumerate(self.triples):
-                inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
-                m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary)
-                
-                a_out_div_a_in_dynamical_stability = self.a_out_div_a_in_dynamical_stability(m1,m2,m3,e_out,triple.relative_inclination)
-                if a_out/a_in <= a_out_div_a_in_dynamical_stability:
-                    print 'SecularTriple -- committed triple particle is initially dynamically unstable: a_out/a_in = ',a_out/a_in,', whereas for dynamical stability, a_out/a_in should be > ',a_out_div_a_in_dynamical_stability
-                    triple.dynamical_instability = True
+            a_out_div_a_in_dynamical_stability = self.a_out_div_a_in_dynamical_stability(m1,m2,m3,e_out,triple.relative_inclination)
+            if a_out/a_in <= a_out_div_a_in_dynamical_stability:
+                print 'SecularTriple -- triple system is dynamically unstable: a_out/a_in = ',a_out/a_in,', whereas for dynamical stability, a_out/a_in should be > ',a_out_div_a_in_dynamical_stability
+                triple.dynamical_instability = True
 
     def evolve_model(self,end_time):
         if end_time is None:
