@@ -536,6 +536,7 @@ class SecularTriple(InCodeComponentImplementation):
         self.model_time = 0.0 | units.Myr
         self.evolve_further_after_root_was_found = False ### in some cases, it is desirable to integrate until the given end time, despite the finding of a root
         self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = True ### this may seem like a strange `feature', but exists for consistency with the stellar/binary evolution code
+
     def define_parameters(self, object):
         
         object.add_method_parameter(
@@ -1000,6 +1001,23 @@ class SecularTriple(InCodeComponentImplementation):
     def define_particle_sets(self,object):
         object.define_inmemory_set('triples')
 
+    def commit_particles(self):
+        try: 
+            parameters = self.parameters
+            check_for_dynamical_stability_at_initialisation = parameters.check_for_dynamical_stability_at_initialisation
+        except AttributeError:
+            check_for_dynamical_stability_at_initialisation = True
+            
+        if check_for_dynamical_stability_at_initialisation == True:
+            for index_triple, triple in enumerate(self.triples):
+                inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
+                m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary)
+                
+                a_out_div_a_in_dynamical_stability = self.a_out_div_a_in_dynamical_stability(m1,m2,m3,e_out,triple.relative_inclination)
+                if a_out/a_in <= a_out_div_a_in_dynamical_stability:
+                    print 'SecularTriple -- committed triple particle is initially dynamically unstable: a_out/a_in = ',a_out/a_in,', whereas for dynamical stability, a_out/a_in should be > ',a_out_div_a_in_dynamical_stability
+                    triple.dynamical_instability = True
+
     def evolve_model(self,end_time):
         if end_time is None:
             print 'SecularTriple -- please specify end time!'
@@ -1162,19 +1180,7 @@ class SecularTriple(InCodeComponentImplementation):
             return
 
         inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
-
-        m1 = star1.mass
-        m2 = star2.mass
-        m3 = star3.mass
-
-        R1 = star1.radius
-        R2 = star2.radius
-        R3 = star3.radius
-                    
-        a_in = inner_binary.semimajor_axis
-        e_in = inner_binary.eccentricity
-        a_out = outer_binary.semimajor_axis
-        e_out = outer_binary.eccentricity
+        m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary)
 
         spin_angular_frequency1 = star1.spin_angular_frequency
         spin_angular_frequency2 = star2.spin_angular_frequency
@@ -1279,19 +1285,41 @@ def give_binaries_and_stars(self,triple):
 
     return inner_binary,outer_binary,star1,star2,star3
 
-def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2,star3):
-    parameters = self.parameters
-    skip_integration = False ### if True, no integration will be done in evolve function
+def give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary,triple=None):
     
-    ### general parameters ###
+    ### stellar parameters ###
     m1 = star1.mass
     m2 = star2.mass
     m3 = star3.mass
 
     R1 = star1.radius
     R2 = star2.radius
-    R3 = star3.radius
+    R3 = star3.radius   
+    
+    ### binary parameters
+    a_in = inner_binary.semimajor_axis
+    a_out = outer_binary.semimajor_axis
+    e_in = inner_binary.eccentricity
+    e_out = outer_binary.eccentricity
 
+    if triple==None:
+        INCL_in = 0.0
+    else:
+        INCL_in = triple.relative_inclination ### in radians
+    INCL_out = 0.0
+    AP_in = inner_binary.argument_of_pericenter
+    AP_out = outer_binary.argument_of_pericenter
+    LAN_in = inner_binary.longitude_of_ascending_node
+    LAN_out = outer_binary.longitude_of_ascending_node
+    
+    return m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out
+
+def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2,star3):
+    parameters = self.parameters
+    skip_integration = False ### if True, no integration will be done in evolve function
+    
+    m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary,triple)
+    
     ### By default, RLOF is taken into account for the remaining integration time if
     ### a root is found corresponding to the Roche lobe no longer being filled.
     ### However, in the latter case, if initially R>RL and is_donor = False, then RLOF is not taken into account during the remaining integration.
@@ -1305,19 +1333,7 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
         self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False
     if (R3>=RL3 and star3.is_donor == False):
         print 'SecularTriple -- warning: R3>=RL3 at initialisation while star3.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
-        self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False
-
-    a_in = inner_binary.semimajor_axis
-    e_in = inner_binary.eccentricity
-    a_out = outer_binary.semimajor_axis
-    e_out = outer_binary.eccentricity
-
-    INCL_in = triple.relative_inclination ### in radians
-    INCL_out = 0.0
-    AP_in = inner_binary.argument_of_pericenter
-    AP_out = outer_binary.argument_of_pericenter
-    LAN_in = inner_binary.longitude_of_ascending_node
-    LAN_out = outer_binary.longitude_of_ascending_node        
+        self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False        
 
     ### if enabled, check for dynamical stability at initialisation ###
     if parameters.check_for_dynamical_stability_at_initialisation == True:
