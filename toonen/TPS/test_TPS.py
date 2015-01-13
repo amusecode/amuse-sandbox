@@ -1162,9 +1162,44 @@ class TestSeBa(TestWithMPI):
         print 'test21: succeeded'
 
 
+    def test22(self):
+        print 'test22'
+        M1 = 1.|units.MSun
+        M2 = 1.1|units.MSun
+        M3 = 2|units.MSun
+        a_in = 2.e6 |units.RSun
+        a_out = 2.3e6|units.RSun
+        e_in = 0.
+        e_out = 0.
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out)
 
-
+        print tr.triple.dynamical_instability_at_initialisation,
+        print tr.triple.dynamical_instability
+        print tr.triple.child2.child1.age, tr.triple.child2.child2.age, tr.triple.child1.age
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
         
+        if test_asserts:   
+            self.assertEqual(tr.triple.dynamical_instability, True)        
+            self.assertEqual(tr.triple.dynamical_instability_at_initialisation, True)        
+            self.assertEqual(tr.triple.child2.child1.age, 0.| units.yr)        
+            self.assertEqual(tr.triple.child2.child2.age, 0. | units.yr)        
+            self.assertEqual(tr.triple.child1.age, 0. | units.yr)        
+            
+            self.assertEqual(tr.triple.child2.child1.mass, 1.1| units.MSun)        
+            self.assertEqual(tr.triple.child2.child2.mass, 1. | units.MSun)        
+            self.assertEqual(tr.triple.child1.mass, 2. | units.MSun)        
+            
+            self.assertEqual(tr.triple.child2.semimajor_axis, 2.e6| units.RSun)  
+            self.assertEqual(tr.triple.semimajor_axis, 2.3e6 | units.RSun)        
+            self.assertEqual(tr.triple.child2.eccentricity, 1.e-5)  
+            self.assertEqual(tr.triple.eccentricity, 1.e-5)        
+    
+        print 'test22: succeeded'
+
+
 if __name__ == '__main__':
     test = TestSeBa()
 
@@ -1182,7 +1217,7 @@ if __name__ == '__main__':
 #    test.test5()
 #
 ##test stable mass transfer in inner system 
-    test.test6() 
+#    test.test6() 
 #    test.test7()
 #    test.test8()
 #    
@@ -1212,7 +1247,9 @@ if __name__ == '__main__':
 
     #test kozai
 #    test.test21()
-
+    
+    #dynamical instability at initialization
+    test.test22()
 
 # test dt 
     # 8, 50Msun succeeds

@@ -89,7 +89,7 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
-
+REPORT = False 
 
 def flat_distr(lower, upper):
     return np.random.uniform(lower, upper)
@@ -490,7 +490,7 @@ class Generate_initial_triple:
 #-------
 
 #-------
-def evolve_triples(in_primary_mass_max, in_primary_mass_min, 
+def evolve_model(in_primary_mass_max, in_primary_mass_min, 
                         in_mass_ratio_max, in_mass_ratio_min, 
                         out_mass_ratio_max, out_mass_ratio_min, 
                         in_semi_max, in_semi_min, out_semi_max, out_semi_min, 
@@ -507,7 +507,9 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
 
 
     
-    for i_n in range(number):
+    i_n = 0
+    nr_ids = 0 #number of systems that is dynamically unstable at initialisation
+    while i_n < number:
         triple_system = Generate_initial_triple(in_primary_mass_max, in_primary_mass_min, 
                     in_mass_ratio_max, in_mass_ratio_min, 
                     out_mass_ratio_max, out_mass_ratio_min, 
@@ -520,9 +522,11 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                     in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                     in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr)
         
-        triple_system.print_triple()
+        if REPORT:
+           triple_system.print_triple()
+           
         number_of_system = initial_number + i_n
-        triple.main(inner_primary_mass = triple_system.in_primary_mass, 
+        tr = triple.main(inner_primary_mass = triple_system.in_primary_mass, 
                     inner_secondary_mass = triple_system.in_secondary_mass, 
                     outer_mass = triple_system.out_mass, 
                     inner_semimajor_axis = triple_system.in_semi, 
@@ -538,7 +542,15 @@ def evolve_triples(in_primary_mass_max, in_primary_mass_min,
                     stop_at_merger = stop_at_merger, stop_at_disintegrated = stop_at_disintegrated,
                     stop_at_triple_mass_transfer = stop_at_triple_mass_transfer, stop_at_collision = stop_at_collision, 
                     stop_at_dynamical_instability = stop_at_dynamical_instability, stop_at_mass_transfer = stop_at_mass_transfer)                        
-                                
+
+        if tr.triple.dynamical_instability_at_initialisation == False:
+            i_n += 1
+        else:
+            nr_ids +=1
+
+
+
+    print number, i_n, nr_ids                                
 
 def test_initial_parameters(in_primary_mass_max, in_primary_mass_min, 
                         in_mass_ratio_max, in_mass_ratio_min, 
@@ -830,7 +842,7 @@ if __name__ == '__main__':
                           separator = " [", suffix = "]")
 
     test_initial_parameters(**options)
-    evolve_triples(**options)
+    evolve_model(**options)
 
 
 

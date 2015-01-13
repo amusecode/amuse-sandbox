@@ -96,14 +96,14 @@ class Triple_Class:
         self.set_stopping_conditions(stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer)
             
-        inner_eccentricity, outer_eccentricity = self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
-            inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
-            relative_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter,
-            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)   
         if inner_primary_mass < inner_secondary_mass:
             spare = inner_primary_mass
             inner_primary_mass = inner_secondary_mass
             inner_secondary_mass = spare     
+        inner_eccentricity, outer_eccentricity = self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
+            inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
+            relative_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter,
+            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)   
                         
         stars = self.make_stars(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis)
@@ -127,6 +127,14 @@ class Triple_Class:
         
         self.setup_stellar_code(metallicity, stars)
         self.setup_secular_code(self.triple.as_set(), tidal_terms)
+        
+        self.triple.dynamical_instability_at_initialisation = False
+        self.secular_code.check_for_dynamical_stability()
+        if self.secular_code.triples[0].dynamical_instability == True:
+            self.triple.dynamical_instability_at_initialisation = True
+            self.triple.dynamical_instability = True
+            print "Dynamical instability at initialisation"
+            return 
 
         self.triple.kozai_type = self.get_kozai_type()
         self.update_previous_stellar_parameters()
@@ -1385,7 +1393,6 @@ class Triple_Class:
         
         if REPORT_TRIPLE_EVOLUTION:
             print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend    
-        print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend, self.triple.number   
         self.determine_mass_transfer_timescale()
         self.save_snapshot()    
         while self.time<self.tend:
@@ -1516,7 +1523,7 @@ class Triple_Class:
                     self.save_snapshot()        
                     break             
                 if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
-                    self.triple.dynamically_stable = False    
+                    self.triple.dynamical_instability = True    #necessary?
                     print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
                     self.save_snapshot()        
                     break
@@ -1616,6 +1623,7 @@ class Triple_Class:
         self.plot_data.gy1_array = gy1_array
         self.plot_data.gy2_array = gy2_array
         self.plot_data.gy3_array = gy3_array
+        
     #-------
 
 
@@ -2147,9 +2155,12 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer)
 
 
-    triple_class_object.evolve_model()
-#    plot_function(triple_class_object)
-#    triple_class_object.print_stellar_system()
+    if triple_class_object.triple.dynamical_instability == True:
+        print 'Choose a different system. The given triple is dynamically unstable at initialization'
+    else:    
+        triple_class_object.evolve_model()
+#        plot_function(triple_class_object)
+#        triple_class_object.print_stellar_system()
     return triple_class_object
 #-----
 
@@ -2235,12 +2246,14 @@ if __name__ == '__main__':
                           separator = " [", suffix = "]")
 
 
-    triple_class_object = Triple_Class(**options)
-    triple_class_object.evolve_model()
-#    triple_class_object.print_stellar_system()
-#    plot_function(triple_class_object)
+    triple_class_object = Triple_Class(**options)   
+    if triple_class_object.triple.dynamical_instability == True:
+        print 'Choose a different system. The given triple is dynamically unstable at initialization'
+    else:    
+        triple_class_object.evolve_model()
+        plot_function(triple_class_object)
+#        triple_class_object.print_stellar_system()
 
-    if REPORT_TRIPLE_EVOLUTION:
-        print 'succesfully finished'
-
-
+        if REPORT_TRIPLE_EVOLUTION:
+            print 'Simulation has finished succesfully'
+            
