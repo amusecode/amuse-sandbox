@@ -130,10 +130,9 @@ class Triple_Class:
         
         self.triple.dynamical_instability_at_initialisation = False
         self.secular_code.check_for_dynamical_stability()
-        if self.secular_code.triples[0].dynamical_instability == True:
+        if self.secular_code.triples[0].dynamical_instability == True and stop_at_dynamical_instability = True:
             self.triple.dynamical_instability_at_initialisation = True
             self.triple.dynamical_instability = True
-            print "Dynamical instability at initialisation"
             return 
 
         self.triple.kozai_type = self.get_kozai_type()
@@ -2155,7 +2154,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer)
 
 
-    if triple_class_object.triple.dynamical_instability == True:
+    if triple_class_object.triple.dynamical_instability_at_initialisation == True:
         print 'Choose a different system. The given triple is dynamically unstable at initialization'
     else:    
         triple_class_object.evolve_model()
@@ -2247,7 +2246,7 @@ if __name__ == '__main__':
 
 
     triple_class_object = Triple_Class(**options)   
-    if triple_class_object.triple.dynamical_instability == True:
+    if triple_class_object.triple.dynamical_instability_at_initialisation == True:
         print 'Choose a different system. The given triple is dynamically unstable at initialization'
     else:    
         triple_class_object.evolve_model()
