@@ -130,7 +130,7 @@ class Triple_Class:
         
         self.triple.dynamical_instability_at_initialisation = False
         self.secular_code.check_for_dynamical_stability()
-        if self.secular_code.triples[0].dynamical_instability == True and stop_at_dynamical_instability = True:
+        if self.secular_code.triples[0].dynamical_instability == True and stop_at_dynamical_instability == True:
             self.triple.dynamical_instability_at_initialisation = True
             self.triple.dynamical_instability = True
             return 
