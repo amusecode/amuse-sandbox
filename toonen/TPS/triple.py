@@ -124,6 +124,8 @@ class Triple_Class:
         self.triple.is_star = False
         self.triple.dynamical_instability = False 
         self.triple.number = number 
+        self.triple.max_dm_over_m = 0.
+        self.triple.max_dr_over_r = 0.
         
         self.setup_stellar_code(metallicity, stars)
         self.setup_secular_code(self.triple.as_set(), tidal_terms)
@@ -1131,8 +1133,6 @@ class Triple_Class:
         if REPORT_DT or REPORT_TRIPLE_EVOLUTION:
             print 'time:', time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step_kozai, time_step
 
-
-                
         #during stable mass transfer   
         if self.has_donor():
             print time_step, self.determine_time_step_stable_mt()
@@ -1316,10 +1316,14 @@ class Triple_Class:
             if REPORT_TRIPLE_EVOLUTION:
                 print 'wind mass loss rate:', stellar_system.wind_mass_loss_rate,
                 print 'relative wind mass losses:', dm
-
-            if (dm > error_dm) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
+            
+            if (abs(dm) > self.triple.max_dm_over_m) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
+                self.triple.max_dm_over_m = abs(dm)
+            
+            if (abs(dm) > error_dm) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
                 print 'Change in mass in a single time_step larger then', error_dm
                 print dm, stellar_system.mass, stellar_system.stellar_type
+                print self.triple.max_dm_over_m
                 exit(1)
 
             if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
@@ -1328,8 +1332,11 @@ class Triple_Class:
                 if REPORT_TRIPLE_EVOLUTION:    
                     print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
                     print 'relative change in radius:', dr
+                
+                if (abs(dr) > self.triple.max_dr_over_r) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
+                    self.triple.max_dr_over_r = abs(dr)    
     
-                if (dr > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_remnants):
+                if (abs(dr) > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_remnants):
                     print 'Change in radius in a single time_step larger then', error_dr
                     print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
                     exit(1)
@@ -1338,7 +1345,6 @@ class Triple_Class:
             self.safety_check_time_step(stellar_system.child1)        
             self.safety_check_time_step(stellar_system.child2)
             
-    
 #-------------------------    
 
     def evolve_model(self):
@@ -1392,6 +1398,7 @@ class Triple_Class:
         
         if REPORT_TRIPLE_EVOLUTION:
             print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend    
+
         self.determine_mass_transfer_timescale()
         self.save_snapshot()    
         while self.time<self.tend:
@@ -1468,8 +1475,9 @@ class Triple_Class:
                 # do secular evolution
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Secular evolution'
-                self.channel_to_secular.copy()
                 self.safety_check_time_step()
+                self.channel_to_secular.copy()
+                
                 if not self.is_triple:# e.g. binaries
                     print 'Secular code disabled'
                     exit(1)
@@ -1508,6 +1516,7 @@ class Triple_Class:
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Secular evolution finished'
     
+    
                 if self.time - self.secular_code.model_time < -1*numerical_error|units.Myr:
                     print 'triple time < sec time: should not be possible', self.time, self.secular_code.model_time
                     exit(1)
@@ -1537,12 +1546,12 @@ class Triple_Class:
                     self.save_snapshot()        
                     break
 
-                self.channel_from_secular.copy()  
+                self.channel_from_secular.copy() 
                 if self.triple.error_flag_secular < 0:
                     print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
                     print self.triple.error_flag_secular
                     self.save_snapshot()        
-                    break
+                    break                    
                    
             else:
                 print 'skip secular', self.instantaneous_evolution, self.first_contact        
@@ -1553,7 +1562,6 @@ class Triple_Class:
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
             self.check_for_RLOF()
 
-            
             # for plotting data
             times_array.append(self.time)
             e_in_array.append(self.triple.child2.eccentricity)
@@ -1797,34 +1805,37 @@ def plot_function(triple):
     plt.savefig('plots/orbit/radius_time_'+generic_name+'.pdf')
     plt.show()
     
-#    dr1_array =r1_array[1:]-r1_array[:-1]
-#    dr2_array =r2_array[1:]-r2_array[:-1]
-#    dr3_array =r3_array[1:]-r3_array[:-1]
-#    dt_array = times_array_Myr[1:] - times_array_Myr[:-1]
-#    plt.semilogy(times_array_Myr[1:], dr1_array/dt_array)
-#    plt.semilogy(times_array_Myr[1:], dr1_array/dt_array, '.')
-#    plt.semilogy(times_array_Myr[1:], dr2_array/dt_array)
-#    plt.semilogy(times_array_Myr[1:], dr2_array/dt_array, '.')
-#    plt.semilogy(times_array_Myr[1:], dr3_array/dt_array)
-#    plt.semilogy(times_array_Myr[1:], dr3_array/dt_array, '.')
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$dr/dt$')
-#    plt.savefig('plots/orbit/drdt_time_'+generic_name+'.pdf')
-#    plt.show()
-#
-#
-#
-#
-#    plt.semilogy(times_array_Myr[1:], dr1_array/r1_array[1:])
-#    plt.semilogy(times_array_Myr[1:], dr1_array/r1_array[1:], '.')
-#    plt.semilogy(times_array_Myr[1:], dr2_array/r2_array[1:])
-#    plt.semilogy(times_array_Myr[1:], dr2_array/r2_array[1:], '.')
-#    plt.semilogy(times_array_Myr[1:], dr3_array/r3_array[1:])
-#    plt.semilogy(times_array_Myr[1:], dr3_array/r3_array[1:], '.')
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$dr/r$')
-#    plt.savefig('plots/orbit/dr_time_'+generic_name+'.pdf')
-#    plt.show()
+    dr1_array =r1_array[1:]-r1_array[:-1]
+    dr2_array =r2_array[1:]-r2_array[:-1]
+    dr3_array =r3_array[1:]-r3_array[:-1]
+    dt_array = times_array_Myr[1:] - times_array_Myr[:-1]
+    plt.semilogy(times_array_Myr[1:], dr1_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dr1_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dr2_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dr2_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dr3_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dr3_array/dt_array, '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$dr/dt$')
+    plt.savefig('plots/orbit/drdt_time_'+generic_name+'.pdf')
+    plt.show()
+
+
+
+
+    plt.semilogy(times_array_Myr[1:], dr1_array/r1_array[1:])
+    plt.semilogy(times_array_Myr[1:], dr1_array/r1_array[1:], 'b.')
+    plt.semilogy(times_array_Myr[1:], -1.*dr1_array/r1_array[1:], 'b*')
+    plt.semilogy(times_array_Myr[1:], dr2_array/r2_array[1:])
+    plt.semilogy(times_array_Myr[1:], dr2_array/r2_array[1:], 'g.')
+    plt.semilogy(times_array_Myr[1:], -1.*dr2_array/r2_array[1:], 'g*')
+    plt.semilogy(times_array_Myr[1:], dr3_array/r3_array[1:])
+    plt.semilogy(times_array_Myr[1:], dr3_array/r3_array[1:], 'r.')
+    plt.semilogy(times_array_Myr[1:], -1.*dr3_array/r3_array[1:], 'r*')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$dr/r$')
+    plt.savefig('plots/orbit/dr_time_'+generic_name+'.pdf')
+    plt.show()
 
 
 
@@ -1843,41 +1854,41 @@ def plot_function(triple):
     plt.savefig('plots/orbit/mass_time_'+generic_name+'.pdf')
     plt.show()
 
-#
-#    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array)
-#    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array, '.')
-#    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array)
-#    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array, '.')
-#    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array)
-#    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array, '.')
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$dm/dt$')
-#    plt.savefig('plots/orbit/dmdt_time_'+generic_name+'.pdf')
-#    plt.show()
-#
-#    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:])
-#    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:], '.')
-#    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:])
-#    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:], '.')
-#    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:])
-#    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:], '.')
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$dm/m$')
-#    plt.savefig('plots/orbit/dm_time_'+generic_name+'.pdf')
-#    plt.show()
-#
-# 
-#    plt.semilogy(times_array_Myr[1:], dt_array)
-#    plt.semilogy(times_array_Myr[1:], dt_array, '.')
-#    plt.semilogy(times_array_Myr[1:], dt_array)
-#    plt.semilogy(times_array_Myr[1:], dt_array, '.')
-#    plt.semilogy(times_array_Myr[1:], dt_array)
-#    plt.semilogy(times_array_Myr[1:], dt_array, '.')
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$dt$')
-#    plt.savefig('plots/orbit/dt_time_'+generic_name+'.pdf')
-#    plt.show()
-#
+
+    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array)
+    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array, '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$dm/dt$')
+    plt.savefig('plots/orbit/dmdt_time_'+generic_name+'.pdf')
+    plt.show()
+
+    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:])
+    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:], '.')
+    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:])
+    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:], '.')
+    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:])
+    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:], '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$dm/m$')
+    plt.savefig('plots/orbit/dm_time_'+generic_name+'.pdf')
+    plt.show()
+
+ 
+    plt.semilogy(times_array_Myr[1:], dt_array)
+    plt.semilogy(times_array_Myr[1:], dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dt_array)
+    plt.semilogy(times_array_Myr[1:], dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dt_array)
+    plt.semilogy(times_array_Myr[1:], dt_array, '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$dt$')
+    plt.savefig('plots/orbit/dt_time_'+generic_name+'.pdf')
+    plt.show()
+
 
 
 
