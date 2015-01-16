@@ -45,16 +45,14 @@ import matplotlib.pyplot as plt
 from math import sqrt
 import numpy as np
 
-
-
 REPORT_TRIPLE_EVOLUTION = False 
 REPORT_DT = False 
+REPORT_DEBUG = False
 
 no_stellar_evolution = False
 
 
 #file_name = "triple.txt"
-#file_name = "test.txt"
 #file_type = "txt"
 file_name = "triple.hdf" 
 file_type = "hdf5"
@@ -69,6 +67,7 @@ error_dm = 0.05
 error_dr = 0.01
 minimum_time_step = 1.e-9 |units.Myr
 min_mass = 0.08 |units.MSun # for stars
+absolute_min_mass = 0.008|units.MSun # AMUSE can't handle planets -> also for secondaries and tertiaries
 max_mass = 100 |units.MSun
 maximum_time_step_factor = 100.
 #Rl_fraction = 0.9#1.0-10.*error_dr # ratio or star radius over Roche lobe at which time step is decreased
@@ -92,7 +91,7 @@ class Triple_Class:
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms,      
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer):
-
+        
         self.set_stopping_conditions(stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer)
             
@@ -104,6 +103,7 @@ class Triple_Class:
             inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
             relative_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter,
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)   
+
                         
         stars = self.make_stars(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis)
@@ -118,14 +118,17 @@ class Triple_Class:
         self.time = 0.0|units.yr
         self.previous_time = 0.0|units.yr
         self.maximum_radius_change_factor = maximum_radius_change_factor
+        self.max_dm_over_m = [[0., 0.|units.yr, 1|units.stellar_type]]
+        self.max_dr_over_r = [[0., 0.|units.yr, 1|units.stellar_type]]
+#        self.max_dm_over_m = [0.]
+#        self.max_dr_over_r = [0.]
 
         self.triple = bins[1]
         self.triple.relative_inclination = relative_inclination 
         self.triple.is_star = False
         self.triple.dynamical_instability = False 
         self.triple.number = number 
-        self.triple.max_dm_over_m = 0.
-        self.triple.max_dr_over_r = 0.
+        
         
         self.setup_stellar_code(metallicity, stars)
         self.setup_secular_code(self.triple.as_set(), tidal_terms)
@@ -137,6 +140,7 @@ class Triple_Class:
             self.triple.dynamical_instability = True
             return 
 
+        
         self.triple.kozai_type = self.get_kozai_type()
         self.update_previous_stellar_parameters()
         self.update_stellar_parameters() 
@@ -309,12 +313,17 @@ class Triple_Class:
             
 
         if max(inner_primary_mass, outer_mass) > max_mass:  
-#        if (min(inner_secondary_mass, outer_mass) < min_mass) or (max(inner_primary_mass, outer_mass) > max_mass):  
             print inner_primary_mass, inner_secondary_mass, outer_mass
             print 'should be within:', min_mass, '-', max_mass
             print 'error: masses not in allowed range'
             exit(1)
                         
+        if min(inner_secondary_mass, outer_mass) <= absolute_min_mass:  
+            print inner_primary_mass, inner_secondary_mass, outer_mass
+            print 'should be at least above:', absolute_min_mass
+            print 'error: masses not in allowed range'
+            exit(1)
+
         if inner_semimajor_axis >= outer_semimajor_axis:
             print 'error input parameters, should be:'
             print 'inner_semimajor_axis < outer_semimajor_axis' 
@@ -961,18 +970,62 @@ class Triple_Class:
             stellar_system = self.triple
             
         if stellar_system.is_star:
-            dt = np.inf |units.Myr
-            if stellar_system.time_derivative_of_radius != quantities.zero:
-                growth_factor = 1. # Rdot < Rdot_prev
-                if stellar_system.time_derivative_of_radius > stellar_system.previous_time_derivative_of_radius:
-                    if stellar_system.previous_time_derivative_of_radius == quantities.zero:
-                        growth_factor = 0.1
-                    elif stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
-                        growth_factor = 0.01
-                    elif stellar_system.time_derivative_of_radius > quantities.zero:
-                        growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius 
-                    else:
-                        growth_factor = stellar_system.time_derivative_of_radius/stellar_system.previous_time_derivative_of_radius 
+            if stellar_system.time_derivative_of_radius == quantities.zero:
+                dt = np.inf |units.Myr
+            else:     
+                if stellar_system.time_derivative_of_radius == quantities.zero:
+                    growth_factor = 0.1
+                elif stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
+                    growth_factor = 0.01
+                else:
+                    growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius 
+                    if growth_factor > 1:
+                        growth_factor = 1./growth_factor
+                
+                if stellar_system.stellar_type > 1|units.stellar_type and stellar_system.time_derivative_of_radius < stellar_system.previous_time_derivative_of_radius: #not a MS star and Rdot < Rdot_prev
+                    growth_factor = 1. 
+                    
+                    
+            
+#        if stellar_system.is_star:
+#            if stellar_system.time_derivative_of_radius == quantities.zero:
+#                dt = np.inf |units.Myr
+#            else:     
+#                if stellar_system.time_derivative_of_radius == quantities.zero:
+#                    growth_factor = 0.1
+#                elif stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
+#                    growth_factor = 0.01
+#                else:
+#                    growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius 
+#                    if growth_factor > 1:
+#                        growth_factor = 1./growth_factor
+
+#                elif stellar_system.time_derivative_of_radius > quantities.zero:
+#                    if stellar_system.time_derivative_of_radius >= stellar_system.previous_time_derivative_of_radius:
+#                        growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius 
+#                    else: 
+#                        growth_factor = stellar_system.time_derivative_of_radius/stellar_system.previous_time_derivative_of_radius
+#                elif stellar_system.time_derivative_of_radius < quantities.zero:
+#                    if stellar_system.time_derivative_of_radius >= stellar_system.previous_time_derivative_of_radius:
+#                        growth_factor = stellar_system.time_derivative_of_radius/stellar_system.previous_time_derivative_of_radius
+#                    else: 
+#                        growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius 
+
+
+
+#        if stellar_system.is_star:
+#            dt = np.inf |units.Myr
+#            if stellar_system.time_derivative_of_radius != quantities.zero:
+#                growth_factor = 1. # Rdot < Rdot_prev
+#                if stellar_system.time_derivative_of_radius > stellar_system.previous_time_derivative_of_radius:
+#                    if stellar_system.previous_time_derivative_of_radius == quantities.zero:
+#                        growth_factor = 0.1
+#                    elif stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
+#                        growth_factor = 0.01
+#                    elif stellar_system.time_derivative_of_radius > quantities.zero:
+#                        growth_factor = stellar_system.previous_time_derivative_of_radius/stellar_system.time_derivative_of_radius 
+#                    else:
+#                        growth_factor = stellar_system.time_derivative_of_radius/stellar_system.previous_time_derivative_of_radius 
 
 
 #                growth_factor = 0.1
@@ -983,10 +1036,11 @@ class Triple_Class:
 #                    if stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
 #                        growth_factor = growth_factor * 0.01                        
 #                                   
-#                print 'dt radius change:', stellar_system.time_derivative_of_radius, stellar_system.previous_time_derivative_of_radius 
-#                print stellar_system.stellar_type, stellar_system.previous_stellar_type
-#                print growth_factor, stellar_system.radius
-#                print stellar_system.mass, stellar_system.previous_mass
+                if REPORT_DEBUG:
+                    print 'dt radius change:', stellar_system.time_derivative_of_radius, stellar_system.previous_time_derivative_of_radius 
+                    print stellar_system.stellar_type, stellar_system.previous_stellar_type
+                    print growth_factor, stellar_system.radius
+                    print stellar_system.mass, stellar_system.previous_mass
 
                 dt = abs(growth_factor * self.maximum_radius_change_factor*stellar_system.radius / stellar_system.time_derivative_of_radius)
 
@@ -1130,7 +1184,7 @@ class Triple_Class:
         time_step_kozai = self.determine_time_step_kozai()
         
         time_step = min(time_step_kozai, min(time_step_radius_change, min(time_step_wind, min( min(time_step_stellar_code), time_step_max))))    
-        if REPORT_DT or REPORT_TRIPLE_EVOLUTION:
+        if REPORT_DT or REPORT_TRIPLE_EVOLUTION or REPORT_DEBUG:
             print 'time:', time_step_max, time_step_stellar_code, time_step_wind, time_step_radius_change, time_step_kozai, time_step
 
         #during stable mass transfer   
@@ -1307,7 +1361,6 @@ class Triple_Class:
 
     
     def safety_check_time_step(self, stellar_system = None):
-
         if stellar_system == None:
             stellar_system = self.triple
 
@@ -1316,29 +1369,24 @@ class Triple_Class:
             if REPORT_TRIPLE_EVOLUTION:
                 print 'wind mass loss rate:', stellar_system.wind_mass_loss_rate,
                 print 'relative wind mass losses:', dm
-            
-            if (abs(dm) > self.triple.max_dm_over_m) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
-                self.triple.max_dm_over_m = abs(dm)
-            
+                        
             if (abs(dm) > error_dm) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
+                self.max_dm_over_m.append([abs(dm), stellar_system.age, stellar_system.stellar_type])                               
                 print 'Change in mass in a single time_step larger then', error_dm
-                print dm, stellar_system.mass, stellar_system.stellar_type
-                print self.triple.max_dm_over_m
+                print dm, stellar_system.mass, stellar_system.stellar_type, self.max_dm_over_m
                 exit(1)
 
             if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
                 dr = (stellar_system.radius - stellar_system.previous_radius)/stellar_system.radius
     
-                if REPORT_TRIPLE_EVOLUTION:    
+                if REPORT_TRIPLE_EVOLUTION or REPORT_DEBUG:    
                     print 'change in radius over time:',  stellar_system.time_derivative_of_radius,
                     print 'relative change in radius:', dr
-                
-                if (abs(dr) > self.triple.max_dr_over_r) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
-                    self.triple.max_dr_over_r = abs(dr)    
-    
+                                     
                 if (abs(dr) > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_remnants):
+                    self.max_dr_over_r.append([abs(dr), stellar_system.age, stellar_system.stellar_type])                
                     print 'Change in radius in a single time_step larger then', error_dr
-                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
+                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system), self.max_dr_over_r
                     exit(1)
 
         else:
@@ -1401,7 +1449,7 @@ class Triple_Class:
 
         self.determine_mass_transfer_timescale()
         self.save_snapshot()    
-        while self.time<self.tend:
+        while self.time<self.tend:            
             if self.has_stellar_type_changed() or self.has_kozai_type_changed():
                 self.save_snapshot()             
    
@@ -1411,7 +1459,7 @@ class Triple_Class:
     
             self.time += dt            
             
-            if REPORT_TRIPLE_EVOLUTION:
+            if REPORT_TRIPLE_EVOLUTION or REPORT_DEBUG:
                 print '\n\ntime:', self.time, self.has_donor()            
 
             #do stellar evolution 
@@ -2169,7 +2217,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
         print 'Choose a different system. The given triple is dynamically unstable at initialization'
     else:    
         triple_class_object.evolve_model()
-#        plot_function(triple_class_object)
+        plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
     return triple_class_object
 #-----

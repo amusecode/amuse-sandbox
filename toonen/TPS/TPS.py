@@ -89,7 +89,7 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
-REPORT = False 
+REPORT = True 
 
 def flat_distr(lower, upper):
     return np.random.uniform(lower, upper)
@@ -521,9 +521,16 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
                     in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr,
                     in_semi_distr,  out_semi_distr, in_ecc_distr, out_ecc_distr, incl_distr,
                     in_aop_distr, out_aop_distr, in_loan_distr, out_loan_distr)
-        
+                
         if REPORT:
            triple_system.print_triple()
+
+        if (min_mass > triple_system.in_primary_mass) or 
+           (min_mass > triple_system.in_secondary_mass) or
+           (min_mass > triple_system.out_mass):
+                print 'non-star included: ', triple_system.in_primary_mass, triple_system.in_secondary_mass, triple_system.out_mass
+                continue
+
            
         number_of_system = initial_number + i_n
         tr = triple.main(inner_primary_mass = triple_system.in_primary_mass, 

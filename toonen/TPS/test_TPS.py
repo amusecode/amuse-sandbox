@@ -1203,96 +1203,20 @@ class TestSeBa(TestWithMPI):
 
 
 
-
-
-
-
-
-    def test23(self):
-        print 'test23'
-        
-#        m = [1.0759104503,  0.49151510082,  0.64907612898] |units.MSun
-#        a = [1596.2857727, 2052442.1585]|units.RSun
-#        e = [0.702886591132, 0.890637808293]
-#        i = 0.732936620131
-#        g = [0.834889145983, 1.34155496455]
-#        o = [0.0, 0.0]
-
-        #Change in radius in a single time_step larger then 0.01
-        # at 7543.2869473 at end of MS for 1.07 Msun star 
-        #the problem occurs spontaneously, only thing i can do is 
-        # increase error_dr = 0.01 or 
-        # decrease maximum_radius_change_factor = 0.005
-
-        m = [1.0759104503,  0.49151510082,  0.64907612898] |units.MSun
-        a = [1e6, 1e10]|units.RSun
-        e = [0., 0.]
-        i = 0.
-        g = [0., 0.]
-        o = [0.0, 0.0]
-        
-        
-        M1 = m[0]
-        M2 = m[1]
-        M3 = m[2]
-        a_in = a[0]
-        a_out = a[1]
-        e_in = e[0]
-        e_out = e[1]
-        g_in = g[0]
-        g_out = g[1]
-        o_in = o[0]
-        o_out = o[1]
-#        T_end = 13500|units.Myr
-#        T_end = 7550|units.Myr
-        T_end = 8000|units.Myr
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, inner_longitude_of_ascending_node = o_in, outer_longitude_of_ascending_node = o_out, tend = T_end)
-            
-
-        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
-        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
-        print tr.triple.child2.eccentricity, tr.triple.eccentricity
-        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
-
-
-        if test_asserts:
-            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.2967 | units.MSun, 2)        
-            self.assertEqual(tr.triple.child2.child2.mass, 6. | units.MSun)        
-            self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
-            
-            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 17816 | units.RSun, 2)        
-            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1773139 | units.RSun, 2)        
-        
-        #under the assumption of no wind accretion
-        M_child1 = tr.triple.child2.child1.mass + tr.triple.child2.child2.mass
-        M_child2 = M_child1 + tr.triple.child1.mass
-        a_in_final_theory =  a_in * (M1+M2) / M_child1
-        a_out_final_theory = a_out * (M1+M2+M3) / M_child2
-        print a_in_final_theory, a_out_final_theory
-        if test_asserts:
-            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 2)        
-            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
-        
-        print 'test23: succeeded'
-
-
-
-
-
 if __name__ == '__main__':
     test = TestSeBa()
 
 #test set up
 #    test.test0()
 #    test.test1()
-
-#test wind mass loss inner system
+#
+##test wind mass loss inner system
 #    test.test2()
 #    test.test2_alt()
 #    test.test3()
 #    test.test4()
-###
-####test wind mass loss outer system
+##
+###test wind mass loss outer system
 #    test.test5()
 #
 ##test stable mass transfer in inner system 
@@ -1328,10 +1252,7 @@ if __name__ == '__main__':
 #    test.test21()
     
     #dynamical instability at initialization
-#    test.test22()
-
-
-    test.test23()
+    test.test22()
 
 # test dt 
     # 8, 50Msun succeeds
