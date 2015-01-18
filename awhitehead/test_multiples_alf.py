@@ -236,6 +236,8 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     kep = Kepler(redirection = "none")
     kep.initialize_code()
 
+    multiples_code = None
+
     #-----------------------------------------------------------------
 
     if (restart_file is None or not os.path.exists(restart_file+".stars.hdf5")) and infile is None and stars is None:
