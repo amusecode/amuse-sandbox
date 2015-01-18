@@ -26,6 +26,10 @@ import multiples_restart_functions as MRest
 
 from amuse import io
 
+def new_smalln():
+    SMALLN.reset()
+    return SMALLN
+
 def get_coms_in_multiples(multiples_code):
     """ Returns the set of Centre of Mass particles in a Multiples module. """
     result = datamodel.Particles()
@@ -215,6 +219,20 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     gravity.initialize_code()
     gravity.parameters.set_defaults()
 
+    if softening_length < 0.0 | nbody_system.length:
+
+        # Use ~interparticle spacing.  Assuming standard units here.  TODO
+
+        eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
+            | nbody_system.length**2
+    else:
+        eps2 = softening_length*softening_length
+    print 'softening length =', eps2.sqrt()
+
+    gravity.parameters.timestep_parameter = accuracy_parameter
+    gravity.parameters.epsilon_squared = eps2
+    gravity.parameters.use_gpu = use_gpu    
+
     kep = Kepler(redirection = "none")
     kep.initialize_code()
 
@@ -308,54 +326,24 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
             stars.mass = stars.mass * total_mass/(total_mass+added_mass)
             number_of_stars += nbin
             Xtra=numpy.zeros(2)
+        print "recentering stars"
+        stars.move_to_center()
+        sys.stdout.flush()
 
-    elif restart_file is not None and os.path.exists(restart_file+".stars.hdf5"):
-        stars, time, multiples_code, Xtra = MRest.read_state_from_file(restart_file, gravity, new_smalln, kep)
-        channel = gravity.particles.new_channel_to(stars)
+        stars.savepoint(time)
+        
+        print ''
+        print "adding particles"
+        # print stars
+        sys.stdout.flush()
+        gravity.particles.add_particles(stars)
+        gravity.commit_particles()
+    else:
         print "Restart detected.  Loading parameters from restart."
         new_end = options.t_end
-        new_write = options.write_file
-        new_read = options.restart_file
-        time, options = read_options_from_file(options.restart_file)
+        stars, time, multiples_code, Xtra = MRest.read_state_from_file(restart_file, gravity, new_smalln, kep)
         options.t_end = new_end
-        options.write_file = new_write
-    else:
-
-        # Read the input data.  Units are dynamical (sorry).
-        # Format:  id  mass  pos[3]  vel[3]
-
-        print "reading file", infile
-
-        id = []
-        mass = []
-        pos = []
-        vel = []
-
-        f = open(infile, 'r')
-        count = 0
-        for line in f:
-            if len(line) > 0:
-                count += 1
-                cols = line.split()
-                if count == 1: snap = int(cols[0])
-                elif count == 2: number_of_stars = int(cols[0])
-                elif count == 3: time = float(cols[0]) | nbody_system.time
-                else:
-                    if len(cols) >= 8:
-                        id.append(int(cols[0]))
-                        mass.append(float(cols[1]))
-                        pos.append((float(cols[2]),
-                                    float(cols[3]), float(cols[4])))
-                        vel.append((float(cols[5]),
-                                    float(cols[6]), float(cols[7])))
-        f.close()
-
-        stars = datamodel.Particles(number_of_stars)
-        stars.id = id
-        stars.mass = mass | nbody_system.mass
-        stars.position = pos | nbody_system.length
-        stars.velocity = vel | nbody_system.speed
-        #stars.radius = 0. | nbody_system.length
+    
     total_mass = stars.mass.sum()
     ke = pa.kinetic_energy(stars)
     kT = ke/(1.5*number_of_stars)
@@ -381,36 +369,6 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
 
     # print "IDs:", stars.id.number
 
-    print "recentering stars"
-    stars.move_to_center()
-    sys.stdout.flush()
-
-    stars.savepoint(time)
-
-    #-----------------------------------------------------------------
-
-    if softening_length < 0.0 | nbody_system.length:
-
-        # Use ~interparticle spacing.  Assuming standard units here.  TODO
-
-        eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
-			| nbody_system.length**2
-    else:
-        eps2 = softening_length*softening_length
-    print 'softening length =', eps2.sqrt()
-
-    gravity.parameters.timestep_parameter = accuracy_parameter
-    gravity.parameters.epsilon_squared = eps2
-    gravity.parameters.use_gpu = use_gpu
-    # gravity.parameters.manage_encounters = manage_encounters
-
-    print ''
-    print "adding particles"
-    # print stars
-    sys.stdout.flush()
-    gravity.particles.add_particles(stars)
-    gravity.commit_particles()
-
     print ''
     print "number_of_stars =", number_of_stars
     print "evolving to time =", end_time.number, \
@@ -428,13 +386,14 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     # time, managing interactions internally.
 
     kep = init_kepler(stars[0], stars[1])
-    multiples_code = multiples.Multiples(gravity, new_smalln, kep)
+    if not multiples_code:
+        multiples_code = multiples.Multiples(gravity, new_smalln, kep)
 
-    multiples_code.neighbor_distance_factor = 1.0
-    multiples_code.neighbor_veto = True
-    #multiples_code.neighbor_distance_factor = 2.0
-    #multiples_code.neighbor_veto = True
-    multiples_code.retain_binary_apocenter = False
+        multiples_code.neighbor_distance_factor = 1.0
+        multiples_code.neighbor_veto = True
+        #multiples_code.neighbor_distance_factor = 2.0
+        #multiples_code.neighbor_veto = True
+        multiples_code.retain_binary_apocenter = False
 
     print ''
     print 'multiples_code.initial_scale_factor =', \
@@ -452,9 +411,9 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     print 'multiples_code.retain_binary_apocenter =', \
         multiples_code.retain_binary_apocenter
 
-    if mc_root_to_tree is not None:
-        multiples_code.root_to_tree = mc_root_to_tree
-        print 'multiples code re-loaded with binary trees snapshot'
+#    if mc_root_to_tree is not None:
+#        multiples_code.root_to_tree = mc_root_to_tree
+#        print 'multiples code re-loaded with binary trees snapshot'
 
     pre = "%%% "
     E0,cpu0 = print_log(pre, time, multiples_code)
@@ -477,7 +436,6 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
 
         print_log(pre, time, multiples_code, E0, cpu0)
         stars.savepoint(time)
-        write_options_to_file(options.restart_file, options, time, backup=1)
         MRest.write_state_to_file(time, stars, gravity, multiples_code, options.restart_file, Xtra, backup=1)
         sys.stdout.flush()
 
@@ -504,71 +462,12 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     print ''
     gravity.stop()
 
-def write_state_to_file(time, stars, multiples_code, options):
-    if options.restart_file is not None:
-        out_set = stars
-        for p in get_coms_in_multiples(multiples_code):
-            out_set.remove_particle(p)
-        out_set.add_particles(get_singles_in_multiples(multiples_code))
-        sets = [out_set]
-        names = ['stars']
-        storage = io.store.StoreHDF(options.restart_file + ".stars.hdf5", append_to_file=False,
-                                   open_for_writing=True, copy_history=True)
-        storage.store_sets(sets, names)
-        storage.close()
-
-        with open(options.restart_file + ".multiples", "wb") as f:
-            pickle.dump(multiples_code.root_to_tree, f, protocol=-1)
-
-        config = {'time' : time,
-                  'py_seed': pickle.dumps(random.getstate()),
-                  'numpy_seed': pickle.dumps(numpy.random.get_state()),
-                  'options': pickle.dumps(options)
-        }
-        with open(options.restart_file + ".conf", "wb") as f:
-            pickle.dump(config, f)
-
-def read_state_from_file(restart_file):
-    names = ['stars']
-    storage = io.store.StoreHDF(restart_file + ".stars.hdf5")
-    sets = storage.load_sets(names)
-    storage.close()
-
-    stars = sets[0]
-
-    # DEBUG: Removing loading of pickled multiples
-    #with open(options.restart_file + ".multiples", "rb") as f:
-    #    mc_root_to_tree = pickle.load(f)
-    mc_root_to_tree = None
-
-    with open(restart_file + ".conf", "rb") as f:
-        config = pickle.load(f)
-    random.setstate(pickle.loads(config["py_seed"]))
-    numpy.random.set_state(pickle.loads(config["numpy_seed"]))
-    return config["time"], stars, mc_root_to_tree, pickle.loads(config["options"])
-
 
 def write_star(s, f):
     x,y,z = s.position.number
     vx,vy,vz = s.velocity.number
     f.write('%d %.15g %.15g %.15g %.15g %.15g %.15g %.15g\n' \
 		%(s.id, s.mass.number, x, y, z, vx, vy, vz))
-
-def write_options_to_file(write_file, options, time, backup=0):
-    config_opt= {'time' : time,
-              'options': pickle.dumps(options)
-    }
-    with open(write_file + ".options", "wb") as f:
-        pickle.dump(config_opt, f)
-    print "Command Line Arguments saved successfully"
-    if backup == 1:
-        with open(write_file + ".backup.options", "wb") as f:
-            pickle.dump(config_opt, f)
-        print "Command Line Arguments backed up successfully"
-
-def read_options_from_file(restart_file):
-    with open(restart_file + ".options", "rb") as f:
-        config_opt = pickle.load(f)
 
 if __name__ == '__main__':
 
@@ -618,11 +517,5 @@ if __name__ == '__main__':
 
     assert is_mpd_running()
 
-    if options.restart_file is not None and os.path.isfile(options.restart_file + ".stars"):
-        print "Restart detected.  Loading parameters from restart."
-        # TODO: fix the fact that interrupted runs do not agree with through runs
-        time, stars, mc_root_to_tree, options = read_state_from_file(options.restart_file)
-        run_ph4(options, time, stars, mc_root_to_tree, randomize=False)
-    else:
-        run_ph4(options)
+    run_ph4(options)
 
