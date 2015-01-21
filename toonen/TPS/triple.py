@@ -2218,7 +2218,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
     else:    
         triple_class_object.evolve_model()
         print triple_class_object.max_dm_over_m
-        print triple_class_object.max_dm_over_m
+        print triple_class_object.max_dr_over_r
         plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
 
@@ -2315,7 +2315,7 @@ if __name__ == '__main__':
 #        plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
         print triple_class_object.max_dm_over_m
-        print triple_class_object.max_dm_over_m
+        print triple_class_object.max_dr_over_r
 
         if REPORT_TRIPLE_EVOLUTION:
             print 'Simulation has finished succesfully'
