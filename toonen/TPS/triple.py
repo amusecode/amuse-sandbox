@@ -716,14 +716,14 @@ class Triple_Class:
             if self.triple.child1.radius >= Rl1:
                 if not self.triple.child1.is_donor:
                     first_RLOF.append(True)
-                self.triple.child1.is_donor = True
+                self.triple.child1.is_donor = True               
             else:                                                         
                self.triple.child1.is_donor = False
 
             if self.triple.child2.radius >= Rl2:
                 if not self.triple.child2.is_donor:
                     first_RLOF.append(True)
-                self.triple.child2.is_donor = True
+                self.triple.child2.is_donor = True               
             else:                                                         
                self.triple.child2.is_donor = False
                
@@ -919,14 +919,15 @@ class Triple_Class:
         else:
             write_set_to_file(self.triple.as_set(), file_name, file_type, version='2.0') 
 
-
-
     #some minor parameters are missing:
 #        self.first_contact = True 
 #        self.instantaneous_evolution = False 
 #        self.tend = tend #...
 #        self.time = 0.0|units.yr
 #        self.previous_time = 0.0|units.yr
+#        self.max_dm_over_m
+#        self.max_dm_over_m
+
     #-------
         
     #-------
@@ -1077,7 +1078,6 @@ class Triple_Class:
         if stellar_system.is_star:
             dt = np.inf |units.Myr
             if stellar_system.is_donor:
-                print 'dt_mt',time_step_factor_stable_mt, stellar_system.mass, stellar_system.parent.mass_transfer_rate
                 dt = abs(time_step_factor_stable_mt*stellar_system.mass/stellar_system.parent.mass_transfer_rate)
             if REPORT_DT:
                 print "Dt_mt_star = ", dt
@@ -1387,7 +1387,7 @@ class Triple_Class:
                     self.max_dr_over_r.append([abs(dr), stellar_system.age, stellar_system.stellar_type])                
                     print 'Change in radius in a single time_step larger then', error_dr
                     print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system), self.max_dr_over_r
-                    exit(1)
+#                    exit(1)
 
         else:
             self.safety_check_time_step(stellar_system.child1)        
@@ -1461,7 +1461,7 @@ class Triple_Class:
             
             if REPORT_TRIPLE_EVOLUTION or REPORT_DEBUG:
                 print '\n\ntime:', self.time, self.has_donor()            
-
+  
             #do stellar evolution 
             if not no_stellar_evolution: 
                 if REPORT_TRIPLE_EVOLUTION:
@@ -1482,17 +1482,16 @@ class Triple_Class:
 #                self.secular_code.model_time = self.time
 #                continue # the while loop, skip resolve_stellar_interaction and secular evolution
             
-            if self.stop_at_mass_transfer and self.has_donor():
-                print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)
-                self.save_snapshot()        
-                break             
             if self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
                 print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
                 #it's possible that there is mass transfer in the inner and outer binary
-                print self.triple.child2.bin_type
-                print self.triple.bin_type
-                print self.has_triple_mass_transfer()
+#                print self.triple.child2.bin_type
+#                print self.triple.bin_type
+#                print self.has_triple_mass_transfer()
                 break                                    
+            elif self.stop_at_mass_transfer and self.has_donor():
+                print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)     
+                break             
                                     
             #do stellar interaction
             if REPORT_TRIPLE_EVOLUTION:
@@ -1513,10 +1512,10 @@ class Triple_Class:
 #                continue # the while loop, skip resolve_stellar_interaction and secular evolution
 
             if self.stop_at_merger and self.has_merger():
-                print 'Merger at time/Myr = ",self.time.value_in(units.Myr)'
+                print 'Merger at time/Myr = ",self.time.value_in(units.Myr)'                               
                 break    
             if self.stop_at_disintegrated and self.has_disintegrated():
-                print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'
+                print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'              
                 break
             
             if self.instantaneous_evolution == False and self.first_contact == False: 
@@ -1538,7 +1537,6 @@ class Triple_Class:
                     if self.triple.error_flag_secular < 0:
                         print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
                         print self.triple.error_flag_secular
-                        self.save_snapshot()        
                         break
                     self.channel_from_secular.copy()
 
@@ -1574,31 +1572,34 @@ class Triple_Class:
                  #The stellar evolution has evolved to far in time. For now this is not compensated. 
                     self.secular_code.model_time = self.time                     
 
+                elif self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
+                    print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
+                    #it's possible that there is mass transfer in the inner and outer binary
+    #                print self.triple.child2.bin_type
+    #                print self.triple.bin_type
+    #                print self.has_triple_mass_transfer()
+                    break                                    
+    
                 if self.stop_at_mass_transfer and self.has_donor():
                     print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)
-                    self.save_snapshot()        
                     break             
                 if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
                     self.triple.dynamical_instability = True    #necessary?
                     print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
-                    self.save_snapshot()        
                     break
                 if self.stop_at_collision and self.secular_code.triples[0].inner_collision == True:
                     self.triple.child2.bin_type = bin_type['collision']
                     print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
-                    self.save_snapshot()        
                     break
                 if self.stop_at_collision and self.secular_code.triples[0].outer_collision == True:
                     self.triple.bin_type = bin_type['collision']
                     print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
-                    self.save_snapshot()        
                     break
 
                 self.channel_from_secular.copy() 
                 if self.triple.error_flag_secular < 0:
                     print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
                     print self.triple.error_flag_secular
-                    self.save_snapshot()        
                     break                    
                    
             else:
@@ -1634,7 +1635,6 @@ class Triple_Class:
             gy2_array.append(self.triple.child2.child2.gyration_radius.number)
             gy3_array.append(self.triple.child1.gyration_radius.number)
             
-
         self.save_snapshot()        
             
         # for plotting data
@@ -2217,8 +2217,11 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
         print 'Choose a different system. The given triple is dynamically unstable at initialization'
     else:    
         triple_class_object.evolve_model()
+        print triple_class_object.max_dm_over_m
+        print triple_class_object.max_dm_over_m
         plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
+
     return triple_class_object
 #-----
 
@@ -2271,7 +2274,7 @@ def parse_arguments():
     parser.add_option("-t", "-T", unit=units.Myr, 
                       dest="tend", type="float", default = 5.0 |units.Myr,
                       help="end time [%default] %unit")
-    parser.add_option("-N", dest="number", type="int", default = 0,
+    parser.add_option("-N", "-n", dest="number", type="int", default = 0,
                       help="number of system [%default]")
     parser.add_option("-r", dest="maximum_radius_change_factor", type="float", default = 0.005,
                       help="maximum_radius_change_factor [%default] %unit")
@@ -2309,8 +2312,10 @@ if __name__ == '__main__':
         print 'Choose a different system. The given triple is dynamically unstable at initialization'
     else:    
         triple_class_object.evolve_model()
-        plot_function(triple_class_object)
+#        plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
+        print triple_class_object.max_dm_over_m
+        print triple_class_object.max_dm_over_m
 
         if REPORT_TRIPLE_EVOLUTION:
             print 'Simulation has finished succesfully'

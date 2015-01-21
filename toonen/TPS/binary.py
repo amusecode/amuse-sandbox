@@ -31,23 +31,14 @@ nucleair_efficiency = 0.007 # nuc. energy production eff, Delta E = 0.007 Mc^2
 
 #dictionaries
 bin_type = {    
-#                0: 'unknown',       
-#                1: 'merger'
-#                2: 'disintegrated'
-#                3: 'detached',       
-#                4: 'contact',     
-#                5: 'common_envelope_energy_balance',     
-#                6: 'common_envelope_angular_momentum_balance',
-#                7: 'double_common_envelope',
-#                8: 'stable_mass_transfer',
-#                9: 'collision',
-                
                 'unknown': 'unknown',       
                 'merger': 'merger', 
                 'disintegrated': 'disintegrated', 
                 'detached': 'detached',       
                 'contact': 'contact',    
                 'collision': 'collision',    
+                  
+                'stable_mass_transfer': 'stable_mass_transfer',
                  
                 'common_envelope_energy_balance': 'common_envelope_energy_balance',     
                 'ce_e': 'common_envelope_energy_balance',     
@@ -58,7 +49,6 @@ bin_type = {
                 'double_common_envelope': 'double_common_envelope',
                 'dce': 'double_common_envelope',
                 
-                'stable_mass_transfer': 'stable_mass_transfer',
             }            
 
 #-------------------------
