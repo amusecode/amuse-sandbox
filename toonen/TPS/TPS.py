@@ -90,6 +90,7 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
 REPORT = True 
+stop_at_init_mass_transfer = True
 
 def flat_distr(lower, upper):
     return np.random.uniform(lower, upper)
@@ -442,7 +443,7 @@ class Generate_initial_triple:
                  return False
                 
             V_bin = np.random.uniform(0, 1)
-            P_bin = 0.2 * P0 * 10**(-5*V_bin) |units.day
+            P_bin = 0.2 * P0 * 10**(-5*V_bin)
 
             x_pb = np.random.uniform(0, 1)
             if P_bin > 25|units.day or x_pb > 0.25: 
@@ -509,6 +510,7 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
     
     i_n = 0
     nr_ids = 0 #number of systems that is dynamically unstable at initialisation
+    nr_imt = 0 #number of systems that has mass transfer at initialisation
     while i_n < number:
         triple_system = Generate_initial_triple(in_primary_mass_max, in_primary_mass_min, 
                     in_mass_ratio_max, in_mass_ratio_min, 
@@ -546,16 +548,17 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
                     metallicity = metallicity, tend = tend, number = number_of_system, 
                     stop_at_merger = stop_at_merger, stop_at_disintegrated = stop_at_disintegrated,
                     stop_at_triple_mass_transfer = stop_at_triple_mass_transfer, stop_at_collision = stop_at_collision, 
-                    stop_at_dynamical_instability = stop_at_dynamical_instability, stop_at_mass_transfer = stop_at_mass_transfer)                        
+                    stop_at_dynamical_instability = stop_at_dynamical_instability, stop_at_mass_transfer = stop_at_mass_transfer, 
+                    stop_at_init_mass_transfer = stop_at_init_mass_transfer)                        
 
-        if tr.triple.dynamical_instability_at_initialisation == False:
-            i_n += 1
-        else:
+        if tr.triple.dynamical_instability_at_initialisation == True:
             nr_ids +=1
+        elif tr.triple.mass_transfer_at_initialisation == True:
+            nr_imt +=1
+        else:
+            i_n += 1            
 
-
-
-    print number, i_n, nr_ids                                
+    print number, i_n, nr_ids, nr_imt                               
 
 def test_initial_parameters(in_primary_mass_max, in_primary_mass_min, 
                         in_mass_ratio_max, in_mass_ratio_min, 

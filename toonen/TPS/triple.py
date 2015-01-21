@@ -90,10 +90,11 @@ class Triple_Class:
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms,      
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer):
+            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, 
+            stop_at_init_mass_transfer):
         
         self.set_stopping_conditions(stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer)
+            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, stop_at_init_mass_transfer)
             
         if inner_primary_mass < inner_secondary_mass:
             spare = inner_primary_mass
@@ -140,14 +141,21 @@ class Triple_Class:
             self.triple.dynamical_instability = True
             return 
 
+        self.triple.mass_transfer_at_initialisation = False
+        self.check_for_RLOF() 
+        if self.has_donor() and (self.stop_at_mass_transfer or self.stop_at_init_mass_transfer):
+            self.triple.mass_transfer_at_initialisation = True
+            return
         
         self.triple.kozai_type = self.get_kozai_type()
         self.update_previous_stellar_parameters()
         self.update_stellar_parameters() 
         self.update_time_derivative_of_radius()
+        
+            
 
     def set_stopping_conditions(self, stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer):
+            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, stop_at_init_mass_transfer):
 
         if stop_at_merger == False:
             print 'stop_at_merger = False not possible yet, implementation is missing' 
@@ -171,7 +179,7 @@ class Triple_Class:
         self.stop_at_collision = stop_at_collision            
         self.stop_at_dynamical_instability = stop_at_dynamical_instability            
         self.stop_at_mass_transfer = stop_at_mass_transfer            
-            
+        self.stop_at_init_mass_transfer = stop_at_init_mass_transfer
 
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass, inner_semimajor_axis, outer_semimajor_axis):
         stars = Particles(3)
@@ -926,7 +934,7 @@ class Triple_Class:
 #        self.time = 0.0|units.yr
 #        self.previous_time = 0.0|units.yr
 #        self.max_dm_over_m
-#        self.max_dm_over_m
+#        self.max_dr_over_r
 
     #-------
         
@@ -1396,6 +1404,7 @@ class Triple_Class:
 #-------------------------    
 
     def evolve_model(self):
+        print 'evolve model'
         
         # for plotting data
         times_array = quantities.AdaptingVectorQuantity() 
@@ -2186,7 +2195,8 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend= 5.0 |units.Myr, number = 0, maximum_radius_change_factor = 0.005,
             tidal_terms = True,
             stop_at_merger = True, stop_at_disintegrated = True, stop_at_triple_mass_transfer = True,
-            stop_at_collision = True, stop_at_dynamical_instability = True, stop_at_mass_transfer = False):
+            stop_at_collision = True, stop_at_dynamical_instability = True, stop_at_mass_transfer = False,
+            stop_at_init_mass_transfer = False):
 
 
     set_printing_strategy("custom", 
@@ -2210,16 +2220,19 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms, 
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer)
+            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer,
+            stop_at_init_mass_transfer)
 
 
     if triple_class_object.triple.dynamical_instability_at_initialisation == True:
-        print 'Choose a different system. The given triple is dynamically unstable at initialization'
+        print 'Choose a different system. The given triple is dynamically unstable at initialization.'
+    elif triple_class_object.triple.mass_transfer_at_initialisation == True:
+        print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
         print triple_class_object.max_dm_over_m
         print triple_class_object.max_dr_over_r
-        plot_function(triple_class_object)
+#        plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
 
     return triple_class_object
@@ -2292,6 +2305,8 @@ def parse_arguments():
                       help="stop at dynamical instability [%default] %unit")
     parser.add_option("--stop_at_mass_transfer", dest="stop_at_mass_transfer", action="store_true", default = False,
                       help="stop at mass transfer [%default] %unit")
+    parser.add_option("--stop_at_init_mass_transfer", dest="stop_at_init_mass_transfer", action="store_true", default = False,
+                      help="stop if initially mass transfer[%default] %unit")
                       
                       
     options, args = parser.parse_args()
@@ -2309,7 +2324,9 @@ if __name__ == '__main__':
 
     triple_class_object = Triple_Class(**options)   
     if triple_class_object.triple.dynamical_instability_at_initialisation == True:
-        print 'Choose a different system. The given triple is dynamically unstable at initialization'
+        print 'Choose a different system. The given triple is dynamically unstable at initialization.'
+    elif triple_class_object.triple.mass_transfer_at_initialisation == True:
+        print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
 #        plot_function(triple_class_object)
