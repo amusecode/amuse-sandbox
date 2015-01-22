@@ -145,11 +145,11 @@ class Triple_Class:
         self.check_for_RLOF() 
         if self.has_triple_mass_transfer() and (self.stop_at_triple_mass_transfer or self.stop_at_mass_transfer or self.stop_at_init_mass_transfer): 
             self.triple.mass_transfer_at_initialisation = True
-            self.triple.bin_type['rlof']
+            self.triple.bin_type = bin_type['rlof']
             return
         if self.has_donor() and (self.stop_at_mass_transfer or self.stop_at_init_mass_transfer):
             self.triple.mass_transfer_at_initialisation = True
-            self.triple.child2.bin_type['rlof']
+            self.triple.child2.bin_type = bin_type['rlof']
             return
         
         self.triple.kozai_type = self.get_kozai_type()
@@ -1496,7 +1496,7 @@ class Triple_Class:
             
             if self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
                 print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
-                self.triple.bin_type['rlof']
+                self.triple.bin_type = bin_type['rlof']
                 #it's possible that there is mass transfer in the inner and outer binary
 #                print self.triple.child2.bin_type
 #                print self.triple.bin_type
@@ -1504,7 +1504,7 @@ class Triple_Class:
                 break                                    
             elif self.stop_at_mass_transfer and self.has_donor():
                 print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)     
-                self.triple.child2.bin_type['rlof'] #bad to make an assumption about triple structure!!
+                self.triple.child2.bin_type = bin_type['rlof'] #bad to make an assumption about triple structure!!
                 break             
                                     
             #do stellar interaction
@@ -1588,7 +1588,7 @@ class Triple_Class:
 
                 if self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
                     print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
-                    self.triple.bin_type['rlof']
+                    self.triple.bin_type = bin_type['rlof']
                     #it's possible that there is mass transfer in the inner and outer binary
     #                print self.triple.child2.bin_type
     #                print self.triple.bin_type
@@ -1596,7 +1596,7 @@ class Triple_Class:
                     break                                    
                 elif self.stop_at_mass_transfer and self.has_donor():
                     print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)
-                    self.triple.child2.bin_type['rlof'] #bad to make an assumption about triple structure!!
+                    self.triple.child2.bin_type = bin_type['rlof'] #bad to make an assumption about triple structure!!
                     break             
                 if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
                     self.triple.dynamical_instability = True    #necessary?
