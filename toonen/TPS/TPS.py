@@ -385,19 +385,26 @@ class Generate_initial_triple:
 # Eggleton 2009, 399, 1471
     def generate_mass_and_semi_eggleton(self, in_primary_mass_max, in_primary_mass_min, in_semi_max, in_semi_min, 
                         out_semi_max, out_semi_min):
-        U0_mass = [0., .01, .09, .32, 1., 3.2, 11, 32, np.inf]|units.MSun
+#        U0_mass = [0., .01, .09, .32, 1., 3.2, 11, 32, np.inf]|units.MSun
+#        U0_l0 = [0.40, 0.40, 0.40, 0.40, 0.50, 0.75, 0.88, 0.94, 0.96]#        U0_l1 = [0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.20, 0.60, 0.80]#        U0_l2 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.20, 0.33, 0.82, 0.90]#        U0_l3 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]
+#              
+#        Mt = eggleton_mass_distr(0.1|units.MSun, 100|units.MSun)
+#        U = np.random.uniform(0, 1)
+#        f_l0 = interp1d (U0_mass, U0_l0)
+#        U0 = f_l0(Mt)     
+
+        U0_mass = [0., .01, .09, .32, 1., 3.2, 11, 32, np.inf]#solar mass
         U0_l0 = [0.40, 0.40, 0.40, 0.40, 0.50, 0.75, 0.88, 0.94, 0.96]        U0_l1 = [0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.20, 0.60, 0.80]        U0_l2 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.20, 0.33, 0.82, 0.90]        U0_l3 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]
               
         Mt = eggleton_mass_distr(0.1|units.MSun, 100|units.MSun)
         U = np.random.uniform(0, 1)
         f_l0 = interp1d (U0_mass, U0_l0)
-        U0 = f_l0(Mt)     
+        U0 = f_l0(Mt.value_in(units.MSun)) #messy, but otherwise cluster crashes    
 
         while U >= U0:
-            Mt = eggleton_mass_distr(0.1|units.MSun, 100|units.MSun)
             U = np.random.uniform(0, 1)
             f_l0 = interp1d (U0_mass, U0_l0)
-            U0 = f_l0(Mt)     
+            U0 = f_l0(Mt.value_in(units.MSun))     
         
         
         
@@ -418,12 +425,12 @@ class Generate_initial_triple:
                 
             M1 = Mt / (1+Q0)
             M2 = M1 * Q0
-            f_l1 = interp1d (U0_mass, U0_l1)
+            f_l1 = interp1d(U0_mass, U0_l1)
             
             U1 = np.random.uniform(0, 1)
-            U1_0 = f_l1(M1)     
+            U1_0 = f_l1(M1.value_in(units.MSun))     
             U2 = np.random.uniform(0, 1)
-            U2_0 = f_l1(M2)
+            U2_0 = f_l1(M2.value_in(units.MSun))
             
             #M1 bifurcutas and M2 not
             if U1< U1_0 and U2>=U2_0:

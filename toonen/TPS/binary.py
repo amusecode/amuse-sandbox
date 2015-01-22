@@ -38,6 +38,7 @@ bin_type = {
                 'contact': 'contact',    
                 'collision': 'collision',    
                   
+                'rlof': 'rlof',   #only used for stopping conditions
                 'stable_mass_transfer': 'stable_mass_transfer',
                  
                 'common_envelope_energy_balance': 'common_envelope_energy_balance',     
