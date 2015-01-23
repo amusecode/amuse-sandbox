@@ -73,6 +73,7 @@ maximum_time_step_factor = 100.
 #Rl_fraction = 0.9#1.0-10.*error_dr # ratio or star radius over Roche lobe at which time step is decreased
                               # radius grows maximally by error_dr
 time_step_factor_kozai = 0.025 # 0.2*0.1, 0.2-> for error in kozai timescale, 0.1-> 10 steps per cycle
+kozai_type_factor = 10.
 
 
 stellar_types_SN_remnants = [13,14]|units.stellar_type # remnant types created through a supernova
@@ -115,21 +116,18 @@ class Triple_Class:
         
         self.first_contact = False 
         self.instantaneous_evolution = False # no secular evolution        
-        self.tend = tend #...
+        self.tend = tend 
         self.time = 0.0|units.yr
         self.previous_time = 0.0|units.yr
         self.maximum_radius_change_factor = maximum_radius_change_factor
         self.max_dm_over_m = [[0., 0.|units.yr, 1|units.stellar_type]]
         self.max_dr_over_r = [[0., 0.|units.yr, 1|units.stellar_type]]
-#        self.max_dm_over_m = [0.]
-#        self.max_dr_over_r = [0.]
 
         self.triple = bins[1]
         self.triple.relative_inclination = relative_inclination 
         self.triple.is_star = False
         self.triple.dynamical_instability = False 
         self.triple.number = number 
-        
         
         self.setup_stellar_code(metallicity, stars)
         self.setup_secular_code(self.triple.as_set(), tidal_terms)
@@ -694,8 +692,12 @@ class Triple_Class:
     def get_kozai_type(self):
         if self.is_triple():
             t_kozai = self.kozai_timescale()
-            t_nuc = self.get_max_nuclear_evolution_timescale_of_system()
-            if t_kozai < t_nuc:
+            if t_kozai >kozai_type_factor * self.tend:
+                return False
+            
+            t_ev = self.get_min_stellar_evolution_timescale_of_system()
+            print t_kozai, t_ev
+            if t_kozai < kozai_type_factor * t_ev:
                 return True
             else:
                 return False
@@ -703,15 +705,15 @@ class Triple_Class:
            print 'Kozai type needs triple system'
            exit(1)   
 
-    def get_max_nuclear_evolution_timescale_of_system(self, stellar_system = None):
+    def get_min_stellar_evolution_timescale_of_system(self, stellar_system = None):
         if stellar_system == None:
             stellar_system = self.triple
 
         if stellar_system.is_star:
-            return nuclear_evolution_timescale(stellar_system)
+            return stellar_evolution_timescale(stellar_system)
         else:
-            t1 = self.get_max_nuclear_evolution_timescale_of_system(stellar_system.child1)        
-            t2 = self.get_max_nuclear_evolution_timescale_of_system(stellar_system.child2)
+            t1 = self.get_min_stellar_evolution_timescale_of_system(stellar_system.child1)        
+            t2 = self.get_min_stellar_evolution_timescale_of_system(stellar_system.child2)
             return max(t1, t2)
 
 
@@ -1497,6 +1499,7 @@ class Triple_Class:
             if self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
                 print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
                 self.triple.bin_type = bin_type['rlof']
+                self.determine_mass_transfer_timescale() # to set the stability
                 #it's possible that there is mass transfer in the inner and outer binary
 #                print self.triple.child2.bin_type
 #                print self.triple.bin_type
@@ -1505,6 +1508,7 @@ class Triple_Class:
             elif self.stop_at_mass_transfer and self.has_donor():
                 print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)     
                 self.triple.child2.bin_type = bin_type['rlof'] #bad to make an assumption about triple structure!!
+                self.determine_mass_transfer_timescale() # to set the stability
                 break             
                                     
             #do stellar interaction
@@ -1589,6 +1593,7 @@ class Triple_Class:
                 if self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
                     print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
                     self.triple.bin_type = bin_type['rlof']
+                    self.determine_mass_transfer_timescale() # to set the stability
                     #it's possible that there is mass transfer in the inner and outer binary
     #                print self.triple.child2.bin_type
     #                print self.triple.bin_type
@@ -1597,6 +1602,7 @@ class Triple_Class:
                 elif self.stop_at_mass_transfer and self.has_donor():
                     print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)
                     self.triple.child2.bin_type = bin_type['rlof'] #bad to make an assumption about triple structure!!
+                    self.determine_mass_transfer_timescale() # to set the stability
                     break             
                 if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
                     self.triple.dynamical_instability = True    #necessary?

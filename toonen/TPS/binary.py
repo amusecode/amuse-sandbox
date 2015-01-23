@@ -70,20 +70,36 @@ def roche_radius(bin, primary, self):
     print 'Error: Roche radius can only be determined in a binary'
     exit(1)
 
+#for comparison with kozai timescale
+def stellar_evolution_timescale(star):
+    if REPORT_FUNCTION_NAMES:
+        print "Stellar evolution timescale:"
+        
+    if star.stellar_type in [0,1,7]|units.stellar_type:
+        print 't_ev', (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr), star.mass, star.stellar_type
+        return (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr)
+    elif star.stellar_type in stellar_types_compact_objects:
+        return np.inf|units.Myr 
+    else:        
+        print 0.1*star.age, 0.1*star.age, star.mass, star.stellar_type     
+        return 0.1*star.age
 
+
+#for mass transfer rate
 def nuclear_evolution_timescale(star):
     if REPORT_FUNCTION_NAMES:
-        print "Nuclear evolution timescale:", (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr) 
-
+        print "Nuclear evolution timescale:"
+        
     if star.stellar_type in [0,1,7]|units.stellar_type:
         return (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr)
     else: #t_nuc ~ delta t * R/ delta R, other prescription gave long timescales in SeBa which destables the mass transfer
         t_nuc = star.radius / star.time_derivative_of_radius
-        
+
         #when star is shrinking
         if t_nuc < quantities.zero:
 #            t_nuc = 0.1*main_sequence_time() # in SeBa
             t_nuc = 0.1*star.age         
+    
         return t_nuc
 
 def kelvin_helmholds_timescale(star):
