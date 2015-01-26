@@ -124,6 +124,7 @@ typedef struct {
     double k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3;
     
     bool star1_is_donor,star2_is_donor,star3_is_donor;
+    double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
     double wind_mass_loss_rate_star1,wind_mass_loss_rate_star2,wind_mass_loss_rate_star3;
     double time_derivative_of_radius_star1,time_derivative_of_radius_star2,time_derivative_of_radius_star3;
     double inner_mass_transfer_rate,outer_mass_transfer_rate;
@@ -168,6 +169,8 @@ int evolve(
 );
 static int check_flag(void *flagvalue, char *funcname, int opt);
 void error_handling_function(int error_code, const char *module, const char *function, char *message, void *data_f);
+int get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double *threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t);
+int set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t);
 int get_equations_of_motion_specification(int *relative_tolerance_t);
 int set_equations_of_motion_specification(int relative_tolerance_t);
 int get_input_precision(double *input_precision_t);

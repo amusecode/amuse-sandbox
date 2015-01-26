@@ -83,6 +83,8 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double inner_specific_AM_loss_mass_transfer = data->inner_specific_AM_loss_mass_transfer;
     double outer_specific_AM_loss_mass_transfer = data->outer_specific_AM_loss_mass_transfer;
 
+    double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = data->threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
+
     /******************
      * compute mdots *
      *****************/
@@ -384,7 +386,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
         double e_in_dot_tides_star2 = -27.0*(1.0+m1_div_m2)*m1_div_m2_times_R2_div_a_in_p6_times_k_div_T_tides_star2*R2_div_a_in_p2*e_in*pow(l_in,-13.0)*(f_tides3_in \
             - c_11div18*l_in_p3*f_tides4_in*spin_angular_frequency2_div_n_in);            
 
-        if (e_in <= 0.0)
+        if (e_in <= threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero)
         {
             e_in_dot_tides_star1 = e_in_dot_tides_star2 = 0.0;
 //            printf("e_in_dot_tides %g\n",e_in_dot_tides_star1);

@@ -171,16 +171,30 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
+    def get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero():
+        function = LegacyFunctionSpecification()
+        function.addParameter('threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero', dtype='float64',direction=function.OUT,description = "")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero():
+        function = LegacyFunctionSpecification()
+        function.addParameter('threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero', dtype='float64',direction=function.IN,description = "")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def get_input_precision():
         function = LegacyFunctionSpecification()
-        function.addParameter('input_precision', dtype='float64',direction=function.OUT,description = "Relative tolerance, default 1e-10")
+        function.addParameter('input_precision', dtype='float64',direction=function.OUT,description = "")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_input_precision():
         function = LegacyFunctionSpecification()
-        function.addParameter('input_precision', dtype='float64',direction=function.IN,description = "Relative tolerance, default 1e-10")
+        function.addParameter('input_precision', dtype='float64',direction=function.IN,description = "")
         function.result_type = 'int32'
         return function
 
@@ -546,13 +560,19 @@ class SecularTriple(InCodeComponentImplementation):
             "model_time",
             default_value = 0.0 | units.Myr
         )
-        
         object.add_method_parameter(
             "get_relative_tolerance",
             "set_relative_tolerance",
             "relative_tolerance",
             "Relative tolerance, default 1e-10",
             default_value = 1.0e-10
+        )
+        object.add_method_parameter(
+            "get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero",
+            "set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero",
+            "threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero",
+            "",
+            default_value = 1.0e-12
         )
         object.add_method_parameter(
             "get_input_precision",

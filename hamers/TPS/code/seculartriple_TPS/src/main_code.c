@@ -37,6 +37,7 @@ bool include_linear_mass_change,include_linear_radius_change;
 bool check_for_dynamical_stability_at_initialisation = true;
 double relative_tolerance = 1.0e-10;
 double input_precision = 1.0e-5;
+double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = 1.0e-12;
 int linear_solver = 0;
 
 int evolve(
@@ -116,6 +117,7 @@ int evolve(
     data->include_25PN_inner_terms = include_25PN_inner_terms;
     data->include_25PN_outer_terms = include_25PN_outer_terms;
 
+    data->threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
     data->include_inner_tidal_terms = include_inner_tidal_terms;
     data->include_outer_tidal_terms = include_outer_tidal_terms;
     data->AMC_star1 = AMC_star1; // Apsidal Motion Constant
@@ -505,6 +507,16 @@ void error_handling_function(int error_code, const char *module, const char *fun
 //    data->stop_after_error_bool = TRUE;
 }
 
+int get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double *threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t)
+{
+    *threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t = threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
+    return 0;
+}
+int set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t)
+{
+    threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t;
+    return 0;
+}
 int get_equations_of_motion_specification(int *equations_of_motion_specification_t)
 {
     *equations_of_motion_specification_t = equations_of_motion_specification;
