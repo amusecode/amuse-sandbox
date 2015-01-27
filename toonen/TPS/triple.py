@@ -148,9 +148,9 @@ class Triple_Class:
             return
         if self.has_donor() and (self.stop_at_mass_transfer or self.stop_at_init_mass_transfer):
             self.triple.mass_transfer_at_initialisation = True
-            if self.is_binary(stellar_system.child2):
+            if self.is_binary(self.triple.child2):
                 self.triple.child2.bin_type = bin_type['rlof'] 
-            elif self.is_binary(stellar_system.child1):
+            elif self.is_binary(self.triple.child1):
                 self.triple.child1.bin_type = bin_type['rlof']    
             else:
                 print 'currently not implemented'
@@ -1252,7 +1252,7 @@ class Triple_Class:
 
            
         if self.time == quantities.zero:
-            print 'First timestep - outer period'
+#            print 'First timestep - outer period'
             #initialization (e.g. time_derivative_of_radius)
             P_out = self.orbital_period(self.triple) #period outer binary 
             # do not take 0.1*P_in -> resonance -> large error
@@ -1540,9 +1540,9 @@ class Triple_Class:
                 break                                    
             elif self.stop_at_mass_transfer and self.has_donor():
                 print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr) 
-                if self.is_binary(stellar_system.child2):
+                if self.is_binary(self.triple.child2):
                     self.triple.child2.bin_type = bin_type['rlof'] 
-                elif self.is_binary(stellar_system.child1):
+                elif self.is_binary(self.triple.child1):
                     self.triple.child1.bin_type = bin_type['rlof']    
                 else:
                     print 'currently not implemented'
@@ -1641,9 +1641,9 @@ class Triple_Class:
                     break                                    
                 elif self.stop_at_mass_transfer and self.has_donor():
                     print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)                    
-                    if self.is_binary(stellar_system.child2):
+                    if self.is_binary(self.triple.child2):
                         self.triple.child2.bin_type = bin_type['rlof'] 
-                    elif self.is_binary(stellar_system.child1):
+                    elif self.is_binary(self.triple.child1):
                         self.triple.child1.bin_type = bin_type['rlof']    
                     else:
                         print 'currently not implemented'
