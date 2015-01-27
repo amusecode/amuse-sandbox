@@ -57,6 +57,10 @@ no_stellar_evolution = False
 file_name = "triple.hdf" 
 file_type = "hdf5"
 
+file_name_dr = "dr_over_r.txt" 
+file_name_dm = "dm_over_m.txt" 
+
+
 #constants
 time_step_factor_stable_mt = 0.01 #1% mass loss during mass transfer
 # lowering this to 0.005 makes the code twice as slow
@@ -1422,6 +1426,14 @@ class Triple_Class:
                 self.max_dm_over_m.append([abs(dm), stellar_system.age, stellar_system.stellar_type])                               
                 print 'Change in mass in a single time_step larger then', error_dm
                 print dm, stellar_system.mass, stellar_system.stellar_type, self.max_dm_over_m
+
+                f_dm = open(file_name_dm,'w')
+                pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
+                pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
+                pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
+                pr_str += str(dm) +'\n'
+                f_dm.write(pr_str)
+                f_dm.close()
                 exit(1)
 
             if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
@@ -1435,6 +1447,14 @@ class Triple_Class:
                     self.max_dr_over_r.append([abs(dr), stellar_system.age, stellar_system.stellar_type])                
                     print 'Change in radius in a single time_step larger then', error_dr
                     print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system), self.max_dr_over_r
+                    
+                    f_dr = open(file_name_dr,'w')
+                    pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
+                    pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
+                    pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
+                    pr_str += str(dr) +'\n'
+                    f_dr.write(pr_str)
+                    f_dr.close()
 #                    exit(1)
 
         else:
@@ -1703,6 +1723,7 @@ class Triple_Class:
             gy3_array.append(self.triple.child1.gyration_radius.number)
             
         self.save_snapshot()        
+            
             
         # for plotting data
         e_in_array = np.array(e_in_array)
