@@ -128,9 +128,10 @@ class Triple_Class:
         self.triple.is_star = False
         self.triple.dynamical_instability = False 
         self.triple.number = number 
-        
+        self.triple.error_flag_secular = 0          
+            
         self.setup_stellar_code(metallicity, stars)
-        self.setup_secular_code(self.triple.as_set(), tidal_terms)
+        self.setup_secular_code(self.triple.as_set(), tidal_terms)        
         
         self.triple.dynamical_instability_at_initialisation = False
         self.secular_code.check_for_dynamical_stability()
@@ -141,13 +142,19 @@ class Triple_Class:
 
         self.triple.mass_transfer_at_initialisation = False
         self.check_for_RLOF() 
-        if self.has_triple_mass_transfer() and (self.stop_at_triple_mass_transfer or self.stop_at_mass_transfer or self.stop_at_init_mass_transfer): 
+        if self.has_tertiary_donor() and (self.stop_at_triple_mass_transfer or self.stop_at_mass_transfer or self.stop_at_init_mass_transfer): 
             self.triple.mass_transfer_at_initialisation = True
             self.triple.bin_type = bin_type['rlof']
             return
         if self.has_donor() and (self.stop_at_mass_transfer or self.stop_at_init_mass_transfer):
             self.triple.mass_transfer_at_initialisation = True
-            self.triple.child2.bin_type = bin_type['rlof']
+            if self.is_binary(stellar_system.child2):
+                self.triple.child2.bin_type = bin_type['rlof'] 
+            elif self.is_binary(stellar_system.child1):
+                self.triple.child1.bin_type = bin_type['rlof']    
+            else:
+                print 'currently not implemented'
+                exit(-1)    
             return
         
         self.triple.kozai_type = self.get_kozai_type()
@@ -307,6 +314,9 @@ class Triple_Class:
          # accuracy of secular code
 #        self.secular_code.parameters.input_precision = 1.0e-10#1.0e-5
 #        self.secular_code.parameters.relative_tolerance = 1.0e-10
+#        self.secular_code.parameters.threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = 1.0e-12
+
+
         self.secular_code.parameters.include_linear_mass_change = True #needed for Jspin conservation
         self.secular_code.parameters.include_linear_radius_change = True #needed for Jspin conservation
 
@@ -540,8 +550,29 @@ class Triple_Class:
             
         return False            
 
+#doesn't work well, as it uses bin_types that are set later -> use has_tertiary_donor
 # if a mass transfer in the outer binary of the triple is currently taking place, not if a mass transfer has happened in the past
-    def has_triple_mass_transfer(self, stellar_system = None): 
+#    def has_triple_mass_transfer(self, stellar_system = None): 
+#        if stellar_system == None:
+#            stellar_system = self.triple
+#            
+#        if stellar_system.is_star:
+#            return False
+#        elif self.is_binary(stellar_system):
+#            return False
+#        else:
+#            if self.has_triple_mass_transfer(stellar_system.child1):
+#                return True
+#            if self.has_triple_mass_transfer(stellar_system.child2):
+#                return True
+#            if stellar_system.bin_type != bin_type['unknown'] and stellar_system.bin_type != bin_type['detached']:  
+#                return True    
+#            
+#        return False            
+
+
+# if a mass transfer in the outer binary of the triple is currently taking place, not if a mass transfer has happened in the past
+    def has_tertiary_donor(self, stellar_system = None): 
         if stellar_system == None:
             stellar_system = self.triple
             
@@ -550,15 +581,18 @@ class Triple_Class:
         elif self.is_binary(stellar_system):
             return False
         else:
-            if self.has_triple_mass_transfer(stellar_system.child1):
+            if self.has_tertiary_donor(stellar_system.child1): 
                 return True
-            if self.has_triple_mass_transfer(stellar_system.child2):
+            if self.has_tertiary_donor(stellar_system.child2): 
                 return True
-            if stellar_system.bin_type != bin_type['unknown'] and stellar_system.bin_type != bin_type['detached']:  
-                return True    
-            
+            if stellar_system.child1.is_star and stellar_system.child1.is_donor:
+                #per definition, child2 is binary
+                return True 
+            if stellar_system.child2.is_star and stellar_system.child2.is_donor:
+                #per definition, child1 is binary
+                return True             
         return False            
-
+       
 
     def has_stellar_type_changed(self, stellar_system = None):
         if stellar_system == None:
@@ -696,7 +730,6 @@ class Triple_Class:
                 return False
             
             t_ev = self.get_min_stellar_evolution_timescale_of_system()
-            print t_kozai, t_ev
             if t_kozai < kozai_type_factor * t_ev:
                 return True
             else:
@@ -1496,18 +1529,24 @@ class Triple_Class:
 #                self.secular_code.model_time = self.time
 #                continue # the while loop, skip resolve_stellar_interaction and secular evolution
             
-            if self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
+            if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
                 print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
                 self.triple.bin_type = bin_type['rlof']
                 self.determine_mass_transfer_timescale() # to set the stability
                 #it's possible that there is mass transfer in the inner and outer binary
 #                print self.triple.child2.bin_type
 #                print self.triple.bin_type
-#                print self.has_triple_mass_transfer()
+#                print self.has_tertiary_donor()
                 break                                    
             elif self.stop_at_mass_transfer and self.has_donor():
-                print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)     
-                self.triple.child2.bin_type = bin_type['rlof'] #bad to make an assumption about triple structure!!
+                print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr) 
+                if self.is_binary(stellar_system.child2):
+                    self.triple.child2.bin_type = bin_type['rlof'] 
+                elif self.is_binary(stellar_system.child1):
+                    self.triple.child1.bin_type = bin_type['rlof']    
+                else:
+                    print 'currently not implemented'
+                    exit(-1)    
                 self.determine_mass_transfer_timescale() # to set the stability
                 break             
                                     
@@ -1535,6 +1574,7 @@ class Triple_Class:
             if self.stop_at_disintegrated and self.has_disintegrated():
                 print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'              
                 break
+            
             
             if self.instantaneous_evolution == False and self.first_contact == False: 
                 # do secular evolution
@@ -1590,20 +1630,26 @@ class Triple_Class:
                  #The stellar evolution has evolved to far in time. For now this is not compensated. 
                     self.secular_code.model_time = self.time                     
 
-                if self.stop_at_triple_mass_transfer and self.has_triple_mass_transfer():
+                if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
                     print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
                     self.triple.bin_type = bin_type['rlof']
                     self.determine_mass_transfer_timescale() # to set the stability
                     #it's possible that there is mass transfer in the inner and outer binary
     #                print self.triple.child2.bin_type
     #                print self.triple.bin_type
-    #                print self.has_triple_mass_transfer()
+    #                print self.has_tertiary_donor()
                     break                                    
                 elif self.stop_at_mass_transfer and self.has_donor():
-                    print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)
-                    self.triple.child2.bin_type = bin_type['rlof'] #bad to make an assumption about triple structure!!
+                    print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)                    
+                    if self.is_binary(stellar_system.child2):
+                        self.triple.child2.bin_type = bin_type['rlof'] 
+                    elif self.is_binary(stellar_system.child1):
+                        self.triple.child1.bin_type = bin_type['rlof']    
+                    else:
+                        print 'currently not implemented'
+                        exit(-1)    
                     self.determine_mass_transfer_timescale() # to set the stability
-                    break             
+                    break        
                 if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
                     self.triple.dynamical_instability = True    #necessary?
                     print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
