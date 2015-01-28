@@ -5,9 +5,9 @@ AMUSE_DIR?=../../../../..
 ###################################################################
 ## Change these paths
 
-#HOME    = /data1/boekholt/
-#MPRDIR  = $(HOME)Packages/mpreal_local/include/ # mpreal.h
-#MPRLIB  = $(HOME)Packages/mpreal_local/lib/	# libmpfr.a, libgmp.a
+HOME    = /home/boekholt/
+MPRDIR  = $(HOME)Packages/mpreal_local/include/ # mpreal.h
+MPRLIB  = $(HOME)Packages/mpreal_local/lib/	# libmpfr.a, libgmp.a
 
 ###################################################################
 COMP = $(CXX)
@@ -33,14 +33,14 @@ main.o: main.cpp Brutus.o Bulirsch_Stoer.o Cluster.o Star.o
 	$(CC) main.cpp -I$(MPRDIR)
 ###################################################################
 Brutus.o: Brutus.h Brutus.cpp Bulirsch_Stoer.o Cluster.o Star.o 
-	$(CC) Brutus.cpp
+	$(CC) Brutus.cpp -I$(MPRDIR)
 
 Bulirsch_Stoer.o: Bulirsch_Stoer.h Bulirsch_Stoer.cpp Cluster.o Star.o 
-	$(CC) Bulirsch_Stoer.cpp 
+	$(CC) Bulirsch_Stoer.cpp -I$(MPRDIR)
 Cluster.o: Cluster.h Cluster.cpp Star.o 
-	$(CC) Cluster.cpp 
+	$(CC) Cluster.cpp -I$(MPRDIR)
 Star.o: Star.h Star.cpp 
-	$(CC) Star.cpp 
+	$(CC) Star.cpp -I$(MPRDIR) 
 ###################################################################
 clean:
 	rm -f *~
