@@ -80,6 +80,7 @@ def read_state_from_file(restart_file, gravity_code,resolve_collision_code_creat
         if hasattr(root, 'components') and not root.components is None:
             root_to_tree[root] = datamodel.trees.BinaryTreeOnParticle(root.components[0])
     gravity_code.particles.add_particles(stars)
+    gravity_code.model_time = bookkeeping['model_time']
 
 
     multiples_code = multiples.Multiples(gravity_code, resolve_collision_code_creation_function, kep)
@@ -94,7 +95,7 @@ def read_state_from_file(restart_file, gravity_code,resolve_collision_code_creat
     multiples_code.multiples_internal_tidal_correction = bookkeeping['multiples_internal_tidal_correction']
     multiples.root_index = bookkeeping['root_index']
     multiples_code.root_to_tree = root_to_tree
-    #multiples_code.set_model_time = bookkeeping['model_time']
+    multiples_code.set_model_time = bookkeeping['model_time']
     
     with open(restart_file + ".conf", "rb") as f:
         config = pickle.load(f)
