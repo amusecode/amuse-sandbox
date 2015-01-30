@@ -79,11 +79,9 @@ maximum_time_step_factor = 100.
 time_step_factor_kozai = 0.025 # 0.2*0.1, 0.2-> for error in kozai timescale, 0.1-> 10 steps per cycle
 kozai_type_factor = 10.
 
-
 stellar_types_SN_remnants = [13,14]|units.stellar_type # remnant types created through a supernova
 stellar_types_remnants = [7,8,9,10,11,12,13,14]|units.stellar_type
 stellar_types_dr = [4, 7,8,9,10,11,12,13,14]|units.stellar_type #stars which go through a instantaneous radius change at formation; horizontal branch stars + remnants
-
 
 class Triple_Class:
     #-------
@@ -313,8 +311,8 @@ class Triple_Class:
         self.secular_code.parameters.check_for_outer_collision = True
 
 #   gives problems when RLOF begins or starts during timestep in secular code        
-#        self.secular_code.parameters.check_for_inner_RLOF = True 
-#        self.secular_code.parameters.check_for_outer_RLOF = True 
+        self.secular_code.parameters.check_for_inner_RLOF = True 
+        self.secular_code.parameters.check_for_outer_RLOF = True 
 
          # accuracy of secular code
 #        self.secular_code.parameters.input_precision = 1.0e-10#1.0e-5
@@ -1234,7 +1232,8 @@ class Triple_Class:
         time_step_radius_change = self.determine_time_step_radius_change()             
         
         #small time_step when kozai cycles affect the orbit significantly
-        time_step_kozai = self.determine_time_step_kozai()
+#        time_step_kozai = self.determine_time_step_kozai()
+        time_step_kozai = time_step_max
         
         time_step = min(time_step_kozai, min(time_step_radius_change, min(time_step_wind, min( min(time_step_stellar_code), time_step_max))))    
         if REPORT_DT or REPORT_TRIPLE_EVOLUTION or REPORT_DEBUG:
@@ -1420,16 +1419,17 @@ class Triple_Class:
         if stellar_system.is_star:
             dm = (stellar_system.previous_mass - stellar_system.mass)/stellar_system.mass
             if REPORT_TRIPLE_EVOLUTION:
-                print 'wind mass loss rate:', stellar_system.wind_mass_loss_rate,
+                print 'wind mass loss rate:', stellar_system.wind_mass_loss_rate, stellar_system.mass,stellar_system.core_mass,
                 print 'relative wind mass losses:', dm
                         
             if (abs(dm) > error_dm) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
                 self.max_dm_over_m.append([abs(dm), stellar_system.age, stellar_system.stellar_type])                               
                 print 'Change in mass in a single time_step larger then', error_dm
-                print dm, stellar_system.mass, stellar_system.stellar_type, self.max_dm_over_m
+                print dm, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.max_dm_over_m
 
                 f_dm = open(file_name_dm,'w')
                 pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
+                pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'
                 pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
                 pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
                 pr_str += str(dm) +'\n'
@@ -1451,6 +1451,7 @@ class Triple_Class:
                     
                     f_dr = open(file_name_dr,'w')
                     pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
+                    pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'
                     pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
                     pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
                     pr_str += str(dr) +'\n'
@@ -2075,7 +2076,7 @@ def plot_function(triple):
 #    dm = (m1_array[1:] - m1_array[:-1] )
 #    dt = (times_array_Myr[1:] - times_array_Myr[:-1])
 #    dmdt = (m1_array[1:] - m1_array[:-1] )/(times_array_Myr[1:] - times_array_Myr[:-1])
-
+#
 #    plt.plot(dmdt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
 #    plt.plot(dmdt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
 #    plt.show()
@@ -2087,7 +2088,7 @@ def plot_function(triple):
 #    plt.plot(dt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:])
 #    plt.plot(dt, a_in_array_AU[0]*Mtot[0]/Mtot[1:]/a_in_array_AU[1:], '.')
 #    plt.show()
-#
+
     
     
     
