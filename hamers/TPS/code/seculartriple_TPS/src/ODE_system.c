@@ -973,8 +973,8 @@ double roche_radius_pericenter_sepinsky(double rp, double q, double e, double f)
             double den_2 = 8.8*exp(-2.95*pow(log_A,0.76)) + 1.64*exp(-0.03*pow(log_A,0.76));
             double j_2 = 1.0/den_2;
 
-            double j_3 = 0.256*exp(-1.33*pow(log_A,2.9))*( 5.5*exp(1.33*pow(log_A,2.9)) + 1.0 );
-//            double j_3 = 0.256*(5.5 + exp(-1.33*pow(log_A,2.9)));
+//            double j_3 = 0.256*exp(-1.33*pow(log_A,2.9))*( 5.5*exp(1.33*pow(log_A,2.9)) + 1.0 );
+            double j_3 = 0.256*(5.5 + exp(-1.33*pow(log_A,2.9)));
 
             ratio = j_0 + j_1*exp(-j_2*pow(log_q,j_3));
             
@@ -982,6 +982,7 @@ double roche_radius_pericenter_sepinsky(double rp, double q, double e, double f)
 //            printf("1 %g %g %g \n",num_0,den_0,j_0);
 //            printf("2 %g %g %g \n",num_1,den_1,j_1);            
 //            printf("2 %g %g %g \n",den_2,j_2,j_3);            
+//            printf("ratio %g %g %g \n",ratio);            
         }
     }
     if (ratio == 0.0)
