@@ -1209,6 +1209,12 @@ class SecularTriple(InCodeComponentImplementation):
         f1 = spin_angular_frequency1/spin_angular_frequency_inner_orbit_periapse
         f2 = spin_angular_frequency2/spin_angular_frequency_inner_orbit_periapse
         f3 = spin_angular_frequency3/spin_angular_frequency_outer_orbit_periapse      
+
+#        print 'give_roche_radii1',m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out
+#        print 'give_roche_radii2',spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3,f1,f2,f3
+#        print 'give_roche_radii3',spin_angular_frequency_inner_orbit_periapse,spin_angular_frequency_outer_orbit_periapse
+        
+#        f1 = 27000.0
         
         R_L_star1 = self.roche_radius_pericenter_sepinsky(rp_in,m1/m2,e_in,f1)
         R_L_star2 = self.roche_radius_pericenter_sepinsky(rp_in,m2/m1,e_in,f2)
