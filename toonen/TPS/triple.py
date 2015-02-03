@@ -4,7 +4,7 @@
 
 ## Output:      in the form of the following files:
 ##              
-
+ 
 ## Options:   -M    mass of the inner primary [Msun]
 ##            -m    mass of the inner secondary [MSun]
 ##            -l    mass of the outer star [Msun]
@@ -1428,7 +1428,7 @@ class Triple_Class:
                 print 'Change in mass in a single time_step larger then', error_dm
                 print dm, stellar_system.mass, stellar_system.stellar_type, self.max_dm_over_m
 
-                f_dm = open(file_name_dm,'w')
+                f_dm = open(file_name_dm,'a')
                 pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
                 pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
                 pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
@@ -1449,7 +1449,7 @@ class Triple_Class:
                     print 'Change in radius in a single time_step larger then', error_dr
                     print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system), self.max_dr_over_r
                     
-                    f_dr = open(file_name_dr,'w')
+                    f_dr = open(file_name_dr,'a')
                     pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
                     pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
                     pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
