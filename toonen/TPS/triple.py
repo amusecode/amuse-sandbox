@@ -24,11 +24,12 @@ import numpy as np
 REPORT_TRIPLE_EVOLUTION = False 
 REPORT_DT = False 
 REPORT_DEBUG = False
+REPORT_USER_WARNINGS = False
 
 no_stellar_evolution = False
 
-file_name_dr = "dr_over_r.txt" 
-file_name_dm = "dm_over_m.txt" 
+#file_name_dr = "dr_over_r.txt" 
+#file_name_dm = "dm_over_m.txt" 
 
 
 #constants
@@ -1397,18 +1398,21 @@ class Triple_Class:
                         
             if (abs(dm) > error_dm) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
                 self.max_dm_over_m.append([abs(dm), stellar_system.age, stellar_system.stellar_type])                               
-                print 'Change in mass in a single time_step larger then', error_dm
-                print dm, stellar_system.mass, stellar_system.stellar_type, self.max_dm_over_m
-
-                f_dm = open(file_name_dm,'a')
-                pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
-                pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'    
-                pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
-                pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
-                pr_str += str(dm) +'\n'
-                f_dm.write(pr_str)
-                f_dm.close()
+#                print 'Change in mass in a single time_step larger then', error_dm
+#                print dm, stellar_system.mass, stellar_system.stellar_type, self.max_dm_over_m
+#
+#                f_dm = open(file_name_dm,'a')
+#                pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
+#                pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'    
+#                pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
+#                pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
+#                pr_str += str(dm) +'\n'
+#                f_dm.write(pr_str)
+#                f_dm.close()
 #                exit(1)
+                print self.triple.number, stellar_system.mass.value_in(units.MSun), 
+                print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
+                print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, dm, 0
 
             if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
                 dr = (stellar_system.radius - stellar_system.previous_radius)/stellar_system.radius
@@ -1419,18 +1423,21 @@ class Triple_Class:
                                      
                 if (abs(dr) > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_dr):
                     self.max_dr_over_r.append([abs(dr), stellar_system.age, stellar_system.stellar_type])                
-                    print 'Change in radius in a single time_step larger then', error_dr
-                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system), self.max_dr_over_r
-                    
-                    f_dr = open(file_name_dr,'a')
-                    pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
-                    pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'
-                    pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
-                    pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
-                    pr_str += str(dr) +'\n'
-                    f_dr.write(pr_str)
-                    f_dr.close()
+#                    print 'Change in radius in a single time_step larger then', error_dr
+#                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system), self.max_dr_over_r
+#                    
+#                    f_dr = open(file_name_dr,'a')
+#                    pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
+#                    pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'
+#                    pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
+#                    pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
+#                    pr_str += str(dr) +'\n'
+#                    f_dr.write(pr_str)
+#                    f_dr.close()
 #                    exit(1)
+                    print self.triple.number, stellar_system.mass.value_in(units.MSun), 
+                    print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
+                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, dr, 1
 
         else:
             self.safety_check_time_step(stellar_system.child1)        
@@ -2282,13 +2289,15 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
 
 
     if triple_class_object.triple.dynamical_instability_at_initialisation == True:
-        print 'Choose a different system. The given triple is dynamically unstable at initialization.'
+        if REPORT_USER_WARNINGS:
+            print 'Choose a different system. The given triple is dynamically unstable at initialization.'
     elif triple_class_object.triple.mass_transfer_at_initialisation == True:
-        print 'Choose a different system. There is mass transfer in the given triple at initialization.'
+        if REPORT_USER_WARNINGS:
+            print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
-        print triple_class_object.max_dm_over_m
-        print triple_class_object.max_dr_over_r
+#        print triple_class_object.max_dm_over_m
+#        print triple_class_object.max_dr_over_r
 #        plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
 
@@ -2384,15 +2393,17 @@ if __name__ == '__main__':
 
     triple_class_object = Triple_Class(**options)   
     if triple_class_object.triple.dynamical_instability_at_initialisation == True:
-        print 'Choose a different system. The given triple is dynamically unstable at initialization.'
+        if REPORT_USER_WARNINGS:
+            print 'Choose a different system. The given triple is dynamically unstable at initialization.'
     elif triple_class_object.triple.mass_transfer_at_initialisation == True:
-        print 'Choose a different system. There is mass transfer in the given triple at initialization.'
+        if REPORT_USER_WARNINGS:
+            print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
 #        plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
-        print triple_class_object.max_dm_over_m
-        print triple_class_object.max_dr_over_r
+#        print triple_class_object.max_dm_over_m
+#        print triple_class_object.max_dr_over_r
 
         if REPORT_TRIPLE_EVOLUTION:
             print 'Simulation has finished succesfully'

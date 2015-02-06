@@ -89,7 +89,7 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
-REPORT = True 
+REPORT = False 
 stop_at_init_mass_transfer = True
 
 def flat_distr(lower, upper):
@@ -536,11 +536,13 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
            triple_system.print_triple()
 
         if (min_mass > triple_system.in_primary_mass) or (min_mass > triple_system.in_secondary_mass) or (min_mass > triple_system.out_mass):
-                print 'non-star included: ', triple_system.in_primary_mass, triple_system.in_secondary_mass, triple_system.out_mass
+                if REPORT:
+                    print 'non-star included: ', triple_system.in_primary_mass, triple_system.in_secondary_mass, triple_system.out_mass
                 continue
 
         number_of_system = initial_number + i_n
-        print 'number of system = ', number_of_system
+        if REPORT:
+            print 'number of system = ', number_of_system
         tr = triple.main(inner_primary_mass = triple_system.in_primary_mass, 
                     inner_secondary_mass = triple_system.in_secondary_mass, 
                     outer_mass = triple_system.out_mass, 
@@ -567,7 +569,8 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
         else:
             i_n += 1            
 
-    print number, i_n, nr_ids, nr_imt                               
+    if REPORT:
+      print number, i_n, nr_ids, nr_imt                               
 
 def test_initial_parameters(in_primary_mass_max, in_primary_mass_min, 
                         in_mass_ratio_max, in_mass_ratio_min, 
