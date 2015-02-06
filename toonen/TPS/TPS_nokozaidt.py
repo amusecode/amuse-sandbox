@@ -72,7 +72,8 @@
 ##            -s         random seed
 
 
-import triple
+#import triple
+import triple_nokozaidt as triple
 
 from amuse.units.optparse import OptionParser
 from amuse.units import units, constants
@@ -557,7 +558,7 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
                     stop_at_merger = stop_at_merger, stop_at_disintegrated = stop_at_disintegrated,
                     stop_at_triple_mass_transfer = stop_at_triple_mass_transfer, stop_at_collision = stop_at_collision, 
                     stop_at_dynamical_instability = stop_at_dynamical_instability, stop_at_mass_transfer = stop_at_mass_transfer, 
-                    stop_at_init_mass_transfer = stop_at_init_mass_transfer,
+                    stop_at_init_mass_transfer = stop_at_init_mass_transfer, 
                     file_name = file_name, file_type = file_type)                        
 
         if tr.triple.dynamical_instability_at_initialisation == True:
@@ -848,7 +849,7 @@ def parse_arguments():
                       help="file name[%default]")
     parser.add_option("-F", dest="file_type", type ="string", default = "hdf5",#"txt"
                       help="file type[%default]")
-
+ 
 
 
     options, args = parser.parse_args()

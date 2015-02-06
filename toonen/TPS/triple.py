@@ -1,31 +1,7 @@
 ## Triple:      Triple evolution
 ##              computes the evolution of a given triple
-##              given any initial conditions (M, m, l, A, a, E, e, i, G, g, O, o).
-
-## Output:      in the form of the following files:
-##              
+##              given any initial conditions (M, m, l, A, a, E, e, i, G, g, O, o, T, z).
  
-## Options:   -M    mass of the inner primary [Msun]
-##            -m    mass of the inner secondary [MSun]
-##            -l    mass of the outer star [Msun]
-
-##            -A    inner semi-major axis []
-##            -a    outer semi-major axis []
-
-##            -E    inner eccentricity [1.]
-##            -e    outer eccentricity [0.]
-
-##            -i    relative inclination between orbits []
-
-##            -G    inner argument of pericenter []
-##            -g    outer argument of pericenter []
-
-##            -O    inner longitude of ascending nodes []
-##            -o    outer longitude of ascending nodes []
-
-##            -T or -t   binary end time. [13500 Myr]
-##            -z         metallicity of stars  [0.02 Solar] 
-
 
 from amuse.community.seba.interface import SeBa
 from binary import *
@@ -50,12 +26,6 @@ REPORT_DT = False
 REPORT_DEBUG = False
 
 no_stellar_evolution = False
-
-
-#file_name = "triple.txt"
-#file_type = "txt"
-file_name = "triple.hdf" 
-file_type = "hdf5"
 
 file_name_dr = "dr_over_r.txt" 
 file_name_dm = "dm_over_m.txt" 
@@ -97,7 +67,7 @@ class Triple_Class:
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms,      
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, 
-            stop_at_init_mass_transfer):
+            stop_at_init_mass_transfer, file_name, file_type):
         
         self.set_stopping_conditions(stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, stop_at_init_mass_transfer)
@@ -127,10 +97,12 @@ class Triple_Class:
         self.maximum_radius_change_factor = maximum_radius_change_factor
         self.max_dm_over_m = [[0., 0.|units.yr, 1|units.stellar_type]]
         self.max_dr_over_r = [[0., 0.|units.yr, 1|units.stellar_type]]
+        self.file_name = file_name
+        self.file_type = file_type
 
         self.triple = bins[1]
         self.triple.relative_inclination = relative_inclination 
-        self.triple.is_star = False
+        self.triple.is_star = False #maybe not necessary?
         self.triple.dynamical_instability = False 
         self.triple.number = number 
         self.triple.error_flag_secular = 0          
@@ -955,22 +927,20 @@ class Triple_Class:
                 print 'set_parents: structure stellar system unknown'        
                 exit(2)
  
-    def save_snapshot(self, stellar_system = None):
-        if stellar_system == None:
-            stellar_system = self.triple
+    def save_snapshot(self):
+        file_name2 = self.file_name
 
-        file_name2 = file_name
-        import os.path
-        while (os.path.isfile(file_name2)):
-            file_name2 = file_name2+str(1) 
+#        import os.path
+#        while (os.path.isfile(file_name2)):
+#            file_name2 = file_name2+str(1) 
 
-        if file_type == 'txt':
+        if self.file_type == 'txt':
             parents = self.remove_parents()
-            write_set_to_file(self.triple.as_set(), file_name2, file_type) 
+            write_set_to_file(self.triple.as_set(), file_name2, self.file_type) 
             self.set_parents(parents)
 
         else:
-            write_set_to_file(self.triple.as_set(), file_name, file_type, version='2.0') 
+            write_set_to_file(self.triple.as_set(), self.file_name, self.file_type, version='2.0') 
 
     #some minor parameters are missing:
 #        self.first_contact = True 
@@ -980,6 +950,8 @@ class Triple_Class:
 #        self.previous_time = 0.0|units.yr
 #        self.max_dm_over_m
 #        self.max_dr_over_r
+#        self.file_name
+#        self.file_type
 
     #-------
         
@@ -1027,7 +999,7 @@ class Triple_Class:
             if stellar_system.time_derivative_of_radius == quantities.zero:
                 dt = np.inf |units.Myr
             else:     
-                if stellar_system.time_derivative_of_radius == quantities.zero:
+                if stellar_system.previous_time_derivative_of_radius == quantities.zero:
                     growth_factor = 0.1
                 elif stellar_system.previous_time_derivative_of_radius * stellar_system.time_derivative_of_radius < quantities.zero:
                     growth_factor = 0.01
@@ -1430,6 +1402,7 @@ class Triple_Class:
 
                 f_dm = open(file_name_dm,'a')
                 pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
+                pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'    
                 pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
                 pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
                 pr_str += str(dm) +'\n'
@@ -1451,6 +1424,7 @@ class Triple_Class:
                     
                     f_dr = open(file_name_dr,'a')
                     pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
+                    pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'
                     pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
                     pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
                     pr_str += str(dr) +'\n'
@@ -1947,11 +1921,14 @@ def plot_function(triple):
     dr3_array =r3_array[1:]-r3_array[:-1]
     dt_array = times_array_Myr[1:] - times_array_Myr[:-1]
     plt.semilogy(times_array_Myr[1:], dr1_array/dt_array)
-    plt.semilogy(times_array_Myr[1:], dr1_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dr1_array/dt_array, 'b.')
+    plt.semilogy(times_array_Myr[1:], dr1_array/dt_array*-1., 'b*')
     plt.semilogy(times_array_Myr[1:], dr2_array/dt_array)
-    plt.semilogy(times_array_Myr[1:], dr2_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dr2_array/dt_array, 'g.')
+    plt.semilogy(times_array_Myr[1:], dr2_array/dt_array*-1., 'g*')
     plt.semilogy(times_array_Myr[1:], dr3_array/dt_array)
-    plt.semilogy(times_array_Myr[1:], dr3_array/dt_array, '.')
+    plt.semilogy(times_array_Myr[1:], dr3_array/dt_array, 'r.')
+    plt.semilogy(times_array_Myr[1:], dr3_array/dt_array*-1., 'r*')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$dr/dt$')
     plt.savefig('plots/orbit/drdt_time_'+generic_name+'.pdf')
@@ -2276,7 +2253,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tidal_terms = True,
             stop_at_merger = True, stop_at_disintegrated = True, stop_at_triple_mass_transfer = True,
             stop_at_collision = True, stop_at_dynamical_instability = True, stop_at_mass_transfer = False,
-            stop_at_init_mass_transfer = False):
+            stop_at_init_mass_transfer = False, file_name = "triple.hdf", file_type = "hdf5" ):
 
 
     set_printing_strategy("custom", 
@@ -2301,7 +2278,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms, 
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer,
-            stop_at_init_mass_transfer)
+            stop_at_init_mass_transfer, file_name, file_type)
 
 
     if triple_class_object.triple.dynamical_instability_at_initialisation == True:
@@ -2387,8 +2364,11 @@ def parse_arguments():
                       help="stop at mass transfer [%default] %unit")
     parser.add_option("--stop_at_init_mass_transfer", dest="stop_at_init_mass_transfer", action="store_true", default = False,
                       help="stop if initially mass transfer[%default] %unit")
-                      
-                      
+    parser.add_option("-f", dest="file_name", type ="string", default = "triple.hdf",#"triple.txt"
+                      help="file name[%default]")
+    parser.add_option("-F", dest="file_type", type ="string", default = "hdf5",#"txt"
+                      help="file type[%default]")
+                                           
     options, args = parser.parse_args()
     return options.__dict__
 
