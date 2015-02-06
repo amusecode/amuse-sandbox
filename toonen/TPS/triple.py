@@ -966,12 +966,6 @@ class Triple_Class:
         if stellar_system.is_star:
             dt = np.inf |units.Myr
 
-            if REPORT_TRIPLE_EVOLUTION:
-                print 'dt radius change:', stellar_system.time_derivative_of_radius, stellar_system.previous_time_derivative_of_radius 
-                print stellar_system.stellar_type, stellar_system.previous_stellar_type
-                print stellar_system.radius, stellar_system.previous_radius
-                print stellar_system.mass, stellar_system.previous_mass            
-            
             if stellar_system.wind_mass_loss_rate * -1. > quantities.zero:
                 dt = maximum_wind_mass_loss_factor*stellar_system.mass / stellar_system.wind_mass_loss_rate*-1.
             if REPORT_DT:
@@ -1532,7 +1526,8 @@ class Triple_Class:
 #                continue # the while loop, skip resolve_stellar_interaction and secular evolution
             
             if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
-                print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
                 self.triple.bin_type = bin_type['rlof']
                 self.determine_mass_transfer_timescale() # to set the stability
                 #it's possible that there is mass transfer in the inner and outer binary
@@ -1541,7 +1536,8 @@ class Triple_Class:
 #                print self.has_tertiary_donor()
                 break                                    
             elif self.stop_at_mass_transfer and self.has_donor():
-                print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr) 
+                if REPORT_TRIPLE_EVOLUTION:
+                    print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr) 
                 if self.is_binary(self.triple.child2):
                     self.triple.child2.bin_type = bin_type['rlof'] 
                 elif self.is_binary(self.triple.child1):
@@ -1571,10 +1567,12 @@ class Triple_Class:
 #                continue # the while loop, skip resolve_stellar_interaction and secular evolution
 
             if self.stop_at_merger and self.has_merger():
-                print 'Merger at time/Myr = ",self.time.value_in(units.Myr)'                               
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'Merger at time/Myr = ",self.time.value_in(units.Myr)'                               
                 break    
             if self.stop_at_disintegrated and self.has_disintegrated():
-                print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'              
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'              
                 break
             
             
@@ -1595,8 +1593,9 @@ class Triple_Class:
                     full_dt = self.time - self.previous_time
                     self.secular_code.evolve_model(self.previous_time + full_dt * self.triple.child2.part_dt_mt)
                     if self.triple.error_flag_secular < 0:
-                        print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
-                        print self.triple.error_flag_secular
+                        if REPORT_TRIPLE_EVOLUTION:
+                            print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
+                            print self.triple.error_flag_secular
                         break
                     self.channel_from_secular.copy()
 
@@ -1633,7 +1632,8 @@ class Triple_Class:
                     self.secular_code.model_time = self.time                     
 
                 if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
-                    print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
+                    if REPORT_TRIPLE_EVOLUTION:
+                        print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
                     self.triple.bin_type = bin_type['rlof']
                     self.determine_mass_transfer_timescale() # to set the stability
                     #it's possible that there is mass transfer in the inner and outer binary
@@ -1642,7 +1642,8 @@ class Triple_Class:
     #                print self.has_tertiary_donor()
                     break                                    
                 elif self.stop_at_mass_transfer and self.has_donor():
-                    print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)                    
+                    if REPORT_TRIPLE_EVOLUTION:
+                        print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)                    
                     if self.is_binary(self.triple.child2):
                         self.triple.child2.bin_type = bin_type['rlof'] 
                     elif self.is_binary(self.triple.child1):
@@ -1654,26 +1655,31 @@ class Triple_Class:
                     break        
                 if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
                     self.triple.dynamical_instability = True    #necessary?
-                    print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
+                    if REPORT_TRIPLE_EVOLUTION:
+                        print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
                     break
                 if self.stop_at_collision and self.secular_code.triples[0].inner_collision == True:
                     self.triple.child2.bin_type = bin_type['collision']
-                    print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
+                    if REPORT_TRIPLE_EVOLUTION:
+                        print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
                     break
                 if self.stop_at_collision and self.secular_code.triples[0].outer_collision == True:
                     self.triple.bin_type = bin_type['collision']
-                    print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
+                    if REPORT_TRIPLE_EVOLUTION:
+                        print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
                     break
 
                 self.channel_from_secular.copy() 
                 if self.triple.error_flag_secular < 0:
-                    print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
-                    print self.triple.error_flag_secular
+                    if REPORT_TRIPLE_EVOLUTION:
+                        print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
+                        print self.triple.error_flag_secular
                     break                    
                    
             else:
-                print 'skip secular', self.instantaneous_evolution, self.first_contact        
-                print self.instantaneous_evolution, self.first_contact
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'skip secular', self.instantaneous_evolution, self.first_contact        
+                    print self.instantaneous_evolution, self.first_contact
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 

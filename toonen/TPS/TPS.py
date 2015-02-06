@@ -90,6 +90,7 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 min_mass = 0.08 |units.MSun # for stars
 max_mass = 100 |units.MSun
 REPORT = False 
+REPORT_USER_WARNINGS = False 
 stop_at_init_mass_transfer = True
 
 def flat_distr(lower, upper):
@@ -224,8 +225,9 @@ class Generate_initial_triple:
             self.in_semi = in_semi_min
         else:
             if in_semi_distr == 1: #Constant 
-                print 'TPS::generate_semi: unambiguous choise of constant semi-major axis'
-                print '--A_min option to set the value of the semi-major axis in the inner binary'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_semi: unambiguous choise of constant semi-major axis'
+                    print '--A_min option to set the value of the semi-major axis in the inner binary'                
                 self.in_semi = in_semi_min
             elif in_semi_distr == 2: #Tokovinin
                 self.in_semi = 0.|units.RSun
@@ -245,8 +247,9 @@ class Generate_initial_triple:
             self.out_semi = out_semi_min
         else:
             if out_semi_distr == 1: #Constant 
-                print 'TPS::generate_semi: unambiguous choise of constant semi-major axis'
-                print '--a_min option to set the value of the semi-major axis in the outer binary'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_semi: unambiguous choise of constant semi-major axis'
+                    print '--a_min option to set the value of the semi-major axis in the outer binary'                
                 self.out_semi = out_semi_min
             elif out_semi_distr == 2: #Tokovinin
                 self.out_semi = 0.|units.RSun
@@ -296,8 +299,9 @@ class Generate_initial_triple:
             self.in_ecc = in_ecc_min
         else:
             if in_ecc_distr == 1: #Constant 
-                print 'TPS::generate_ecc: unambiguous choise of constant eccentricity'
-                print '--E_min option to set the value of the eccentricity in the inner binary'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_ecc: unambiguous choise of constant eccentricity'
+                    print '--E_min option to set the value of the eccentricity in the inner binary'                
                 self.in_ecc = in_ecc_min
             else: #Thermal distribution
                  self.in_ecc = np.sqrt(np.random.uniform(in_ecc_min, in_ecc_max))
@@ -306,8 +310,9 @@ class Generate_initial_triple:
             self.out_ecc = out_ecc_min
         else:
             if out_ecc_distr == 1: #Constant 
-                print 'TPS::generate_ecc: unambiguous choise of constant eccentricity'
-                print '--e_min option to set the value of eccentricity in the outer binary'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_ecc: unambiguous choise of constant eccentricity'
+                    print '--e_min option to set the value of eccentricity in the outer binary'                
                 self.out_ecc = out_ecc_min
             else: #Thermal distribution
                  self.out_ecc = np.sqrt(np.random.uniform(out_ecc_min, out_ecc_max))
@@ -318,8 +323,9 @@ class Generate_initial_triple:
             self.incl = incl_min           
         else:
             if incl_distr == 1: #Constant 
-                print 'TPS::generate_incl: unambiguous choise of constant relative inclination'
-                print '--i_min option to set the value of the relative inclination in the inner triple'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_incl: unambiguous choise of constant relative inclination'
+                    print '--i_min option to set the value of the relative inclination in the inner triple'                
                 self.incl = incl_min
             else: #Circular uniform distribution between 0-pi/2
                  self.incl = np.arccos(np.random.uniform(np.cos(incl_min), np.cos(incl_max)))
@@ -333,8 +339,9 @@ class Generate_initial_triple:
             self.in_aop = in_aop_min
         else:
             if in_aop_distr == 1: #Constant 
-                print 'TPS::generate_aop: unambiguous choise of constant argument of pericenter'
-                print '--G_min option to set the value of the argument of pericenter of the inner binary'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_aop: unambiguous choise of constant argument of pericenter'
+                    print '--G_min option to set the value of the argument of pericenter of the inner binary'                
                 self.in_aop = in_aop_min
             else: #Circular uniform distribution between 0-pi/2
                  self.in_aop = np.arccos(np.random.uniform(np.cos(in_aop_min), np.cos(in_aop_max)))
@@ -344,8 +351,9 @@ class Generate_initial_triple:
             self.out_aop = out_aop_min
         else:
             if out_aop_distr == 1: #Constant 
-                print 'TPS::generate_aop: unambiguous choise of constant argument of pericenter'
-                print '--g_min option to set the value of the argument of pericenter of the outer binary'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_aop: unambiguous choise of constant argument of pericenter'
+                    print '--g_min option to set the value of the argument of pericenter of the outer binary'                
                 self.out_aop = out_aop_min
             else: #Circular uniform distribution between 0-pi/2
                  self.out_aop = np.arccos(np.random.uniform(np.cos(out_aop_min), np.cos(out_aop_max)))
@@ -361,8 +369,9 @@ class Generate_initial_triple:
             self.in_loan = in_loan_min
         else:
             if in_loan_distr == 1: #Constant 
-                print 'TPS::generate_loan: unambiguous choise of constant longitude of ascending nodes'
-                print '--O_min option to set the value of the argument of pericenter of the inner binary'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_loan: unambiguous choise of constant longitude of ascending nodes'
+                    print '--O_min option to set the value of the argument of pericenter of the inner binary'                
                 self.in_loan = in_loan_min
             else: #Circular uniform distribution between 0-pi
                  self.in_loan = np.arccos(np.random.uniform(np.cos(in_loan_min), np.cos(in_loan_max)))
@@ -372,8 +381,9 @@ class Generate_initial_triple:
             self.out_loan = out_loan_min
         else:
             if out_loan_distr == 1: #Constant 
-                print 'TPS::generate_loan: unambiguous choise of constant longitude of ascending nodes'
-                print '--o_min option to set the value of the argument of pericenter of the outer binary'                
+                if REPORT_USER_WARNINGS:
+                    print 'TPS::generate_loan: unambiguous choise of constant longitude of ascending nodes'
+                    print '--o_min option to set the value of the argument of pericenter of the outer binary'                
                 self.out_loan = out_loan_min
             else: #Circular uniform distribution between 0-pi
                  self.out_loan = np.arccos(np.random.uniform(np.cos(in_loan_min), np.cos(in_loan_max)))
@@ -742,7 +752,7 @@ def parse_arguments():
                       default = 5e6|units.RSun,
                       help="maximum of inner semi major axis [%default]")
     parser.add_option("--A_distr", dest="in_semi_distr", type="int", default = 0,
-                      help="inner semimajor axis distribution [?]")
+                      help="inner semimajor axis distribution [logFlat]")
 
 
     parser.add_option("--a_min", unit=units.RSun,
@@ -754,7 +764,7 @@ def parse_arguments():
                       default = 5e6|units.RSun,
                       help="maximum of outer semi major axis [%default]")
     parser.add_option("--a_distr", dest="out_semi_distr", type="int", default = 0,
-                      help="outer semimajor axis distribution [?]")
+                      help="outer semimajor axis distribution [logFlat]")
 
     parser.add_option("--E_min",
                       dest="in_ecc_min", type="float", default = 0.,
