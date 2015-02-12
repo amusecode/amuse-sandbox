@@ -62,7 +62,6 @@ class Triple_Class:
             inner_eccentricity, outer_eccentricity,
             relative_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
-            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms,      
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, 
@@ -77,16 +76,14 @@ class Triple_Class:
             inner_secondary_mass = spare     
         inner_eccentricity, outer_eccentricity = self.test_initial_parameters(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis, inner_eccentricity, outer_eccentricity,
-            relative_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter,
-            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)   
+            relative_inclination, inner_argument_of_pericenter, outer_argument_of_pericenter)
 
                         
         stars = self.make_stars(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis)
         bins = self.make_bins(stars, inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
-            inner_argument_of_pericenter, outer_argument_of_pericenter,
-            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node)
+            inner_argument_of_pericenter, outer_argument_of_pericenter)
         
         self.first_contact = False 
         self.instantaneous_evolution = False # no secular evolution        
@@ -188,8 +185,7 @@ class Triple_Class:
          
     def make_bins(self, stars, inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
-            inner_argument_of_pericenter, outer_argument_of_pericenter,
-            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node):     
+            inner_argument_of_pericenter, outer_argument_of_pericenter):
 
         bins = Particles(2)
         bins.is_star = False
@@ -205,7 +201,6 @@ class Triple_Class:
         bins[0].semimajor_axis = inner_semimajor_axis
         bins[0].eccentricity = inner_eccentricity
         bins[0].argument_of_pericenter = inner_argument_of_pericenter
-        bins[0].longitude_of_ascending_node = inner_longitude_of_ascending_node
         
         bins[0].mass_transfer_rate = 0.0 | units.MSun/units.yr
         bins[0].accretion_efficiency_mass_transfer = 1.0
@@ -220,7 +215,6 @@ class Triple_Class:
         bins[1].semimajor_axis = outer_semimajor_axis
         bins[1].eccentricity = outer_eccentricity
         bins[1].argument_of_pericenter = outer_argument_of_pericenter                
-        bins[1].longitude_of_ascending_node = outer_longitude_of_ascending_node
         
         bins[1].mass_transfer_rate = 0.0 | units.MSun/units.yr        
         bins[1].accretion_efficiency_mass_transfer = 1.0
@@ -305,8 +299,7 @@ class Triple_Class:
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
             relative_inclination,
-            inner_argument_of_pericenter, outer_argument_of_pericenter,
-            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node):
+            inner_argument_of_pericenter, outer_argument_of_pericenter):
             
 
         if max(inner_primary_mass, outer_mass) > max_mass:  
@@ -354,13 +347,6 @@ class Triple_Class:
             print 'error: outer argument of pericenter not in allowed range'
             exit(1)
     
-        if (inner_longitude_of_ascending_node < 0.) or (inner_longitude_of_ascending_node > 2*np.pi):
-            print 'error: inner longitude of ascending node not in allowed range'
-            exit(1)
-        if (outer_longitude_of_ascending_node < 0.) or (outer_longitude_of_ascending_node > 2*np.pi):
-            print 'error: outer longitude of ascending node not in allowed range'
-            exit(1)
-            
         return inner_eccentricity, outer_eccentricity            
     #-------
 
@@ -855,7 +841,6 @@ class Triple_Class:
             print binary.semimajor_axis, 
             print binary.eccentricity, 
             print binary.argument_of_pericenter, 
-            print binary.longitude_of_ascending_node,
             print binary.mass_transfer_rate,
 #            print binary.mass_transfer_timescale,
             print binary.accretion_efficiency_mass_transfer,
@@ -1468,11 +1453,9 @@ class Triple_Class:
         e_in_array.append(self.triple.child2.eccentricity)
         a_in_array.append(self.triple.child2.semimajor_axis)
         g_in_array.append(self.triple.child2.argument_of_pericenter) 
-        o_in_array.append(self.triple.child2.longitude_of_ascending_node)               
         e_out_array.append(self.triple.eccentricity)
         a_out_array.append(self.triple.semimajor_axis)
         g_out_array.append(self.triple.argument_of_pericenter) 
-        o_out_array.append(self.triple.longitude_of_ascending_node)               
         i_relative_array.append(self.triple.relative_inclination)        
         m1_array.append(self.triple.child2.child1.mass)
         m2_array.append(self.triple.child2.child2.mass)
@@ -1691,11 +1674,9 @@ class Triple_Class:
             e_in_array.append(self.triple.child2.eccentricity)
             a_in_array.append(self.triple.child2.semimajor_axis)
             g_in_array.append(self.triple.child2.argument_of_pericenter) 
-            o_in_array.append(self.triple.child2.longitude_of_ascending_node)               
             e_out_array.append(self.triple.eccentricity)
             a_out_array.append(self.triple.semimajor_axis)
             g_out_array.append(self.triple.argument_of_pericenter) 
-            o_out_array.append(self.triple.longitude_of_ascending_node)               
             i_relative_array.append(self.triple.relative_inclination)        
             m1_array.append(self.triple.child2.child1.mass)
             m2_array.append(self.triple.child2.child2.mass)
@@ -2260,7 +2241,6 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             inner_eccentricity= 0.1, outer_eccentricity= 0.5,
             relative_inclination= 80.0*np.pi/180.0,
             inner_argument_of_pericenter= 0.1, outer_argument_of_pericenter= 0.5,
-            inner_longitude_of_ascending_node= 0.0, outer_longitude_of_ascending_node= 0.0,
             metallicity= 0.02,
             tend= 5.0 |units.Myr, number = 0, maximum_radius_change_factor = 0.005,
             tidal_terms = True,
@@ -2280,15 +2260,12 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
     relative_inclination = float(relative_inclination)
     inner_argument_of_pericenter = float(inner_argument_of_pericenter)
     outer_argument_of_pericenter = float(outer_argument_of_pericenter)
-    inner_longitude_of_ascending_node = float(inner_longitude_of_ascending_node)
-    outer_longitude_of_ascending_node = float(outer_longitude_of_ascending_node)
 
     triple_class_object = Triple_Class(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
             relative_inclination,
             inner_argument_of_pericenter, outer_argument_of_pericenter,
-            inner_longitude_of_ascending_node, outer_longitude_of_ascending_node,
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms, 
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
             stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer,
@@ -2349,12 +2326,7 @@ def parse_arguments():
     parser.add_option("-g",
                       dest="outer_argument_of_pericenter", type="float", default = 0.5,
                       help="outer argument of pericenter [rad] [%default]")
-    parser.add_option("-O",
-                      dest="inner_longitude_of_ascending_node", type="float", default = 0.0,
-                      help="inner longitude of ascending node [rad] [%default]")
-    parser.add_option("-o",
-                      dest="outer_longitude_of_ascending_node", type="float", default = 0.0,
-                      help="outer longitude of ascending node [rad] [%default]")
+##            Note: longitude of ascending node does not affect the evolution
     parser.add_option("-z", dest="metallicity", type="float", default = 0.02,
                       help="metallicity [%default] %unit")
     parser.add_option("-t", "-T", unit=units.Myr, 
