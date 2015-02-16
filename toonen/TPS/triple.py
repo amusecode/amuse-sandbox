@@ -183,7 +183,7 @@ class Triple_Class:
         
         stars[0].spin_angular_frequency = corotating_angular_frequency_inner 
         stars[1].spin_angular_frequency = corotating_angular_frequency_inner 
-        stars[2].spin_angular_frequency = corotating_angular_frequency_outer
+        stars[2].spin_angular_frequency = corotating_angular_frequency_outer 
 
         return stars 
          
@@ -1199,7 +1199,7 @@ class Triple_Class:
 
         #during stable mass transfer   
         if self.has_donor():
-            print time_step, self.determine_time_step_stable_mt()
+#            print time_step, self.determine_time_step_stable_mt()
             time_step = min(time_step, self.determine_time_step_stable_mt())
 #        else:
 #            #during run-up towards mass transfer 
@@ -1435,11 +1435,9 @@ class Triple_Class:
         a_in_array = quantities.AdaptingVectorQuantity()
         e_in_array = []
         g_in_array = []
-        o_in_array = []
         a_out_array = quantities.AdaptingVectorQuantity()
         e_out_array = []
         g_out_array = []
-        o_out_array = []
         i_relative_array = []
         m1_array = quantities.AdaptingVectorQuantity()
         m2_array = quantities.AdaptingVectorQuantity()
@@ -1492,6 +1490,7 @@ class Triple_Class:
             
             if REPORT_TRIPLE_EVOLUTION or REPORT_DEBUG:
                 print '\n\ntime:', self.time, self.has_donor()            
+                print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend
   
             #do stellar evolution 
             if not no_stellar_evolution: 
@@ -1501,6 +1500,7 @@ class Triple_Class:
                 self.stellar_code.evolve_model(self.time)
                 self.channel_from_stellar.copy()
                 self.update_stellar_parameters()          
+                self.safety_check_time_step()
 
 #            if  self.stellar_code.stopping_condition.supernova_detection.is_set():
 #                print 'supernova detected'
@@ -1568,7 +1568,6 @@ class Triple_Class:
                 # do secular evolution
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Secular evolution'
-                self.safety_check_time_step()
                 self.channel_to_secular.copy()
                 
                 if not self.is_triple:# e.g. binaries
@@ -1618,45 +1617,7 @@ class Triple_Class:
                  #When the secular code discovers RLOF or the end of RLOF, the orbital simulation stops. 
                  #The stellar evolution has evolved to far in time. For now this is not compensated. 
                     self.secular_code.model_time = self.time                     
-
-                if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
-                    if REPORT_TRIPLE_EVOLUTION:
-                        print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
-                    self.triple.bin_type = bin_type['rlof']
-                    self.determine_mass_transfer_timescale() # to set the stability
-                    #it's possible that there is mass transfer in the inner and outer binary
-    #                print self.triple.child2.bin_type
-    #                print self.triple.bin_type
-    #                print self.has_tertiary_donor()
-                    break                                    
-                elif self.stop_at_mass_transfer and self.has_donor():
-                    if REPORT_TRIPLE_EVOLUTION:
-                        print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)                    
-                    if self.is_binary(self.triple.child2):
-                        self.triple.child2.bin_type = bin_type['rlof'] 
-                    elif self.is_binary(self.triple.child1):
-                        self.triple.child1.bin_type = bin_type['rlof']    
-                    else:
-                        print 'currently not implemented'
-                        exit(-1)    
-                    self.determine_mass_transfer_timescale() # to set the stability
-                    break        
-                if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
-                    self.triple.dynamical_instability = True    #necessary?
-                    if REPORT_TRIPLE_EVOLUTION:
-                        print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
-                    break
-                if self.stop_at_collision and self.secular_code.triples[0].inner_collision == True:
-                    self.triple.child2.bin_type = bin_type['collision']
-                    if REPORT_TRIPLE_EVOLUTION:
-                        print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
-                    break
-                if self.stop_at_collision and self.secular_code.triples[0].outer_collision == True:
-                    self.triple.bin_type = bin_type['collision']
-                    if REPORT_TRIPLE_EVOLUTION:
-                        print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
-                    break
-
+ 
                 self.channel_from_secular.copy() 
                 if self.triple.error_flag_secular < 0:
                     if REPORT_TRIPLE_EVOLUTION:
@@ -1673,6 +1634,48 @@ class Triple_Class:
                 
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
             self.check_for_RLOF()
+
+
+            if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
+                if REPORT_TRIPLE_EVOLUTION:
+                    print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
+                self.triple.bin_type = bin_type['rlof']
+                self.determine_mass_transfer_timescale() # to set the stability
+                #it's possible that there is mass transfer in the inner and outer binary
+#                print self.triple.child2.bin_type
+#                print self.triple.bin_type
+#                print self.has_tertiary_donor()
+                break                                    
+            elif self.stop_at_mass_transfer and self.has_donor():
+                if REPORT_TRIPLE_EVOLUTION:
+                    print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr)                    
+                if self.is_binary(self.triple.child2):
+                    self.triple.child2.bin_type = bin_type['rlof'] 
+                elif self.is_binary(self.triple.child1):
+                    self.triple.child1.bin_type = bin_type['rlof']    
+                else:
+                    print 'currently not implemented'
+                    exit(-1)    
+                self.determine_mass_transfer_timescale() # to set the stability
+                break        
+            if self.stop_at_dynamical_instability and self.secular_code.triples[0].dynamical_instability == True:
+                self.triple.dynamical_instability = True    #necessary?
+                if REPORT_TRIPLE_EVOLUTION:
+                    print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
+                break
+            if self.stop_at_collision and self.secular_code.triples[0].inner_collision == True:
+                self.triple.child2.bin_type = bin_type['collision']
+                if REPORT_TRIPLE_EVOLUTION:
+                    print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
+                break
+            if self.stop_at_collision and self.secular_code.triples[0].outer_collision == True:
+                self.triple.bin_type = bin_type['collision']
+                if REPORT_TRIPLE_EVOLUTION:
+                    print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
+                break
+
+
+
 
             # for plotting data
             times_array.append(self.time)
@@ -1702,10 +1705,8 @@ class Triple_Class:
         # for plotting data
         e_in_array = np.array(e_in_array)
         g_in_array = np.array(g_in_array)
-        o_in_array = np.array(o_in_array)
         e_out_array = np.array(e_out_array)
         g_out_array = np.array(g_out_array)
-        o_out_array = np.array(o_out_array)
         i_relative_array = np.array(i_relative_array)
         spin1_array = np.array(spin1_array)
         spin2_array = np.array(spin2_array)
@@ -1722,11 +1723,9 @@ class Triple_Class:
         self.plot_data.a_in_array = a_in_array
         self.plot_data.e_in_array = e_in_array
         self.plot_data.g_in_array = g_in_array
-        self.plot_data.o_in_array = o_in_array        
         self.plot_data.a_out_array = a_out_array
         self.plot_data.e_out_array = e_out_array
         self.plot_data.g_out_array = g_out_array
-        self.plot_data.o_out_array = o_out_array        
         self.plot_data.i_relative_array = i_relative_array
         self.plot_data.m1_array = m1_array
         self.plot_data.m2_array = m2_array
@@ -1759,11 +1758,9 @@ def plot_function(triple):
     g_in_array = triple.plot_data.g_in_array
     e_in_array = triple.plot_data.e_in_array
     i_relative_array = triple.plot_data.i_relative_array
-    o_in_array = triple.plot_data.o_in_array
     a_out_array_AU = triple.plot_data.a_out_array.value_in(units.AU)
     g_out_array = triple.plot_data.g_out_array
     e_out_array = triple.plot_data.e_out_array
-    o_out_array = triple.plot_data.o_out_array
     m1_array = triple.plot_data.m1_array.value_in(units.MSun)
     m2_array = triple.plot_data.m2_array.value_in(units.MSun)
     m3_array = triple.plot_data.m3_array.value_in(units.MSun)
@@ -1778,7 +1775,7 @@ def plot_function(triple):
     gy3_array = triple.plot_data.gy3_array
     
     
-    generic_name = 'M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(triple.maximum_radius_change_factor)+'_edr'+str(error_dr)
+    generic_name = 'M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + str(t_max_Myr) + '_maxdr'+str(triple.maximum_radius_change_factor)+'_edr'+str(error_dr)
 #    f = open(generic_name+'.txt','w')
 #    for i in range(len(times_array_Myr)):
 #        f.write( str(times_array_Myr[i]) + '\t'+str(e_in_array[i]) + '\t'+ str(a_in_array_AU[i]) + '\t')
@@ -2081,16 +2078,6 @@ def plot_function(triple):
 #    plt.show()
 #
 #
-#    plt.plot(times_array_Myr, o_in_array*180.0/np.pi%360)
-#    plt.xlim(0, t_max_Myr)
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$o_\mathrm{in}$')
-#    plt.show()
-#    plt.plot(times_array_Myr, np.cos(o_in_array))
-#    plt.xlim(0, t_max_Myr)
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$\cos(o_\mathrm{in})$')
-#    plt.show()
 
 
     #outer binary
@@ -2214,17 +2201,6 @@ def plot_function(triple):
 #    plt.xlim(0, t_max_Myr)
 #    plt.xlabel('$t/\mathrm{Myr}$')
 #    plt.ylabel('$\cos(g_\mathrm{out})$')
-#    plt.show()
-#
-#    plt.plot(times_array_Myr, o_out_array*180.0/np.pi%360)
-#    plt.xlim(0, t_max_Myr)
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$o_\mathrm{out}$')
-#    plt.show()
-#    plt.plot(times_array_Myr, np.cos(o_out_array))
-#    plt.xlim(0, t_max_Myr)
-#    plt.xlabel('$t/\mathrm{Myr}$')
-#    plt.ylabel('$\cos(o_\mathrm{out})$')
 #    plt.show()
 #
 #    aplt.plot(times_array_Myr, m1_array)
