@@ -1,0 +1,11 @@
+# ToDo
+# choose initial conditions
+# Solar birth cluster, some open cluster,star with disk in Galaxy, galactic center....?
+# -Run for 10Myr and measure pebble-disk evolution in cluster
+
+# mogelijk uitbreidingen:
+  - add gas
+  - add galactic tidal field
+  - add stellar evolution
+  - Integrate each planetery system with its own integrator
+  - add tidal interaction
