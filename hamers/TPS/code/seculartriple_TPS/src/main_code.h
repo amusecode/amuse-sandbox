@@ -122,6 +122,8 @@ typedef struct {
     double luminosity_star1,luminosity_star2,luminosity_star3;
     double gyration_radius_star1,gyration_radius_star2,gyration_radius_star3;
     double k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3;
+    double moment_of_intertia_star1,moment_of_intertia_star2,moment_of_intertia_star3;
+    double moment_of_intertia_dot_star1,moment_of_intertia_dot_star2,moment_of_intertia_dot_star3;
     
     bool star1_is_donor,star2_is_donor,star3_is_donor;
     double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
@@ -132,6 +134,7 @@ typedef struct {
     double outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1;
     double inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer;
     double inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer;
+    double inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2,inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1;
     
 } *UserData;
 
@@ -145,6 +148,8 @@ int evolve(
     double spin_angular_frequency1, double spin_angular_frequency2, double spin_angular_frequency3,
     double AMC_star1, double AMC_star2, double AMC_star3,
     double gyration_radius_star1, double gyration_radius_star2, double gyration_radius_star3,
+    double moment_of_intertia_star1, double moment_of_intertia_star2, double moment_of_intertia_star3,
+    double moment_of_intertia_dot_star1, double moment_of_intertia_dot_star2, double moment_of_intertia_dot_star3,
 //    double k_div_T_tides_star1, double k_div_T_tides_star2, double k_div_T_tides_star3,
     double a_in, double a_out,
     double e_in, double e_out,
@@ -157,7 +162,8 @@ int evolve(
     double outer_accretion_efficiency_wind_child1_to_child2,double outer_accretion_efficiency_wind_child2_to_child1,
     double inner_accretion_efficiency_mass_transfer, double outer_accretion_efficiency_mass_transfer,
     double inner_specific_AM_loss_mass_transfer, double outer_specific_AM_loss_mass_transfer,    
-    double t, double dt,
+    double inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2, double inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1,
+    double t, double global_time_step,
     double * m1_output, double * m2_output, double * m3_output,
     double * R1_output, double * R2_output, double * R3_output,
     double * spin_angular_frequency1_output, double * spin_angular_frequency2_output, double * spin_angular_frequency3_output,

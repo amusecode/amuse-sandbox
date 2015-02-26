@@ -21,6 +21,24 @@ int const CHeB = 4;
 int const HeMS = 7;
 int const HeWD = 10;
 
+double set_crude_gyration_radii_based_on_stellar_structure(int stellar_type, double mass)
+{
+    double gyration_radius;
+    
+    bool USE_RADIATIVE_DAMPING = check_for_radiative_damping(stellar_type,mass);
+    bool USE_CONVECTIVE_DAMPING = check_for_convective_damping(stellar_type);
+    
+    if ((USE_RADIATIVE_DAMPING==TRUE) || (USE_CONVECTIVE_DAMPING == TRUE))
+    {
+        gyration_radius = 0.1;
+    }
+    else
+    {
+        gyration_radius = 0.21;
+    }
+    return gyration_radius;
+}
+
 bool check_for_radiative_damping(int stellar_type, double mass)
 {
     if ((stellar_type == MAIN_SEQUENCE) && (mass/CONST_MSUN >= MINIMUM_MASS_FOR_RADIATIVE_DAMPING_MSUN))

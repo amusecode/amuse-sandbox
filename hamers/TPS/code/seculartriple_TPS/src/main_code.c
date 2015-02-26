@@ -15,6 +15,8 @@
 #define ATOL8		RCONST(1.0e-8)	
 #define ATOL9		RCONST(1.0e-8)				
 #define ATOL10		RCONST(1.0e-8)				
+#define ATOL11		RCONST(1.0e-8)				
+#define ATOL12		RCONST(1.0e-8)				
 #define INITIAL_ODE_TIME_STEP	RCONST(1.0e-10)				/* initial internal ODE timestep */
 #define MAXNUMSTEPS 	5e8					/* maximum number of internal steps */
 #define MAXTIME		RCONST(13.7e9*365.25*24.0*3600.0)	/* maximum integration time */
@@ -50,6 +52,8 @@ int evolve(
     double spin_angular_frequency1, double spin_angular_frequency2, double spin_angular_frequency3,
     double AMC_star1, double AMC_star2, double AMC_star3,
     double gyration_radius_star1, double gyration_radius_star2, double gyration_radius_star3,
+    double moment_of_intertia_star1, double moment_of_intertia_star2, double moment_of_intertia_star3,
+    double moment_of_intertia_dot_star1, double moment_of_intertia_dot_star2, double moment_of_intertia_dot_star3,
 //    double k_div_T_tides_star1, double k_div_T_tides_star2, double k_div_T_tides_star3,
     double a_in, double a_out,
     double e_in, double e_out,
@@ -62,6 +66,7 @@ int evolve(
     double outer_accretion_efficiency_wind_child1_to_child2,double outer_accretion_efficiency_wind_child2_to_child1,
     double inner_accretion_efficiency_mass_transfer, double outer_accretion_efficiency_mass_transfer,
     double inner_specific_AM_loss_mass_transfer, double outer_specific_AM_loss_mass_transfer,    
+    double inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2, double inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1,
     double t, double global_time_step,
     double * m1_output, double * m2_output, double * m3_output,
     double * R1_output, double * R2_output, double * R3_output,
@@ -70,7 +75,8 @@ int evolve(
     double * e_in_output, double * e_out_output,
     double *INCL_in_output, double *INCL_out_output, double *INCL_in_out_output, double * AP_in_output, double * AP_out_output, double *LAN_in_output, double *LAN_out_output,
     double * t_output,
-    int * CVODE_flag, int * root_finding_flag)
+    int * CVODE_flag, int * root_finding_flag
+)
 {
     double tiny_double = input_precision;
     if (e_in<=tiny_double) { e_in = tiny_double; }
@@ -129,6 +135,13 @@ int evolve(
     data->luminosity_star1 = luminosity_star1;
     data->luminosity_star2 = luminosity_star2;
     data->luminosity_star3 = luminosity_star3;
+    data->moment_of_intertia_star1 = moment_of_intertia_star1;
+    data->moment_of_intertia_star2 = moment_of_intertia_star2;
+    data->moment_of_intertia_star3 = moment_of_intertia_star3;
+    data->moment_of_intertia_dot_star1 = moment_of_intertia_dot_star1;
+    data->moment_of_intertia_dot_star2 = moment_of_intertia_dot_star2;
+    data->moment_of_intertia_dot_star3 = moment_of_intertia_dot_star3;
+
 //    data->k_div_T_tides_star1 = k_div_T_tides_star1; // tidal dissipation constant
 //    data->k_div_T_tides_star2 = k_div_T_tides_star2; // tidal dissipation constant
 //    data->k_div_T_tides_star3 = k_div_T_tides_star3; // tidal dissipation constant
@@ -161,6 +174,8 @@ int evolve(
     data->outer_accretion_efficiency_mass_transfer = outer_accretion_efficiency_mass_transfer;
     data->inner_specific_AM_loss_mass_transfer = inner_specific_AM_loss_mass_transfer;
     data->outer_specific_AM_loss_mass_transfer = outer_specific_AM_loss_mass_transfer;
+    data->inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2 = inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2;
+    data->inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1 = inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1;    
 
     data->check_for_dynamical_stability = check_for_dynamical_stability;
     data->check_for_inner_collision = check_for_inner_collision;
@@ -200,7 +215,7 @@ int evolve(
          * solve equations of motion based on delaunay elements *
          * ******************************************************/
 
-        NEQ = 10;
+        NEQ = 12;
         yev = N_VNew_Serial(NEQ);
         if (check_flag((void *)yev, "N_VNew_Serial", 0)) return 1;
         yev_out = N_VNew_Serial(NEQ);
@@ -212,12 +227,14 @@ int evolve(
         Ith(yev,2) = log10(1.0 - e_out);
         Ith(yev,3) = AP_in;		/* Inner orbit argument of periastron - unit: rad */
         Ith(yev,4) = AP_out;    /* Outer orbit argument of periastron - unit: rad */
-        Ith(yev,5) = a_in;		/* Inner orbit semi-major axis - unit: cm */
-        Ith(yev,6) = a_out;		/* Outer orbit semi-major axis - unit: cm */
-        Ith(yev,7) = cos_INCL_in_out;
-        Ith(yev,8) = spin_angular_frequency1;	/* Spin angular frequency of star 1 - unit: rad s^-1 */
-        Ith(yev,9) = spin_angular_frequency2;	/* Spin angular frequency of star 2 - unit: rad s^-1 */
-        Ith(yev,10) = spin_angular_frequency3;	/* Spin angular frequency of star 3 - unit: rad s^-1 */
+        Ith(yev,5) = LAN_in;		/* Inner orbit longitude of the ascending node - unit: rad */
+        Ith(yev,6) = LAN_out;		/* Outer orbit longitude of the ascending node - unit: rad */
+        Ith(yev,7) = a_in;		/* Inner orbit semi-major axis - unit: AU */
+        Ith(yev,8) = a_out;		/* Outer orbit semi-major axis - unit: AU */
+        Ith(yev,9) = cos_INCL_in_out;
+        Ith(yev,10) = spin_angular_frequency1;	/* Spin angular frequency of star 1 - unit: rad Myr^-1 */
+        Ith(yev,11) = spin_angular_frequency2;	/* Spin angular frequency of star 2 - unit: rad Myr^-1 */
+        Ith(yev,12) = spin_angular_frequency3;	/* Spin angular frequency of star 3 - unit: rad Myr^-1 */
 
         Ith(abstol,1) = ATOL1;   
         Ith(abstol,2) = ATOL2;
@@ -229,6 +246,8 @@ int evolve(
         Ith(abstol,8) = ATOL8;
         Ith(abstol,9) = ATOL9;
         Ith(abstol,10) = ATOL10;
+        Ith(abstol,11) = ATOL11;
+        Ith(abstol,12) = ATOL12;
 
         /* use Backward Differentiation Formulas (BDF)
             scheme in conjunction with Newton iteration --
@@ -421,13 +440,15 @@ int evolve(
         *e_out_output = 1.0 - pow(10,y_output);
         *AP_in_output = Ith(yev_out,3);
         *AP_out_output = Ith(yev_out,4);
-        *a_in_output = Ith(yev_out,5);
-        *a_out_output = Ith(yev_out,6);        
+        *LAN_in_output = Ith(yev_out,5);
+        *LAN_out_output = Ith(yev_out,6);
+        *a_in_output = Ith(yev_out,7);
+        *a_out_output = Ith(yev_out,8);        
 
         if (*e_in_output<=tiny_double) { *e_in_output = tiny_double; }
         if (*e_out_output<=tiny_double) { *e_out_output = tiny_double; }    
 
-        cos_INCL_in_out_output = Ith(yev_out,7);
+        cos_INCL_in_out_output = Ith(yev_out,9);
 
         if (cos_INCL_in_out_output > 1.0)
         {
@@ -443,9 +464,9 @@ int evolve(
         *INCL_out_output = 0.0;
         *INCL_in_out_output = acos(cos_INCL_in_out_output);
         
-        *spin_angular_frequency1_output = Ith(yev_out,8);
-        *spin_angular_frequency2_output = Ith(yev_out,9);
-        *spin_angular_frequency3_output = Ith(yev_out,10);
+        *spin_angular_frequency1_output = Ith(yev_out,10);
+        *spin_angular_frequency2_output = Ith(yev_out,11);
+        *spin_angular_frequency3_output = Ith(yev_out,12);
         
 //        L1_out = m1*m2*sqrt(CONST_G*(*a1_out)/(m1+m2));
 //        L2_out = (m1+m2)*m3*sqrt(CONST_G*(*a2_out)/(m1+m2+m3));

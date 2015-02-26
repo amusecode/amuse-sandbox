@@ -12,6 +12,7 @@ from amuse.units import units,constants
 unit_l = units.AU
 unit_m = units.MSun
 unit_t = 1.0e6*units.yr
+unit_h = unit_m*unit_l**2/unit_t ### angular momentum
 
 ### CVODE flags ###
 CV_SUCCESS=0
@@ -75,6 +76,12 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('gyration_radius_star1', dtype='float64', direction=function.IN)   
         function.addParameter('gyration_radius_star2', dtype='float64', direction=function.IN)   
         function.addParameter('gyration_radius_star3', dtype='float64', direction=function.IN)   
+        function.addParameter('moment_of_intertia_star1', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_intertia_star2', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_intertia_star3', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_intertia_dot_star1', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_intertia_dot_star2', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_intertia_dot_star3', dtype='float64', direction=function.IN)
 #        function.addParameter('k_div_T_tides_star1', dtype='float64', direction=function.IN)   
 #        function.addParameter('k_div_T_tides_star2', dtype='float64', direction=function.IN)   
 #        function.addParameter('k_div_T_tides_star3', dtype='float64', direction=function.IN)   
@@ -107,8 +114,10 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('outer_accretion_efficiency_mass_transfer', dtype='float64', direction=function.IN)                      
         function.addParameter('inner_specific_AM_loss_mass_transfer', dtype='float64', direction=function.IN)                        
         function.addParameter('outer_specific_AM_loss_mass_transfer', dtype='float64', direction=function.IN)
+        function.addParameter('inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2', dtype='float64', direction=function.IN)                        
+        function.addParameter('inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1', dtype='float64', direction=function.IN)                        
         function.addParameter('t', dtype='float64', direction=function.IN)        
-        function.addParameter('dt', dtype='float64', direction=function.IN)        
+        function.addParameter('global_time_step', dtype='float64', direction=function.IN)        
         function.addParameter('m1_output', dtype='float64', direction=function.OUT) 
         function.addParameter('m2_output', dtype='float64', direction=function.OUT) 
         function.addParameter('m3_output', dtype='float64', direction=function.OUT) 
@@ -135,6 +144,113 @@ class SecularTripleInterface(CodeInterface):
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def compute_orbital_vectors_from_orbital_elements():
+        function = LegacyFunctionSpecification()
+        function.addParameter('m1', dtype='float64', direction=function.IN)
+        function.addParameter('m2', dtype='float64', direction=function.IN)
+        function.addParameter('m3', dtype='float64', direction=function.IN)
+        function.addParameter('a1', dtype='float64', direction=function.IN)
+        function.addParameter('a2', dtype='float64', direction=function.IN)
+        function.addParameter('e1', dtype='float64', direction=function.IN)
+        function.addParameter('e2', dtype='float64', direction=function.IN)
+        function.addParameter('INCL_rel', dtype='float64', direction=function.IN)        
+        function.addParameter('AP1', dtype='float64', direction=function.IN)        
+        function.addParameter('AP2', dtype='float64', direction=function.IN)        
+        function.addParameter('LAN1', dtype='float64', direction=function.IN)        
+        function.addParameter('LAN2', dtype='float64', direction=function.IN)        
+        function.addParameter('e1_vec_x', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e1_vec_y', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e1_vec_z', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e2_vec_x', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e2_vec_y', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e2_vec_z', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h1_vec_x', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h1_vec_y', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h1_vec_z', dtype='float64',direction=function.OUT,description = "")        
+        function.addParameter('h2_vec_x', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h2_vec_y', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h2_vec_z', dtype='float64',direction=function.OUT,description = "")        
+        function.result_type = 'float64'
+        return function
+    
+    @legacy_function
+    def compute_orbital_elements_from_orbital_vectors():
+        function = LegacyFunctionSpecification()
+        function.addParameter('m1', dtype='float64', direction=function.IN)
+        function.addParameter('m2', dtype='float64', direction=function.IN)
+        function.addParameter('m3', dtype='float64', direction=function.IN)
+        function.addParameter('e1_vec_x', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e1_vec_y', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e1_vec_z', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e2_vec_x', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e2_vec_y', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e2_vec_z', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h1_vec_x', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h1_vec_y', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h1_vec_z', dtype='float64',direction=function.IN,description = "")        
+        function.addParameter('h2_vec_x', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h2_vec_y', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h2_vec_z', dtype='float64',direction=function.IN,description = "")  
+        function.addParameter('a1', dtype='float64', direction=function.OUT)
+        function.addParameter('a2', dtype='float64', direction=function.OUT)
+        function.addParameter('e1', dtype='float64', direction=function.OUT)
+        function.addParameter('e2', dtype='float64', direction=function.OUT)
+        function.addParameter('INCL_rel', dtype='float64', direction=function.OUT)        
+        function.addParameter('AP1', dtype='float64', direction=function.OUT)        
+        function.addParameter('AP2', dtype='float64', direction=function.OUT)        
+        function.addParameter('LAN1', dtype='float64', direction=function.OUT)        
+        function.addParameter('LAN2', dtype='float64', direction=function.OUT)        
+        function.result_type = 'float64'
+        return function
+
+    @legacy_function
+    def compute_effect_of_SN_on_orbital_vectors():
+        function = LegacyFunctionSpecification()
+        function.addParameter('m1', dtype='float64', direction=function.IN)
+        function.addParameter('m2', dtype='float64', direction=function.IN)
+        function.addParameter('m3', dtype='float64', direction=function.IN)
+        function.addParameter('e1_vec_x', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e1_vec_y', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e1_vec_z', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e2_vec_x', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e2_vec_y', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('e2_vec_z', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h1_vec_x', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h1_vec_y', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h1_vec_z', dtype='float64',direction=function.IN,description = "")        
+        function.addParameter('h2_vec_x', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h2_vec_y', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('h2_vec_z', dtype='float64',direction=function.IN,description = "") 
+        function.addParameter('Vkick1_vec_x', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('Vkick1_vec_y', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('Vkick1_vec_z', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('Vkick2_vec_x', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('Vkick2_vec_y', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('Vkick2_vec_z', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('Vkick3_vec_x', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('Vkick3_vec_y', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('Vkick3_vec_z', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('delta_m1', dtype='float64', direction=function.IN)
+        function.addParameter('delta_m2', dtype='float64', direction=function.IN)
+        function.addParameter('delta_m3', dtype='float64', direction=function.IN)
+        function.addParameter('f1', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('f2', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('e1_vec_x_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e1_vec_y_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e1_vec_z_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e2_vec_x_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e2_vec_y_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('e2_vec_z_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h1_vec_x_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h1_vec_y_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h1_vec_z_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h2_vec_x_p', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('h2_vec_y_p', dtype='float64',direction=function.OUT,description = "") 
+        function.addParameter('h2_vec_z_p', dtype='float64',direction=function.OUT,description = "")   
+        function.result_type = 'float64'
+        return function
+    
     @legacy_function
     def a_out_div_a_in_dynamical_stability():
         function = LegacyFunctionSpecification()
@@ -796,6 +912,12 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### gyration_radius_star1
                 object.NO_UNIT,             ### gyration_radius_star2
                 object.NO_UNIT,             ### gyration_radius_star3
+                unit_m*unit_l**2,           ### moment_of_intertia_star1
+                unit_m*unit_l**2,           ### moment_of_intertia_star2
+                unit_m*unit_l**2,           ### moment_of_intertia_star3
+                unit_m*unit_l**2/unit_t,    ### moment_of_intertia_dot_star1
+                unit_m*unit_l**2/unit_t,    ### moment_of_intertia_dot_star2
+                unit_m*unit_l**2/unit_t,    ### moment_of_intertia_dot_star3
 #                1.0/units.s,                ### k_div_T_tides_star1
 #                1.0/units.s,                ### k_div_T_tides_star2
 #                1.0/units.s,                ### k_div_T_tides_star3                                
@@ -828,6 +950,8 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### outer_accretion_efficiency_mass_transfer
                 object.NO_UNIT,             ### inner_specific_AM_loss_mass_transfer
                 object.NO_UNIT,             ### outer_specific_AM_loss_mass_transfer
+                object.NO_UNIT,             ### inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2
+                object.NO_UNIT,             ### inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1
                 unit_t,                     ### t
                 unit_t,                     ### dt
             ),
@@ -858,6 +982,121 @@ class SecularTriple(InCodeComponentImplementation):
                 object.ERROR_CODE,
             )
         )
+        object.add_method(
+            "compute_orbital_vectors_from_orbital_elements",
+            (
+                unit_m,                     ### m1
+                unit_m,                     ### m2
+                unit_m,                     ### m3
+                unit_l,                     ### a1
+                unit_l,                     ### a2
+                object.NO_UNIT,             ### e1
+                object.NO_UNIT,             ### e2
+                object.NO_UNIT,             ### INCL_rel
+                object.NO_UNIT,             ### AP1
+                object.NO_UNIT,             ### AP2
+                object.NO_UNIT,             ### LAN1
+                object.NO_UNIT,             ### LAN2
+            ),
+            (
+                object.NO_UNIT,             ### e1_vec_x
+                object.NO_UNIT,             ### e1_vec_y
+                object.NO_UNIT,             ### e1_vec_z
+                object.NO_UNIT,             ### e2_vec_x
+                object.NO_UNIT,             ### e2_vec_y
+                object.NO_UNIT,             ### e2_vec_z
+                unit_h,                     ### h1_vec_x
+                unit_h,                     ### h1_vec_y
+                unit_h,                     ### h1_vec_z
+                unit_h,                     ### h2_vec_x
+                unit_h,                     ### h2_vec_y
+                unit_h,                     ### h2_vec_z
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "compute_orbital_elements_from_orbital_vectors",
+            (
+                unit_m,                     ### m1
+                unit_m,                     ### m2
+                unit_m,                     ### m3
+                object.NO_UNIT,             ### e1_vec_x
+                object.NO_UNIT,             ### e1_vec_y
+                object.NO_UNIT,             ### e1_vec_z
+                object.NO_UNIT,             ### e2_vec_x
+                object.NO_UNIT,             ### e2_vec_y
+                object.NO_UNIT,             ### e2_vec_z
+                unit_h,                     ### h1_vec_x
+                unit_h,                     ### h1_vec_y
+                unit_h,                     ### h1_vec_z
+                unit_h,                     ### h2_vec_x
+                unit_h,                     ### h2_vec_y
+                unit_h,                     ### h2_vec_z
+            ),
+            (
+                unit_l,                     ### a1
+                unit_l,                     ### a2
+                object.NO_UNIT,             ### e1
+                object.NO_UNIT,             ### e2
+                object.NO_UNIT,             ### INCL_rel
+                object.NO_UNIT,             ### AP1
+                object.NO_UNIT,             ### AP2
+                object.NO_UNIT,             ### LAN1
+                object.NO_UNIT,             ### LAN2
+                object.ERROR_CODE,
+            )
+        )
+
+        object.add_method(
+            "compute_effect_of_SN_on_orbital_vectors",
+            (
+                unit_m,                     ### m1
+                unit_m,                     ### m2
+                unit_m,                     ### m3
+                object.NO_UNIT,             ### e1_vec_x
+                object.NO_UNIT,             ### e1_vec_y
+                object.NO_UNIT,             ### e1_vec_z
+                object.NO_UNIT,             ### e2_vec_x
+                object.NO_UNIT,             ### e2_vec_y
+                object.NO_UNIT,             ### e2_vec_z
+                unit_h,                     ### h1_vec_x
+                unit_h,                     ### h1_vec_y
+                unit_h,                     ### h1_vec_z
+                unit_h,                     ### h2_vec_x
+                unit_h,                     ### h2_vec_y
+                unit_h,                     ### h2_vec_z
+                unit_l/unit_t,              ### Vkick1_vec_x
+                unit_l/unit_t,              ### Vkick1_vec_y
+                unit_l/unit_t,              ### Vkick1_vec_z
+                unit_l/unit_t,              ### Vkick2_vec_x
+                unit_l/unit_t,              ### Vkick2_vec_y
+                unit_l/unit_t,              ### Vkick2_vec_z
+                unit_l/unit_t,              ### Vkick3_vec_x
+                unit_l/unit_t,              ### Vkick3_vec_y
+                unit_l/unit_t,              ### Vkick3_vec_z
+                unit_m,                     ### delta_m1
+                unit_m,                     ### delta_m2
+                unit_m,                     ### delta_m3
+                object.NO_UNIT,             ### f1
+                object.NO_UNIT,             ### f2
+            ),
+            (
+                object.NO_UNIT,             ### e1_vec_x_p
+                object.NO_UNIT,             ### e1_vec_y_p
+                object.NO_UNIT,             ### e1_vec_z_p
+                object.NO_UNIT,             ### e2_vec_x_p
+                object.NO_UNIT,             ### e2_vec_y_p
+                object.NO_UNIT,             ### e2_vec_z_p
+                unit_h,                     ### h1_vec_x_p
+                unit_h,                     ### h1_vec_y_p
+                unit_h,                     ### h1_vec_z_p
+                unit_h,                     ### h2_vec_x_p
+                unit_h,                     ### h2_vec_y_p
+                unit_h,                     ### h2_vec_z_p
+                object.ERROR_CODE,
+            )
+        )
+        
         object.add_method(
             "a_out_div_a_in_dynamical_stability",
             (
@@ -1025,7 +1264,7 @@ class SecularTriple(InCodeComponentImplementation):
 
         for index_triple, triple in enumerate(self.triples):
             inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
-            m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary)
+            m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary,triple)
             
             a_out_div_a_in_dynamical_stability = self.a_out_div_a_in_dynamical_stability(m1,m2,m3,e_out,triple.relative_inclination)
             if a_out/a_in <= a_out_div_a_in_dynamical_stability:
@@ -1057,7 +1296,7 @@ class SecularTriple(InCodeComponentImplementation):
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_cvode,CVODE_flag,root_finding_flag = self.evolve(*args)
-            print 'SecularTriple -- done; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in
+            print 'SecularTriple -- done; a_in/Ainner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2U=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in
 
             print_CVODE_output(CVODE_flag)
             triple.error_flag_secular = CVODE_flag
@@ -1194,7 +1433,7 @@ class SecularTriple(InCodeComponentImplementation):
             return
 
         inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
-        m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary)
+        m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary,triple)
 
         spin_angular_frequency1 = star1.spin_angular_frequency
         spin_angular_frequency2 = star2.spin_angular_frequency
@@ -1231,6 +1470,46 @@ class SecularTriple(InCodeComponentImplementation):
             print 'ratios',R_L_star1/R_L_eggleton(a_in,m1/m2),R_L_star2/R_L_eggleton(a_in,m2/m1),R_L_star3/R_L_eggleton(a_out,m3/(m1+m2))
         
         return R_L_star1,R_L_star2,R_L_star3
+
+    def compute_effect_of_SN_on_triple(self,triple,vkick_1,vkick_2,vkick_3,delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly):
+        inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
+        m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary,triple)
+        
+        print 'PRE orb',a_in.value_in(units.AU),a_out.value_in(units.AU),e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out
+        
+        ### pre-SN -- from orbital elements to orbital vectors ###
+        e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z = self.compute_orbital_vectors_from_orbital_elements(m1,m2,m3,a_in,a_out,e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out)
+        
+        print 'PRE vec',e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z
+        
+        ### effect of SN on orbital vectors ###
+        e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
+            h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime = \
+            self.compute_effect_of_SN_on_orbital_vectors(m1,m2,m3,e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z, \
+                h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z, \
+                vkick_1[0],vkick_1[1],vkick_1[2],vkick_2[0],vkick_2[1],vkick_2[2],vkick_3[0],vkick_3[1],vkick_3[2],
+                delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly)
+        
+        print 'POST vec',e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
+            h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime
+        
+        ### post-SN -- from orbital vectors to orbital elements (with new reference frame) ###
+        a_in_prime,a_out_prime,e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime = \
+            self.compute_orbital_elements_from_orbital_vectors(m1,m2,m3,e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime, \
+            e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime,h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime, \
+            h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime)
+        
+        print 'POST orb',a_in_prime.value_in(units.AU),a_out_prime.value_in(units.AU),e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime
+
+        inner_binary.semimajor_axis = a_in_prime
+        inner_binary.eccentricity = e_in_prime
+        outer_binary.semimajor_axis = a_out_prime
+        outer_binary.eccentricity = e_out_prime
+        triple.relative_inclination = INCL_rel_prime
+        inner_binary.argument_of_pericenter = AP_in_prime
+        outer_binary.argument_of_pericenter = AP_out_prime
+        inner_binary.longitude_of_ascending_node = LAN_in_prime
+        outer_binary.longitude_of_ascending_node = LAN_out_prime
 
 def print_CVODE_output(CVODE_flag):
 
@@ -1324,6 +1603,7 @@ def give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner
 
     if triple==None:
         INCL_in = 0.0
+        print 'SecularTriple -- warning: relative inclination is being set zero in method give_stellar_masses_radii_and_binary_parameters'
     else:
         INCL_in = triple.relative_inclination ### in radians
     INCL_out = 0.0
@@ -1465,6 +1745,11 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
             exit(-1)
 
     ### spin-radius-mass coupling ###
+#    moment_of_inertia_star1 = moment_of_inertia_star2 = moment_of_inertia_star3 = 0.0 | units.MSun*units.RSun**2
+#    moment_of_inertia_dot_star1 = moment_of_inertia_dot_star2 = moment_of_inertia_dot_star3 = 0.0 | units.MSun*units.RSun**2/units.yr
+    moment_of_inertia_star1 = moment_of_inertia_star2 = moment_of_inertia_star3 = 1.0 | units.MSun*units.RSun**2
+    moment_of_inertia_dot_star1 = moment_of_inertia_dot_star2 = moment_of_inertia_dot_star3 = 1.0 | units.MSun*units.RSun**2/units.yr
+    inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2 = inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1 = 0.0
     if parameters.include_spin_radius_mass_coupling_terms == True:
         try:
             spin_angular_frequency1 = star1.spin_angular_frequency
@@ -1475,11 +1760,20 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
             wind_mass_loss_rate_star3 = star3.wind_mass_loss_rate
             time_derivative_of_radius_star1 = star1.time_derivative_of_radius
             time_derivative_of_radius_star2 = star2.time_derivative_of_radius
-            time_derivative_of_radius_star3 = star3.time_derivative_of_radius            
+            time_derivative_of_radius_star3 = star3.time_derivative_of_radius
+#            moment_of_inertia_star1 = star1.moment_of_inertia_of_star
+#            moment_of_inertia_star2 = star2.moment_of_inertia_of_star
+#            moment_of_inertia_star3 = star3.moment_of_inertia_of_star
+#            moment_of_inertia_dot_star1 = star1.time_derivative_of_moment_of_inertia
+#            moment_of_inertia_dot_star2 = star2.time_derivative_of_moment_of_inertia
+#            moment_of_inertia_dot_star3 = star3.time_derivative_of_moment_of_inertia
+#            inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2 = inner_binary.spin_angular_momentum_wind_accretion_efficiency_child1_to_child2
+#            inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1 = inner_binary.spin_angular_momentum_wind_accretion_efficiency_child2_to_child1
         except AttributeError:
             print "SecularTriple -- more attributes required for spin-radius-mass coupling terms! exiting"
             exit(-1)
-            
+
+
     ### tides ###
     stellar_type1 = stellar_type2 = stellar_type3 = 0 | units.stellar_type
     m1_convective_envelope = m2_convective_envelope = m3_convective_envelope = 0.0 | units.MSun
@@ -1574,6 +1868,8 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
         spin_angular_frequency1,spin_angular_frequency2,spin_angular_frequency3,
         AMC_star1,AMC_star2,AMC_star3,
         gyration_radius_star1,gyration_radius_star2,gyration_radius_star3,
+        moment_of_inertia_star1,moment_of_inertia_star2,moment_of_inertia_star3,
+        moment_of_inertia_dot_star1,moment_of_inertia_dot_star2,moment_of_inertia_dot_star3,
 #        k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3,
         a_in,a_out,
         e_in,e_out,
@@ -1587,6 +1883,7 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
         outer_accretion_efficiency_wind_child1_to_child2,outer_accretion_efficiency_wind_child2_to_child1,
         inner_accretion_efficiency_mass_transfer,outer_accretion_efficiency_mass_transfer,
         inner_specific_AM_loss_mass_transfer,outer_specific_AM_loss_mass_transfer,
+        inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2,inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1,
         self.model_time,self.time_step] ### NOTE: only time_step is used at the moment
         
 #    print 'pre2',stellar_type1,m1,m2,a_in,R1,m1_envelope,R1_envelope,luminosity_star1,spin_angular_frequency1,gyration_radius_star1

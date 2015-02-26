@@ -1,5 +1,6 @@
 bool check_for_radiative_damping(int stellar_type, double mass);
 bool check_for_convective_damping(int stellar_type);
+double set_crude_gyration_radii_based_on_stellar_structure(int stellar_type, double mass);
 
 double compute_k_div_T_tides
 (
