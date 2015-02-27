@@ -136,9 +136,9 @@ class Triple_Class:
             return
         
         self.triple.kozai_type = self.get_kozai_type()
-        self.update_previous_stellar_parameters()
         self.update_stellar_parameters() 
         self.update_time_derivative_of_radius()
+        self.update_previous_stellar_parameters()
         
             
 
@@ -256,7 +256,7 @@ class Triple_Class:
         self.channel_from_stellar = self.stellar_code.particles.new_channel_to(stars)
         self.channel_to_stellar = stars.new_channel_to(self.stellar_code.particles)
         self.channel_from_stellar.copy()
-
+#        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])
       
     def setup_secular_code(self, triple_set, tidal_terms):
         self.secular_code = SecularTriple()
@@ -345,18 +345,18 @@ class Triple_Class:
         if (outer_eccentricity < minimum_eccentricity):
             outer_eccentricity = minimum_eccentricity
     
-        if (relative_inclination < 0.) or (relative_inclination > 2.*np.pi):
+        if (relative_inclination < 0.) or (relative_inclination > np.pi):
             print 'error: relative inclination not in allowed range'
             exit(1)
     
-        if (inner_argument_of_pericenter < 0.) or (inner_argument_of_pericenter > 2*np.pi):
+        if (inner_argument_of_pericenter < -1.*np.pi) or (inner_argument_of_pericenter > np.pi):
             print 'error: inner argument of pericenter not in allowed range'
             exit(1)
-        if (outer_argument_of_pericenter < 0.) or (outer_argument_of_pericenter > 2*np.pi):
+        if (outer_argument_of_pericenter < -1.*np.pi) or (outer_argument_of_pericenter > np.pi):
             print 'error: outer argument of pericenter not in allowed range'
             exit(1)
     
-        if (inner_longitude_of_ascending_node < 0.) or (inner_longitude_of_ascending_node > 2*np.pi):
+        if (inner_longitude_of_ascending_node < -1.*np.pi) or (inner_longitude_of_ascending_node > np.pi):
             print 'error: inner longitude of ascending node not in allowed range'
             exit(1)
             
@@ -373,6 +373,7 @@ class Triple_Class:
             stellar_system.previous_mass = self.get_mass(stellar_system)      
             stellar_system.previous_radius = stellar_system.radius
             stellar_system.previous_stellar_type = stellar_system.stellar_type
+            stellar_system.previous_moment_of_inertia_of_star = stellar_system.moment_of_inertia_of_star
             if self.time == quantities.zero: #initialization
                stellar_system.previous_time_derivative_of_radius = 0.0 | units.RSun/units.yr
             else:
@@ -407,6 +408,27 @@ class Triple_Class:
                 self.update_time_derivative_of_radius(stellar_system.child1)        
                 self.update_time_derivative_of_radius(stellar_system.child2)
     #-------
+    
+    #-------
+    def update_time_derivative_of_moment_of_inertia(self, stellar_system = None):
+        #update time_derivative_of_radius for effect of changing Jspin
+        if stellar_system == None:
+            stellar_system = self.triple
+                
+        time_step = self.time - self.previous_time
+
+        if self.time == quantities.zero:
+            #initialization
+            self.triple.child2.child1.time_derivative_of_moment_of_inertia = 0.0 | units.MSun*units.RSun**2/units.yr
+            self.triple.child2.child2.time_derivative_of_moment_of_inertia = 0.0 | units.MSun*units.RSun**2/units.yr
+            self.triple.child1.time_derivative_of_moment_of_inertia = 0.0 | units.RSun/units.yr
+        else:     
+            if stellar_system.is_star:
+                stellar_system.time_derivative_of_moment_of_inertia = (stellar_system.moment_of_inertia_of_star - stellar_system.previous_moment_of_inertia_of_star)/time_step
+            else:
+                self.update_time_derivative_of_moment_of_inertia(stellar_system.child1)        
+                self.update_time_derivative_of_moment_of_inertia(stellar_system.child2)
+    #-------
 
     #-------
     def update_stellar_parameters(self, stellar_system = None):
@@ -421,6 +443,7 @@ class Triple_Class:
         if stellar_system.is_star:
             stellar_system.gyration_radius = stellar_system.gyration_radius_sq**0.5     
             stellar_system.apsidal_motion_constant = self.apsidal_motion_constant(stellar_system) 
+            stellar_system.moment_of_inertia_of_star = self.moment_of_inertia(stellar_system)
             if stellar_system.convective_envelope_radius < 0|units.RSun:
                 print 'convective_envelope_radius < 0'
                 exit(1)
@@ -651,9 +674,7 @@ class Triple_Class:
     
     def spin_angular_momentum(self, ss):
         if ss.is_star:
-            moment_of_inertia = ss.gyration_radius**2 * ss.mass * ss.radius**2
-            Jstar = moment_of_inertia * ss.spin_angular_frequency
-            return Jstar            
+            return ss.moment_of_inertia_of_star * ss.spin_angular_frequency
         else:
             print 'spin_angular_momentum: structure stellar system unknown'        
             exit(2)
@@ -678,6 +699,18 @@ class Triple_Class:
             print star.stellar_type
             exit(2)
             
+    #Hurley, Pols, Tout 2000
+    def moment_of_inertia(self, star):
+        if star.is_star:
+            k2 = 0.1
+            k3 = 0.21
+            I = k2*(star.mass - star.core_mass)*star.radius**2 + k3*star.core_mass*star.core_radius**2
+            if REPORT_FUNCTION_NAMES:
+                print 'Moment of inertia:', I
+            return I                   
+        else:
+            print 'moment_of_inertia: structure stellar system unknown'        
+            exit(2)
 
     def kozai_timescale(self):
         if self.is_triple():
@@ -1479,6 +1512,9 @@ class Triple_Class:
         gy1_array = []
         gy2_array = []
         gy3_array = []
+        moi1_array = []
+        moi2_array = []
+        moi3_array = []
     
         times_array.append(self.time)
         e_in_array.append(self.triple.child2.eccentricity)
@@ -1502,6 +1538,9 @@ class Triple_Class:
         gy1_array.append(self.triple.child2.child1.gyration_radius.number)
         gy2_array.append(self.triple.child2.child2.gyration_radius.number)
         gy3_array.append(self.triple.child1.gyration_radius.number)
+        moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+        moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+        moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
         
         if REPORT_TRIPLE_EVOLUTION:
             print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend    
@@ -1528,6 +1567,7 @@ class Triple_Class:
 
                 self.stellar_code.evolve_model(self.time)
                 self.channel_from_stellar.copy()
+#                self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                                      
                 self.update_stellar_parameters()          
                 successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()
                 
@@ -1542,6 +1582,7 @@ class Triple_Class:
                         self.time += (dt_new - dt)                     
                         self.stellar_code.evolve_model(self.time)
                         self.channel_from_stellar.copy()
+#                        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                        
                         self.update_stellar_parameters()          
 
                         dr = (star_unsuccessfull.radius - star_unsuccessfull.previous_radius)/star_unsuccessfull.radius
@@ -1593,6 +1634,7 @@ class Triple_Class:
             self.determine_mass_transfer_timescale()
             self.resolve_stellar_interaction()
             self.update_time_derivative_of_radius() # includes radius change from wind and mass transfer
+            self.update_time_derivative_of_moment_of_inertia() # includes mass and radius change from wind and mass transfer
 
 #            if  self.stellar_code.stopping_condition.supernova_detection.is_set():
 #                print 'supernova detected'
@@ -1685,9 +1727,8 @@ class Triple_Class:
                 self.instantaneous_evolution = False
                 
             #should also do safety check time_step here -> only make sure that mass loss from stable mass transfer is not too large -> determine_time_step_mt
-            self.check_for_RLOF()
-
-
+            self.check_for_RLOF()            
+            
             if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
@@ -1751,6 +1792,9 @@ class Triple_Class:
             gy1_array.append(self.triple.child2.child1.gyration_radius.number)
             gy2_array.append(self.triple.child2.child2.gyration_radius.number)
             gy3_array.append(self.triple.child1.gyration_radius.number)
+            moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+            moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+            moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
             
         self.save_snapshot()        
             
@@ -1772,6 +1816,9 @@ class Triple_Class:
         gy1_array = np.array(gy1_array)
         gy2_array = np.array(gy2_array)
         gy3_array = np.array(gy3_array)
+        moi1_array = np.array(moi1_array)
+        moi2_array = np.array(moi2_array)
+        moi3_array = np.array(moi3_array)
 
         self.plot_data = plot_data_container()
         self.plot_data.times_array = times_array
@@ -1796,6 +1843,9 @@ class Triple_Class:
         self.plot_data.gy1_array = gy1_array
         self.plot_data.gy2_array = gy2_array
         self.plot_data.gy3_array = gy3_array
+        self.plot_data.moi1_array = moi1_array
+        self.plot_data.moi2_array = moi2_array
+        self.plot_data.moi3_array = moi3_array
         
     #-------
 
@@ -1832,6 +1882,9 @@ def plot_function(triple):
     gy1_array = triple.plot_data.gy1_array
     gy2_array = triple.plot_data.gy2_array
     gy3_array = triple.plot_data.gy3_array
+    moi1_array = triple.plot_data.moi1_array
+    moi2_array = triple.plot_data.moi2_array
+    moi3_array = triple.plot_data.moi3_array
     
     
     generic_name = 'M'+str(m1_array[0]) + '_m'+str(m2_array[0]) +'_n'+str(m3_array[0]) + '_a'+str(a_in_array_AU[0]) + '_A'+str(a_out_array_AU[0]) + '_e'+str(e_in_array[0]) + '_E'+str(e_out_array[0]) + '_i'+str(i_relative_array[0]/np.pi*180.0) + '_g'+str(g_in_array[0]) + '_G'+str(g_out_array[0]) + '_o'+str(o_in_array[0]) + '_O'+str(o_out_array[0]) + '_t'+str(t_max_Myr) + '_maxdr'+str(triple.maximum_radius_change_factor)+'_edr'+str(error_dr)
@@ -1922,12 +1975,31 @@ def plot_function(triple):
     plt.savefig('plots/orbit/spin_time_'+generic_name+'.pdf')
     plt.show()
 
+    plt.plot(times_array_Myr,spin1_array, 'b-')
+    plt.plot(times_array_Myr,spin1_array, 'b.')
+    plt.plot(times_array_Myr,spin2_array, 'g-')
+    plt.plot(times_array_Myr,spin2_array, 'g.')
+    plt.plot(times_array_Myr,spin3_array, 'r-')
+    plt.plot(times_array_Myr,spin3_array, 'r.')
+
+    plt.plot(times_array_Myr,corot_spin_inner, 'c-')
+    plt.plot(times_array_Myr,corot_spin_inner, 'c,')
+    plt.plot(times_array_Myr,corot_spin_outer, 'm-')
+    plt.plot(times_array_Myr,corot_spin_outer, 'm,')
+    
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$spin$')
+    plt.ylim((-5, 25))
+    plt.savefig('plots/orbit/spin_time_'+generic_name+'_zoom.pdf')
+    plt.show()
+
+
 
     J_orb2 = m1_array**2 * m2_array**2 / (m1_array+m2_array) * a_in_array_AU * ( 1-e_in_array**2) #*G
     J_orb = np.sqrt(J_orb2)
-    J_spin1 =  spin1_array * m1_array* r1_array**2 #gyration radius  
-    J_spin2 =  spin2_array * m2_array* r2_array**2 #gyration radius  
-    J_spin3 =  spin3_array * m3_array* r3_array**2 #  gyration radius
+    J_spin1 =  spin1_array * moi1_array
+    J_spin2 =  spin2_array * moi2_array
+    J_spin3 =  spin3_array * moi3_array
 
     plt.plot(times_array_Myr, J_orb)
     plt.plot(times_array_Myr,J_orb, '.')
@@ -1958,6 +2030,26 @@ def plot_function(triple):
     plt.savefig('plots/orbit/gyration_radius_time_'+generic_name+'.pdf')
     plt.show()
       
+    plt.semilogy(times_array_Myr,moi1_array)
+    plt.semilogy(times_array_Myr,moi1_array, '.')
+    plt.semilogy(times_array_Myr,moi2_array)
+    plt.semilogy(times_array_Myr,moi2_array, '.')
+    plt.semilogy(times_array_Myr,moi3_array)
+    plt.semilogy(times_array_Myr,moi3_array, '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$moi$')
+    plt.savefig('plots/orbit/moment_of_inertia_time_'+generic_name+'.pdf')
+    plt.show()
+
+    plt.semilogy(times_array_Myr,moi1_array)
+    plt.semilogy(times_array_Myr,moi1_array, '.')
+    plt.semilogy(times_array_Myr,m1_array*r1_array**2)
+    plt.semilogy(times_array_Myr,m1_array*r1_array**2, '.')
+    plt.xlabel('$t/\mathrm{Myr}$')
+    plt.ylabel('$moi$')
+    plt.savefig('plots/orbit/moment_of_inertia_time_'+generic_name+'_compare_old.pdf')
+    plt.show()
+
     
 
     plt.semilogy(times_array_Myr,r1_array)
@@ -2448,7 +2540,7 @@ if __name__ == '__main__':
             print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
-#        plot_function(triple_class_object)
+        plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
 #        print triple_class_object.max_dm_over_m
 #        print triple_class_object.max_dr_over_r

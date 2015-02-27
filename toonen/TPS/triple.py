@@ -136,9 +136,9 @@ class Triple_Class:
             return
         
         self.triple.kozai_type = self.get_kozai_type()
-        self.update_previous_stellar_parameters()
         self.update_stellar_parameters() 
         self.update_time_derivative_of_radius()
+        self.update_previous_stellar_parameters()
         
             
 
@@ -345,18 +345,18 @@ class Triple_Class:
         if (outer_eccentricity < minimum_eccentricity):
             outer_eccentricity = minimum_eccentricity
     
-        if (relative_inclination < 0.) or (relative_inclination > 2.*np.pi):
+        if (relative_inclination < 0.) or (relative_inclination > np.pi):
             print 'error: relative inclination not in allowed range'
             exit(1)
     
-        if (inner_argument_of_pericenter < 0.) or (inner_argument_of_pericenter > 2*np.pi):
+        if (inner_argument_of_pericenter < -1.*np.pi) or (inner_argument_of_pericenter > np.pi):
             print 'error: inner argument of pericenter not in allowed range'
             exit(1)
-        if (outer_argument_of_pericenter < 0.) or (outer_argument_of_pericenter > 2*np.pi):
+        if (outer_argument_of_pericenter < -1.*np.pi) or (outer_argument_of_pericenter > np.pi):
             print 'error: outer argument of pericenter not in allowed range'
             exit(1)
     
-        if (inner_longitude_of_ascending_node < 0.) or (inner_longitude_of_ascending_node > 2*np.pi):
+        if (inner_longitude_of_ascending_node < -1.*np.pi) or (inner_longitude_of_ascending_node > np.pi):
             print 'error: inner longitude of ascending node not in allowed range'
             exit(1)
             
@@ -373,6 +373,7 @@ class Triple_Class:
             stellar_system.previous_mass = self.get_mass(stellar_system)      
             stellar_system.previous_radius = stellar_system.radius
             stellar_system.previous_stellar_type = stellar_system.stellar_type
+            stellar_system.previous_moment_of_inertia_of_star = stellar_system.moment_of_inertia_of_star
             if self.time == quantities.zero: #initialization
                stellar_system.previous_time_derivative_of_radius = 0.0 | units.RSun/units.yr
             else:
@@ -389,7 +390,6 @@ class Triple_Class:
     #-------
     def update_time_derivative_of_radius(self, stellar_system = None):
         #update time_derivative_of_radius for effect of wind on spin
-        #radius change due to stellar evolution, not mass transfer
         if stellar_system == None:
             stellar_system = self.triple
                 
@@ -407,6 +407,28 @@ class Triple_Class:
                 self.update_time_derivative_of_radius(stellar_system.child1)        
                 self.update_time_derivative_of_radius(stellar_system.child2)
     #-------
+    
+    #-------
+    def update_time_derivative_of_moment_of_inertia(self, stellar_system = None):
+        #update time_derivative_of_radius for effect of changing Jspin
+        #needs to be updated after steller evolution + interaction
+        if stellar_system == None:
+            stellar_system = self.triple
+                
+        time_step = self.time - self.previous_time
+
+        if self.time == quantities.zero:
+            #initialization
+            self.triple.child2.child1.time_derivative_of_moment_of_inertia = 0.0 | units.MSun*units.RSun**2/units.yr
+            self.triple.child2.child2.time_derivative_of_moment_of_inertia = 0.0 | units.MSun*units.RSun**2/units.yr
+            self.triple.child1.time_derivative_of_moment_of_inertia = 0.0 | units.RSun/units.yr
+        else:     
+            if stellar_system.is_star:
+                stellar_system.time_derivative_of_moment_of_inertia = (stellar_system.moment_of_inertia - stellar_system.previous_moment_of_inertia)/time_step
+            else:
+                self.update_time_derivative_of_moment_of_inertia(stellar_system.child1)        
+                self.update_time_derivative_of_moment_of_inertia(stellar_system.child2)
+    #-------
 
     #-------
     def update_stellar_parameters(self, stellar_system = None):
@@ -421,6 +443,7 @@ class Triple_Class:
         if stellar_system.is_star:
             stellar_system.gyration_radius = stellar_system.gyration_radius_sq**0.5     
             stellar_system.apsidal_motion_constant = self.apsidal_motion_constant(stellar_system) 
+            stellar_system.moment_of_inertia_of_star = self.moment_of_inertia(stellar_system)
             if stellar_system.convective_envelope_radius < 0|units.RSun:
                 print 'convective_envelope_radius < 0'
                 exit(1)
@@ -651,9 +674,7 @@ class Triple_Class:
     
     def spin_angular_momentum(self, ss):
         if ss.is_star:
-            moment_of_inertia = ss.gyration_radius**2 * ss.mass * ss.radius**2
-            Jstar = moment_of_inertia * ss.spin_angular_frequency
-            return Jstar            
+            return ss.moment_of_inertia_of_star * ss.spin_angular_frequency
         else:
             print 'spin_angular_momentum: structure stellar system unknown'        
             exit(2)
@@ -677,7 +698,20 @@ class Triple_Class:
 #            print 'possibly black hole'
             print star.stellar_type
             exit(2)
-            
+
+    #Hurley, Pols, Tout 2000
+    def moment_of_inertia(self, star):
+        if star.is_star:
+            k2 = 0.1
+            k3 = 0.21
+            I = k2*(star.mass - star.core_mass)*star.radius**2 + k3*star.core_mass*star.core_radius**2
+            if REPORT_FUNCTION_NAMES:
+                print 'Moment of inertia:', I
+            return I                   
+        else:
+            print 'moment_of_inertia: structure stellar system unknown'        
+            exit(2)
+
 
     def kozai_timescale(self):
         if self.is_triple():
@@ -1592,6 +1626,7 @@ class Triple_Class:
             self.determine_mass_transfer_timescale()
             self.resolve_stellar_interaction()
             self.update_time_derivative_of_radius() # includes radius change from wind and mass transfer
+            self.update_time_derivative_of_moment_of_inertia() # includes mass and radius change from wind and mass transfer
 
 #            if  self.stellar_code.stopping_condition.supernova_detection.is_set():
 #                print 'supernova detected'

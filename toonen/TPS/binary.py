@@ -110,14 +110,15 @@ def kelvin_helmholds_timescale(star):
 def dynamic_timescale(star):
     if REPORT_FUNCTION_NAMES:
         print "Dynamic timescale:", (np.sqrt(star.radius**3/star.mass/constants.G)[0]).in_(units.yr)
-    return np.sqrt(star.radius**3/star.mass/constants.G)    
+    return np.sqrt(star.radius**3/star.mass/constants.G)   
+    
+def corotating_spin_angular_frequency_binary(semi, m1, m2):
+    return 1./np.sqrt(semi**3/constants.G / (m1+m2))
+
 #-------------------------
 
 #-------------------------
 # functions for mass transfer in a binary
-
-def corotating_spin_angular_frequency_binary(semi, m1, m2):
-    return 1./np.sqrt(semi**3/constants.G / (m1+m2))
 
 def common_envelope_efficiency(donor, accretor):
     return const_common_envelope_efficiency
