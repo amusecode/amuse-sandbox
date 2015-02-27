@@ -76,12 +76,12 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('gyration_radius_star1', dtype='float64', direction=function.IN)   
         function.addParameter('gyration_radius_star2', dtype='float64', direction=function.IN)   
         function.addParameter('gyration_radius_star3', dtype='float64', direction=function.IN)   
-        function.addParameter('moment_of_intertia_star1', dtype='float64', direction=function.IN)
-        function.addParameter('moment_of_intertia_star2', dtype='float64', direction=function.IN)
-        function.addParameter('moment_of_intertia_star3', dtype='float64', direction=function.IN)
-        function.addParameter('moment_of_intertia_dot_star1', dtype='float64', direction=function.IN)
-        function.addParameter('moment_of_intertia_dot_star2', dtype='float64', direction=function.IN)
-        function.addParameter('moment_of_intertia_dot_star3', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_inertia_star1', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_inertia_star2', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_inertia_star3', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_inertia_dot_star1', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_inertia_dot_star2', dtype='float64', direction=function.IN)
+        function.addParameter('moment_of_inertia_dot_star3', dtype='float64', direction=function.IN)
 #        function.addParameter('k_div_T_tides_star1', dtype='float64', direction=function.IN)   
 #        function.addParameter('k_div_T_tides_star2', dtype='float64', direction=function.IN)   
 #        function.addParameter('k_div_T_tides_star3', dtype='float64', direction=function.IN)   
@@ -912,12 +912,12 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### gyration_radius_star1
                 object.NO_UNIT,             ### gyration_radius_star2
                 object.NO_UNIT,             ### gyration_radius_star3
-                unit_m*unit_l**2,           ### moment_of_intertia_star1
-                unit_m*unit_l**2,           ### moment_of_intertia_star2
-                unit_m*unit_l**2,           ### moment_of_intertia_star3
-                unit_m*unit_l**2/unit_t,    ### moment_of_intertia_dot_star1
-                unit_m*unit_l**2/unit_t,    ### moment_of_intertia_dot_star2
-                unit_m*unit_l**2/unit_t,    ### moment_of_intertia_dot_star3
+                unit_m*unit_l**2,           ### moment_of_inertia_star1
+                unit_m*unit_l**2,           ### moment_of_inertia_star2
+                unit_m*unit_l**2,           ### moment_of_inertia_star3
+                unit_m*unit_l**2/unit_t,    ### moment_of_inertia_dot_star1
+                unit_m*unit_l**2/unit_t,    ### moment_of_inertia_dot_star2
+                unit_m*unit_l**2/unit_t,    ### moment_of_inertia_dot_star3
 #                1.0/units.s,                ### k_div_T_tides_star1
 #                1.0/units.s,                ### k_div_T_tides_star2
 #                1.0/units.s,                ### k_div_T_tides_star3                                
@@ -1471,45 +1471,48 @@ class SecularTriple(InCodeComponentImplementation):
         
         return R_L_star1,R_L_star2,R_L_star3
 
-    def compute_effect_of_SN_on_triple(self,triple,vkick_1,vkick_2,vkick_3,delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly):
-        inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
-        m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary,triple)
+    def compute_effect_of_SN_on_triple(self,vkick_1,vkick_2,vkick_3,delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly):
+        triples = self.triples
         
-        print 'PRE orb',a_in.value_in(units.AU),a_out.value_in(units.AU),e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out
-        
-        ### pre-SN -- from orbital elements to orbital vectors ###
-        e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z = self.compute_orbital_vectors_from_orbital_elements(m1,m2,m3,a_in,a_out,e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out)
-        
-        print 'PRE vec',e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z
-        
-        ### effect of SN on orbital vectors ###
-        e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
-            h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime = \
-            self.compute_effect_of_SN_on_orbital_vectors(m1,m2,m3,e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z, \
-                h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z, \
-                vkick_1[0],vkick_1[1],vkick_1[2],vkick_2[0],vkick_2[1],vkick_2[2],vkick_3[0],vkick_3[1],vkick_3[2],
-                delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly)
-        
-        print 'POST vec',e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
-            h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime
-        
-        ### post-SN -- from orbital vectors to orbital elements (with new reference frame) ###
-        a_in_prime,a_out_prime,e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime = \
-            self.compute_orbital_elements_from_orbital_vectors(m1,m2,m3,e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime, \
-            e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime,h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime, \
-            h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime)
-        
-        print 'POST orb',a_in_prime.value_in(units.AU),a_out_prime.value_in(units.AU),e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime
-
-        inner_binary.semimajor_axis = a_in_prime
-        inner_binary.eccentricity = e_in_prime
-        outer_binary.semimajor_axis = a_out_prime
-        outer_binary.eccentricity = e_out_prime
-        triple.relative_inclination = INCL_rel_prime
-        inner_binary.argument_of_pericenter = AP_in_prime
-        outer_binary.argument_of_pericenter = AP_out_prime
-        inner_binary.longitude_of_ascending_node = LAN_in_prime
-        outer_binary.longitude_of_ascending_node = LAN_out_prime
+        for index_triple, triple in enumerate(triples):
+            inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
+            m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary,triple)
+            
+            print 'PRE orb',a_in.value_in(units.AU),a_out.value_in(units.AU),e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out
+            
+            ### pre-SN -- from orbital elements to orbital vectors ###
+            e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z = self.compute_orbital_vectors_from_orbital_elements(m1,m2,m3,a_in,a_out,e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out)
+            
+            print 'PRE vec',e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z
+            
+            ### effect of SN on orbital vectors ###
+            e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
+                h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime = \
+                self.compute_effect_of_SN_on_orbital_vectors(m1,m2,m3,e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z, \
+                    h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z, \
+                    vkick_1[0],vkick_1[1],vkick_1[2],vkick_2[0],vkick_2[1],vkick_2[2],vkick_3[0],vkick_3[1],vkick_3[2],
+                    delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly)
+            
+            print 'POST vec',e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
+                h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime
+            
+            ### post-SN -- from orbital vectors to orbital elements (with new reference frame) ###
+            a_in_prime,a_out_prime,e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime = \
+                self.compute_orbital_elements_from_orbital_vectors(m1,m2,m3,e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime, \
+                e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime,h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime, \
+                h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime)
+            
+            print 'POST orb',a_in_prime.value_in(units.AU),a_out_prime.value_in(units.AU),e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime
+    
+            inner_binary.semimajor_axis = a_in_prime
+            inner_binary.eccentricity = e_in_prime
+            outer_binary.semimajor_axis = a_out_prime
+            outer_binary.eccentricity = e_out_prime
+            triple.relative_inclination = INCL_rel_prime
+            inner_binary.argument_of_pericenter = AP_in_prime
+            outer_binary.argument_of_pericenter = AP_out_prime
+            inner_binary.longitude_of_ascending_node = LAN_in_prime
+            outer_binary.longitude_of_ascending_node = LAN_out_prime
 
 def print_CVODE_output(CVODE_flag):
 
@@ -1745,10 +1748,10 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
             exit(-1)
 
     ### spin-radius-mass coupling ###
-#    moment_of_inertia_star1 = moment_of_inertia_star2 = moment_of_inertia_star3 = 0.0 | units.MSun*units.RSun**2
+    moment_of_inertia_star1 = moment_of_inertia_star2 = moment_of_inertia_star3 = 0.0 | units.MSun*units.RSun**2
+    moment_of_inertia_dot_star1 = moment_of_inertia_dot_star2 = moment_of_inertia_dot_star3 = 0.0 | units.MSun*units.RSun**2/units.yr
+#    moment_of_inertia_star1 = moment_of_inertia_star2 = moment_of_inertia_star3 = 1.0e8 | units.MSun*units.RSun**2
 #    moment_of_inertia_dot_star1 = moment_of_inertia_dot_star2 = moment_of_inertia_dot_star3 = 0.0 | units.MSun*units.RSun**2/units.yr
-    moment_of_inertia_star1 = moment_of_inertia_star2 = moment_of_inertia_star3 = 1.0 | units.MSun*units.RSun**2
-    moment_of_inertia_dot_star1 = moment_of_inertia_dot_star2 = moment_of_inertia_dot_star3 = 1.0 | units.MSun*units.RSun**2/units.yr
     inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2 = inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1 = 0.0
     if parameters.include_spin_radius_mass_coupling_terms == True:
         try:
@@ -1761,12 +1764,12 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
             time_derivative_of_radius_star1 = star1.time_derivative_of_radius
             time_derivative_of_radius_star2 = star2.time_derivative_of_radius
             time_derivative_of_radius_star3 = star3.time_derivative_of_radius
-#            moment_of_inertia_star1 = star1.moment_of_inertia_of_star
-#            moment_of_inertia_star2 = star2.moment_of_inertia_of_star
-#            moment_of_inertia_star3 = star3.moment_of_inertia_of_star
-#            moment_of_inertia_dot_star1 = star1.time_derivative_of_moment_of_inertia
-#            moment_of_inertia_dot_star2 = star2.time_derivative_of_moment_of_inertia
-#            moment_of_inertia_dot_star3 = star3.time_derivative_of_moment_of_inertia
+            moment_of_inertia_star1 = star1.moment_of_inertia_of_star
+            moment_of_inertia_star2 = star2.moment_of_inertia_of_star
+            moment_of_inertia_star3 = star3.moment_of_inertia_of_star
+            moment_of_inertia_dot_star1 = star1.time_derivative_of_moment_of_inertia
+            moment_of_inertia_dot_star2 = star2.time_derivative_of_moment_of_inertia
+            moment_of_inertia_dot_star3 = star3.time_derivative_of_moment_of_inertia
 #            inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2 = inner_binary.spin_angular_momentum_wind_accretion_efficiency_child1_to_child2
 #            inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1 = inner_binary.spin_angular_momentum_wind_accretion_efficiency_child2_to_child1
         except AttributeError:

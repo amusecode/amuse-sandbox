@@ -52,8 +52,8 @@ int evolve(
     double spin_angular_frequency1, double spin_angular_frequency2, double spin_angular_frequency3,
     double AMC_star1, double AMC_star2, double AMC_star3,
     double gyration_radius_star1, double gyration_radius_star2, double gyration_radius_star3,
-    double moment_of_intertia_star1, double moment_of_intertia_star2, double moment_of_intertia_star3,
-    double moment_of_intertia_dot_star1, double moment_of_intertia_dot_star2, double moment_of_intertia_dot_star3,
+    double moment_of_inertia_star1, double moment_of_inertia_star2, double moment_of_inertia_star3,
+    double moment_of_inertia_dot_star1, double moment_of_inertia_dot_star2, double moment_of_inertia_dot_star3,
 //    double k_div_T_tides_star1, double k_div_T_tides_star2, double k_div_T_tides_star3,
     double a_in, double a_out,
     double e_in, double e_out,
@@ -135,12 +135,12 @@ int evolve(
     data->luminosity_star1 = luminosity_star1;
     data->luminosity_star2 = luminosity_star2;
     data->luminosity_star3 = luminosity_star3;
-    data->moment_of_intertia_star1 = moment_of_intertia_star1;
-    data->moment_of_intertia_star2 = moment_of_intertia_star2;
-    data->moment_of_intertia_star3 = moment_of_intertia_star3;
-    data->moment_of_intertia_dot_star1 = moment_of_intertia_dot_star1;
-    data->moment_of_intertia_dot_star2 = moment_of_intertia_dot_star2;
-    data->moment_of_intertia_dot_star3 = moment_of_intertia_dot_star3;
+    data->moment_of_inertia_star1 = moment_of_inertia_star1;
+    data->moment_of_inertia_star2 = moment_of_inertia_star2;
+    data->moment_of_inertia_star3 = moment_of_inertia_star3;
+    data->moment_of_inertia_dot_star1 = moment_of_inertia_dot_star1;
+    data->moment_of_inertia_dot_star2 = moment_of_inertia_dot_star2;
+    data->moment_of_inertia_dot_star3 = moment_of_inertia_dot_star3;
 
 //    data->k_div_T_tides_star1 = k_div_T_tides_star1; // tidal dissipation constant
 //    data->k_div_T_tides_star2 = k_div_T_tides_star2; // tidal dissipation constant
@@ -199,7 +199,7 @@ int evolve(
 	cvode_mem = NULL;
 
     int NEQ;
-    double e_in_vec[3], e_out_vec[3], h_in_vec[3], h_out_vec[3], q_in_vec[3], q_out_vec[3];    
+//    double e_in_vec[3], e_out_vec[3], h_in_vec[3], h_out_vec[3], q_in_vec[3], q_out_vec[3];    
     double cos_INCL_in = cos(INCL_in);
     double cos_INCL_out = cos(INCL_out);
     double sin_INCL_in = sin(INCL_in);

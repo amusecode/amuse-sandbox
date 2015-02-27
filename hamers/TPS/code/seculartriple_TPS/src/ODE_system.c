@@ -45,12 +45,12 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     gyration_radius_star2 = set_crude_gyration_radii_based_on_stellar_structure(stellar_type2,m2);
     gyration_radius_star3 = set_crude_gyration_radii_based_on_stellar_structure(stellar_type3,m3);
     
-    double moment_of_intertia_star1 = data->moment_of_intertia_star1;
-    double moment_of_intertia_star2 = data->moment_of_intertia_star2;
-    double moment_of_intertia_star3 = data->moment_of_intertia_star3;
-    double moment_of_intertia_dot_star1 = data->moment_of_intertia_dot_star1;
-    double moment_of_intertia_dot_star2 = data->moment_of_intertia_dot_star2;
-    double moment_of_intertia_dot_star3 = data->moment_of_intertia_dot_star3;
+    double moment_of_inertia_star1 = data->moment_of_inertia_star1;
+    double moment_of_inertia_star2 = data->moment_of_inertia_star2;
+    double moment_of_inertia_star3 = data->moment_of_inertia_star3;
+    double moment_of_inertia_dot_star1 = data->moment_of_inertia_dot_star1;
+    double moment_of_inertia_dot_star2 = data->moment_of_inertia_dot_star2;
+    double moment_of_inertia_dot_star3 = data->moment_of_inertia_dot_star3;
 
     /* NOTE: k_div_T_tides_stari is not assumed to be constant during the integration */
 //    double k_div_T_tides_star1 = data->k_div_T_tides_star1; // AMC divided by tidal dissipation time-scale
@@ -87,10 +87,12 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double R3_dot = data->time_derivative_of_radius_star3;
     double inner_mass_transfer_rate = data->inner_mass_transfer_rate;
     double outer_mass_transfer_rate = data->outer_mass_transfer_rate;
-    double inner_accretion_efficiency_wind_child1_to_child2 = data->inner_accretion_efficiency_wind_child1_to_child2;
-    double inner_accretion_efficiency_wind_child2_to_child1 = data->inner_accretion_efficiency_wind_child2_to_child1;
-    double outer_accretion_efficiency_wind_child1_to_child2 = data->outer_accretion_efficiency_wind_child1_to_child2;
-    double outer_accretion_efficiency_wind_child2_to_child1 = data->outer_accretion_efficiency_wind_child2_to_child1;
+    double inner_accretion_efficiency_wind_star1_to_star2 = data->inner_accretion_efficiency_wind_child1_to_child2;
+    double inner_accretion_efficiency_wind_star2_to_star1 = data->inner_accretion_efficiency_wind_child2_to_child1;
+    double outer_accretion_efficiency_wind_star1_to_star3 = data->outer_accretion_efficiency_wind_child2_to_child1; /* temporary */
+    double outer_accretion_efficiency_wind_star2_to_star3 = data->outer_accretion_efficiency_wind_child2_to_child1; /* temporary */
+    double outer_accretion_efficiency_wind_star3_to_inner_binary = data->outer_accretion_efficiency_wind_child1_to_child2;
+    
     double inner_accretion_efficiency_mass_transfer = data->inner_accretion_efficiency_mass_transfer;
     double outer_accretion_efficiency_mass_transfer = data->outer_accretion_efficiency_mass_transfer;
     double inner_specific_AM_loss_mass_transfer = data->inner_specific_AM_loss_mass_transfer;
@@ -115,8 +117,8 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double m2_dot = wind_mass_loss_rate_star2;
     double m3_dot = wind_mass_loss_rate_star3;
 
-    m1_dot += -inner_accretion_efficiency_wind_child2_to_child1*wind_mass_loss_rate_star2; // wind from star2 to star1; minus sign because wind mass loss rates are always negative
-    m2_dot += -inner_accretion_efficiency_wind_child1_to_child2*wind_mass_loss_rate_star1; // wind from star1 to star2; minus sign because wind mass loss rates are always negative    
+    m1_dot += -inner_accretion_efficiency_wind_star2_to_star1*wind_mass_loss_rate_star2; // wind from star2 to star1; minus sign because wind mass loss rates are always negative
+    m2_dot += -inner_accretion_efficiency_wind_star1_to_star2*wind_mass_loss_rate_star1; // wind from star1 to star2; minus sign because wind mass loss rates are always negative    
     
     /* mass transfer */
     double temp = inner_accretion_efficiency_mass_transfer*inner_mass_transfer_rate;
@@ -530,6 +532,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
      * *****************************/
      
     /* Newtonian point particle -- up and including octupole order */
+    /* 2013MNRAS.431.2155N Eq. B8 */
 	double h_in_dot_newtonian = -3.0*C2*(G_tot/(G_in*G_out*sinitot))*(2.0 + 3.0*e_in_p2 - 5.0*e_in_p2*cos_2g_in)*2.0*sinitot*cositot \
         - C3*e_in*e_out*(G_tot/(G_in*G_out))*(5.0*B*cositot*cosphi - A*sin_g_in*sin_g_out + 10.0*(1.0 - 3.0*cositot_p2)*l_in_p2*sin_g_in*sin_g_out);
     Ith(ydot,5) = h_in_dot_newtonian;
@@ -562,8 +565,9 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double a_in_dot_wind=0.0;
     if (include_inner_wind_terms == TRUE)
     {
-        double a_in_dot_wind_star1 = f_a_dot_mass_variations_fast_and_isotropic_wind(m1,wind_mass_loss_rate_star1,m2,a_in,inner_accretion_efficiency_wind_child1_to_child2);
-        double a_in_dot_wind_star2 = f_a_dot_mass_variations_fast_and_isotropic_wind(m2,wind_mass_loss_rate_star2,m1,a_in,inner_accretion_efficiency_wind_child2_to_child1);
+        /* here, it is assumed that mass lost from star3 does not affect the inner orbit */
+        double a_in_dot_wind_star1 = f_a_dot_mass_variations_fast_and_isotropic_wind(m1,wind_mass_loss_rate_star1,m2,a_in,inner_accretion_efficiency_wind_star1_to_star2);
+        double a_in_dot_wind_star2 = f_a_dot_mass_variations_fast_and_isotropic_wind(m2,wind_mass_loss_rate_star2,m1,a_in,inner_accretion_efficiency_wind_star2_to_star1);
         a_in_dot_wind = a_in_dot_wind_star1 + a_in_dot_wind_star2;
     }
     
@@ -599,7 +603,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 
 
     /*******************************
-     * a_out_dot                   *
+     * a_out_dot                   *outer_accretion_efficiency_wind_star1_to_star3
      * *****************************/
 
     /* post-Newtonian point particle */  
@@ -622,12 +626,26 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double a_out_dot_wind=0.0;
     if (include_outer_wind_terms == TRUE)
     {
-        double m_dot_lost_from_inner_binary = wind_mass_loss_rate_star1*(1.0-inner_accretion_efficiency_wind_child1_to_child2) \
-            + wind_mass_loss_rate_star2*(1.0-inner_accretion_efficiency_wind_child2_to_child1) \
-            + inner_mass_transfer_rate*(1.0-inner_accretion_efficiency_mass_transfer);
+        /* a_out_dot due to wind mass loss of star3, where part is accreted by the inner binary (treated as point mass) */
+        double a_out_dot_wind_star3 = f_a_dot_mass_variations_fast_and_isotropic_wind(m3,wind_mass_loss_rate_star3,m1+m2,a_out,outer_accretion_efficiency_wind_star3_to_inner_binary);
 
-        double a_out_dot_wind_star3 = f_a_dot_mass_variations_fast_and_isotropic_wind(m3,wind_mass_loss_rate_star3,m1+m2,a_out,outer_accretion_efficiency_wind_child1_to_child2);
-        double a_out_dot_wind_inner_binary = f_a_dot_mass_variations_fast_and_isotropic_wind(m1+m2,m_dot_lost_from_inner_binary,m3,a_out,outer_accretion_efficiency_wind_child2_to_child1);
+        /* a_out_dot due to wind mass loss from the inner binary (treated as a point mass) to star3 */
+        /* here, it is assumed that wind material from the inner binary can be accreted by star3, but not material due to nonconservative mass transfer in the inner binary */
+        double m_dot_lost_from_inner_binary = \
+            + wind_mass_loss_rate_star1*(1.0-inner_accretion_efficiency_wind_star1_to_star2) \
+            + wind_mass_loss_rate_star2*(1.0-inner_accretion_efficiency_wind_star2_to_star1) \
+            + inner_mass_transfer_rate*(1.0-inner_accretion_efficiency_mass_transfer);
+        double m_dot_accreted_by_star3_from_inner_binary_winds = \
+            + wind_mass_loss_rate_star1*(1.0-inner_accretion_efficiency_wind_star1_to_star2)*outer_accretion_efficiency_wind_star1_to_star3 \
+            + wind_mass_loss_rate_star2*(1.0-inner_accretion_efficiency_wind_star2_to_star1)*outer_accretion_efficiency_wind_star2_to_star3;
+
+        double a_out_dot_wind_inner_binary = 0.0;
+        if (m_dot_lost_from_inner_binary > 0.0)
+        {
+            double effective_accretion_efficiency_wind_inner_binary_to_star3 = m_dot_accreted_by_star3_from_inner_binary_winds/m_dot_lost_from_inner_binary;
+
+            a_out_dot_wind_inner_binary = f_a_dot_mass_variations_fast_and_isotropic_wind(m1+m2,m_dot_lost_from_inner_binary,m3,a_out,effective_accretion_efficiency_wind_inner_binary_to_star3);
+        }
         a_out_dot_wind = a_out_dot_wind_star3 + a_out_dot_wind_inner_binary;
     }
     
@@ -676,16 +694,20 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     {
         spin_angular_frequency1_dot_magnetic_braking = spin_angular_frequency_dot_magnetic_braking(spin_angular_frequency1,m1,wind_mass_loss_rate_star1,gyration_radius_star1,R1,R1_dot);
     }
-    double spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes = 0.0;
+    double spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes=0.0;
+    double spin_angular_frequency1_dot_accretion_from_companions=0.0;
     if (include_spin_radius_mass_coupling_terms == TRUE)
     {
-//        spin_angular_frequency1_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency1,m1,m1_dot,R1,R1_dot);
-        double m_dot_accreted_by_star1 = m1_dot - wind_mass_loss_rate_star1;
-        spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency1,spin_angular_frequency2,m1,R1,R2,moment_of_intertia_star1,moment_of_intertia_dot_star1, wind_mass_loss_rate_star1, m_dot_accreted_by_star1, inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1);
+        /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */
+        spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency1,m1,R1,moment_of_inertia_star1,moment_of_inertia_dot_star1, wind_mass_loss_rate_star1);
+        
+        /* changes in the spin frequency due to spin AM transferred from the companion -- here, a `spin AM accretion efficiency' of 1 is assumed */
+        /* also, it is assumed that star1 can only receive spin AM from star 2, not star3 */
+        double m_dot_accreted_by_star1_from_wind_of_star2 = -inner_accretion_efficiency_wind_star2_to_star1*wind_mass_loss_rate_star2;
+        spin_angular_frequency1_dot_accretion_from_companions = spin_angular_frequency_dot_accretion_from_companion(moment_of_inertia_star1, m_dot_accreted_by_star1_from_wind_of_star2, spin_angular_frequency2, R2);
     }
 
-
-	Ith(ydot,10) = spin_angular_frequency1_dot_tides + spin_angular_frequency1_dot_magnetic_braking + spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes;
+	Ith(ydot,10) = spin_angular_frequency1_dot_tides + spin_angular_frequency1_dot_magnetic_braking + spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency1_dot_accretion_from_companions;
     
 
     /************************************
@@ -703,14 +725,19 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     {
         spin_angular_frequency2_dot_magnetic_braking = spin_angular_frequency_dot_magnetic_braking(spin_angular_frequency2,m2,wind_mass_loss_rate_star2,gyration_radius_star2,R2,R2_dot);
     }
-    double spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes = 0.0;
+    double spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes=0.0;
+    double spin_angular_frequency2_dot_accretion_from_companions=0.0;
     if (include_spin_radius_mass_coupling_terms == TRUE)
     {
-//        spin_angular_frequency2_dot_mass_radius_changes = spin_angular_frequency2_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency2,m2,m2_dot,R2,R2_dot);
-        double m_dot_accreted_by_star2 = m2_dot - wind_mass_loss_rate_star2;
-        spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency2,spin_angular_frequency1,m2,R2,R1,moment_of_intertia_star2,moment_of_intertia_dot_star2, wind_mass_loss_rate_star2, m_dot_accreted_by_star2, inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2);
+        /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */
+        spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency2,m2,R2,moment_of_inertia_star2,moment_of_inertia_dot_star2, wind_mass_loss_rate_star2);
+
+        /* changes in the spin frequency due to spin AM transferred from the companion -- here, a `spin AM accretion efficiency' of 1 is assumed */
+        /* also, it is assumed that star2 can only receive spin AM from star 1, not star3 */
+        double m_dot_accreted_by_star2_from_wind_of_star1 = -inner_accretion_efficiency_wind_star1_to_star2*wind_mass_loss_rate_star1;
+        spin_angular_frequency2_dot_accretion_from_companions = spin_angular_frequency_dot_accretion_from_companion(moment_of_inertia_star2, m_dot_accreted_by_star2_from_wind_of_star1, spin_angular_frequency1, R1);
     }
-	Ith(ydot,11) = spin_angular_frequency2_dot_tides + spin_angular_frequency2_dot_magnetic_braking + spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes;
+	Ith(ydot,11) = spin_angular_frequency2_dot_tides + spin_angular_frequency2_dot_magnetic_braking + spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency2_dot_accretion_from_companions;
 
 
     /************************************
@@ -728,14 +755,22 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     {
         spin_angular_frequency3_dot_magnetic_braking = spin_angular_frequency_dot_magnetic_braking(spin_angular_frequency3,m3,wind_mass_loss_rate_star3,gyration_radius_star3,R3,R3_dot);
     }
-    double spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes = 0.0;
+    double spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes=0.0;
+    double spin_angular_frequency3_dot_accretion_from_companions=0.0;
     if (include_spin_radius_mass_coupling_terms == TRUE)
     {
-//        spin_angular_frequency3_dot_mass_radius_changes = spin_angular_frequency_dot_mass_radius_changes(spin_angular_frequency3,m3,m3_dot,R3,R3_dot);
-        spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency3,0.0,m3,R3,0.0,moment_of_intertia_star3,moment_of_intertia_dot_star3, wind_mass_loss_rate_star3, 0.0, 0.0);
+        /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */        
+        spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency3,m3,R3,moment_of_inertia_star3,moment_of_inertia_dot_star3, wind_mass_loss_rate_star3);
+
+        /* changes in the spin frequency due to spin AM transferred from the companions in the inner orbit -- here, a `spin AM accretion efficiency' of 1 is assumed */
+        double m_dot_accreted_by_star3_from_wind_of_star1 = -(1.0-inner_accretion_efficiency_wind_star1_to_star2)*outer_accretion_efficiency_wind_star1_to_star3*wind_mass_loss_rate_star1;
+        double m_dot_accreted_by_star3_from_wind_of_star2 = -(1.0-inner_accretion_efficiency_wind_star2_to_star1)*outer_accretion_efficiency_wind_star2_to_star3*wind_mass_loss_rate_star2;
+        
+        spin_angular_frequency3_dot_accretion_from_companions += spin_angular_frequency_dot_accretion_from_companion(moment_of_inertia_star3, m_dot_accreted_by_star3_from_wind_of_star1, spin_angular_frequency1, R1);
+        spin_angular_frequency3_dot_accretion_from_companions += spin_angular_frequency_dot_accretion_from_companion(moment_of_inertia_star3, m_dot_accreted_by_star3_from_wind_of_star2, spin_angular_frequency2, R2);
+        
     }
-	Ith(ydot,12) = spin_angular_frequency3_dot_tides + spin_angular_frequency3_dot_magnetic_braking + spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes;
-    
+	Ith(ydot,12) = spin_angular_frequency3_dot_tides + spin_angular_frequency3_dot_magnetic_braking + spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency3_dot_accretion_from_companions;
 	return 0;
 }
 
@@ -785,11 +820,21 @@ double spin_angular_frequency_dot_mass_radius_changes(double spin_angular_freque
 {
     return -spin_angular_frequency*(m_dot/m + 2.0*R_dot/R);
 }
-double spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(double spin_angular_frequency, double companion_spin_angular_frequency, double mass, double radius, double companion_radius, double moment_of_inertia, double moment_of_inertia_dot, double m_dot_wind, double m_dot_accretion, double spin_angular_momentum_wind_accretion_efficiency_companion_to_primary)
+
+/* effect of moment of inertia changes & wind mass loss on stellar spin */
+double spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(double spin_angular_frequency, double mass, double radius, double moment_of_inertia, double moment_of_inertia_dot, double m_dot_wind)
 {
-    return spin_angular_frequency*(c_2div3*m_dot_wind*radius*radius/moment_of_inertia - moment_of_inertia_dot/moment_of_inertia) + companion_spin_angular_frequency*c_2div3*spin_angular_momentum_wind_accretion_efficiency_companion_to_primary*m_dot_accretion*companion_radius*companion_radius/moment_of_inertia;
+    
+    return spin_angular_frequency*(c_2div3*m_dot_wind*radius*radius/moment_of_inertia - moment_of_inertia_dot/moment_of_inertia);
 }
 
+/* effect wind mass accretion from companion on spin */
+double spin_angular_frequency_dot_accretion_from_companion(double moment_of_inertia, double m_dot_accretion, double companion_spin_angular_frequency, double companion_radius)
+{
+    double spin_angular_momentum_wind_accretion_efficiency_companion_to_primary = 1.0; /* working assumption */
+    
+    return companion_spin_angular_frequency*c_2div3*spin_angular_momentum_wind_accretion_efficiency_companion_to_primary*m_dot_accretion*companion_radius*companion_radius/moment_of_inertia;
+}
 
 /* effect of mass variations on orbit */
 double f_a_dot_mass_variations(double m_donor, double m_donor_dot, double m_accretor, double a, double beta, double gamma)
@@ -797,6 +842,7 @@ double f_a_dot_mass_variations(double m_donor, double m_donor_dot, double m_accr
     /* Lectore notes on binary evolution by Onno Pols -- chapter 7 Eq. 7.14 */
     return -2.0*a*(m_donor_dot/m_donor)*(1.0 - beta*(m_donor/m_accretor) - (1.0-beta)*(gamma + c_1div2)*m_donor/(m_donor+m_accretor) );
 }
+
 double f_a_dot_mass_variations_fast_and_isotropic_wind(double m_donor, double m_donor_dot, double m_accretor, double a, double beta)
 {
     /* Lectore notes on binary evolution by Onno Pols -- chapter 7 Eq. 7.14 */

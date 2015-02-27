@@ -7,9 +7,12 @@ double f_tides4(double e_p2);
 double f_tides5(double e_p2);
 double f_25PN_e(double e_p2);
 double f_25PN_a(double e_p2);
+
 double spin_angular_frequency_dot_magnetic_braking(double spin_angular_frequency, double mass, double wind_mass_loss_rate, double gyration_radius, double radius, double radius_dot);
 double spin_angular_frequency_dot_mass_radius_changes(double spin_angular_frequency, double m, double m_dot, double R, double R_dot);
-double spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(double spin_angular_frequency, double companion_spin_angular_frequency, double mass, double radius, double companion_radius, double moment_of_inertia, double moment_of_inertia_dot, double m_dot_wind, double m_dot_accretion, double spin_angular_momentum_wind_accretion_efficiency_companion_to_primary);
+double spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(double spin_angular_frequency, double mass, double radius, double moment_of_inertia, double moment_of_inertia_dot, double m_dot_wind);
+double spin_angular_frequency_dot_accretion_from_companion(double moment_of_inertia, double m_dot_accretion, double companion_spin_angular_frequency, double companion_radius);
+
 double f_a_dot_mass_variations(double m_donor, double m_donor_dot, double m_accretor, double a, double beta, double gamma);
 double f_a_dot_mass_variations_fast_and_isotropic_wind(double m_donor, double m_donor_dot, double m_accretor, double a, double beta);
 int froot_delaunay(realtype t, N_Vector yev, realtype *gout, void *data);

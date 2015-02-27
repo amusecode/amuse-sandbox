@@ -122,8 +122,8 @@ typedef struct {
     double luminosity_star1,luminosity_star2,luminosity_star3;
     double gyration_radius_star1,gyration_radius_star2,gyration_radius_star3;
     double k_div_T_tides_star1,k_div_T_tides_star2,k_div_T_tides_star3;
-    double moment_of_intertia_star1,moment_of_intertia_star2,moment_of_intertia_star3;
-    double moment_of_intertia_dot_star1,moment_of_intertia_dot_star2,moment_of_intertia_dot_star3;
+    double moment_of_inertia_star1,moment_of_inertia_star2,moment_of_inertia_star3;
+    double moment_of_inertia_dot_star1,moment_of_inertia_dot_star2,moment_of_inertia_dot_star3;
     
     bool star1_is_donor,star2_is_donor,star3_is_donor;
     double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
@@ -148,8 +148,8 @@ int evolve(
     double spin_angular_frequency1, double spin_angular_frequency2, double spin_angular_frequency3,
     double AMC_star1, double AMC_star2, double AMC_star3,
     double gyration_radius_star1, double gyration_radius_star2, double gyration_radius_star3,
-    double moment_of_intertia_star1, double moment_of_intertia_star2, double moment_of_intertia_star3,
-    double moment_of_intertia_dot_star1, double moment_of_intertia_dot_star2, double moment_of_intertia_dot_star3,
+    double moment_of_inertia_star1, double moment_of_inertia_star2, double moment_of_inertia_star3,
+    double moment_of_inertia_dot_star1, double moment_of_inertia_dot_star2, double moment_of_inertia_dot_star3,
 //    double k_div_T_tides_star1, double k_div_T_tides_star2, double k_div_T_tides_star3,
     double a_in, double a_out,
     double e_in, double e_out,
