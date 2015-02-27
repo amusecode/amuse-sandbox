@@ -160,6 +160,10 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 //        printf("R2 %g R2_dot*t_dif %g %g \n",R2,R2_dot*t_dif,t_dif);                
     }
 
+    moment_of_inertia_star1 += moment_of_inertia_dot_star1*t_dif;
+    moment_of_inertia_star2 += moment_of_inertia_dot_star2*t_dif;
+    moment_of_inertia_star3 += moment_of_inertia_dot_star3*t_dif;
+
 	/*	the ODE variables	*/
 	double x = Ith(yev,1); // log_10(1-e_in)
 	double y = Ith(yev,2); // log_10(1-e_out)
