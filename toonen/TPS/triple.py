@@ -424,7 +424,7 @@ class Triple_Class:
             self.triple.child1.time_derivative_of_moment_of_inertia = 0.0 | units.RSun/units.yr
         else:     
             if stellar_system.is_star:
-                stellar_system.time_derivative_of_moment_of_inertia = (stellar_system.moment_of_inertia - stellar_system.previous_moment_of_inertia)/time_step
+                stellar_system.time_derivative_of_moment_of_inertia = (stellar_system.moment_of_inertia_of_star - stellar_system.previous_moment_of_inertia_of_star)/time_step
             else:
                 self.update_time_derivative_of_moment_of_inertia(stellar_system.child1)        
                 self.update_time_derivative_of_moment_of_inertia(stellar_system.child2)
@@ -1215,9 +1215,10 @@ class Triple_Class:
         if REPORT_DT:
             print "Dt = ", self.stellar_code.particles.time_step, self.tend/100.0
 
+# redundant???
 #        during unstable mass transfer, contact_system or other instantaneous interactions: no step in time
         if self.has_donor() and (not self.is_system_stable() or self.has_contact_system()):
-            return minimum_time_step#0.0|units.yr -> problem for time_derivative_of_radius         
+            return minimum_time_step#0.0|units.yr -> problem for time_derivative_of_radius  
                        
         #maximum time_step            
         time_step_max = self.tend - self.time
@@ -1242,6 +1243,8 @@ class Triple_Class:
         if self.has_donor():
 #            print time_step, self.determine_time_step_stable_mt()
             time_step = min(time_step, self.determine_time_step_stable_mt())
+            if REPORT_DT or REPORT_TRIPLE_EVOLUTION or REPORT_DEBUG:
+                print 'donor time:',  self.determine_time_step_stable_mt()
 #        else:
 #            #during run-up towards mass transfer 
 #            close_to_RLOF_bool, ratio_rad_rlof, time_step_close_to_mt = self.close_to_RLOF()     
@@ -1714,7 +1717,6 @@ class Triple_Class:
             else:
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'skip secular', self.instantaneous_evolution, self.first_contact        
-                    print self.instantaneous_evolution, self.first_contact
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 

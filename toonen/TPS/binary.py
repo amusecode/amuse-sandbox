@@ -168,6 +168,8 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         #check if star changes type     
         donor_in_stellar_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
         self.channel_from_stellar.copy()
+        donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
+        accretor.moment_of_inertia_of_star = self.moment_of_inertia(accretor)        
 
         bs.semimajor_axis = a_new
         bs.eccentricity = minimum_eccentricity
@@ -230,6 +232,8 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         #check if star changes type     
         donor_in_stellar_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
         self.channel_from_stellar.copy()
+        donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
+        accretor.moment_of_inertia_of_star = self.moment_of_inertia(accretor)        
 
         bs.semimajor_axis = a_new
         bs.eccentricity = minimum_eccentricity
@@ -295,6 +299,8 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         accretor_in_stellar_code = accretor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
         accretor_in_stellar_code.change_mass(-1*accretor.envelope_mass, 0.|units.yr)    
         self.channel_from_stellar.copy()
+        donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
+        accretor.moment_of_inertia_of_star = self.moment_of_inertia(accretor)        
 
         bs.semimajor_axis = a_new
         bs.eccentricity = minimum_eccentricity

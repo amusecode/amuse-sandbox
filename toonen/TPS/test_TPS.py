@@ -3,6 +3,7 @@ from amuse.units import units, constants
 import numpy as np
 
 import triple
+#import triple_nokozaidt as triple
 test_asserts = True #False
 
 
@@ -679,7 +680,7 @@ class TestSeBa(TestWithMPI):
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
 #        T_end = 11050|units.Myr 
-        T_end = 12500|units.Myr #SecularTriple -- unrecoverable error occurred during secular integration (CVODE_flag  -4 ):  convergence test failures occurred too many times during one internal time-step or minimum step size was reached. Error in secular code at time/Myr =  11594.7250756 
+        T_end = 12500|units.Myr 
         dr = 0.005 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr)
 
@@ -762,7 +763,8 @@ class TestSeBa(TestWithMPI):
         i = 0*np.pi/180.0
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
-        T_end = 12250|units.Myr 
+        T_end = 13500 |units.Myr
+#        T_end = 12250|units.Myr 
         dr = 0.005 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr)
 
@@ -1157,10 +1159,10 @@ if __name__ == '__main__':
     test = TestSeBa()
 
 #test set up
-    test.test0()
-    test.test1()
-#
-##test wind mass loss inner system
+#    test.test0()
+#    test.test1()
+##
+###test wind mass loss inner system
 #    test.test2()
 #    test.test2_alt()
 #    test.test3()
@@ -1168,8 +1170,8 @@ if __name__ == '__main__':
 ##
 ###test wind mass loss outer system
 #    test.test5()
-#
-##test stable mass transfer in inner system 
+##
+###test stable mass transfer in inner system 
 #    test.test6() 
 #    test.test7()
 #    test.test8()
@@ -1185,7 +1187,7 @@ if __name__ == '__main__':
 #
 #
 ###    #test tides
-#    test.test14() #merger 
+    test.test14() #merger 
 #    test.test15() 
 #    test.test16() # darwin-riemann instability
 #    test.test17() # no darwin-riemann instability

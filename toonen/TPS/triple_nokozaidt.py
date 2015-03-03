@@ -1214,6 +1214,7 @@ class Triple_Class:
         if REPORT_DT:
             print "Dt = ", self.stellar_code.particles.time_step, self.tend/100.0
 
+# redundant???
 #        during unstable mass transfer, contact_system or other instantaneous interactions: no step in time
         if self.has_donor() and (not self.is_system_stable() or self.has_contact_system()):
             return minimum_time_step#0.0|units.yr -> problem for time_derivative_of_radius         
@@ -1242,6 +1243,8 @@ class Triple_Class:
         if self.has_donor():
 #            print time_step, self.determine_time_step_stable_mt()
             time_step = min(time_step, self.determine_time_step_stable_mt())
+            if REPORT_DT or REPORT_TRIPLE_EVOLUTION or REPORT_DEBUG:
+                print 'donor time:',  self.determine_time_step_stable_mt()
 #        else:
 #            #during run-up towards mass transfer 
 #            close_to_RLOF_bool, ratio_rad_rlof, time_step_close_to_mt = self.close_to_RLOF()     
@@ -1722,7 +1725,6 @@ class Triple_Class:
             else:
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'skip secular', self.instantaneous_evolution, self.first_contact        
-                    print self.instantaneous_evolution, self.first_contact
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
@@ -2043,8 +2045,8 @@ def plot_function(triple):
 
     plt.semilogy(times_array_Myr,moi1_array)
     plt.semilogy(times_array_Myr,moi1_array, '.')
-    plt.semilogy(times_array_Myr,m1_array*r1_array**2)
-    plt.semilogy(times_array_Myr,m1_array*r1_array**2, '.')
+    plt.semilogy(times_array_Myr,m1_array*r1_array**2*gy1_array)
+    plt.semilogy(times_array_Myr,m1_array*r1_array**2*gy1_array, '.')
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$moi$')
     plt.savefig('plots/orbit/moment_of_inertia_time_'+generic_name+'_compare_old.pdf')
