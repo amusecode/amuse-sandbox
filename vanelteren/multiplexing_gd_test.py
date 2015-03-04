@@ -85,7 +85,9 @@ class TestMultiplexingGravitationalDynamics(TestWithMPI):
         #particles.index_of_the_set = 0
         print particles
         x.particles.add_particles(particles)
-        print x.particles
+        print x.particles.mass
+        print x.get_mass(1)
+        print x.get_state(1)
         self.assertEquals(len(x.particles), 5)
         self.assertEquals(x.particles[0].mass, 1.0 | nbody_system.mass)
     def test02(self):
@@ -185,9 +187,8 @@ class TestMultiplexingGravitationalDynamics(TestWithMPI):
         #convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         hermite = multiplexing_gd.MultiplexingMercuryCode()
-        hermite.set_code("Mercury")
         try:
-            hermite.parameters.epsilon_squared = 0.0 | units.AU**2
+            #hermite.parameters.epsilon_squared = 0.0 | units.AU**2
             #hermite.parameters.end_time_accuracy_factor = 0.0
 
             stars = self.new_system_of_sun_and_earth()

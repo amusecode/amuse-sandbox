@@ -18,10 +18,25 @@ from collections import namedtuple
 
 from amuse.units import units
 
+from amuse.community.octgrav.interface import Octgrav
+
+from amuse.community.smalln.interface import SmallN
+
+from amuse.community.ph4.interface import ph4
+
+from amuse.community.bhtree.interface import BHTree
+
+from amuse.community.fastkick.interface import FastKick
+
+from amuse.couple.bridge import Bridge
+
+
 class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.GravitationalDynamicsInterface, gd.GravityFieldInterface):
     
-    def __init__(self, **options):
-        PythonCodeInterface.__init__(self, implementation_factory = MultiplexingGravitationalDynamicsImplementation, **options)
+    def __init__(self, implementation_factory = None, **options):
+        if implementation_factory is None:
+            implementation_factory = MultiplexingGravitationalDynamicsImplementation
+        PythonCodeInterface.__init__(self, implementation_factory = implementation_factory, **options)
     
     @legacy_function
     def new_multiplexed_particle():
@@ -47,9 +62,10 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('vx', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
-        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of the particle", default = 0)
+        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of the particle", default = 0 | nbody_system.length)
         function.addParameter('index_of_the_set', dtype='int32', direction=function.IN, description = "The index of the multiplexed set", default = 0)
         function.result_type = 'int32'
+        function.has_units = True
         function.result_doc = """ 0 - OK
             particle was created and added to the model
         -1 - ERROR
@@ -70,6 +86,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
         function.result_type = 'int32'
         function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
             0 - OK
                 particle was removed from the model
@@ -90,6 +107,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
         function.result_type = 'int32'
         function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             particle was found in the model and the information was retreived
@@ -114,6 +132,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.result_type = 'int32'
         function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             current value was retrieved
@@ -139,6 +158,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current z component of the position vector of the particle")
         function.result_type = 'int32'
         function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             current value was retrieved
@@ -158,7 +178,6 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         dynamics particle (mass, radius, position and velocity) is returned.
         """
         function = LegacyFunctionSpecification()
-        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
@@ -170,6 +189,8 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current velocity vector of the particle")
         function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
         function.result_type = 'int32'
+        function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             particle was removed from the model
@@ -190,6 +211,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
         function.result_type = 'int32'
         function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             particle was found in the model and the information was set
@@ -212,6 +234,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle")
         function.result_type = 'int32'
         function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             particle was found in the model and the information was retreived
@@ -234,6 +257,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('z', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
         function.result_type = 'int32'
         function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             particle was found in the model and the information was set
@@ -258,6 +282,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('vz', dtype='float64', direction=function.IN, description = "The current z component of the velocity vector of the particle")
         function.result_type = 'int32'
         function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             current value was retrieved
@@ -277,7 +302,6 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         dynamics particle (mass, radius, position and velocity) is updated.
         """
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
@@ -287,8 +311,10 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
         function.addParameter('vx', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
-        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle", default = 0)
+        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle", default = 0 | nbody_system.length)
         function.result_type = 'int32'
+        function.must_handle_array = True
+        function.has_units = True
         function.result_doc = """
         0 - OK
             particle was found in the model and the information was set
@@ -340,6 +366,106 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
             code name is not known
         """
         return function
+
+
+    @legacy_function
+    def evolve_model():
+        """
+        Evolve the model until the given time, or until a stopping condition is set.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.IN,
+            description = "Model time to evolve the code to. The model will be "
+                "evolved until this time is reached exactly or just after.")
+        function.result_type = 'int32'
+        function.has_units = True
+        return function
+
+    @legacy_function
+    def get_time():
+        """
+        Returns the current model time.
+        """
+        function = LegacyFunctionSpecification()     
+        function.addParameter('value', dtype='float64', direction=function.OUT)     
+        function.result_type = 'i'
+        function.has_units = True
+        return function
+        
+    @legacy_function
+    def get_begin_time():
+        """
+        Retrieve the model time to start the evolution at.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.OUT,
+            description = "The begin time", unit = nbody_system.time)
+        function.result_type = 'int32'
+        function.has_units = True
+        function.result_doc = """
+        0 - OK
+            Current value of the time was retrieved
+        -2 - ERROR
+            The code does not have support for querying the begin time
+        """
+        return function
+    @legacy_function
+    def set_begin_time():
+        """
+        Set the model time to start the evolution at. This is an offset for
+        all further calculations in the code.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.IN,
+            description = "The model time to start at", unit = nbody_system.time)
+        function.result_type = 'int32'
+        function.has_units = True
+        function.result_doc = """
+        0 - OK
+            Time value was changed
+        -2 - ERROR
+            The code does not support setting the begin time
+        """
+        return function
+        
+    @legacy_function
+    def set_eps2():
+        """
+        Update the value of the squared smoothing parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('epsilon_squared', dtype='float64', direction=function.IN,
+            description = "The new value of the smooting parameter, squared.")
+        function.result_type = 'int32'
+        function.has_units = True
+        function.result_doc = """
+        0 - OK
+            Current value of the smoothing parameter was set
+        -1 - ERROR
+            The code does not have support for a smoothing parameter
+        """
+        return function
+    @legacy_function
+    def get_eps2():
+        """
+        Retrieve the current value of the squared smoothing parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('epsilon_squared', dtype='float64', direction=function.OUT,
+            description = "The current value of the smooting parameter, squared.")
+        function.result_type = 'int32'
+        function.has_units = True
+        function.result_doc = """
+        0 - OK
+            Current value of the smoothing parameter was set
+        -1 - ERROR
+            The code does not have support for a smoothing parameter
+        """
+        return function
+
+
+
+
 
 
 class SinglePointGravityFieldInterface(object):
@@ -407,6 +533,11 @@ class MultiplexingGravitationalDynamicsImplementation(object):
         CodeDefinition = namedtuple('CodeDefinition', ['code', 'mass_unit', 'speed_unit', 'length_unit', 'time_unit'])
         self.code_names_to_code_classes = {
             "Hermite": CodeDefinition(Hermite,nbody_system.mass, nbody_system.speed, nbody_system.length, nbody_system.time),
+            "BHTree": CodeDefinition(BHTree,nbody_system.mass, nbody_system.speed, nbody_system.length, nbody_system.time),
+            "SmallN": CodeDefinition(SmallN,nbody_system.mass, nbody_system.speed, nbody_system.length, nbody_system.time),
+            "OctGrav": CodeDefinition(Octgrav,nbody_system.mass, nbody_system.speed, nbody_system.length, nbody_system.time),
+            "ph4": CodeDefinition(ph4,nbody_system.mass, nbody_system.speed, nbody_system.length, nbody_system.time),
+            "FastKick": CodeDefinition(FastKick,nbody_system.mass, nbody_system.speed, nbody_system.length, nbody_system.time),
             "Mercury": CodeDefinition(Mercury,units.MSun, units.AUd, units.AU, units.day)
         }
         self.code = None
@@ -420,14 +551,15 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
     def new_multiplexed_particle(self, index_of_the_particle, mass, x, y, z, vx, vy, vz, radius, index_of_the_set):
         new_particles = datamodel.Particles(len(mass), keys_generator = self.keys_generator)
-        new_particles.mass = mass | self.mass_unit
-        new_particles.x = x | self.length_unit
-        new_particles.y = y | self.length_unit
-        new_particles.z = z | self.length_unit
-        new_particles.vx = vx | self.speed_unit
-        new_particles.vy = vy | self.speed_unit
-        new_particles.vz = vz | self.speed_unit
-        new_particles.radius = radius | self.length_unit
+        print "new_multiplexed_particle", mass
+        new_particles.mass = mass
+        new_particles.x = x
+        new_particles.y = y
+        new_particles.z = z
+        new_particles.vx = vx
+        new_particles.vy = vy
+        new_particles.vz = vz
+        new_particles.radius = radius
         new_particles.index_of_the_set = index_of_the_set
         self.particles.add_particles(new_particles)
         index_of_the_particle.value = new_particles.key
@@ -441,25 +573,25 @@ class MultiplexingGravitationalDynamicsImplementation(object):
             mass.value = [0] * len(index_of_the_particle)
             return -1
         else:
-            mass.value = subset.mass.value_in(self.mass_unit)
+            mass.value = subset.mass
             return 0
         
 
 
     def get_position(self, index_of_the_particle, x, y, z):
         subset = self.select_particles(index_of_the_particle)
-        x.value = subset.x.value_in(self.length_unit)
-        y.value = subset.y.value_in(self.length_unit)
-        z.value = subset.z.value_in(self.length_unit)
+        x.value = subset.x
+        y.value = subset.y
+        z.value = subset.z
         return 0
         
 
 
     def get_velocity(self, index_of_the_particle, vx, vy, vz):
         subset = self.select_particles(index_of_the_particle)
-        vx.value = subset.vx.value_in(self.speed_unit)
-        vy.value = subset.vy.value_in(self.speed_unit)
-        vz.value = subset.vz.value_in(self.speed_unit)
+        vx.value = subset.vx
+        vy.value = subset.vy
+        vz.value = subset.vz
         return 0
         
 
@@ -470,14 +602,14 @@ class MultiplexingGravitationalDynamicsImplementation(object):
         if not len(subset) == len(index_of_the_particle):
             return -1
         else:
-            mass.value = subset.mass.value_in(self.mass_unit)
-            x.value = subset.x.value_in(self.length_unit)
-            y.value = subset.y.value_in(self.length_unit)
-            z.value = subset.z.value_in(self.length_unit)
-            vx.value = subset.vz.value_in(self.speed_unit)
-            vy.value = subset.vy.value_in(self.speed_unit)
-            vz.value = subset.vz.value_in(self.speed_unit)
-            radius.value = subset.radius.value_in(self.length_unit)
+            mass.value = subset.mass
+            x.value = subset.x
+            y.value = subset.y
+            z.value = subset.z
+            vx.value = subset.vz
+            vy.value = subset.vy
+            vz.value = subset.vz
+            radius.value = subset.radius
             return 0
         
 
@@ -488,7 +620,7 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
 
     def set_mass(self, index_of_the_particle, mass):
-        self.particles._subset(index_of_the_particle).mass = mass | self.mass_unit
+        self.particles._subset(index_of_the_particle).mass = mass
         return 0
         
 
@@ -496,9 +628,9 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
     def set_position(self, index_of_the_particle, x, y, z):
         subset = self.select_particles(index_of_the_particle)
-        subset.x = x | self.length_unit
-        subset.y = y | self.length_unit
-        subset.z = z | self.length_unit
+        subset.x = x     
+        subset.y = y
+        subset.z = z
         return 0
         
 
@@ -506,9 +638,9 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
     def set_velocity(self, index_of_the_particle, vx, vy, vz):
         subset = self.select_particles(index_of_the_particle)
-        subset.vx = vx | self.speed_unit
-        subset.vy = vy | self.speed_unit
-        subset.vz = vz | self.speed_unit
+        subset.vx = vx
+        subset.vy = vy     
+        subset.vz = vz     
         return 0
         
 
@@ -516,14 +648,14 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
     def set_state(self, index_of_the_particle, mass, x, y, z, vx, vy, vz, radius):
         subset = self.select_particles(index_of_the_particle)
-        subset.mass = mass | self.mass_unit
-        subset.x = x | self.length_unit
-        subset.y = y | self.length_unit
-        subset.z = z | self.length_unit
-        subset.vz = vz | self.speed_unit
-        subset.vy = vy | self.speed_unit
-        subset.vz = vz | self.speed_unit
-        subset.radius = radius | self.length_unit
+        subset.mass = mass
+        subset.x = x     
+        subset.y = y
+        subset.z = z
+        subset.vz = vz
+        subset.vy = vy
+        subset.vz = vz
+        subset.radius = radius
         return 0
         
 
@@ -575,6 +707,7 @@ class MultiplexingGravitationalDynamicsImplementation(object):
         self.speed_unit = code_definition.speed_unit
         self.length_unit = code_definition.length_unit
         self.time_unit = code_definition.time_unit
+        self.time = self.begin_time
         return 0
         
 
@@ -595,6 +728,7 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
     def get_begin_time(self, time):
         time.value = self.begin_time
+        return 0
         
 
 
@@ -628,32 +762,33 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
 
     def evolve_model(self, time):
-        print "self.time_unit", self.time_unit
+        print "TIME:", time
         if self.code is None:
             factory = self.code_names_to_code_classes[self.name_of_the_code].code
             self.code = factory(redirection="null")#debugger="ddd")
-            self.code.parameters.epsilon_squared = self.epsilon_squared | self.length_unit**2
+            self.code.parameters.epsilon_squared = self.epsilon_squared             
             
         set_indices = numpy.unique(self.particles.index_of_the_set)
         for index in set_indices:
             particles = self.particles[self.particles.index_of_the_set == index]
-            print "index:", index, len(particles)
+            
             self.code.reset()
-            self.code.parameters.begin_time = self.time | self.time_unit
+            self.code.parameters.begin_time = self.time
             self.code.particles.add_particles(particles)
             
-            self.code.evolve_model(time | self.time_unit)
-            print self.code.model_time
+            self.code.evolve_model(time)
+            self.time = max(self.code.model_time, self.time)
             particles.velocity = self.code.particles.velocity
             particles.position = self.code.particles.position
-        self.time = time
+        #self.time = time
         return 0
         
 
 
 
     def get_time(self, time):
-        time.value = self.begin_time
+        time.value = self.time
+        return 0
         
 
 
@@ -663,34 +798,258 @@ class MultiplexingGravitationalDynamicsImplementation(object):
         
 
 
-
 class MultiplexingGravitationalDynamicsCode(gd.GravitationalDynamics):
     
 
-    def __init__(self, unit_converter = None,  **options):
+    def __init__(self, unit_converter = None, remote_code = None, **options):
+        if remote_code is None:
+            remote_code = MultiplexingGravitationalDynamicsInterface()
         
-        remote_code = MultiplexingGravitationalDynamicsInterface()
         gd.GravitationalDynamics.__init__(self, remote_code, unit_converter, **options)
 
     def define_properties(self, object):
+        #gd.GravitationalDynamics.define_properties(self, object)
         object.add_property('get_time', public_name = "model_time")
         
 
     def define_methods(self, object):
-        gd.GravitationalDynamics.define_methods(self, object)
+        common.CommonCode.define_methods(self, object)
+        object.add_method(
+            'evolve_model',
+            (
+                object.UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+
+        object.add_method(
+            "delete_particle",
+            (
+                object.INDEX,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state",
+            (
+                object.INDEX,
+            ),
+            (
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_state",
+            (
+                object.INDEX,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_mass",
+            (
+                object.INDEX,
+                object.UNIT,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_mass",
+            (
+                object.INDEX,
+            ),
+            (
+                object.UNIT,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_radius",
+            (
+                object.INDEX,
+                object.UNIT,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_radius",
+            (
+                object.INDEX,
+            ),
+            (
+                object.UNIT,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_position",
+            (
+                object.INDEX,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_position",
+            (
+                object.INDEX,
+            ),
+            (
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_velocity",
+            (
+                object.INDEX,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_velocity",
+            (
+                object.INDEX,
+            ),
+            (
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.ERROR_CODE
+            )
+        )
+        
+
+        object.add_method(
+            "get_time_step",
+            (),
+            (
+                object.UNIT,
+                object.ERROR_CODE,
+            )
+        )
+
+
+        object.add_method(
+            "get_kinetic_energy",
+            (),
+            (object.UNIT, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_potential_energy",
+            (),
+            (object.UNIT, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_total_radius",
+            (),
+            (object.UNIT, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_center_of_mass_position",
+            (),
+            (object.UNIT,object.UNIT,object.UNIT, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_center_of_mass_velocity",
+            (),
+            (object.UNIT,object.UNIT,object.UNIT, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_total_mass",
+            (),
+            (object.UNIT, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            'get_time',
+            (),
+            (object.UNIT, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "set_begin_time",
+            (
+                object.UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+
+
+        object.add_method(
+            "get_begin_time",
+            (
+            ),
+            (
+                object.UNIT,
+                object.ERROR_CODE,
+            )
+        )
+
         
         object.add_method(
             "new_multiplexed_particle",
             (
-                nbody_system.mass,
-                nbody_system.length,
-                nbody_system.length,
-                nbody_system.length,
-                nbody_system.speed,
-                nbody_system.speed,
-                nbody_system.speed,
-                nbody_system.length,
-                object.INDEX,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
+                object.UNIT,
             ),
             (
                 object.INDEX,
@@ -701,12 +1060,12 @@ class MultiplexingGravitationalDynamicsCode(gd.GravitationalDynamics):
         object.add_method(
             "get_eps2",
             (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+            (object.UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_eps2",
-            (nbody_system.length * nbody_system.length, ),
+            (object.UNIT, ),
             (object.ERROR_CODE,)
         )
 
@@ -754,9 +1113,85 @@ class MultiplexingGravitationalDynamicsCode(gd.GravitationalDynamics):
 
 
 
+class TestParticlesInField(MultiplexingGravitationalDynamicsImplementation):
+    
+    def __init__(self):
+        MultiplexingGravitationalDynamicsImplementation.__init__(self)
+        
+
+
+
+    def commit_parameters(self):
+        MultiplexingGravitationalDynamicsImplementation.commit_parameters(self)
+        
+        return 0
+        
+
+
+
+    def recommit_parameters(self):
+        return 0
+        
+
+
+
+
+    def evolve_model(self, time):
+        if self.code is None:
+            factory = self.code_names_to_code_classes[self.name_of_the_code].code
+            self.code = factory(redirection="null")#debugger="ddd")
+            self.code.parameters.epsilon_squared = self.epsilon_squared | self.length_unit**2
+            
+        set_indices = numpy.unique(self.particles.index_of_the_set)
+        for index in set_indices:
+            particles = self.particles[self.particles.index_of_the_set == index]
+            
+            self.code.reset()
+            self.code.parameters.begin_time = self.time | self.time_unit
+            self.code.particles.add_particles(particles)
+            
+            self.code.evolve_model(time | self.time_unit)
+            self.time = max(self.code.model_time.value_in(self.time_unit), self.time)
+            particles.velocity = self.code.particles.velocity
+            particles.position = self.code.particles.position
+        self.time = time
+        return 0
+        
+
+
+
+    def synchronize_model(self):
+        return 0
+        
+
+
+
+
+
 class MultiplexingMercuryCode(MultiplexingGravitationalDynamicsCode):
     
+    def __init__(self, **options):
+        MultiplexingGravitationalDynamicsCode.__init__(self, unit_converter = None, **options)
+        self.set_code("Mercury")
 
-    def __init__(self, unit_converter = None,  **options):
-        MultiplexingGravitationalDynamicsCode.__init__(self, unit_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(1|units.day, 1|units.AU, 1|units.MSun), **options)
+
+
+
+
+
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_eps2",
+            "set_eps2", 
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            default_value = 0.0 | units.AU**2
+        )
+        object.add_method_parameter(
+            "get_begin_time",
+            "set_begin_time",
+            "begin_time",
+            "model time to start the simulation at",
+            default_value = 0.0 | units.yr
+        )
 
