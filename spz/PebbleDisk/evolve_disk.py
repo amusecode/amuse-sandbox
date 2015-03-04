@@ -12,6 +12,10 @@ def movie(particles):
     pyplot.draw()
     pyplot.cla()
 
+
+
+
+        
 class central_point_mass(object):
     def __init__(self, particle):
         self.particle = particle
