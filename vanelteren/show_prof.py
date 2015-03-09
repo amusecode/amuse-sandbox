@@ -12,3 +12,10 @@ if __name__ == '__main__':
     
     print 'OUTGOING CALLEES:'
     stats.print_callees()
+import profile
+
+import pstats
+
+import sys
+
+
