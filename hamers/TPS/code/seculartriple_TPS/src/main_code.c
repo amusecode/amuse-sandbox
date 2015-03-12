@@ -37,9 +37,11 @@ bool include_spin_radius_mass_coupling_terms;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
 bool include_linear_mass_change,include_linear_radius_change;
 bool check_for_dynamical_stability_at_initialisation = true;
+bool verbose = TRUE;
 double relative_tolerance = 1.0e-10;
 double input_precision = 1.0e-5;
 double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = 1.0e-12;
+double threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero = 1.0e-8;
 int linear_solver = 0;
 
 int evolve(
@@ -124,6 +126,7 @@ int evolve(
     data->include_25PN_outer_terms = include_25PN_outer_terms;
 
     data->threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
+    data->threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero = threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero;
     data->include_inner_tidal_terms = include_inner_tidal_terms;
     data->include_outer_tidal_terms = include_outer_tidal_terms;
     data->AMC_star1 = AMC_star1; // Apsidal Motion Constant
@@ -200,12 +203,16 @@ int evolve(
 
     int NEQ;
 //    double e_in_vec[3], e_out_vec[3], h_in_vec[3], h_out_vec[3], q_in_vec[3], q_out_vec[3];    
+#ifdef IGNORE
     double cos_INCL_in = cos(INCL_in);
     double cos_INCL_out = cos(INCL_out);
     double sin_INCL_in = sin(INCL_in);
     double sin_INCL_out = sin(INCL_out);
     double cos_INCL_in_out = sin_INCL_in*sin_INCL_out*cos(LAN_in-LAN_out) + cos_INCL_in*cos_INCL_out;
     double INCL_in_out = acos(cos_INCL_in_out);
+#endif
+    double INCL_in_out = INCL_in;
+    double cos_INCL_in_out = cos(INCL_in_out);
 
     double start_time = 0.0;
     
@@ -528,54 +535,64 @@ void error_handling_function(int error_code, const char *module, const char *fun
 //    data->stop_after_error_bool = TRUE;
 }
 
-int get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double *threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t)
+int get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double *value)
 {
-    *threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t = threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
+    *value = threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
     return 0;
 }
-int set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t)
+int set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double value)
 {
-    threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t;
+    threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = value;
     return 0;
 }
-int get_equations_of_motion_specification(int *equations_of_motion_specification_t)
+int get_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero(double *value)
 {
-    *equations_of_motion_specification_t = equations_of_motion_specification;
+    *value = threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero;
     return 0;
 }
-int set_equations_of_motion_specification(int equations_of_motion_specification_t)
+int set_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero(double value)
 {
-    equations_of_motion_specification = equations_of_motion_specification_t;
+    threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero = value;
     return 0;
 }
-int get_relative_tolerance(double *relative_tolerance_t)
+int get_equations_of_motion_specification(int *value)
 {
-    *relative_tolerance_t = relative_tolerance;
+    *value = equations_of_motion_specification;
     return 0;
 }
-int set_relative_tolerance(double relative_tolerance_t)
+int set_equations_of_motion_specification(int value)
 {
-    relative_tolerance = relative_tolerance_t;
+    equations_of_motion_specification = value;
     return 0;
 }
-int get_input_precision(double *input_precision_t)
+int get_relative_tolerance(double *value)
 {
-    *input_precision_t = relative_tolerance;
+    *value = relative_tolerance;
     return 0;
 }
-int set_input_precision(double input_precision_t)
+int set_relative_tolerance(double value)
 {
-    input_precision = input_precision_t;
+    relative_tolerance = value;
     return 0;
 }
-int get_linear_solver(int *linear_solver_t)
+int get_input_precision(double *value)
 {
-    *linear_solver_t = linear_solver;
+    *value = relative_tolerance;
     return 0;
 }
-int set_linear_solver(int linear_solver_t)
+int set_input_precision(double value)
 {
-    linear_solver = linear_solver_t;
+    input_precision = value;
+    return 0;
+}
+int get_linear_solver(int *value)
+{
+    *value = linear_solver;
+    return 0;
+}
+int set_linear_solver(int value)
+{
+    linear_solver = value;
     return 0;
 }
 int get_check_for_dynamical_stability(int *value){
@@ -760,5 +777,13 @@ int get_check_for_dynamical_stability_at_initialisation(int *value){
 }
 int set_check_for_dynamical_stability_at_initialisation(int value){
     check_for_dynamical_stability_at_initialisation = value == 1;
+    return 0;
+}
+int get_verbose(int *value){
+    *value = verbose ? 1 : 0;
+    return 0;
+}
+int set_verbose(int value){
+    verbose = value == 1;
     return 0;
 }

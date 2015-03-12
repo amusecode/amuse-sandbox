@@ -101,6 +101,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1 = data->inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1;    
 
     double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = data->threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
+    double threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero = data->threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero;
 
     /******************
      * compute mdots *
@@ -539,6 +540,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     /* 2013MNRAS.431.2155N Eq. B8 */
 	double h_in_dot_newtonian = -3.0*C2*(G_tot/(G_in*G_out*sinitot))*(2.0 + 3.0*e_in_p2 - 5.0*e_in_p2*cos_2g_in)*2.0*sinitot*cositot \
         - C3*e_in*e_out*(G_tot/(G_in*G_out))*(5.0*B*cositot*cosphi - A*sin_g_in*sin_g_out + 10.0*(1.0 - 3.0*cositot_p2)*l_in_p2*sin_g_in*sin_g_out);
+
     Ith(ydot,5) = h_in_dot_newtonian;
     Ith(ydot,6) = h_in_dot_newtonian;
    
@@ -644,7 +646,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
             + wind_mass_loss_rate_star2*(1.0-inner_accretion_efficiency_wind_star2_to_star1)*outer_accretion_efficiency_wind_star2_to_star3;
 
         double a_out_dot_wind_inner_binary = 0.0;
-        if (m_dot_lost_from_inner_binary > 0.0)
+        if (m_dot_lost_from_inner_binary < 0.0)
         {
             double effective_accretion_efficiency_wind_inner_binary_to_star3 = m_dot_accreted_by_star3_from_inner_binary_winds/m_dot_lost_from_inner_binary;
 
@@ -703,12 +705,13 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     if (include_spin_radius_mass_coupling_terms == TRUE)
     {
         /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */
-        spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency1,m1,R1,moment_of_inertia_star1,moment_of_inertia_dot_star1, wind_mass_loss_rate_star1);
+        spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency1,m1,R1,moment_of_inertia_star1,moment_of_inertia_dot_star1, wind_mass_loss_rate_star1,threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero);
         
         /* changes in the spin frequency due to spin AM transferred from the companion -- here, a `spin AM accretion efficiency' of 1 is assumed */
         /* also, it is assumed that star1 can only receive spin AM from star 2, not star3 */
         double m_dot_accreted_by_star1_from_wind_of_star2 = -inner_accretion_efficiency_wind_star2_to_star1*wind_mass_loss_rate_star2;
         spin_angular_frequency1_dot_accretion_from_companions = spin_angular_frequency_dot_accretion_from_companion(moment_of_inertia_star1, m_dot_accreted_by_star1_from_wind_of_star2, spin_angular_frequency2, R2);
+//        printf("dots %g %g %g\n",spin_angular_frequency1,spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes,m_dot_accreted_by_star1_from_wind_of_star2);
     }
 
 	Ith(ydot,10) = spin_angular_frequency1_dot_tides + spin_angular_frequency1_dot_magnetic_braking + spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency1_dot_accretion_from_companions;
@@ -734,7 +737,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     if (include_spin_radius_mass_coupling_terms == TRUE)
     {
         /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */
-        spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency2,m2,R2,moment_of_inertia_star2,moment_of_inertia_dot_star2, wind_mass_loss_rate_star2);
+        spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency2,m2,R2,moment_of_inertia_star2,moment_of_inertia_dot_star2, wind_mass_loss_rate_star2,threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero);
 
         /* changes in the spin frequency due to spin AM transferred from the companion -- here, a `spin AM accretion efficiency' of 1 is assumed */
         /* also, it is assumed that star2 can only receive spin AM from star 1, not star3 */
@@ -764,7 +767,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     if (include_spin_radius_mass_coupling_terms == TRUE)
     {
         /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */        
-        spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency3,m3,R3,moment_of_inertia_star3,moment_of_inertia_dot_star3, wind_mass_loss_rate_star3);
+        spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency3,m3,R3,moment_of_inertia_star3,moment_of_inertia_dot_star3, wind_mass_loss_rate_star3,threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero);
 
         /* changes in the spin frequency due to spin AM transferred from the companions in the inner orbit -- here, a `spin AM accretion efficiency' of 1 is assumed */
         double m_dot_accreted_by_star3_from_wind_of_star1 = -(1.0-inner_accretion_efficiency_wind_star1_to_star2)*outer_accretion_efficiency_wind_star1_to_star3*wind_mass_loss_rate_star1;
@@ -826,10 +829,20 @@ double spin_angular_frequency_dot_mass_radius_changes(double spin_angular_freque
 }
 
 /* effect of moment of inertia changes & wind mass loss on stellar spin */
-double spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(double spin_angular_frequency, double mass, double radius, double moment_of_inertia, double moment_of_inertia_dot, double m_dot_wind)
+double spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(double spin_angular_frequency, double mass, double radius, double moment_of_inertia, double moment_of_inertia_dot, double m_dot_wind, double threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero)
 {
+    double spin_angular_frequency_dot;
+    if (spin_angular_frequency <= threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero)
+    {
+//        printf("threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero %g %g \n",spin_angular_frequency,threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero);
+        spin_angular_frequency_dot = 0.0;
+    }
+    else
+    {
+        spin_angular_frequency_dot =  spin_angular_frequency*(c_2div3*m_dot_wind*radius*radius/moment_of_inertia - moment_of_inertia_dot/moment_of_inertia);
+    }
     
-    return spin_angular_frequency*(c_2div3*m_dot_wind*radius*radius/moment_of_inertia - moment_of_inertia_dot/moment_of_inertia);
+    return spin_angular_frequency_dot;
 }
 
 /* effect wind mass accretion from companion on spin */

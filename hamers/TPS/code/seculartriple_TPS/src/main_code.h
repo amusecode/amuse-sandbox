@@ -127,6 +127,7 @@ typedef struct {
     
     bool star1_is_donor,star2_is_donor,star3_is_donor;
     double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
+    double threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero;
     double wind_mass_loss_rate_star1,wind_mass_loss_rate_star2,wind_mass_loss_rate_star3;
     double time_derivative_of_radius_star1,time_derivative_of_radius_star2,time_derivative_of_radius_star3;
     double inner_mass_transfer_rate,outer_mass_transfer_rate;
@@ -175,10 +176,12 @@ int evolve(
 );
 static int check_flag(void *flagvalue, char *funcname, int opt);
 void error_handling_function(int error_code, const char *module, const char *function, char *message, void *data_f);
-int get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double *threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t);
-int set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero_t);
-int get_equations_of_motion_specification(int *relative_tolerance_t);
-int set_equations_of_motion_specification(int relative_tolerance_t);
+int get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double *value);
+int set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero(double value);
+int get_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero(double *value);
+int set_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero(double value);
+int get_equations_of_motion_specification(int *value);
+int set_equations_of_motion_specification(int value);
 int get_input_precision(double *input_precision_t);
 int set_input_precision(double input_precision_t);
 int get_linear_solver(int *linear_solver_t);
@@ -227,7 +230,9 @@ int get_include_linear_mass_change(int *value);
 int set_include_linear_mass_change(int value);
 int get_include_linear_radius_change(int *value);
 int set_include_linear_radius_change(int value);
-int get_relative_tolerance(double *relative_tolerance_t);
-int set_relative_tolerance(double relative_tolerance_t);
+int get_relative_tolerance(double *value);
+int set_relative_tolerance(double value);
 int get_check_for_dynamical_stability_at_initialisation(int *value);
 int set_check_for_dynamical_stability_at_initialisation(int value);
+int get_verbose(int *value);
+int set_verbose(int value);

@@ -275,389 +275,418 @@ class SecularTripleInterface(CodeInterface):
     @legacy_function
     def get_relative_tolerance():
         function = LegacyFunctionSpecification()
-        function.addParameter('relative_tolerance', dtype='float64',direction=function.OUT,description = "Relative tolerance, default 1e-10")
+        function.addParameter('value', dtype='float64',direction=function.OUT,description = "Relative tolerance, default 1e-10")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_relative_tolerance():
         function = LegacyFunctionSpecification()
-        function.addParameter('relative_tolerance', dtype='float64',direction=function.IN,description = "Relative tolerance, default 1e-10")
+        function.addParameter('value', dtype='float64',direction=function.IN,description = "Relative tolerance, default 1e-10")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero():
         function = LegacyFunctionSpecification()
-        function.addParameter('threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('value', dtype='float64',direction=function.OUT,description = "")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero():
         function = LegacyFunctionSpecification()
-        function.addParameter('threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('value', dtype='float64',direction=function.IN,description = "")
         function.result_type = 'int32'
         return function
 
     @legacy_function
+    def get_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64',direction=function.OUT,description = "")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64',direction=function.IN,description = "")
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
     def get_input_precision():
         function = LegacyFunctionSpecification()
-        function.addParameter('input_precision', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('value', dtype='float64',direction=function.OUT,description = "")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_input_precision():
         function = LegacyFunctionSpecification()
-        function.addParameter('input_precision', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('value', dtype='float64',direction=function.IN,description = "")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_linear_solver():
         function = LegacyFunctionSpecification()
-        function.addParameter('linear_solver', dtype='int32',direction=function.OUT,description = "linear solver")
+        function.addParameter('value', dtype='int32',direction=function.OUT,description = "linear solver")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_linear_solver():
         function = LegacyFunctionSpecification()
-        function.addParameter('linear_solver', dtype='int32',direction=function.IN,description = "linear solver")
+        function.addParameter('value', dtype='int32',direction=function.IN,description = "linear solver")
         function.result_type = 'int32'
         return function
         
     @legacy_function
     def get_equations_of_motion_specification():
         function = LegacyFunctionSpecification()
-        function.addParameter('equations_of_motion_specification', dtype='int32',direction=function.OUT,description = "...")
+        function.addParameter('value', dtype='int32',direction=function.OUT,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_equations_of_motion_specification():
         function = LegacyFunctionSpecification()
-        function.addParameter('equations_of_motion_specification', dtype='int32',direction=function.IN,description = "...")
+        function.addParameter('value', dtype='int32',direction=function.IN,description = "...")
         function.result_type = 'int32'
         return function
     
     @legacy_function
     def get_check_for_dynamical_stability():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_dynamical_stability', dtype='bool',direction=function.OUT,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_check_for_dynamical_stability():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_dynamical_stability', dtype='bool',direction=function.IN,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "...")
         function.result_type = 'int32'
         return function
     
     @legacy_function
     def get_check_for_inner_collision():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_inner_collision', dtype='bool',direction=function.OUT,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_check_for_inner_collision():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_inner_collision', dtype='bool',direction=function.IN,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_check_for_outer_collision():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_outer_collision', dtype='bool',direction=function.OUT,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_check_for_outer_collision():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_outer_collision', dtype='bool',direction=function.IN,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_check_for_inner_RLOF():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_inner_RLOF', dtype='bool',direction=function.OUT,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_check_for_inner_RLOF():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_inner_RLOF', dtype='bool',direction=function.IN,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_check_for_outer_RLOF():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_outer_RLOF', dtype='bool',direction=function.OUT,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "...")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_check_for_outer_RLOF():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_outer_RLOF', dtype='bool',direction=function.IN,description = "...")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "...")
         function.result_type = 'int32'
         return function
         
     @legacy_function
     def set_include_quadrupole_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_quadrupole_terms', dtype='bool',direction=function.IN,description = "Whether or not to include quadrupole terms in the secular equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Whether or not to include quadrupole terms in the secular equations of motion")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_quadrupole_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_quadrupole_terms', dtype='bool',direction=function.OUT,description = "Whether or not to include quadrupole terms in the secular equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Whether or not to include quadrupole terms in the secular equations of motion")
         function.result_type = 'int32'
         return function         
 
     @legacy_function
     def set_include_octupole_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_octupole_terms', dtype='bool',direction=function.IN,description = "Whether or not to include octupole terms in the secular equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Whether or not to include octupole terms in the secular equations of motion")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_octupole_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_octupole_terms', dtype='bool',direction=function.OUT,description = "Whether or not to include octupole terms in the secular equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Whether or not to include octupole terms in the secular equations of motion")
         function.result_type = 'int32'
         return function   
 
     @legacy_function
     def get_include_1PN_inner_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_1PN_inner_terms', dtype='bool',direction=function.OUT,description = "Include 1PN inner binary terms in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Include 1PN inner binary terms in the equations of motion")
         function.result_type = 'int32'
         return function
     @legacy_function
     def set_include_1PN_inner_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_1PN_inner_terms', dtype='bool',direction=function.IN,description = "Include 1PN inner binary terms in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Include 1PN inner binary terms in the equations of motion")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_include_1PN_outer_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_1PN_outer_terms', dtype='bool',direction=function.OUT,description = "Include 1PN outer binary terms in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Include 1PN outer binary terms in the equations of motion")
         function.result_type = 'int32'
         return function
     @legacy_function
     def set_include_1PN_outer_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_1PN_outer_terms', dtype='bool',direction=function.IN,description = "Include 1PN outer binary terms in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Include 1PN outer binary terms in the equations of motion")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_include_1PN_inner_outer_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_1PN_inner_outer_terms', dtype='bool',direction=function.OUT,description = "Include 1PN 'interaction terms' in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Include 1PN 'interaction terms' in the equations of motion")
         function.result_type = 'int32'
         return function
     @legacy_function
     def set_include_1PN_inner_outer_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_1PN_inner_outer_terms', dtype='bool',direction=function.IN,description = "Include 1PN 'interaction terms' in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Include 1PN 'interaction terms' in the equations of motion")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_include_25PN_inner_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_25PN_inner_terms', dtype='bool',direction=function.OUT,description = "Include 2.5PN inner binary terms in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Include 2.5PN inner binary terms in the equations of motion")
         function.result_type = 'int32'
         return function
     @legacy_function
     def set_include_25PN_inner_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_25PN_inner_terms', dtype='bool',direction=function.IN,description = "Include 2.5PN inner binary terms in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Include 2.5PN inner binary terms in the equations of motion")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def get_include_25PN_outer_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_25PN_outer_terms', dtype='bool',direction=function.OUT,description = "Include 2.5PN outer binary terms in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Include 2.5PN outer binary terms in the equations of motion")
         function.result_type = 'int32'
         return function
     @legacy_function
     def set_include_25PN_outer_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_25PN_outer_terms', dtype='bool',direction=function.IN,description = "Include 2.5PN outer binary terms in the equations of motion")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Include 2.5PN outer binary terms in the equations of motion")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_inner_tidal_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_inner_tidal_terms', dtype='bool',direction=function.IN,description = "Whether or not to include the effects of tides in the inner binary system")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Whether or not to include the effects of tides in the inner binary system")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_inner_tidal_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_inner_tidal_terms', dtype='bool',direction=function.OUT,description = "Whether or not to include the effects of tides in the inner binary system")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Whether or not to include the effects of tides in the inner binary system")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_outer_tidal_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_outer_tidal_terms', dtype='bool',direction=function.IN,description = "Whether or not to include the effects of tides in the outer binary system")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Whether or not to include the effects of tides in the outer binary system")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_outer_tidal_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_outer_tidal_terms', dtype='bool',direction=function.OUT,description = "Whether or not to include the effects of tides in the outer binary system")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Whether or not to include the effects of tides in the outer binary system")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_inner_wind_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_inner_wind_terms', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_inner_wind_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_inner_wind_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_outer_wind_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_outer_wind_terms', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_outer_wind_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_outer_wind_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_magnetic_braking_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_magnetic_braking_terms', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_magnetic_braking_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_magnetic_braking_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_spin_radius_mass_coupling_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_spin_radius_mass_coupling_terms', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_spin_radius_mass_coupling_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_spin_radius_mass_coupling_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_inner_RLOF_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_inner_RLOF_terms', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_inner_RLOF_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_inner_RLOF_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_outer_RLOF_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_outer_RLOF_terms', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_outer_RLOF_terms():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_outer_RLOF_terms', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_linear_mass_change():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_linear_mass_change', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_linear_mass_change():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_linear_mass_change', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_include_linear_radius_change():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_linear_radius_change', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
     def get_include_linear_radius_change():
         function = LegacyFunctionSpecification()
-        function.addParameter('include_linear_radius_change', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
         
     @legacy_function
     def set_check_for_dynamical_stability_at_initialisation():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_dynamical_stability_at_initialisation', dtype='bool',direction=function.IN,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
 
     @legacy_function
     def get_check_for_dynamical_stability_at_initialisation():
         function = LegacyFunctionSpecification()
-        function.addParameter('check_for_dynamical_stability_at_initialisation', dtype='bool',direction=function.OUT,description = "..")
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
+
+    @legacy_function
+    def set_verbose():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
+        function.result_type = 'int32'
+        return function    
+
+    @legacy_function
+    def get_verbose():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
+        function.result_type = 'int32'
+        return function
+
 
 class SecularTriple(InCodeComponentImplementation):
 
@@ -689,6 +718,13 @@ class SecularTriple(InCodeComponentImplementation):
             "threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero",
             "",
             default_value = 1.0e-12
+        )
+        object.add_method_parameter(
+            "get_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero",
+            "set_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero",
+            "threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero",
+            "",
+            default_value = 1.0e-8
         )
         object.add_method_parameter(
             "get_input_precision",
@@ -879,7 +915,13 @@ class SecularTriple(InCodeComponentImplementation):
             "..", 
             default_value = True
         )                  
-
+        object.add_method_parameter(
+            "get_verbose",
+            "set_verbose",
+            "verbose",
+            "..", 
+            default_value = True
+        )    
     def define_methods(self, object):
         unit_lum = unit_m*unit_l**2/(unit_t**3)
         object.add_method(
@@ -1268,12 +1310,14 @@ class SecularTriple(InCodeComponentImplementation):
             
             a_out_div_a_in_dynamical_stability = self.a_out_div_a_in_dynamical_stability(m1,m2,m3,e_out,triple.relative_inclination)
             if a_out/a_in <= a_out_div_a_in_dynamical_stability:
-                print 'SecularTriple -- triple system is dynamically unstable: a_out/a_in = ',a_out/a_in,', whereas for dynamical stability, a_out/a_in should be > ',a_out_div_a_in_dynamical_stability
+                if self.parameters.verbose == True:
+                    print 'SecularTriple -- triple system is dynamically unstable: a_out/a_in = ',a_out/a_in,', whereas for dynamical stability, a_out/a_in should be > ',a_out_div_a_in_dynamical_stability
                 triple.dynamical_instability = True
 
     def evolve_model(self,end_time):
         if end_time is None:
-            print 'SecularTriple -- please specify end time!'
+            if self.parameters.verbose == True:
+                print 'SecularTriple -- please specify end time!'
             return
 
         parameters = self.parameters
@@ -1296,9 +1340,10 @@ class SecularTriple(InCodeComponentImplementation):
             INCL_in,INCL_out,INCL_in_out, \
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_cvode,CVODE_flag,root_finding_flag = self.evolve(*args)
-            print 'SecularTriple -- done; a_in/Ainner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2U=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in
+            if self.parameters.verbose == True:
+                print 'SecularTriple -- done; t/Myr = ', end_time.value_in(units.Myr),' a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in,' spin_freq1 = ',spin_angular_frequency1
 
-            print_CVODE_output(CVODE_flag)
+            print_CVODE_output(self,CVODE_flag)
             triple.error_flag_secular = CVODE_flag
 
             ####################
@@ -1317,43 +1362,52 @@ class SecularTriple(InCodeComponentImplementation):
                 
                 ### dynamical instability ###
                 if root_finding_flag==1:
-                    print 'SecularTriple -- triple dynamical instability'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple -- triple dynamical instability'
                     triple.dynamical_instability = True
     
                 ### inner collision ###
                 if root_finding_flag==2: 
                     triple.inner_collision = True
-                    print 'SecularTriple --inner collision'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple --inner collision'
                 ### outer collision ###
                 if root_finding_flag==3: 
                     triple.outer_collision = True
-                    print 'SecularTriple --outer collision'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple --outer collision'
     
                 ### RLOF star1 ###
                 if root_finding_flag==4: 
                     star1.is_donor = True
-                    print 'SecularTriple -- star 1 has filled its Roche Lobe during secular integration'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple -- star 1 has filled its Roche Lobe during secular integration'
                 if root_finding_flag==-4: 
                     star1.is_donor = False
-                    print 'SecularTriple -- star 1 no longer fills its Roche Lobe during secular integration'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple -- star 1 no longer fills its Roche Lobe during secular integration'
                     self.evolve_further_after_root_was_found = True
     
                 ### RLOF star2 ###
                 if root_finding_flag==5: 
                     star2.is_donor = True
-                    print 'SecularTriple -- star 2 has filled its Roche Lobe during secular integration'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple -- star 2 has filled its Roche Lobe during secular integration'
                 if root_finding_flag==-5: 
                     star2.is_donor = False
-                    print 'SecularTriple -- star 2 no longer fills its Roche Lobe during secular integration'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple -- star 2 no longer fills its Roche Lobe during secular integration'
                     self.evolve_further_after_root_was_found = True
     
                 ### RLOF star3 ###
                 if root_finding_flag==6: 
                     star3.is_donor = True
-                    print 'SecularTriple -- star 3 has filled its Roche Lobe during secular integration'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple -- star 3 has filled its Roche Lobe during secular integration'
                 if root_finding_flag==-6: 
                     star3.is_donor = False
-                    print 'SecularTriple -- star 3 no longer fills its Roche Lobe during secular integration'
+                    if self.parameters.verbose == True:
+                        print 'SecularTriple -- star 3 no longer fills its Roche Lobe during secular integration'
                     self.evolve_further_after_root_was_found = True
 
             ### update model time ###
@@ -1396,7 +1450,8 @@ class SecularTriple(InCodeComponentImplementation):
                     string = "NOT"
                 else:
                     string = ""
-                print 'SecularTriple -- root was found at t = ',self.model_time,'; integrating further until end time t = ',new_end_time,', specified from triple.py; RLOF is ',string,' taken into account.'
+                if self.parameters.verbose == True:
+                    print 'SecularTriple -- root was found at t = ',self.model_time,'; integrating further until end time t = ',new_end_time,', specified from triple.py; RLOF is ',string,' taken into account.'
                 
                 ### In the remaining time, do not check for RLOF.
                 ### However, for consistency with the stellar/binary evolution code, if the latter assumed RLOF from the beginning of the time-step, do take into account effect of RLOF on the orbit.
@@ -1429,7 +1484,8 @@ class SecularTriple(InCodeComponentImplementation):
 
     def give_roche_radii(self,triple):
         if triple is None:
-            print 'SecularTriple -- please give triple particle'
+            if self.parameters.verbose == True:
+                print 'SecularTriple -- please give triple particle'
             return
 
         inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
@@ -1478,12 +1534,14 @@ class SecularTriple(InCodeComponentImplementation):
             inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
             m1,m2,m3,R1,R2,R3,a_in,a_out,e_in,e_out,INCL_in,INCL_out,AP_in,AP_out,LAN_in,LAN_out = give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner_binary,outer_binary,triple)
             
-            print 'PRE orb',a_in.value_in(units.AU),a_out.value_in(units.AU),e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out
+            if self.parameters.verbose == True:
+                print 'PRE orb',a_in.value_in(units.AU),a_out.value_in(units.AU),e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out
             
             ### pre-SN -- from orbital elements to orbital vectors ###
             e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z = self.compute_orbital_vectors_from_orbital_elements(m1,m2,m3,a_in,a_out,e_in,e_out,INCL_in,AP_in,AP_out,LAN_in,LAN_out)
             
-            print 'PRE vec',e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z
+            if self.parameters.verbose == True:
+                print 'PRE vec',e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z
             
             ### effect of SN on orbital vectors ###
             e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
@@ -1493,7 +1551,8 @@ class SecularTriple(InCodeComponentImplementation):
                     vkick_1[0],vkick_1[1],vkick_1[2],vkick_2[0],vkick_2[1],vkick_2[2],vkick_3[0],vkick_3[1],vkick_3[2],
                     delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly)
             
-            print 'POST vec',e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
+            if self.parameters.verbose == True:
+                print 'POST vec',e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
                 h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime
             
             ### post-SN -- from orbital vectors to orbital elements (with new reference frame) ###
@@ -1502,7 +1561,8 @@ class SecularTriple(InCodeComponentImplementation):
                 e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime,h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime, \
                 h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime)
             
-            print 'POST orb',a_in_prime.value_in(units.AU),a_out_prime.value_in(units.AU),e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime
+            if self.parameters.verbose == True:
+                print 'POST orb',a_in_prime.value_in(units.AU),a_out_prime.value_in(units.AU),e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime
     
             inner_binary.semimajor_axis = a_in_prime
             inner_binary.eccentricity = e_in_prime
@@ -1514,8 +1574,9 @@ class SecularTriple(InCodeComponentImplementation):
             inner_binary.longitude_of_ascending_node = LAN_in_prime
             outer_binary.longitude_of_ascending_node = LAN_out_prime
 
-def print_CVODE_output(CVODE_flag):
-
+def print_CVODE_output(self,CVODE_flag):
+    if self.parameters.verbose == False: return
+    
     if CVODE_flag==CV_SUCCESS:
         print "SecularTriple -- ODE integration proceeded successfully."
     elif CVODE_flag==CV_ROOT_RETURN:
@@ -1606,7 +1667,8 @@ def give_stellar_masses_radii_and_binary_parameters(self,star1,star2,star3,inner
 
     if triple==None:
         INCL_in = 0.0
-        print 'SecularTriple -- warning: relative inclination is being set zero in method give_stellar_masses_radii_and_binary_parameters'
+        if self.parameters.verbose == True:
+            print 'SecularTriple -- warning: relative inclination is being set zero in method give_stellar_masses_radii_and_binary_parameters'
     else:
         INCL_in = triple.relative_inclination ### in radians
     INCL_out = 0.0
@@ -1629,22 +1691,26 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
     self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = True
     RL1,RL2,RL3 = self.give_roche_radii(triple)
     if (R1>=RL1 and star1.is_donor == False):
-        print 'SecularTriple -- warning: R1>=RL1 at initialisation while star1.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
+        if self.parameters.verbose == True:
+            print 'SecularTriple -- warning: R1>=RL1 at initialisation while star1.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
         self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False
     if (R2>=RL2 and star2.is_donor == False):
-        print 'SecularTriple -- warning: R2>=RL2 at initialisation while star2.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
+        if self.parameters.verbose == True:
+            print 'SecularTriple -- warning: R2>=RL2 at initialisation while star2.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
         self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False
     if (R3>=RL3 and star3.is_donor == False):
-        print 'SecularTriple -- warning: R3>=RL3 at initialisation while star3.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
+        if self.parameters.verbose == True:
+            print 'SecularTriple -- warning: R3>=RL3 at initialisation while star3.is_donor = False; effects of mass transfer on the orbit will not be taken into account.'
         self.take_into_account_RLOF_after_no_longer_filling_Roche_lobe = False        
 
     ### if enabled, check for dynamical stability at initialisation ###
     if parameters.check_for_dynamical_stability_at_initialisation == True:
         a_out_div_a_in_dynamical_stability = self.a_out_div_a_in_dynamical_stability(m1,m2,m3,e_out,triple.relative_inclination)
         if a_out/a_in <= a_out_div_a_in_dynamical_stability:
-            print 'SecularTriple -- code parameter "check_for_dynamical_stability_at_initialisation" = True'
-            print 'SecularTriple -- given system is initially dynamically unstable: a_out/a_in = ',a_out/a_in,', whereas for dynamical stability, a_out/a_in should be > ',a_out_div_a_in_dynamical_stability
-            print 'SecularTriple -- no integration will be carried out'
+            if self.parameters.verbose == True:
+                print 'SecularTriple -- code parameter "check_for_dynamical_stability_at_initialisation" = True'
+                print 'SecularTriple -- given system is initially dynamically unstable: a_out/a_in = ',a_out/a_in,', whereas for dynamical stability, a_out/a_in should be > ',a_out_div_a_in_dynamical_stability
+                print 'SecularTriple -- no integration will be carried out'
             skip_integration = True
             triple.dynamical_instability = True
 
@@ -1854,7 +1920,8 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
             print 'SecularTriple -- R3_convective_envelope must be positive! exiting'
             exit(-1)
 
-    print 'SecularTriple -- initialization; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in
+    if self.parameters.verbose == True:
+        print 'SecularTriple -- initialization; a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in
 
     if ((star1.is_donor == False) and (star2.is_donor == False)):
         inner_mass_transfer_rate = 0.0 | units.MSun/units.yr
