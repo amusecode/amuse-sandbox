@@ -465,6 +465,8 @@ class Generate_initial_triple:
                 return False
             if self.out_semi < out_semi_min or self.out_semi > out_semi_max:
                 return False
+            if self.out_mass > in_primary_mass_max:
+                return False                         
                                                          
             return True
         else:

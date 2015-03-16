@@ -53,7 +53,7 @@ kozai_type_factor = 10.
 
 stellar_types_SN_remnants = [13,14]|units.stellar_type # remnant types created through a supernova
 stellar_types_remnants = [7,8,9,10,11,12,13,14]|units.stellar_type
-stellar_types_dr = [4, 7,8,9,10,11,12,13,14]|units.stellar_type #stars which go through a instantaneous radius change at formation; horizontal branch stars + remnants
+stellar_types_dr = [2,4,7,8,9,10,11,12,13,14]|units.stellar_type #stars which go through a instantaneous radius change at formation; hertzsprung gap stars (small envelope perturbation) + horizontal branch stars + remnants
 
 
 class Triple_Class:
@@ -243,25 +243,21 @@ class Triple_Class:
 #        self.stellar_code = SeBa(redirection='none')
 
         #stopping conditions:
-#        print self.stellar_code.stopping_conditions
-#        print self.stellar_code.stopping_conditions.supernova_detection.is_supported()
-#        print self.stellar_code.stopping_conditions.supernova_detection.is_enabled()
-#        print self.stellar_code.stopping_conditions.supernova_detection.is_set()
-#        print self.stellar_code.stopping_conditions.supernova_detection.enable()
-#        print self.stellar_code.stopping_conditions.supernova_detection.is_enabled()
-#        print self.stellar_code.stopping_conditions.supernova_detection.is_set()
+#        self.stellar_code.stopping_conditions.supernova_detection.enable()        
 
         self.stellar_code.parameters.metallicity = metallicity
         self.stellar_code.particles.add_particles(stars)
         self.channel_from_stellar = self.stellar_code.particles.new_channel_to(stars)
         self.channel_to_stellar = stars.new_channel_to(self.stellar_code.particles)
         self.channel_from_stellar.copy()
-#        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])
-      
+#        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])            
+
     def setup_secular_code(self, triple_set, tidal_terms):
         self.secular_code = SecularTriple()
 #        self.secular_code = SecularTriple(redirection='none')
         self.secular_code.triples.add_particles(triple_set)
+        self.secular_code.parameters.verbose = False
+        
         self.secular_code.parameters.equations_of_motion_specification = 0
         self.secular_code.parameters.include_quadrupole_terms = True
         self.secular_code.parameters.include_octupole_terms = True        
@@ -275,11 +271,11 @@ class Triple_Class:
         self.secular_code.parameters.include_inner_tidal_terms = tidal_terms
         self.secular_code.parameters.include_outer_tidal_terms = tidal_terms
         
-        self.secular_code.parameters.include_1PN_inner_terms = False
-        self.secular_code.parameters.include_1PN_outer_terms = False
+        self.secular_code.parameters.include_1PN_inner_terms = True
+        self.secular_code.parameters.include_1PN_outer_terms = True
         self.secular_code.parameters.include_1PN_inner_outer_terms = False ### warning: probably broken
-        self.secular_code.parameters.include_25PN_inner_terms = False
-        self.secular_code.parameters.include_25PN_outer_terms = False
+        self.secular_code.parameters.include_25PN_inner_terms = True
+        self.secular_code.parameters.include_25PN_outer_terms = True
 
         self.secular_code.parameters.check_for_dynamical_stability = True
         self.secular_code.parameters.check_for_inner_collision = True
@@ -293,7 +289,7 @@ class Triple_Class:
 #        self.secular_code.parameters.input_precision = 1.0e-10#1.0e-5
 #        self.secular_code.parameters.relative_tolerance = 1.0e-10
 #        self.secular_code.parameters.threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = 1.0e-12
-
+#        self.secular_code.parameters.threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero = 1.0e-8
 
         self.secular_code.parameters.include_linear_mass_change = True #needed for Jspin conservation
         self.secular_code.parameters.include_linear_radius_change = True #needed for Jspin conservation
@@ -1035,6 +1031,10 @@ class Triple_Class:
                 
                 if stellar_system.stellar_type > 1|units.stellar_type and stellar_system.time_derivative_of_radius < stellar_system.previous_time_derivative_of_radius: #not a MS star and Rdot < Rdot_prev
                     growth_factor = 1. 
+
+
+
+
                     
                     
             
@@ -1570,9 +1570,12 @@ class Triple_Class:
 
                 self.stellar_code.evolve_model(self.time)
                 self.channel_from_stellar.copy()
-#                self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                                      
-                self.update_stellar_parameters()          
+#                self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                            self.update_stellar_parameters()          
                 successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()
+                
+                
+                print self.triple.child2.child1.radius, self.triple.child2.child1.stellar_type, self.triple.child2.child1.age, self.triple.child2.child1.mass
+                
                 
                 while successfull_step == False:
                     if nr_unsuccessfull != 1:
@@ -1580,34 +1583,25 @@ class Triple_Class:
                         exit(-1)  
                     else:
                         self.update_time_derivative_of_radius()
+
                         dt_new = self.determine_time_step() 
                         self.stellar_code.particles.recall_memory_one_step()
+
                         self.time += (dt_new - dt)                     
                         self.stellar_code.evolve_model(self.time)
-                        self.channel_from_stellar.copy()
-#                        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                        
-                        self.update_stellar_parameters()          
 
-                        dr = (star_unsuccessfull.radius - star_unsuccessfull.previous_radius)/star_unsuccessfull.radius
-                        print self.triple.number, star_unsuccessfull.mass.value_in(units.MSun), 
-                        print star_unsuccessfull.previous_mass.value_in(units.MSun), star_unsuccessfull.age.value_in(units.Myr),
-                        print star_unsuccessfull.stellar_type.value, star_unsuccessfull.previous_stellar_type.value, dr, 2                        
+                        self.channel_from_stellar.copy()
+#                        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius",     "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                                    self.update_stellar_parameters()          
+        
+#                        print self.triple.number, star_unsuccessfull.mass.value_in(units.MSun), 
+#                        print star_unsuccessfull.previous_mass.value_in(units.MSun), star_unsuccessfull.age.value_in(units.Myr),
+#                        print star_unsuccessfull.stellar_type.value, star_unsuccessfull.previous_stellar_type.value, dr, 2                        
 
                         successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()                        
                 self.stellar_code.particles.refresh_memory()
                 
                 
-#            if  self.stellar_code.stopping_condition.supernova_detection.is_set():
-#                print 'supernova detected'
-#                print self.stellar_code.stopping_condition.supernova_detection.particles(0)
-#                print self.stellar_code.stopping_condition.supernova_detection.particles(1)
-#                self.adjust_system_after_supernova_kick()
-#                exit(0)                   
-#
-#                print 'how do I restart the secular code?'                
-#                self.secular_code.model_time = self.time
-#                continue # the while loop, skip resolve_stellar_interaction and secular evolution
-            
+         
             if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
@@ -1629,7 +1623,20 @@ class Triple_Class:
                     print 'currently not implemented'
                     exit(-1)    
                 self.determine_mass_transfer_timescale() # to set the stability
-                break             
+                break
+#            if self.stellar_code.stopping_conditions.supernova_detection.is_set():
+#                if REPORT_TRIPLE_EVOLUTION:
+#                    print "Supernova at time/Myr = ",self.time.value_in(units.Myr) 
+##                print self.stellar_code.stopping_condition.supernova_detection.particles(0)
+##                self.adjust_system_after_supernova_kick()
+##                exit(0)                   
+##                self.instantaneous_evolution == False
+##                print 'how do I restart the secular code?'                
+##                self.secular_code.model_time = self.time
+##                continue # the while loop, skip resolve_stellar_interaction and secular evolution
+#                break
+
+                                         
                                     
             #do stellar interaction
             if REPORT_TRIPLE_EVOLUTION:
@@ -1639,17 +1646,6 @@ class Triple_Class:
             self.update_time_derivative_of_radius() # includes radius change from wind and mass transfer
             self.update_time_derivative_of_moment_of_inertia() # includes mass and radius change from wind and mass transfer
 
-#            if  self.stellar_code.stopping_condition.supernova_detection.is_set():
-#                print 'supernova detected'
-#                print self.stellar_code.stopping_condition.supernova_detection.particles(0)
-#                print self.stellar_code.stopping_condition.supernova_detection.particles(1)
-#                self.adjust_system_after_supernova_kick()
-#                exit(0)                   
-#
-#                print 'how do I restart the secular code?'                
-#                self.secular_code.model_time = self.time
-#                continue # the while loop, skip resolve_stellar_interaction and secular evolution
-
             if self.stop_at_merger and self.has_merger():
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Merger at time/Myr = ",self.time.value_in(units.Myr)'                               
@@ -1658,6 +1654,18 @@ class Triple_Class:
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'              
                 break
+#            if self.stellar_code.stopping_conditions.supernova_detection.is_set():
+#                if REPORT_TRIPLE_EVOLUTION:
+#                    print "Supernova at time/Myr = ",self.time.value_in(units.Myr) 
+##                print self.stellar_code.stopping_condition.supernova_detection.particles(0)
+##                self.adjust_system_after_supernova_kick()
+##                exit(0)                   
+##                self.instantaneous_evolution == False
+##                print 'how do I restart the secular code?'                
+##                self.secular_code.model_time = self.time
+##                continue # the while loop, skip resolve_stellar_interaction and secular evolution
+#                break
+                
             
             
             if self.instantaneous_evolution == False and self.first_contact == False: 
@@ -2118,27 +2126,27 @@ def plot_function(triple):
     plt.show()
 
 
-    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array)
-    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array, '.')
-    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array)
-    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array, '.')
-    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array)
-    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array, '.')
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$dm/dt$')
-    plt.savefig('plots/orbit/dmdt_time_'+generic_name+'.pdf')
-    plt.show()
-
-    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:])
-    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:], '.')
-    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:])
-    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:], '.')
-    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:])
-    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:], '.')
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$dm/m$')
-    plt.savefig('plots/orbit/dm_time_'+generic_name+'.pdf')
-    plt.show()
+#    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array)
+#    plt.semilogy(times_array_Myr[1:], dm1_array/dt_array, '.')
+#    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array)
+#    plt.semilogy(times_array_Myr[1:], dm2_array/dt_array, '.')
+#    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array)
+#    plt.semilogy(times_array_Myr[1:], dm3_array/dt_array, '.')
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$dm/dt$')
+#    plt.savefig('plots/orbit/dmdt_time_'+generic_name+'.pdf')
+#    plt.show()
+#
+#    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:])
+#    plt.semilogy(times_array_Myr[1:], dm1_array/m1_array[1:], '.')
+#    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:])
+#    plt.semilogy(times_array_Myr[1:], dm2_array/m2_array[1:], '.')
+#    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:])
+#    plt.semilogy(times_array_Myr[1:], dm3_array/m3_array[1:], '.')
+#    plt.xlabel('$t/\mathrm{Myr}$')
+#    plt.ylabel('$dm/m$')
+#    plt.savefig('plots/orbit/dm_time_'+generic_name+'.pdf')
+#    plt.show()
 
  
     plt.semilogy(times_array_Myr[1:], dt_array)
@@ -2542,7 +2550,7 @@ if __name__ == '__main__':
             print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
-        plot_function(triple_class_object)
+#        plot_function(triple_class_object)
 #        triple_class_object.print_stellar_system()
 #        print triple_class_object.max_dm_over_m
 #        print triple_class_object.max_dr_over_r
