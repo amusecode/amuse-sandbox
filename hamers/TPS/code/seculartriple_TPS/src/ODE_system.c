@@ -831,15 +831,11 @@ double spin_angular_frequency_dot_mass_radius_changes(double spin_angular_freque
 /* effect of moment of inertia changes & wind mass loss on stellar spin */
 double spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(double spin_angular_frequency, double mass, double radius, double moment_of_inertia, double moment_of_inertia_dot, double m_dot_wind, double threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero)
 {
-    double spin_angular_frequency_dot;
-    if (spin_angular_frequency <= threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero)
+    double spin_angular_frequency_dot = spin_angular_frequency*(c_2div3*m_dot_wind*radius*radius/moment_of_inertia - moment_of_inertia_dot/moment_of_inertia);
+    if ((spin_angular_frequency <= threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero) && (spin_angular_frequency_dot < 0.0))
     {
 //        printf("threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero %g %g \n",spin_angular_frequency,threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero);
         spin_angular_frequency_dot = 0.0;
-    }
-    else
-    {
-        spin_angular_frequency_dot =  spin_angular_frequency*(c_2div3*m_dot_wind*radius*radius/moment_of_inertia - moment_of_inertia_dot/moment_of_inertia);
     }
     
     return spin_angular_frequency_dot;

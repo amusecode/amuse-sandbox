@@ -303,14 +303,14 @@ class SecularTripleInterface(CodeInterface):
     @legacy_function
     def get_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero():
         function = LegacyFunctionSpecification()
-        function.addParameter('value', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('value', dtype='float64',direction=function.OUT,description = "",unit=1.0/unit_t)
         function.result_type = 'int32'
         return function
 
     @legacy_function
     def set_threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero():
         function = LegacyFunctionSpecification()
-        function.addParameter('value', dtype='float64',direction=function.IN,description = "")
+        function.addParameter('value', dtype='float64',direction=function.IN,description = "",unit=1.0/unit_t)
         function.result_type = 'int32'
         return function
         
