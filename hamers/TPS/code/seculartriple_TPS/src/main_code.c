@@ -85,10 +85,10 @@ int evolve(
     if (e_out<=tiny_double) { e_out = tiny_double; }    
     if (INCL_in<=tiny_double) { INCL_in = tiny_double; }
     if (INCL_out<=tiny_double) { INCL_out = tiny_double; }
-    if (AP_in<=tiny_double) { AP_in = tiny_double; }
-    if (AP_out<=tiny_double) { AP_out = tiny_double; }
-    if (LAN_in<=tiny_double) { LAN_in = tiny_double; }
-    if (LAN_out<=tiny_double) { LAN_out = tiny_double; }
+//    if (AP_in<=tiny_double) { AP_in = tiny_double; }
+//    if (AP_out<=tiny_double) { AP_out = tiny_double; }
+//    if (LAN_in<=tiny_double) { LAN_in = tiny_double; }
+//    if (LAN_out<=tiny_double) { LAN_out = tiny_double; }
 
     /*********************************************************************
      * ODE parameters *
