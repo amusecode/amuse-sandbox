@@ -11,7 +11,7 @@ from make_planets import *
 
 Johannes = None
 
-def movie(stars):
+def movie(stars, time):
     m = 100*stars.mass/stars.mass.max()
     colors = ['r', 'b', 'g']
 
@@ -19,8 +19,17 @@ def movie(stars):
     pyplot.scatter(stars.x.value_in(units.AU), stars.y.value_in(units.AU), c='r', s=m)
     for star, color in zip(stars, colors):
         pyplot.scatter(star.disk_particles.x.value_in(units.AU), star.disk_particles.y.value_in(units.AU), c=color, s=1)
+
+    for star, color in zip(stars, colors):
+        pyplot.scatter(star.planets.x.value_in(units.AU), star.planets.y.value_in(units.AU), c=color, s=10)
+
     pyplot.xlabel("X [AU]")
     pyplot.ylabel("Y [AU]")
+    pyplot.title("Time = "+str(time))
+
+    lim = 50
+    pyplot.xlim(-lim, lim)
+    pyplot.ylim(-lim, lim)
 
     pyplot.subplot(2,2,2)
     pyplot.scatter(stars.x.value_in(units.AU), stars.z.value_in(units.AU), c='r', s=m)
@@ -29,8 +38,8 @@ def movie(stars):
     pyplot.xlabel("X [AU]")
     pyplot.ylabel("Z [AU]")
 
-#    pyplot.xlim(-100, 100)
-#    pyplot.ylim(-100, 100)
+    pyplot.xlim(-lim, lim)
+    pyplot.ylim(-lim, lim)
 
     pyplot.subplot(2,2,3)
     pyplot.ylim(0, 1)
@@ -169,7 +178,7 @@ def new_option_parser():
                       dest="seed", type="int", default = 666,
                       help="random number seed [%default]")
     result.add_option("-N", 
-                      dest="Nstars", type="int", default = 3,
+                      dest="Nstars", type="int", default = 1,
                       help="Number of stars [%default]")
     result.add_option("-f", 
                       dest="filename", default = "initial_cluster.amuse",
@@ -178,7 +187,7 @@ def new_option_parser():
                       dest="Rcluster", type="int", default = 1000|units.AU,
                       help="Cluster size [%default]")
     result.add_option("-n", 
-                      dest="n", type="int", default = 100,
+                      dest="n", type="int", default = 1000,
                       help="Number of pebbels per star [%default]")
     return result
 
@@ -189,39 +198,44 @@ if __name__ in ('__main__', '__plot__'):
     
     if o.filename and os.path.exists(o.filename):
         stars = read_set_from_file(o.filename, "amuse").copy()
-        Rcl = stars.position.lengths().max()
+        Rcl = o.Rcluster
         converter = nbody_system.nbody_to_si(stars.mass.sum(), Rcl)
     else:
         Ncl = o.Nstars
-        masses = new_salpeter_mass_distribution(Ncl)
+        masses = [1] | units.MSun
         Mcl = masses.sum()
         Rcl = o.Rcluster
         converter = nbody_system.nbody_to_si(Mcl, Rcl)
         stars = new_plummer_model(Ncl, converter)
         stars.mass = masses
 
-        arange = [10, 100] | units.AU
-        erange = [0., 0.1] 
-        mrange = [0.01, 10] | units.MJupiter
-        Nplanets = 10
+        arange = [15.5, 34] | units.AU
+        erange = [0., 0.] 
         Ndisk = o.n
         for star in stars:
-            phi = numpy.radians(random.uniform(0, 90, 1)[0])#rotate under x
-            theta = numpy.radians(random.uniform(0, 180, 1)[0]) #rotate under y
+#            phi = numpy.radians(random.uniform(0, 90, 1)[0])#rotate under x
+#            theta = numpy.radians(random.uniform(0, 180, 1)[0]) #rotate under y
+            phi = 0
+            theta = 0
             star.disk_particles = make_pebble_disk(star, Ndisk, arange, erange, phi, theta)
-            star.planets = make_planets(star, Nplanets, arange, erange, mrange, phi, theta)
-            Mdisk = 1.0 | units.MJupiter
-            #        star.disk_particles.mass = Mdisk/float(Ndisk)
-            star.disk_particles.mass = Mdisk
+            star.planets = make_Nice_planets(star, phi, theta)
+            MEarth = 5.97219e+24 * units.kg
+            Mdisk = 35.0 | MEarth
+            star.disk_particles.mass = Mdisk/len(star.disk_particles)
             star.bound_pebbles = Particles()
 
     cluster = Hermite(converter)
     cluster.parameters.dt_param = 0.0003
+#    cluster = Huayno(converter)
+#    cluster.parameters.inttype_parameter = 21
+#    cluster = Mercury(converter)
+    from amuse.community.sakura.interface import Sakura
+#    cluster = Sakura(converter)
     cluster.particles.add_particles(stars)
     channel_from_cluster = cluster.particles.new_channel_to(stars)
     tcr = Rcl/numpy.sqrt(constants.G*stars.mass.sum()/Rcl)
     print "Tcr=", tcr.in_(units.yr)
-    dt = 10|units.yr
+    dt = 1|units.yr
     cluster_with_pebble_disks = bridge.Bridge(timestep=dt)
 
     Johannes = Kepler(converter)
@@ -237,8 +251,9 @@ if __name__ in ('__main__', '__plot__'):
         pebble_gravity = advance_without_selfgravity(star.disk_particles)
         stellar_gravity = central_point_mass(star)
         cluster_with_pebble_disks.add_system(pebble_gravity, (cluster,))
+        cluster_with_pebble_disks.add_system(cluster, (bridge.CalculateFieldForParticles(star.disk_particles, constants.G),))
 
-    cluster_with_pebble_disks.add_system(cluster, ())
+#    cluster_with_pebble_disks.add_system(cluster, ())
     identify_stellar_hosts(stars)
     identify_stellar_hosts_for_planets(stars)
     time = 0 | units.yr
@@ -258,8 +273,8 @@ if __name__ in ('__main__', '__plot__'):
         for channel in channels_from_planets:
             channel.copy()
         print time.in_(units.yr), cluster_with_pebble_disks.model_time.in_(units.yr)
-        movie(stars)
-        if istep%10 == 0:
+        movie(stars, time)
+        if istep%100 == 0:
             remove_escapers(stars)
             remove_escaping_planets(stars)
             identify_stellar_hosts(stars)

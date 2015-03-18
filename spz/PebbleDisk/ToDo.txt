@@ -4,6 +4,8 @@
 # -Run for 10Myr and measure pebble-disk evolution in cluster
 
 # mogelijk uitbreidingen:
+  - optimize (use kepler for pebbels)
+  - reproduce Nice model for single system
   - add gas
   - add galactic tidal field
   - add stellar evolution

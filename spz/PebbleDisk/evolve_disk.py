@@ -61,7 +61,6 @@ class advance_without_selfgravity(object):
     @property 
     def kinetic_energy(self):
         return (0.5*self.particles.mass*self.particles.velocity.lengths()**2).sum()
-
 def new_option_parser():
     result = OptionParser()
     result.add_option("--seed", 

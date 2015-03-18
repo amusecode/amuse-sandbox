@@ -51,6 +51,36 @@ def posvel_from_orbital_elements(Mstar, pebble, kepler):
     psi = numpy.radians(psi) #rotate under z
     rotate(pebble, phi, theta, psi) # theta and phi in radians            
 
+# ref: 2005Natur.435..466G
+def make_Nice_planets(central_particle, phi=None, theta=None):
+
+    planet_particles = Particles(4)
+    planet_particles.semimajor_axis = [5.45, 8.18, 11.5, 14.2] | units.AU
+    planet_particles.eccentricity = 0.0
+    planet_particles.mass = [9.54791938424326609E-04, 
+                             2.85885980666130812E-04,
+                             5.15138902046611451E-05, 
+                             4.36624404335156298E-05] | units.MSun
+    planet_particles.names = ["Jup", "Sat", "Nep", "Uran"]
+
+    converter = nbody_system.nbody_to_si(central_particle.mass, 1|units.AU)
+    kepler = Kepler(converter)
+    kepler.initialize_code()
+
+    if phi is None:
+        phi = numpy.radians(random.uniform(0, 90, 1)[0])#rotate under x
+    if theta is None:
+        theta = numpy.radians(random.uniform(0, 180, 1)[0]) #rotate under y
+    psi = 0
+    for dpi in planet_particles:
+        posvel_from_orbital_elements(central_particle.mass, dpi, kepler)
+        rotate(dpi, phi, theta, psi) # theta and phi in radians            
+
+    planet_particles.position += central_particle.position
+    planet_particles.velocity += central_particle.velocity
+
+    return planet_particles
+
 def make_planets(central_particle, Nplanets, arange, erange, mrange, phi=None, theta=None):
 
     planet_particles = Particles(Nplanets)
