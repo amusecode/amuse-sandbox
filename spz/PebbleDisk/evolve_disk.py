@@ -5,9 +5,9 @@ from amuse.lab import *
 from amuse.couple import bridge
 from make_pebble_disk import make_pebble_disk
 from amuse.units.optparse import OptionParser
-from matplotlib import pyplot
 
 def movie(particles):
+    from matplotlib import pyplot
     pyplot.scatter(disk_particles.x.value_in(units.AU), disk_particles.y.value_in(units.AU))
     pyplot.draw()
     pyplot.cla()
