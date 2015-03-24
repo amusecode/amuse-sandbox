@@ -233,7 +233,7 @@ if __name__ in ('__main__', '__plot__'):
     write_set_to_file(stars, filename, "amuse", append_to_file=False, version="2.0")
     
     istep = 0
-    t0 = pytime.time()
+    t0 = pytime.time() | units.s
     while time < o.endtime:
         istep += 1
         time += 100*dt
@@ -249,7 +249,7 @@ if __name__ in ('__main__', '__plot__'):
             remove_escaping_planets(stars)
             
     
-    t1 = pytime.time()
+    t1 = pytime.time() | units.s
     print "total time of this run in seconds: ", t1 - t0
-    billion_years = 1000.0 * 1000.0 * 1000.0 | units.yr
-    print "number of days to reach billion years:", ((billion_years/o.endtime)/  (t1 - t0))/ (60.0  * 60.0 * 24.0)
+    print "number of days to reach billion years:", \
+        (((1.0 | units.Gyr)/time)*(t1 - t0)).as_quantity_in(units.day)
