@@ -257,6 +257,7 @@ class Triple_Class:
 #        self.secular_code = SecularTriple(redirection='none')
         self.secular_code.triples.add_particles(triple_set)
         self.secular_code.parameters.verbose = False
+#        self.secular_code.parameters.verbose = True
         
         self.secular_code.parameters.equations_of_motion_specification = 0
         self.secular_code.parameters.include_quadrupole_terms = True
@@ -1473,11 +1474,11 @@ class Triple_Class:
             successfull_dr2, nr_dr2, star_dr2 = self.safety_check_time_step(stellar_system.child2)
             if successfull_dr1==False and successfull_dr2==False:
                 if nr_dr1 > 1:
-                    return False, 3, [star_dr1[0], star_dr1[1], star_dr2]
+                    return False, 3, np.array([star_dr1[0], star_dr1[1], star_dr2])
                 elif nr_dr2 > 1:
-                    return False, 3, [star_dr1, star_dr2[0], star_dr2[1]]
+                    return False, 3, np.array([star_dr1, star_dr2[0], star_dr2[1]])
                 else:
-                    return False, 2, [star_dr1, star_dr2]
+                    return False, 2, np.array([star_dr1, star_dr2])
             elif successfull_dr1==False: 
                 return False, nr_dr1, star_dr1
             elif successfull_dr2==False: 
@@ -1565,26 +1566,30 @@ class Triple_Class:
                 successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()
 
                 while successfull_step == False:
-                    if nr_unsuccessfull != 1:
-                        print 'currently not implemented'
-                        exit(-1)  
+                    self.update_time_derivative_of_radius()
+
+                    dt_new = self.determine_time_step() 
+                    self.stellar_code.particles.recall_memory_one_step()
+
+                    self.time += (dt_new - dt)                     
+                    self.stellar_code.evolve_model(self.time)
+
+                    self.channel_from_stellar.copy()
+#                        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius",     "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                                    self.update_stellar_parameters()          
+    
+                    if nr_unsuccessfull > 1:
+                        for i_rec in range(nr_unsuccessfull):
+                            dr = (star_unsuccessfull[i_rec].radius - star_unsuccessfull[i_rec].previous_radius)/star_unsuccessfull[i_rec].radius        
+                            print self.triple.number, star_unsuccessfull[i_rec].mass.value_in(units.MSun), 
+                            print star_unsuccessfull[i_rec].previous_mass.value_in(units.MSun), star_unsuccessfull[i_rec].age.value_in(units.Myr),
+                            print star_unsuccessfull[i_rec].stellar_type.value, star_unsuccessfull[i_rec].previous_stellar_type.value, dr, 2                        
                     else:
-                        self.update_time_derivative_of_radius()
-                        dt_new = self.determine_time_step() 
+                        dr = (star_unsuccessfull.radius - star_unsuccessfull.previous_radius)/star_unsuccessfull.radius        
+                        print self.triple.number, star_unsuccessfull.mass.value_in(units.MSun), 
+                        print star_unsuccessfull.previous_mass.value_in(units.MSun), star_unsuccessfull.age.value_in(units.Myr),
+                        print star_unsuccessfull.stellar_type.value, star_unsuccessfull.previous_stellar_type.value, dr, 2                        
 
-                        self.stellar_code.particles.recall_memory_one_step()
-                        
-                        self.time += (dt_new - dt)   
-                        self.stellar_code.evolve_model(self.time)
-                        
-                        self.channel_from_stellar.copy()
-#                        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius",             "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                                        
-                        self.update_stellar_parameters()   
-
-#                        print self.triple.number, star_unsuccessfull.mass.value_in(units.MSun), 
-#                        print star_unsuccessfull.previous_mass.value_in(units.MSun), star_unsuccessfull.age.value_in(units.Myr),
-#                        print star_unsuccessfull.stellar_type.value, star_unsuccessfull.previous_stellar_type.value, dr, 2                                                       
-                        successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()   
+                    successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()                        
                 self.stellar_code.particles.refresh_memory()
 
 
@@ -1713,6 +1718,29 @@ class Triple_Class:
                         print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
                         print self.triple.error_flag_secular
                     break                    
+
+                if self.triple.child1.spin_angular_frequency < 0.0|1./units.Myr: 
+                    stellar_system = self.triple.child1
+                    spin = stellar_system.spin_angular_frequency
+                    print self.triple.number, stellar_system.mass.value_in(units.MSun), 
+                    print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
+                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin, 3
+                    break
+                if self.triple.child2.child1.spin_angular_frequency < 0.0|1./units.Myr: 
+                    stellar_system = self.triple.child2.child1
+                    spin = stellar_system.spin_angular_frequency
+                    print self.triple.number, stellar_system.mass.value_in(units.MSun), 
+                    print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
+                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin, 4
+                    break
+                if self.triple.child2.child2.spin_angular_frequency < 0.0|1./units.Myr:                
+                    stellar_system = self.triple.child2.child2
+                    spin = stellar_system.spin_angular_frequency
+                    print self.triple.number, stellar_system.mass.value_in(units.MSun), 
+                    print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
+                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin, 5
+                    break
+
                    
             else:
                 if REPORT_TRIPLE_EVOLUTION:

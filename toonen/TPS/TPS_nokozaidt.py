@@ -41,17 +41,17 @@
 ##            --i_min    lower limit for the relative inclination [0]
 ##            --i_distr  relative inclination option: 0) Circular uniform distribution [default]
 ##                                                  1) Constant inclination
-##            --G_max    upper limit for the inner argument of pericenter [2pi]
-##            --G_min    lower limit for the inner argument of pericenter [0]
+##            --G_max    upper limit for the inner argument of pericenter [pi]
+##            --G_min    lower limit for the inner argument of pericenter [-pi]
 ##            --G_distr  inner argument of pericenter option: 0) Uniform distribution [default]
 ##                                                            1) Constant argument of pericenter
-##            --g_max    upper limit for the outer argument of pericenter [2pi]
-##            --g_min    lower limit for the outer argument of pericenter [0]
+##            --g_max    upper limit for the outer argument of pericenter [pi]
+##            --g_min    lower limit for the outer argument of pericenter [-pi]
 ##            --g_distr  outer argument of pericenter option: 0) Uniform distribution [default]
 ##                                                            1) Constant argument of pericenter
 ##             outer longitude of ascending nodes = inner - pi               
 ##            --O_max    upper limit for the inner longitude of ascending node [pi]
-##            --O_min    lower limit for the inner longitude of ascending node [0]
+##            --O_min    lower limit for the inner longitude of ascending node [-pi]
 ##            --O_distr  inner longitude of ascending node option: 0) Circular uniform distribution
 ##                                                            1) Constant longitude of ascending nodes [default]
 ##            -T or -t   binary end time. [13500 Myr]
