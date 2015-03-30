@@ -249,8 +249,8 @@ class Triple_Class:
         self.stellar_code.particles.add_particles(stars)
         self.channel_from_stellar = self.stellar_code.particles.new_channel_to(stars)
         self.channel_to_stellar = stars.new_channel_to(self.stellar_code.particles)
-        self.channel_from_stellar.copy()
-#        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])            
+#        self.channel_from_stellar.copy()
+        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate",  "temperature"])  #"gyration_radius_sq"
 
     def setup_secular_code(self, triple_set, tidal_terms):
         self.secular_code = SecularTriple()
@@ -438,7 +438,7 @@ class Triple_Class:
             stellar_system = self.triple
 
         if stellar_system.is_star:
-            stellar_system.gyration_radius = stellar_system.gyration_radius_sq**0.5     
+            stellar_system.gyration_radius = 0.
             stellar_system.apsidal_motion_constant = self.apsidal_motion_constant(stellar_system) 
             stellar_system.moment_of_inertia_of_star = self.moment_of_inertia(stellar_system)
             if stellar_system.convective_envelope_radius < 0|units.RSun:
@@ -866,7 +866,6 @@ class Triple_Class:
             print star.envelope_mass,
             print star.convective_envelope_mass,
             print star.convective_envelope_radius,
-            print star.CO_core_mass,
             print star.luminosity,
             print star.temperature,
             print star.wind_mass_loss_rate,
@@ -1539,9 +1538,6 @@ class Triple_Class:
         r1_array.append(self.triple.child2.child1.radius.value_in(units.RSun))
         r2_array.append(self.triple.child2.child2.radius.value_in(units.RSun))
         r3_array.append(self.triple.child1.radius.value_in(units.RSun))
-        gy1_array.append(self.triple.child2.child1.gyration_radius.number)
-        gy2_array.append(self.triple.child2.child2.gyration_radius.number)
-        gy3_array.append(self.triple.child1.gyration_radius.number)
         moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
         moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
         moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
@@ -1570,8 +1566,8 @@ class Triple_Class:
                     print 'Stellar evolution'
 
                 self.stellar_code.evolve_model(self.time)
-                self.channel_from_stellar.copy()
-#                self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                            self.update_stellar_parameters()          
+                self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"                           
+                self.update_stellar_parameters()          
                 successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()
                                 
                 
@@ -1584,8 +1580,9 @@ class Triple_Class:
                     self.time += (dt_new - dt)                     
                     self.stellar_code.evolve_model(self.time)
 
-                    self.channel_from_stellar.copy()
-#                        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius",     "convective_envelope_radius",  "stellar_type", "luminosity", "wind_mass_loss_rate", "gyration_radius_sq", "CO_core_mass", "effective_radius", "natal_kick_x","natal_kick_y",  "natal_kick_z", "relative_age", "relative_mass", "temperature", "time_step"])                                    self.update_stellar_parameters()          
+#                    self.channel_from_stellar.copy()
+                    self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate",  "temperature"])  #"gyration_radius_sq"                          
+                    self.update_stellar_parameters()          
                     
                     if nr_unsuccessfull > 1:
                         for i_rec in range(nr_unsuccessfull):
@@ -1738,24 +1735,22 @@ class Triple_Class:
                     spin = stellar_system.spin_angular_frequency
                     print self.triple.number, stellar_system.mass.value_in(units.MSun), 
                     print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
-                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin, 3
+                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin.value_in(1./units.Myr), 3
                     break
                 if self.triple.child2.child1.spin_angular_frequency < 0.0|1./units.Myr: 
                     stellar_system = self.triple.child2.child1
                     spin = stellar_system.spin_angular_frequency
                     print self.triple.number, stellar_system.mass.value_in(units.MSun), 
                     print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
-                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin, 4
+                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin.value_in(1./units.Myr), 4
                     break
                 if self.triple.child2.child2.spin_angular_frequency < 0.0|1./units.Myr:              
                     stellar_system = self.triple.child2.child2
                     spin = stellar_system.spin_angular_frequency
                     print self.triple.number, stellar_system.mass.value_in(units.MSun), 
                     print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
-                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin, 5
+                    print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, spin.value_in(1./units.Myr), 5
                     break
-
-                                        
                    
             else:
                 if REPORT_TRIPLE_EVOLUTION:
@@ -1826,9 +1821,6 @@ class Triple_Class:
             r1_array.append(self.triple.child2.child1.radius.value_in(units.RSun))
             r2_array.append(self.triple.child2.child2.radius.value_in(units.RSun))
             r3_array.append(self.triple.child1.radius.value_in(units.RSun))
-            gy1_array.append(self.triple.child2.child1.gyration_radius.number)
-            gy2_array.append(self.triple.child2.child2.gyration_radius.number)
-            gy3_array.append(self.triple.child1.gyration_radius.number)
             moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
             moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
             moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
@@ -2054,17 +2046,6 @@ def plot_function(triple):
     plt.xlabel('$t/\mathrm{Myr}$')
     plt.ylabel('$J spin$')
     plt.savefig('plots/orbit/Jspin_time_'+generic_name+'.pdf')
-    plt.show()
-    
-    plt.semilogy(times_array_Myr,gy1_array)
-    plt.semilogy(times_array_Myr,gy1_array, '.')
-    plt.semilogy(times_array_Myr,gy2_array)
-    plt.semilogy(times_array_Myr,gy2_array, '.')
-    plt.semilogy(times_array_Myr,gy3_array)
-    plt.semilogy(times_array_Myr,gy3_array, '.')
-    plt.xlabel('$t/\mathrm{Myr}$')
-    plt.ylabel('$gyration radius$')
-    plt.savefig('plots/orbit/gyration_radius_time_'+generic_name+'.pdf')
     plt.show()
       
     plt.semilogy(times_array_Myr,moi1_array)

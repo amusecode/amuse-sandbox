@@ -229,7 +229,7 @@ class Generate_initial_triple:
                 self.in_semi = 0.|units.RSun
                 while (self.in_semi < in_semi_min or self.in_semi > in_semi_max):
                     logP = np.random.normal(5, 2.3, 1)
-                    P = (10**logP)|units.day
+                    P = (10**logP[0])|units.day
                     self.in_semi = ((P/2/np.pi)**2 * constants.G* (self.in_primary_mass + self.in_secondary_mass))**(1./3.)  
                     if logP < -0.3 or logP > 10:#truncation of Gaussian wings
                         self.in_semi = 0.|units.RSun
@@ -251,7 +251,7 @@ class Generate_initial_triple:
                 self.out_semi = 0.|units.RSun
                 while (self.out_semi < out_semi_min or self.out_semi > in_semi_max):
                     logP_out = np.random.normal(5, 2.3, 1)
-                    P_out = (10**logP_out)|units.day
+                    P_out = (10**logP_out[0])|units.day
                     self.out_semi = ((P_out/2/np.pi)**2 * constants.G* (self.in_primary_mass + self.in_secondary_mass + self.out_mass))**(1./3.)                    
                     if logP_out < -0.3 or logP_out > 10:#truncation of Gaussian wings
                         self.out_semi = 0.|units.RSun
@@ -262,7 +262,7 @@ class Generate_initial_triple:
                 self.in_semi = 0.|units.RSun
                 while (self.in_semi < in_semi_min or self.in_semi > in_semi_max):
                     logP_in = np.random.normal(5, 2.3, 1)
-                    P_in = (10**logP_in)|units.day
+                    P_in = (10**logP_in[0])|units.day
                     self.in_semi = ((P_in/2/np.pi)**2 * constants.G* (self.in_primary_mass + self.in_secondary_mass))**(1./3.)                    
                     if logP_in < -0.3 or logP_in > 10:#truncation of Gaussian wings
                         self.in_semi = 0.|units.RSun
@@ -273,7 +273,7 @@ class Generate_initial_triple:
                     elif dlogP < 1.7:
                         x = np.random.uniform(0, 1, 1)
                         if dlogP - 0.7 > x:
-                            self.in_semi = 0.|units.RSun   
+                            self.in_semi = 0.|units.RSun                               
             else: # log flat distribution
                  minimal_semi = max(out_semi_min, self.in_semi) # outer orbit is always larger then inner orbit
                  self.out_semi = log_flat_distr(minimal_semi, out_semi_max)
@@ -606,12 +606,12 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
         exit(1)
         
 
-    if (in_semi_min < 5.|units.RSun) or (in_semi_max > 5.e6|units.RSun):
-        print 'error: inner separation not in allowed range [5,5e6]RSun'
+    if (in_semi_min < 5.|units.RSun):
+        print 'error: inner separation not in allowed range >5 RSun'
         exit(1)
 
-    if (out_semi_min < 5.|units.RSun) or (in_semi_max > 5.e6|units.RSun):
-        print 'error: outer separation not in allowed range [5,5e6]RSun'
+    if (out_semi_min < 5.|units.RSun):
+        print 'error: outer separation not in allowed range >5 RSun'
         exit(1)
         
     if (in_semi_max < in_semi_min):

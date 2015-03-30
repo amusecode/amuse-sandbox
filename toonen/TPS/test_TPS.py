@@ -2,8 +2,8 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.units import units, constants
 import numpy as np
 
-import triple
-#import triple_nokozaidt as triple
+#import triples
+import triple_nokozaidt as triple
 #import test_terug_in_time_triple as triple
 test_asserts = True #False
 
