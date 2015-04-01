@@ -14,7 +14,8 @@ from amuse.units import quantities
 
 Johannes = None
 
-def movie(stars, time):
+def movie(stars, time, nstep):
+    MEarth = 5.97219e+24 * units.kg
     pyplot.subplot(2,2,1)
     pyplot.cla()
     pyplot.subplot(2,2,2)
@@ -25,20 +26,25 @@ def movie(stars, time):
     pyplot.cla()
     m = 100*stars.mass/stars.mass.max()
     colors = ['r', 'b', 'g']
-
+    particles = ParticlesSuperset([stars, stars[0].planets, stars[0].disk_particles])
+    
+    particles.move_to_center()
+    print stars[0].disk_particles.mass.sum().as_quantity_in(MEarth)
+    print stars[0].planets.mass / stars[0].disk_particles[0].mass 
+    print stars[0].planets.mass / (1 | MEarth)
+    #print stars[0]
     pyplot.subplot(2,2,1)
     pyplot.scatter(stars.x.value_in(units.AU), stars.y.value_in(units.AU), c='r', s=m)
-    print stars.x.value_in(units.AU), stars.y.value_in(units.AU)
-    print stars.x.value_in(units.AU), stars.y.value_in(units.AU)
     for star, color in zip(stars, colors):
         pyplot.scatter(star.disk_particles.x.value_in(units.AU), star.disk_particles.y.value_in(units.AU), c=color, s=1)
-
+    
+    colors = ['r', 'b', 'g','y']
     for star, color in zip(stars, colors):
-        pyplot.scatter(star.planets.x.value_in(units.AU), star.planets.y.value_in(units.AU), c=color, s=10)
+        pyplot.scatter(star.planets.x.value_in(units.AU), star.planets.y.value_in(units.AU), color=colors, s=10)
 
     pyplot.xlabel("X [AU]")
     pyplot.ylabel("Y [AU]")
-    pyplot.title("Time = "+str(time))
+    pyplot.title("Time = "+str(time.as_quantity_in(units.yr)))
 
     lim = 50
     pyplot.xlim(-lim, lim)
@@ -62,6 +68,8 @@ def movie(stars, time):
     pyplot.xlabel("a [AU]")
     pyplot.ylabel("e")
 
+    pyplot.xlim(10,100)
+    pyplot.ylim(0,1)
     pyplot.subplot(2,2,4)
     pyplot.ylim(0, 1)
     pyplot.semilogx()
@@ -70,11 +78,14 @@ def movie(stars, time):
         all_planets.add_particles(star.planets)
     mscale = 0.1*all_planets.mass.min()
     for star, color in zip(stars, colors):
-        pyplot.scatter(star.planets.semimajor_axis.value_in(units.AU), star.planets.eccentricity, c=color, s=star.planets.mass/mscale, lw=0)
+        pyplot.scatter(star.planets.semimajor_axis.value_in(units.AU), star.planets.eccentricity, color=colors, s=star.planets.mass/mscale, lw=0)
     pyplot.xlabel("a [AU]")
     pyplot.ylabel("e")
+    pyplot.xlim(0,20)
+    pyplot.ylim(0,0.2)
 
     pyplot.draw()
+    #pyplot.savefig('xy%6.6i.png'%nstep,bbox_inches='tight')
     
 
 
@@ -201,18 +212,24 @@ if __name__ == "__main__":
 #    cluster_with_pebble_disks.add_system(cluster, ())
     time = 1 | units.yr
     pyplot.ion()
-    for x in all[::1]:
+    nstep = 1
+    for x in all[30::1]:
         stars = x.copy()
-        print x.collection_attributes
+        print x.collection_attributes 
         time = x.collection_attributes.model_time
-        identify_stellar_hosts(stars)
-        identify_stellar_hosts_for_planets(stars)
-        identify_nearest_neighbor(stars, 1000000 | units.yr)
+        #identify_stellar_hosts(stars)
+        stars[0].disk_particles.star = stars[0]
+        stars[0].planets.star = stars[0]
+        #identify_stellar_hosts_for_planets(stars)
+        determine_orbital_parameters_of_pebbles(stars)
+        determine_orbital_parameters_of_planets(stars)
+        #identify_nearest_neighbor(stars, 1000000 | units.yr)
         #pyplot.ion()
-        movie(stars, time)
-        time += 100 | units.yr
+        movie(stars, time, nstep)
+        nstep += 1
         #time.sleep(0.1)
     
     Johannes.stop()
     pyplot.show()
     pytime.sleep(5)
+#   mencoder "mf://xy*.png" -mf fps=20 -ovc x264 -o movie.avi

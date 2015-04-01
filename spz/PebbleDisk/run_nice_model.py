@@ -12,10 +12,10 @@ from make_planets import *
 from amuse.units import quantities
 
 
-def remove_escapers(stars):
+def remove_escapers(stars, radius):
     for star in stars:
         pebbles = star.disk_particles
-        escapers = pebbles[pebbles.position.lengths()>2*stars.position.lengths().max()]
+        escapers = pebbles[pebbles.position.lengths()>radius]
         if len(escapers) == 0:
             return
 
@@ -26,20 +26,22 @@ def remove_escapers(stars):
             if len(escapers)>0:
                 pebbles.remove_particles(escapers)
         else:
+            print "removing", len(escapers), "escaping pebble(s)"
             pebbles.remove_particles(escapers)
             
-def remove_escaping_planets(stars):
+def remove_escaping_planets(stars, radius):
     for star in stars:
         planets = star.planets
-        escapers = planets[planets.position.lengths()>2*stars.position.lengths().max()]
+        escapers = planets[planets.position.lengths()>radius]
         if len(escapers) == 0:
             return
-
+        
         if 0:
             escapers = escapers[numpy.asarray([x is None for x in escapers.star])]
             if len(escapers)>0:
                 planets.remove_particles(escapers)
         else:
+            print "removing", len(escapers), "escaping planet(s)"
             planets.remove_particles(escapers)
 
 def new_option_parser():
@@ -130,19 +132,20 @@ class GravityCodeInField(bridge.GravityCodeInField):
         self.update_velocities(particles, dt, ax, ay, az)
 
     def update_velocities(self,particles, dt,  ax, ay, az):
-        names = ('vx','vy','vz')
-        vx, vy, vz = particles.get_values_in_store(None, names)
-        particles.set_values_in_store(
-            None,
-            names,
-            (vx + dt * ax,
-            vy + dt * ay,
-            vz + dt * az)
-        )
-            
-        #particles.vx += dt * ax
-        #particles.vy += dt * ay
-        #particles.vz += dt * az
+        if 1:
+            names = ('vx','vy','vz')
+            vx, vy, vz = particles.get_values_in_store(None, names)
+            particles.set_values_in_store(
+                None,
+                names,
+                (vx + dt * ax,
+                vy + dt * ay,
+                vz + dt * az)
+            )
+        else:    
+            particles.vx += dt * ax
+            particles.vy += dt * ay
+            particles.vz += dt * az
         
     def kick(self, dt):
         copy_of_particles = self.copy_of_particles
@@ -166,9 +169,12 @@ if __name__ in ('__main__', '__plot__'):
     #    random.seed(seed=o.seed)
     
     if o.filename and os.path.exists(o.filename):
-        stars = read_set_from_file(o.filename, "amuse").copy()
+        stars = read_set_from_file(o.filename, "amuse", close_file=True).copy()
         Rcl = o.Rcluster
         converter = nbody_system.nbody_to_si(stars.mass.sum(), Rcl)
+        
+        time = stars.collection_attributes.model_time
+        begin_time = time
     else:
         Ncl = o.Nstars
         masses = 1.0 | units.MSun
@@ -194,20 +200,24 @@ if __name__ in ('__main__', '__plot__'):
             Mdisk = 35.0 | MEarth
             star.disk_particles.mass = Mdisk/len(star.disk_particles)
             star.bound_pebbles = Particles()
+        time = 0 | units.yr
+        begin_time = time
+
     
 #    cluster = Hermite(converter)
 #    cluster.parameters.dt_param = 0.0003
 #    cluster = Huayno(converter)
 #    cluster.parameters.inttype_parameter = 21
-    cluster = Mercury(converter)
-    from amuse.community.sakura.interface import Sakura
+    cluster = Hermite(converter)
+#    cluster.parameters.begin_time = time
+#    from amuse.community.sakura.interface import Sakura
 #    cluster = Sakura(converter)
     cluster.particles.add_particles(stars)
     channel_from_cluster = cluster.particles.new_channel_to(stars)
     tcr = Rcl/numpy.sqrt(constants.G*stars.mass.sum()/Rcl)
     print "Tcr=", tcr.in_(units.yr)
     dt = 1|units.yr
-    cluster_with_pebble_disks = bridge.Bridge(timestep=dt, use_threading=True)
+    cluster_with_pebble_disks = bridge.Bridge(timestep=1.0 * dt, use_threading=True)
 
     channels_from_planets = []
     for star in stars:
@@ -226,27 +236,32 @@ if __name__ in ('__main__', '__plot__'):
         code = GravityCodeInField(cluster, (CalculateFieldForParticles(star.disk_particles, constants.G),))
         cluster_with_pebble_disks.add_code(code)
         
+        # let the planets and the sun NOT be kicked by the pebbles
+        #code = GravityCodeInField(cluster, [])
+        #cluster_with_pebble_disks.add_code(code)
+        
 #    cluster_with_pebble_disks.add_system(cluster, ())
-    time = 0 | units.yr
-
-    filename = "nice_model-{0}.h5".format(platform.node())
+    t0 = time
+    filename = "nice_model-{0}-{1}.h5".format(platform.node(), int(t0.value_in(1000 * units.yr)))
     write_set_to_file(stars, filename, "amuse", append_to_file=False, version="2.0")
     
     istep = 0
     t0 = pytime.time() | units.s
+    print "starting at time: ", time.as_quantity_in(units.yr)
     while time < o.endtime:
         istep += 1
-        time += 100*dt
-        cluster_with_pebble_disks.evolve_model(time)
+        time += 1000*dt
+        print "evolving to time: ", time.as_quantity_in(units.yr)
+        cluster_with_pebble_disks.evolve_model(time - begin_time)
         channel_from_cluster.copy()
         for channel in channels_from_planets:
             channel.copy()
-        print time.in_(units.yr), cluster_with_pebble_disks.model_time.in_(units.yr)
+        print "evolved to time: ", time.in_(units.yr)
         if istep%10 == 0:
             write_set_to_file(stars, filename, "amuse", append_to_file=True, version="2.0", extra_attributes = {'model_time': time})
         if False and istep%20 == 0:
-            remove_escapers(stars)
-            remove_escaping_planets(stars)
+            remove_escapers(stars, 20000|units.AU)
+            remove_escaping_planets(stars, 20000|units.AU)
             
     
     t1 = pytime.time() | units.s

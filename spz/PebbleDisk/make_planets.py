@@ -61,6 +61,12 @@ def make_Nice_planets(central_particle, phi=None, theta=None):
                              2.85885980666130812E-04,
                              5.15138902046611451E-05, 
                              4.36624404335156298E-05] | units.MSun
+    planet_particles.radius = [
+        68700,
+        60268,
+        24764,
+        25559 
+    ] | units.km
     planet_particles.names = ["Jup", "Sat", "Nep", "Uran"]
 
     converter = nbody_system.nbody_to_si(central_particle.mass, 1|units.AU)

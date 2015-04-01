@@ -56,7 +56,7 @@ def make_pebble_disk(central_particle, Ndisk, arange, erange, phi=None, theta=No
     disk_particles = Particles(Ndisk)
     disk_particles.semimajor_axis = random.uniform(arange[0].value_in(units.AU), arange[1].value_in(units.AU), size=Ndisk) | units.AU
     disk_particles.eccentricity = random.uniform(*erange, size=Ndisk)
-
+    disk_particles.radius = 100 | units.km
     converter = nbody_system.nbody_to_si(central_particle.mass, arange[-1])
     kepler = Kepler(converter)
     kepler.initialize_code()
