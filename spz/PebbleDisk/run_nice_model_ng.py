@@ -49,6 +49,12 @@ def new_option_parser():
     result.add_option("--particles-kind", 
                       dest="particles_kind", default = "test",
                       help="type of the particles (test, collisionless, gravitational)")
+    result.add_option("--no-escapers",
+                  action="store_false", dest="with_escapers", default=True,
+                  help="don't detect escapers")
+    result.add_option("--escape_radius", unit=units.AU,
+                      dest="escape_radius", type="float", default = 1000000 | units.AU,
+                      help="escape radius [%default]")
     return result
 
 
@@ -161,7 +167,10 @@ class CreateNiceModel(object):
         sun = self.create_sun()
         self.result = Particles()
         sun = self.result.add_particle(sun)
-        sun.disk_particles = self.create_disk_particles(sun)
+        if self.number_of_disk_particles > 0:
+            sun.disk_particles = self.create_disk_particles(sun)
+        else:
+            sun.disk_particles = Particles()
         sun.planets = self.create_planets(sun)
         sun.escaped_disk_particles = Particles()
         sun.escaped_planets = Particles()
@@ -201,7 +210,7 @@ class RunNiceModel(object):
         self.time_offset = self.time
         self.channels = []
         self.dt = self._get_value_from_model(dt, self.model, "delta_t", 1 | units.yr)
-        self.escape_radius = self._get_value_from_model(escape_radius, self.model, "escape_radius", 10 | units.AU)
+        self.escape_radius = self._get_value_from_model(escape_radius, self.model, "escape_radius", 1000000 | units.AU)
         self.code_name = self._get_value_from_model(code_name, self.model, "code_name", "hermite")
         self.particles_kind = self._get_value_from_model(particles_kind, self.model, "particles_kind", "collisionless")
         self.with_escapers = self._get_value_from_model(with_escapers, self.model, "with_escapers", True)
@@ -232,15 +241,19 @@ class RunNiceModel(object):
         return result
     
     def remove_escaping_pebbles(self, star, radius):
-        escapers = self.remove_escaping_particles(star, star.disk_particles, radius, "pebble(s)")
-        star.escaped_disk_particles.add_particles(escapers)
+        if len(star.disk_particles) > 0:
+            escapers = self.remove_escaping_particles(star, star.disk_particles, radius, "pebble(s)")
+            star.escaped_disk_particles.add_particles(escapers)
         
     def remove_escaping_planets(self, star, radius):
         escapers = self.remove_escaping_particles(star, star.planets, radius, "planet(s)")
         star.escaped_planets.add_particles(escapers)
         
     def length_scale(self):
-        return (self.star.disk_particles.position - self.star.position).lengths().max()
+        if len(self.star.disk_particles) == 0:
+            return 100 | units.AU
+        else:
+            return (self.star.disk_particles.position - self.star.position).lengths().max()
         
     def mass_scale(self):
         return self.star.mass
@@ -271,7 +284,9 @@ class RunNiceModel(object):
     def create_code(self):
         
         planets_and_star = self.create_gravity_code()
-        if self.particles_kind == "gravitational":
+        if len(self.star.disk_particles)  == 0:
+            return planets_and_star
+        elif self.particles_kind == "gravitational":
             planets_and_star.particles.add_particles(self.star.disk_particles)
             self.channels.append(code.particles.new_channel_to(self.star.disk_particles))
             planets_and_star.particles.move_to_center()
@@ -349,12 +364,16 @@ if __name__ == "__main__":
         stars = read_set_from_file(o.filename, "amuse", close_file=True).copy()
         if o.newcode:
             stars.collection_attributes.code_name = o.newcode
+        
     else:
         uc =  CreateNiceModel(o.ndisk, o.disk_mass, o.inner_disk_radius, o.outer_disk_radius)
         uc.start()
         stars = uc.result
         stars.collection_attributes.code_name = o.code
         stars.collection_attributes.particles_kind = o.particles_kind
+        stars.collection_attributes.with_escapers = o.with_escapers
+        stars.collection_attributes.escape_radius = o.escape_radius
+        
         
     
     uc = RunNiceModel(stars, dt = o.dt)

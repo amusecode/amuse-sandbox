@@ -29,14 +29,18 @@ def movie(stars, time, nstep):
     particles = ParticlesSuperset([stars, stars[0].planets, stars[0].disk_particles])
     
     particles.move_to_center()
-    print stars[0].disk_particles.mass.sum().as_quantity_in(MEarth)
-    print stars[0].planets.mass / stars[0].disk_particles[0].mass 
-    print stars[0].planets.mass / (1 | MEarth)
+    star = stars[0]
+    if len(star.disk_particles) > 0:
+        print stars[0].disk_particles.mass.sum().as_quantity_in(MEarth)
+    if len(star.planets) > 0:
+        print star.planets.mass / (1 | MEarth)
     #print stars[0]
     pyplot.subplot(2,2,1)
     pyplot.scatter(stars.x.value_in(units.AU), stars.y.value_in(units.AU), c='r', s=m)
+    
     for star, color in zip(stars, colors):
-        pyplot.scatter(star.disk_particles.x.value_in(units.AU), star.disk_particles.y.value_in(units.AU), c=color, s=1)
+        if len(star.disk_particles) > 0:
+            pyplot.scatter(star.disk_particles.x.value_in(units.AU), star.disk_particles.y.value_in(units.AU), c=color, s=1)
     
     colors = ['r', 'b', 'g','y']
     for star, color in zip(stars, colors):
@@ -53,7 +57,8 @@ def movie(stars, time, nstep):
     pyplot.subplot(2,2,2)
     pyplot.scatter(stars.x.value_in(units.AU), stars.z.value_in(units.AU), c='r', s=m)
     for star, color in zip(stars, colors):
-        pyplot.scatter(star.disk_particles.x.value_in(units.AU), star.disk_particles.z.value_in(units.AU), c=color, s=1)
+        if len(star.disk_particles) > 0:
+            pyplot.scatter(star.disk_particles.x.value_in(units.AU), star.disk_particles.z.value_in(units.AU), c=color, s=1)
     pyplot.xlabel("X [AU]")
     pyplot.ylabel("Z [AU]")
 
@@ -64,7 +69,8 @@ def movie(stars, time, nstep):
     pyplot.ylim(0, 1)
     pyplot.semilogx()
     for star, color in zip(stars, colors):
-        pyplot.scatter(star.disk_particles.semimajor_axis.value_in(units.AU), star.disk_particles.eccentricity, c=color, s=10, lw=0)
+        if len(star.disk_particles) > 0:
+            pyplot.scatter(star.disk_particles.semimajor_axis.value_in(units.AU), star.disk_particles.eccentricity, c=color, s=10, lw=0)
     pyplot.xlabel("a [AU]")
     pyplot.ylabel("e")
 
@@ -205,20 +211,21 @@ if __name__ == "__main__":
         sys.exit(1)
     stored_stars = read_set_from_file(o.filename, "amuse")
     history = list(stored_stars.iter_history())
-    all = list(reversed(history))[1:]
+    all_steps = list(reversed(history))[1:]
     converter = nbody_system.nbody_to_si(stored_stars.mass.sum(), 100 | units.AU)
     Johannes = Kepler(converter)
     Johannes.initialize_code()
-#    cluster_with_pebble_disks.add_system(cluster, ())
+    
     time = 1 | units.yr
     pyplot.ion()
     nstep = 1
-    for x in all[30::1]:
+    for x in all_steps[::1]:
         stars = x.copy()
         print x.collection_attributes 
         time = x.collection_attributes.model_time
         #identify_stellar_hosts(stars)
-        stars[0].disk_particles.star = stars[0]
+        if len(stars[0].disk_particles) > 0:
+            stars[0].disk_particles.star = stars[0]
         stars[0].planets.star = stars[0]
         #identify_stellar_hosts_for_planets(stars)
         determine_orbital_parameters_of_pebbles(stars)
