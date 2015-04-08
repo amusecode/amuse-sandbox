@@ -260,8 +260,8 @@ if __name__ in ('__main__', '__plot__'):
         if istep%10 == 0:
             write_set_to_file(stars, filename, "amuse", append_to_file=True, version="2.0", extra_attributes = {'model_time': time})
         if False and istep%20 == 0:
-            remove_escapers(stars, 20000|units.AU)
-            remove_escaping_planets(stars, 20000|units.AU)
+            remove_escapers(stars, 1000000|units.AU)
+            remove_escaping_planets(stars, 1000000|units.AU)
             
     
     t1 = pytime.time() | units.s

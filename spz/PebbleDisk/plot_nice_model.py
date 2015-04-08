@@ -85,7 +85,7 @@ def movie(stars, time, nstep):
     pyplot.ylim(0,0.2)
 
     pyplot.draw()
-    #pyplot.savefig('xy%6.6i.png'%nstep,bbox_inches='tight')
+    pyplot.savefig('xy%6.6i.png'%nstep,bbox_inches='tight')
     
 
 
