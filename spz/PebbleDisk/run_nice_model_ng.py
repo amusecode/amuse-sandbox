@@ -288,7 +288,7 @@ class RunNiceModel(object):
             return planets_and_star
         elif self.particles_kind == "gravitational":
             planets_and_star.particles.add_particles(self.star.disk_particles)
-            self.channels.append(code.particles.new_channel_to(self.star.disk_particles))
+            self.channels.append(planets_and_star.particles.new_channel_to(self.star.disk_particles))
             planets_and_star.particles.move_to_center()
             return planets_and_star
         else:
@@ -344,7 +344,7 @@ class RunNiceModel(object):
             print " evolved to time: ", self.time.in_(units.yr)
             if istep%10 == 0:
                 self.save()
-            if self.with_escapers and istep%1 == 0:
+            if self.with_escapers and istep%20 == 0:
                 self.remove_escaping_pebbles(self.star, self.escape_radius)
                 self.remove_escaping_planets(self.star, self.escape_radius)
         
