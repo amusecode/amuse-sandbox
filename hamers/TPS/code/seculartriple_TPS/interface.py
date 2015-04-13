@@ -2,7 +2,7 @@
 Interface for SecularTriple
 Designed to work together with TPS
 
-Adrian Hamers 27-11-2014
+Adrian Hamers 2015
 """
 
 from amuse.community import *
@@ -548,6 +548,20 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
+    def set_ignore_tertiary():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "Whether or not to include the effects of tides in the outer binary system")
+        function.result_type = 'int32'
+        return function    
+        
+    @legacy_function
+    def get_ignore_tertiary():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "Whether or not to include the effects of tides in the outer binary system")
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
     def set_include_inner_wind_terms():
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
@@ -836,6 +850,13 @@ class SecularTriple(InCodeComponentImplementation):
             "set_include_25PN_outer_terms",
             "include_25PN_outer_terms",
             "Include 25PN outer binary terms in the equations of motion", 
+            default_value = False
+        )
+        object.add_method_parameter(
+            "get_ignore_tertiary",
+            "set_ignore_tertiary",
+            "ignore_tertiary",
+            "", 
             default_value = False
         )        
         object.add_method_parameter(
@@ -1341,7 +1362,7 @@ class SecularTriple(InCodeComponentImplementation):
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_cvode,CVODE_flag,root_finding_flag = self.evolve(*args)
             if self.parameters.verbose == True:
-                print 'SecularTriple -- done; t/Myr = ', end_time.value_in(units.Myr),' a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in,' spin_freq1 = ',spin_angular_frequency1,'LAN_in',LAN_in,'LAN_out',LAN_out
+                print 'SecularTriple -- done; t/Myr = ', end_time.value_in(units.Myr),' a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in,' spin_freq1 = ',spin_angular_frequency1,'LAN_in',LAN_in,'LAN_out',LAN_out,'AP_in',AP_in,'AP_out',AP_out
 
             print_CVODE_output(self,CVODE_flag)
             triple.error_flag_secular = CVODE_flag

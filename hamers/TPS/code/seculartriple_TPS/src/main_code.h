@@ -107,6 +107,7 @@ typedef struct {
     bool include_quadrupole_terms,include_octupole_terms;
     bool include_1PN_inner_terms,include_1PN_outer_terms,include_1PN_inner_outer_terms,include_25PN_inner_terms,include_25PN_outer_terms;
     bool include_inner_tidal_terms,include_outer_tidal_terms;
+    bool ignore_tertiary;
     bool include_inner_wind_terms,include_outer_wind_terms;
     bool include_magnetic_braking_terms;
     bool include_spin_radius_mass_coupling_terms;
@@ -214,6 +215,8 @@ int get_include_inner_tidal_terms(int *value);
 int set_include_inner_tidal_terms(int value);
 int get_include_outer_tidal_terms(int *value);
 int set_include_outer_tidal_terms(int value);
+int get_ignore_tertiary(int *value);
+int set_ignore_tertiary(int value);
 int get_include_inner_wind_terms(int *value);
 int set_include_inner_wind_terms(int value);
 int get_include_outer_wind_terms(int *value);

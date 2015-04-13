@@ -32,6 +32,7 @@ bool include_quadrupole_terms,include_octupole_terms;
 bool include_1PN_inner_terms,include_1PN_outer_terms,include_1PN_inner_outer_terms,include_25PN_inner_terms,include_25PN_outer_terms;
 bool include_inner_tidal_terms,include_outer_tidal_terms;
 bool include_inner_wind_terms,include_outer_wind_terms;
+bool ignore_tertiary;
 bool include_magnetic_braking_terms;
 bool include_spin_radius_mass_coupling_terms;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
@@ -85,8 +86,13 @@ int evolve(
     if (e_out<=tiny_double) { e_out = tiny_double; }    
     if (INCL_in<=tiny_double) { INCL_in = tiny_double; }
     if (INCL_out<=tiny_double) { INCL_out = tiny_double; }
-//    if (AP_in<=tiny_double) { AP_in = tiny_double; }
-//    if (AP_out<=tiny_double) { AP_out = tiny_double; }
+    
+//    if (spin_angular_frequency1<=tiny_double) { spin_angular_frequency1 = tiny_double; }
+//    if (spin_angular_frequency2<=tiny_double) { spin_angular_frequency2 = tiny_double; }
+//    if (spin_angular_frequency3<=tiny_double) { spin_angular_frequency3 = tiny_double; }
+    
+//    if (AP_in<=tiny_double) { 
+//    if (AP_out<=tiny_double) { 
 //    if (LAN_in<=tiny_double) { LAN_in = tiny_double; }
 //    if (LAN_out<=tiny_double) { LAN_out = tiny_double; }
 
@@ -124,6 +130,7 @@ int evolve(
     data->include_1PN_inner_outer_terms = include_1PN_inner_outer_terms;
     data->include_25PN_inner_terms = include_25PN_inner_terms;
     data->include_25PN_outer_terms = include_25PN_outer_terms;
+    data->ignore_tertiary = ignore_tertiary;
 
     data->threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero = threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero;
     data->threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero = threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero;
@@ -186,14 +193,6 @@ int evolve(
     data->check_for_inner_RLOF = check_for_inner_RLOF;
     data->check_for_outer_RLOF = check_for_outer_RLOF;
 
-//	double L1 = m1*m2*sqrt(CONST_G*a1/(m1+m2));
-//	double L2 = (m1+m2)*m3*sqrt(CONST_G*a2/(m1+m2+m3));
-//	double e1_2com = 1.0 - e1*e1;
-//	double e2_2com = 1.0 - e2*e2;
-//	double Ga1 = L1*sqrt(e1_2com);
-//	double Ga2 = L2*sqrt(e2_2com);
-//	double Gatot =  sqrt(pow(Ga1,2.0) + pow(Ga2,2.0) + 2.0*Ga1*Ga2*cos(i12));	
-
 	N_Vector yev, yev_out, abstol;
 	void *cvode_mem;
 	int flag,flag_s;
@@ -202,15 +201,7 @@ int evolve(
 	cvode_mem = NULL;
 
     int NEQ;
-//    double e_in_vec[3], e_out_vec[3], h_in_vec[3], h_out_vec[3], q_in_vec[3], q_out_vec[3];    
-#ifdef IGNORE
-    double cos_INCL_in = cos(INCL_in);
-    double cos_INCL_out = cos(INCL_out);
-    double sin_INCL_in = sin(INCL_in);
-    double sin_INCL_out = sin(INCL_out);
-    double cos_INCL_in_out = sin_INCL_in*sin_INCL_out*cos(LAN_in-LAN_out) + cos_INCL_in*cos_INCL_out;
-    double INCL_in_out = acos(cos_INCL_in_out);
-#endif
+
     double INCL_in_out = INCL_in;
     double cos_INCL_in_out = cos(INCL_in_out);
 
@@ -238,7 +229,7 @@ int evolve(
         Ith(yev,6) = LAN_out;		/* Outer orbit longitude of the ascending node - unit: rad */
         Ith(yev,7) = a_in;		/* Inner orbit semi-major axis - unit: AU */
         Ith(yev,8) = a_out;		/* Outer orbit semi-major axis - unit: AU */
-        Ith(yev,9) = cos_INCL_in_out;
+        Ith(yev,9) = cos_INCL_in_out; /* cosine of the relative inclination */
         Ith(yev,10) = spin_angular_frequency1;	/* Spin angular frequency of star 1 - unit: rad Myr^-1 */
         Ith(yev,11) = spin_angular_frequency2;	/* Spin angular frequency of star 2 - unit: rad Myr^-1 */
         Ith(yev,12) = spin_angular_frequency3;	/* Spin angular frequency of star 3 - unit: rad Myr^-1 */
@@ -430,13 +421,11 @@ int evolve(
 	*t_output = t_end_cvode;
 
     double x_output,y_output;
-//      double L1_out,L2_out,G1_out,G2_out,G12_out;
     double cos_INCL_in_output;
     double cos_INCL_out_output;
     double sin_INCL_in_output;
     double sin_INCL_out_output;
     double cos_INCL_in_out_output;
-//    double INCL12 = acos(cos_INCL12);
 
     if (equations_of_motion_specification==0)
     {
@@ -474,17 +463,6 @@ int evolve(
         *spin_angular_frequency1_output = Ith(yev_out,10);
         *spin_angular_frequency2_output = Ith(yev_out,11);
         *spin_angular_frequency3_output = Ith(yev_out,12);
-        
-//        L1_out = m1*m2*sqrt(CONST_G*(*a1_out)/(m1+m2));
-//        L2_out = (m1+m2)*m3*sqrt(CONST_G*(*a2_out)/(m1+m2+m3));
-//        G1_out = L1_out*sqrt(1.0 - (*e1_out)*(*e1_out));
-//        G2_out = L2_out*sqrt(1.0 - (*e2_out)*(*e2_out));
-//        G12_out = sqrt(G1_out*G1_out + G2_out*G2_out + 2.0*G1_out*G2_out*theta_out);
-//        cos_i1_out = (G12_out*G12_out + G1_out*G1_out - G2_out*G2_out)/(2.0*G12_out*G1_out);
-//        cos_i2_out = (G12_out*G12_out - G1_out*G1_out + G2_out*G2_out)/(2.0*G12_out*G2_out);
-        
-//        *i1_out = acos(cos_i1_out);
-//        *i2_out = acos(cos_i2_out);
     }
     else
     {
@@ -705,6 +683,14 @@ int get_include_outer_tidal_terms(int *value){
 }
 int set_include_outer_tidal_terms(int value){
     include_outer_tidal_terms = value == 1;
+    return 0;
+}
+int get_ignore_tertiary(int *value){
+    *value = ignore_tertiary ? 1 : 0;
+    return 0;
+}
+int set_ignore_tertiary(int value){
+    ignore_tertiary = value == 1;
     return 0;
 }
 int get_include_inner_wind_terms(int *value){
