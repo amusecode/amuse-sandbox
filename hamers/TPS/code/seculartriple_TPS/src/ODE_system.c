@@ -432,8 +432,18 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     /* wind mass loss */
 
     /* combined */
-	double e_in_dot = e_in_dot_newtonian + e_in_dot_GR_1PN_in_out + e_in_dot_GR_25PN_in + e_in_dot_tides;
 
+    double e_in_dot = 0.0;
+
+    if (e_in <= threshold_value_of_e_in_for_setting_tidal_e_in_dot_zero)
+	{
+//        printf("setting e_in_dot zero %g %g %g %g %g \n",e_in,e_in_dot_newtonian,e_in_dot_GR_1PN_in_out,e_in_dot_GR_25PN_in,e_in_dot_tides);
+	    e_in_dot = 0.0;
+	}
+    else
+	{
+	    e_in_dot = e_in_dot_newtonian + e_in_dot_GR_1PN_in_out + e_in_dot_GR_25PN_in + e_in_dot_tides;
+    }
 	Ith(ydot,1) = -1.0*pow(10.0,-x)*e_in_dot/log(10.0);
 
 
