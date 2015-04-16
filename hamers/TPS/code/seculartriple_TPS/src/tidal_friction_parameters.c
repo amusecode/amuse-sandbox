@@ -15,7 +15,7 @@ Adrian Hamers 29-09-2014
 
 #include "main_code.h"
 
-double const MINIMUM_MASS_FOR_RADIATIVE_DAMPING_MSUN = 1.25; // in future: make user-adjustable
+double const MINIMUM_MASS_FOR_RADIATIVE_DAMPING_MSUN = 1.2; // in future: make user-adjustable
 int const MAIN_SEQUENCE = 1;
 int const CHeB = 4;
 int const HeMS = 7;
@@ -166,6 +166,11 @@ double compute_k_div_T_tides
         f_convective = min(1.0,f_convective);
 
         k_div_T_tides = (2.0/21.0)*(f_convective/tau_convective)*(convective_envelope_mass/mass);
+        
+        if ((convective_envelope_mass <= 0.0) || (convective_envelope_radius <= 0.0))
+        {
+            k_div_T_tides = 0.0;
+        }
         
 //        printf("test par conv %g %g %g %g %g \n",mass,radius,convective_envelope_mass,convective_envelope_radius,spin_angular_frequency);
 //        printf("test conv %g %g %g %g %g \n",P_orb,tau_convective,P_tid,P_spin,f_convective);

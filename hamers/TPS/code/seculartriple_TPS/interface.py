@@ -1362,7 +1362,7 @@ class SecularTriple(InCodeComponentImplementation):
             AP_in,AP_out,LAN_in,LAN_out, \
             end_time_cvode,CVODE_flag,root_finding_flag = self.evolve(*args)
             if self.parameters.verbose == True:
-                print 'SecularTriple -- done; t/Myr = ', end_time.value_in(units.Myr),' a_in/AU=',a_in.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in,' spin_freq1 = ',spin_angular_frequency1,'LAN_in',LAN_in,'LAN_out',LAN_out,'AP_in',AP_in,'AP_out',AP_out
+                print 'SecularTriple -- done; t/Myr = ', end_time.value_in(units.Myr),' a_in/AU=',a_in.value_in(units.AU),' a_out/AU=',a_out.value_in(units.AU),'; e_in=',e_in,'e_out=',e_out,' rel_INCL = ',INCL_in,' spin_freq1/day^{-1} = ',spin_angular_frequency1.value_in(1.0/units.day),'LAN_in',LAN_in,'LAN_out',LAN_out,'AP_in',AP_in,'AP_out',AP_out
 
             print_CVODE_output(self,CVODE_flag)
             triple.error_flag_secular = CVODE_flag
