@@ -15,9 +15,6 @@ from amuse.datamodel import Particles
 from amuse.support.console import set_printing_strategy
 from amuse.io import write_set_to_file
 from amuse.units import quantities
-import amuse.plot as aplt
-
-import matplotlib.pyplot as plt
 from math import sqrt
 import numpy as np
 
@@ -25,6 +22,8 @@ REPORT_TRIPLE_EVOLUTION = False
 REPORT_DT = False 
 REPORT_DEBUG = False
 REPORT_USER_WARNINGS = False
+
+
 
 no_stellar_evolution = False
 
@@ -96,8 +95,6 @@ class Triple_Class:
         self.time = 0.0|units.yr
         self.previous_time = 0.0|units.yr
         self.maximum_radius_change_factor = maximum_radius_change_factor
-        self.max_dm_over_m = [[0., 0.|units.yr, 1|units.stellar_type]]
-        self.max_dr_over_r = [[0., 0.|units.yr, 1|units.stellar_type]]
         self.file_name = file_name
         self.file_type = file_type
 
@@ -975,8 +972,6 @@ class Triple_Class:
 #        self.tend = tend #...
 #        self.time = 0.0|units.yr
 #        self.previous_time = 0.0|units.yr
-#        self.max_dm_over_m
-#        self.max_dr_over_r
 #        self.file_name
 #        self.file_type
 
@@ -1427,22 +1422,11 @@ class Triple_Class:
                 print 'relative wind mass losses:', dm
                         
             if (abs(dm) > error_dm) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
-                self.max_dm_over_m.append([abs(dm), stellar_system.age, stellar_system.stellar_type])                               
 #                print 'Change in mass in a single time_step larger then', error_dm
-#                print dm, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.max_dm_over_m
+#                print dm, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type
                 print self.triple.number, stellar_system.mass.value_in(units.MSun), 
                 print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
                 print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, dm, 0
-
-#                f_dm = open(file_name_dm,'a')
-#                pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
-#                pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'
-#                pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
-#                pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
-#                pr_str += str(dm) +'\n'
-#                f_dm.write(pr_str)
-#                f_dm.close()
-#                exit(1)
 
             if self.secular_code.parameters.include_inner_tidal_terms or self.secular_code.parameters.include_outer_tidal_terms:
                 dr = (stellar_system.radius - stellar_system.previous_radius)/stellar_system.radius
@@ -1453,22 +1437,12 @@ class Triple_Class:
                                      
                 if (abs(dr) > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_dr):
                     successfull_dr = False
-                    self.max_dr_over_r.append([abs(dr), stellar_system.age, stellar_system.stellar_type])                
 #                    print 'Change in radius in a single time_step larger then', error_dr
-#                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system), self.max_dr_over_r
+#                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
                     print self.triple.number, stellar_system.mass.value_in(units.MSun), 
                     print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
                     print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, dr, 1
                     
-#                    f_dr = open(file_name_dr,'a')
-#                    pr_str = str(self.triple.number)+'\t'+str(stellar_system.mass.value_in(units.MSun))+'\t'
-#                    pr_str += str(stellar_system.previous_mass.value_in(units.MSun))+'\t'
-#                    pr_str += str(stellar_system.age.value_in(units.Myr))+'\t'+ str(stellar_system.stellar_type.value)+'\t'
-#                    pr_str += str(stellar_system.previous_stellar_type.value)+'\t'
-#                    pr_str += str(dr) +'\n'
-#                    f_dr.write(pr_str)
-#                    f_dr.close()
-#                    exit(1)
             return successfull_dr, 1, stellar_system
 
         else:
@@ -1492,55 +1466,56 @@ class Triple_Class:
 #-------------------------    
 
     def evolve_model(self):
-        # for plotting data
-        times_array = quantities.AdaptingVectorQuantity() 
-        a_in_array = quantities.AdaptingVectorQuantity()
-        e_in_array = []
-        g_in_array = []
-        o_in_array = []
-        a_out_array = quantities.AdaptingVectorQuantity()
-        e_out_array = []
-        g_out_array = []
-        o_out_array = []
-        i_relative_array = []
-        m1_array = quantities.AdaptingVectorQuantity()
-        m2_array = quantities.AdaptingVectorQuantity()
-        m3_array = quantities.AdaptingVectorQuantity()
-        spin1_array = []
-        spin2_array = []
-        spin3_array = []
-        r1_array = []
-        r2_array = []
-        r3_array = []
-        gy1_array = []
-        gy2_array = []
-        gy3_array = []
-        moi1_array = []
-        moi2_array = []
-        moi3_array = []
-    
-        times_array.append(self.time)
-        e_in_array.append(self.triple.child2.eccentricity)
-        a_in_array.append(self.triple.child2.semimajor_axis)
-        g_in_array.append(self.triple.child2.argument_of_pericenter) 
-        o_in_array.append(self.triple.child2.longitude_of_ascending_node)               
-        e_out_array.append(self.triple.eccentricity)
-        a_out_array.append(self.triple.semimajor_axis)
-        g_out_array.append(self.triple.argument_of_pericenter) 
-        o_out_array.append(self.triple.longitude_of_ascending_node)               
-        i_relative_array.append(self.triple.relative_inclination)        
-        m1_array.append(self.triple.child2.child1.mass)
-        m2_array.append(self.triple.child2.child2.mass)
-        m3_array.append(self.triple.child1.mass)
-        spin1_array.append(self.triple.child2.child1.spin_angular_frequency.value_in(1./units.Myr))
-        spin2_array.append(self.triple.child2.child2.spin_angular_frequency.value_in(1./units.Myr))
-        spin3_array.append(self.triple.child1.spin_angular_frequency.value_in(1./units.Myr))
-        r1_array.append(self.triple.child2.child1.radius.value_in(units.RSun))
-        r2_array.append(self.triple.child2.child2.radius.value_in(units.RSun))
-        r3_array.append(self.triple.child1.radius.value_in(units.RSun))
-        moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
-        moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
-        moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+        if REPORT_DEBUG:
+            # for plotting data
+            times_array = quantities.AdaptingVectorQuantity() 
+            a_in_array = quantities.AdaptingVectorQuantity()
+            e_in_array = []
+            g_in_array = []
+            o_in_array = []
+            a_out_array = quantities.AdaptingVectorQuantity()
+            e_out_array = []
+            g_out_array = []
+            o_out_array = []
+            i_relative_array = []
+            m1_array = quantities.AdaptingVectorQuantity()
+            m2_array = quantities.AdaptingVectorQuantity()
+            m3_array = quantities.AdaptingVectorQuantity()
+            spin1_array = []
+            spin2_array = []
+            spin3_array = []
+            r1_array = []
+            r2_array = []
+            r3_array = []
+            gy1_array = []
+            gy2_array = []
+            gy3_array = []
+            moi1_array = []
+            moi2_array = []
+            moi3_array = []
+        
+            times_array.append(self.time)
+            e_in_array.append(self.triple.child2.eccentricity)
+            a_in_array.append(self.triple.child2.semimajor_axis)
+            g_in_array.append(self.triple.child2.argument_of_pericenter) 
+            o_in_array.append(self.triple.child2.longitude_of_ascending_node)               
+            e_out_array.append(self.triple.eccentricity)
+            a_out_array.append(self.triple.semimajor_axis)
+            g_out_array.append(self.triple.argument_of_pericenter) 
+            o_out_array.append(self.triple.longitude_of_ascending_node)               
+            i_relative_array.append(self.triple.relative_inclination)        
+            m1_array.append(self.triple.child2.child1.mass)
+            m2_array.append(self.triple.child2.child2.mass)
+            m3_array.append(self.triple.child1.mass)
+            spin1_array.append(self.triple.child2.child1.spin_angular_frequency.value_in(1./units.Myr))
+            spin2_array.append(self.triple.child2.child2.spin_angular_frequency.value_in(1./units.Myr))
+            spin3_array.append(self.triple.child1.spin_angular_frequency.value_in(1./units.Myr))
+            r1_array.append(self.triple.child2.child1.radius.value_in(units.RSun))
+            r2_array.append(self.triple.child2.child2.radius.value_in(units.RSun))
+            r3_array.append(self.triple.child1.radius.value_in(units.RSun))
+            moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+            moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+            moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
         
         if REPORT_TRIPLE_EVOLUTION:
             print 'kozai timescale:', self.kozai_timescale(), self.triple.kozai_type, self.tend    
@@ -1800,81 +1775,82 @@ class Triple_Class:
                 break
 
 
-
-            # for plotting data
-            times_array.append(self.time)
-            e_in_array.append(self.triple.child2.eccentricity)
-            a_in_array.append(self.triple.child2.semimajor_axis)
-            g_in_array.append(self.triple.child2.argument_of_pericenter) 
-            o_in_array.append(self.triple.child2.longitude_of_ascending_node)               
-            e_out_array.append(self.triple.eccentricity)
-            a_out_array.append(self.triple.semimajor_axis)
-            g_out_array.append(self.triple.argument_of_pericenter) 
-            o_out_array.append(self.triple.longitude_of_ascending_node)               
-            i_relative_array.append(self.triple.relative_inclination)        
-            m1_array.append(self.triple.child2.child1.mass)
-            m2_array.append(self.triple.child2.child2.mass)
-            m3_array.append(self.triple.child1.mass)
-            spin1_array.append(self.triple.child2.child1.spin_angular_frequency.value_in(1./units.Myr))
-            spin2_array.append(self.triple.child2.child2.spin_angular_frequency.value_in(1./units.Myr))
-            spin3_array.append(self.triple.child1.spin_angular_frequency.value_in(1./units.Myr))
-            r1_array.append(self.triple.child2.child1.radius.value_in(units.RSun))
-            r2_array.append(self.triple.child2.child2.radius.value_in(units.RSun))
-            r3_array.append(self.triple.child1.radius.value_in(units.RSun))
-            moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
-            moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
-            moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+            if REPORT_DEBUG:
+                # for plotting data
+                times_array.append(self.time)
+                e_in_array.append(self.triple.child2.eccentricity)
+                a_in_array.append(self.triple.child2.semimajor_axis)
+                g_in_array.append(self.triple.child2.argument_of_pericenter) 
+                o_in_array.append(self.triple.child2.longitude_of_ascending_node)               
+                e_out_array.append(self.triple.eccentricity)
+                a_out_array.append(self.triple.semimajor_axis)
+                g_out_array.append(self.triple.argument_of_pericenter) 
+                o_out_array.append(self.triple.longitude_of_ascending_node)               
+                i_relative_array.append(self.triple.relative_inclination)        
+                m1_array.append(self.triple.child2.child1.mass)
+                m2_array.append(self.triple.child2.child2.mass)
+                m3_array.append(self.triple.child1.mass)
+                spin1_array.append(self.triple.child2.child1.spin_angular_frequency.value_in(1./units.Myr))
+                spin2_array.append(self.triple.child2.child2.spin_angular_frequency.value_in(1./units.Myr))
+                spin3_array.append(self.triple.child1.spin_angular_frequency.value_in(1./units.Myr))
+                r1_array.append(self.triple.child2.child1.radius.value_in(units.RSun))
+                r2_array.append(self.triple.child2.child2.radius.value_in(units.RSun))
+                r3_array.append(self.triple.child1.radius.value_in(units.RSun))
+                moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+                moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+                moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
             
         self.save_snapshot()        
             
             
-        # for plotting data
-        e_in_array = np.array(e_in_array)
-        g_in_array = np.array(g_in_array)
-        o_in_array = np.array(o_in_array)
-        e_out_array = np.array(e_out_array)
-        g_out_array = np.array(g_out_array)
-        o_out_array = np.array(o_out_array)
-        i_relative_array = np.array(i_relative_array)
-        spin1_array = np.array(spin1_array)
-        spin2_array = np.array(spin2_array)
-        spin3_array = np.array(spin3_array)
-        r1_array = np.array(r1_array)
-        r2_array = np.array(r2_array)
-        r3_array = np.array(r3_array)
-        gy1_array = np.array(gy1_array)
-        gy2_array = np.array(gy2_array)
-        gy3_array = np.array(gy3_array)
-        moi1_array = np.array(moi1_array)
-        moi2_array = np.array(moi2_array)
-        moi3_array = np.array(moi3_array)
-
-        self.plot_data = plot_data_container()
-        self.plot_data.times_array = times_array
-        self.plot_data.a_in_array = a_in_array
-        self.plot_data.e_in_array = e_in_array
-        self.plot_data.g_in_array = g_in_array
-        self.plot_data.o_in_array = o_in_array        
-        self.plot_data.a_out_array = a_out_array
-        self.plot_data.e_out_array = e_out_array
-        self.plot_data.g_out_array = g_out_array
-        self.plot_data.o_out_array = o_out_array        
-        self.plot_data.i_relative_array = i_relative_array
-        self.plot_data.m1_array = m1_array
-        self.plot_data.m2_array = m2_array
-        self.plot_data.m3_array = m3_array
-        self.plot_data.spin1_array = spin1_array
-        self.plot_data.spin2_array = spin2_array
-        self.plot_data.spin3_array = spin3_array
-        self.plot_data.r1_array = r1_array
-        self.plot_data.r2_array = r2_array
-        self.plot_data.r3_array = r3_array
-        self.plot_data.gy1_array = gy1_array
-        self.plot_data.gy2_array = gy2_array
-        self.plot_data.gy3_array = gy3_array
-        self.plot_data.moi1_array = moi1_array
-        self.plot_data.moi2_array = moi2_array
-        self.plot_data.moi3_array = moi3_array
+        if REPORT_DEBUG:
+            # for plotting data
+            e_in_array = np.array(e_in_array)
+            g_in_array = np.array(g_in_array)
+            o_in_array = np.array(o_in_array)
+            e_out_array = np.array(e_out_array)
+            g_out_array = np.array(g_out_array)
+            o_out_array = np.array(o_out_array)
+            i_relative_array = np.array(i_relative_array)
+            spin1_array = np.array(spin1_array)
+            spin2_array = np.array(spin2_array)
+            spin3_array = np.array(spin3_array)
+            r1_array = np.array(r1_array)
+            r2_array = np.array(r2_array)
+            r3_array = np.array(r3_array)
+            gy1_array = np.array(gy1_array)
+            gy2_array = np.array(gy2_array)
+            gy3_array = np.array(gy3_array)
+            moi1_array = np.array(moi1_array)
+            moi2_array = np.array(moi2_array)
+            moi3_array = np.array(moi3_array)
+    
+            self.plot_data = plot_data_container()
+            self.plot_data.times_array = times_array
+            self.plot_data.a_in_array = a_in_array
+            self.plot_data.e_in_array = e_in_array
+            self.plot_data.g_in_array = g_in_array
+            self.plot_data.o_in_array = o_in_array        
+            self.plot_data.a_out_array = a_out_array
+            self.plot_data.e_out_array = e_out_array
+            self.plot_data.g_out_array = g_out_array
+            self.plot_data.o_out_array = o_out_array        
+            self.plot_data.i_relative_array = i_relative_array
+            self.plot_data.m1_array = m1_array
+            self.plot_data.m2_array = m2_array
+            self.plot_data.m3_array = m3_array
+            self.plot_data.spin1_array = spin1_array
+            self.plot_data.spin2_array = spin2_array
+            self.plot_data.spin3_array = spin3_array
+            self.plot_data.r1_array = r1_array
+            self.plot_data.r2_array = r2_array
+            self.plot_data.r3_array = r3_array
+            self.plot_data.gy1_array = gy1_array
+            self.plot_data.gy2_array = gy2_array
+            self.plot_data.gy3_array = gy3_array
+            self.plot_data.moi1_array = moi1_array
+            self.plot_data.moi2_array = moi2_array
+            self.plot_data.moi3_array = moi3_array
         
     #-------
 
@@ -1887,6 +1863,9 @@ class plot_data_container():
 
 def plot_function(triple):
     ### plots to test secular code ###
+    import amuse.plot as aplt
+    import matplotlib.pyplot as plt
+
 
     times_array_Myr = triple.plot_data.times_array.value_in(units.Myr)
     t_max_Myr = max(times_array_Myr)
@@ -2453,10 +2432,9 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
-#        print triple_class_object.max_dm_over_m
-#        print triple_class_object.max_dr_over_r
-#        plot_function(triple_class_object)
-#        triple_class_object.print_stellar_system()
+        if REPORT_DEBUG:
+            plot_function(triple_class_object)
+#            triple_class_object.print_stellar_system()
 
     return triple_class_object
 #-----
@@ -2558,10 +2536,9 @@ if __name__ == '__main__':
             print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
-#        plot_function(triple_class_object)
-#        triple_class_object.print_stellar_system()
-#        print triple_class_object.max_dm_over_m
-#        print triple_class_object.max_dr_over_r
+        if REPORT_DEBUG:
+            plot_function(triple_class_object)
+#            triple_class_object.print_stellar_system()
 
         if REPORT_TRIPLE_EVOLUTION:
             print 'Simulation has finished succesfully'
