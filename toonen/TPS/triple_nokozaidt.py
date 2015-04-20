@@ -1688,8 +1688,7 @@ class Triple_Class:
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Secular evolution finished'
     
-    
-                if self.time - self.secular_code.model_time < -1*numerical_error|units.Myr:
+                if self.time - self.secular_code.model_time < -1*numerical_error|units.Myr and self.secular_code.triples[0].error_flag_secular >= 0:
                     print 'triple time < sec time: should not be possible', self.time, self.secular_code.model_time
                     exit(1)
 

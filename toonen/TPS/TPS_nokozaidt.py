@@ -133,13 +133,14 @@ class Generate_initial_triple:
                             convergence = False
                             while convergence == False:
                                 convergence = self.generate_mass_and_semi_eggleton(in_primary_mass_max, in_primary_mass_min, in_semi_max, in_semi_min, 
-                    out_semi_max, out_semi_min)                            
-#                                   print convergence
+                                            out_semi_max, out_semi_min)                            
                         else:    
-                            self.generate_mass(in_primary_mass_max, in_primary_mass_min, 
-                                in_mass_ratio_max, in_mass_ratio_min,
-                                out_mass_ratio_max, out_mass_ratio_min,
-                                in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr)
+                            convergence = False
+                            while convergence == False:
+                                convergence = self.generate_mass(in_primary_mass_max, in_primary_mass_min, 
+                                        in_mass_ratio_max, in_mass_ratio_min,
+                                            out_mass_ratio_max, out_mass_ratio_min,
+                                            in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr)
                                 
                             self.generate_semi(in_semi_max, in_semi_min, 
                                 out_semi_max, out_semi_min,
@@ -210,6 +211,11 @@ class Generate_initial_triple:
             else: # flat distribution
                out_mass_ratio = flat_distr(out_mass_ratio_min, out_mass_ratio_max)
                self.out_mass = out_mass_ratio * (self.in_primary_mass + self.in_secondary_mass)
+
+        if self.out_mass > in_primary_mass_max:
+                return False
+        return True  
+
 
 
     def generate_semi(self, 
