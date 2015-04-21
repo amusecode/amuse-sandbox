@@ -531,8 +531,9 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     /* wind mass loss */
     /* mass transfer */    
     
-    /* combined */    
-	Ith(ydot,3) = g_in_dot_newtonian + g_in_dot_GR_1PN_in + g_in_dot_GR_1PN_in_out + g_in_dot_tides;
+    /* combined */  
+    double g_in_dot = g_in_dot_newtonian + g_in_dot_GR_1PN_in + g_in_dot_GR_1PN_in_out + g_in_dot_tides;
+	Ith(ydot,3) = g_in_dot;
 
 
     /*******************************
@@ -579,7 +580,8 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     }
     
     /* combined */
-	Ith(ydot,4) = g_out_dot_newtonian + g_out_dot_GR_1PN_out + g_out_dot_GR_1PN_in_out + g_out_dot_tides;
+    double g_out_dot = g_out_dot_newtonian + g_out_dot_GR_1PN_out + g_out_dot_GR_1PN_in_out + g_out_dot_tides;
+	Ith(ydot,4) = g_out_dot;
 	
     
     
@@ -662,7 +664,8 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     }
     
     /* combined */
-	Ith(ydot,7) = a_in_dot_GR_25PN_in + a_in_dot_tides + a_in_dot_wind + a_in_dot_mass_transfer;
+    double a_in_dot = a_in_dot_GR_25PN_in + a_in_dot_tides + a_in_dot_wind + a_in_dot_mass_transfer;
+	Ith(ydot,7) = a_in_dot;
 
 
 
@@ -732,7 +735,8 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     }
     
     /* combined */
-	Ith(ydot,8) = a_out_dot_GR_25PN_out + a_out_dot_tides + a_out_dot_wind + a_out_dot_mass_transfer;
+    double a_out_dot = a_out_dot_GR_25PN_out + a_out_dot_tides + a_out_dot_wind + a_out_dot_mass_transfer;
+	Ith(ydot,8) = a_out_dot;
 
 
 
@@ -788,7 +792,8 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
 //        printf("dots %g %g %g\n",spin_angular_frequency1,spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes,m_dot_accreted_by_star1_from_wind_of_star2);
     }
 
-	Ith(ydot,10) = spin_angular_frequency1_dot_tides + spin_angular_frequency1_dot_magnetic_braking + spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency1_dot_accretion_from_companions;
+    double spin_angular_frequency1_dot = spin_angular_frequency1_dot_tides + spin_angular_frequency1_dot_magnetic_braking + spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency1_dot_accretion_from_companions;
+	Ith(ydot,10) = spin_angular_frequency1_dot;
     
 
 
@@ -825,7 +830,9 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
         double m_dot_accreted_by_star2_from_wind_of_star1 = -inner_accretion_efficiency_wind_star1_to_star2*wind_mass_loss_rate_star1;
         spin_angular_frequency2_dot_accretion_from_companions = spin_angular_frequency_dot_accretion_from_companion(moment_of_inertia_star2, m_dot_accreted_by_star2_from_wind_of_star1, spin_angular_frequency1, R1);
     }
-	Ith(ydot,11) = spin_angular_frequency2_dot_tides + spin_angular_frequency2_dot_magnetic_braking + spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency2_dot_accretion_from_companions;
+    
+    double spin_angular_frequency2_dot = spin_angular_frequency2_dot_tides + spin_angular_frequency2_dot_magnetic_braking + spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency2_dot_accretion_from_companions;
+	Ith(ydot,11) = spin_angular_frequency2_dot;
 
 
     /************************************
@@ -868,10 +875,18 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
         }
     }
     
-	Ith(ydot,12) = spin_angular_frequency3_dot_tides + spin_angular_frequency3_dot_magnetic_braking + spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency3_dot_accretion_from_companions;
+    double spin_angular_frequency3_dot = spin_angular_frequency3_dot_tides + spin_angular_frequency3_dot_magnetic_braking + spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes + spin_angular_frequency3_dot_accretion_from_companions;
+	Ith(ydot,12) = spin_angular_frequency3_dot;
     
-    
-    
+//#ifdef VERBOSE
+    if (fabs(spin_angular_frequency3_dot) > 1.0e4)
+    {
+        printf("dots -- e_in %g e_out %g g_in %g g_out %g a_in %g a_out %g spin_1 %g spin_2 %g spin_3 %g\n", e_in_dot,e_out_dot,g_in_dot,g_out_dot,a_in_dot,a_out_dot,spin_angular_frequency1_dot,spin_angular_frequency2_dot,spin_angular_frequency3_dot);
+        printf("dots -- spin_3 parts %g %g %g %g\n",spin_angular_frequency3_dot_tides,spin_angular_frequency3_dot_magnetic_braking,spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes,spin_angular_frequency3_dot_accretion_from_companions);
+        printf("arguments for spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes %g %g %g %g %g %g\n",spin_angular_frequency3,m3,R3,moment_of_inertia_star3,moment_of_inertia_dot_star3, wind_mass_loss_rate_star3);
+    }
+//endif
+
 	return 0;
 }
 
@@ -1167,6 +1182,8 @@ double roche_radius_pericenter_sepinsky(double rp, double q, double e, double f)
     if (ratio == 0.0)
     {
         printf("unrecoverable error occurred in function roche_radius_pericenter_sepinsky in ODE_system.c\n");
+        printf("log_q %g log_A %g ratio %g\n",log_q,log_A,ratio);
+        printf("rp %g q %g e %g f %g\n",rp,q,e,f);
         exit(-1);
     }
     

@@ -14,9 +14,9 @@
 #define ATOL7		RCONST(1.0e-8)
 #define ATOL8		RCONST(1.0e-8)	
 #define ATOL9		RCONST(1.0e-8)				
-#define ATOL10		RCONST(1.0e-8)				
-#define ATOL11		RCONST(1.0e-8)				
-#define ATOL12		RCONST(1.0e-8)				
+#define ATOL10		RCONST(1.0e-2)				
+#define ATOL11		RCONST(1.0e-2)				
+#define ATOL12		RCONST(1.0e-2)				
 #define INITIAL_ODE_TIME_STEP	RCONST(1.0e-10)				/* initial internal ODE timestep */
 #define MAXNUMSTEPS 	5e8					/* maximum number of internal steps */
 #define MAXTIME		RCONST(13.7e9*365.25*24.0*3600.0)	/* maximum integration time */
@@ -32,6 +32,7 @@ bool include_quadrupole_terms,include_octupole_terms;
 bool include_1PN_inner_terms,include_1PN_outer_terms,include_1PN_inner_outer_terms,include_25PN_inner_terms,include_25PN_outer_terms;
 bool include_inner_tidal_terms,include_outer_tidal_terms;
 bool include_inner_wind_terms,include_outer_wind_terms;
+
 bool ignore_tertiary;
 bool include_magnetic_braking_terms;
 bool include_spin_radius_mass_coupling_terms;
@@ -311,8 +312,8 @@ int evolve(
 	flag = CVodeSetMaxNumSteps(cvode_mem, MAXNUMSTEPS);
 	if (check_flag(&flag, "CVodeSetMaxNumSteps", 1)) return 1;
 
-//	flag = CVodeSetMinStep(cvode_mem, 0.1);
-//	if (check_flag(&flag, "CVodeSetMinStep", 1)) return;
+	flag = CVodeSetMinStep(cvode_mem, 1.0e-15);
+	if (check_flag(&flag, "CVodeSetMinStep", 1)) return 1;
 
 	flag = CVodeSetMaxHnilWarns(cvode_mem, 1);
 	if (check_flag(&flag, "CVodeSetMaxHnilWarns", 1)) return 1;
@@ -508,6 +509,8 @@ static int check_flag(void *flagvalue, char *funcname, int opt)
 void error_handling_function(int error_code, const char *module, const char *function, char *message, void *data_f)
 {
     printf("error_handling_function error %d\n",error_code);
+    printf("module %s\n",module);
+    printf("message %s\n",message);
     UserData data;
 	data = (UserData) data_f;
 //    data->stop_after_error_bool = TRUE;
