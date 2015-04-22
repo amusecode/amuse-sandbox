@@ -184,10 +184,10 @@ int evolve(
     if (e_out==0.0) {e_out = tiny_double; }
     if (INCL_in==0.0) { INCL_in = tiny_double; }
     if (INCL_out==0.0) { INCL_out = tiny_double; }
-    if (AP_in==0.0) { AP_in = tiny_double; }
-    if (AP_out==0.0) { AP_out = tiny_double; }
-    if (LAN_in==0.0) { LAN_in = tiny_double; }
-    if (LAN_out==0.0) { LAN_out = tiny_double; }
+//    if (AP_in==0.0) { AP_in = tiny_double; }
+//    if (AP_out==0.0) { AP_out = tiny_double; }
+//    if (LAN_in==0.0) { LAN_in = tiny_double; }
+//    if (LAN_out==0.0) { LAN_out = tiny_double; }
 
     /*********************************************************************
      * quantities that are assumed to be constant during the integration *
