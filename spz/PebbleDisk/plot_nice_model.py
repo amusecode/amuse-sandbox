@@ -7,14 +7,13 @@ from amuse.lab import *
 from amuse.couple import bridge
 from make_pebble_disk import make_pebble_disk
 from amuse.units.optparse import OptionParser
-from matplotlib import pyplot
 from evolve_disk import *
 from make_planets import *
 from amuse.units import quantities
 
 Johannes = None
 
-def movie(stars, time, nstep):
+def movie(stars, time, nstep, pyplot):
     MEarth = 5.97219e+24 * units.kg
     pyplot.subplot(2,2,1)
     pyplot.cla()
@@ -200,6 +199,9 @@ def new_option_parser():
     result.add_option("-f", 
                       dest="filename", default = "nice_model.h5",
                       help="input filename")
+    result.add_option("--no-gui",
+                  action="store_false", dest="with_gui", default=True,
+                  help="don't show gui, just create png files")
     return result
 
 if __name__ == "__main__":
@@ -217,7 +219,14 @@ if __name__ == "__main__":
     Johannes.initialize_code()
     
     time = 1 | units.yr
-    pyplot.ion()
+    if o.with_gui:
+        from matplotlib import pyplot
+        pyplot.ion()
+    else:
+        import matplotlib
+        matplotlib.use('Agg')
+        from matplotlib import pyplot
+
     nstep = 1
     for x in all_steps[::1]:
         stars = x.copy()
@@ -232,11 +241,13 @@ if __name__ == "__main__":
         determine_orbital_parameters_of_planets(stars)
         #identify_nearest_neighbor(stars, 1000000 | units.yr)
         #pyplot.ion()
-        movie(stars, time, nstep)
+        movie(stars, time, nstep, pyplot)
         nstep += 1
         #time.sleep(0.1)
     
     Johannes.stop()
-    pyplot.show()
-    pytime.sleep(5)
+    
+    if o.with_gui:
+        pyplot.show()
+        pytime.sleep(5)
 #   mencoder "mf://xy*.png" -mf fps=20 -ovc x264 -o movie.avi

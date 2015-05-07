@@ -32,7 +32,7 @@ def new_option_parser():
                       dest="ndisk", type="int", default = 1000,
                       help="Number of pebbels per star [%default]")
     result.add_option("-m", unit=MEarth,
-                      dest="disk_mass", type="float", default = 35|MEarth,
+                      dest="disk_mass", type="float", default = 35.0|MEarth,
                       help="disk mass [%default]")
     result.add_option("--inner_disk_radius", unit=units.AU,
                       dest="inner_disk_radius", type="float", default = 15.5 | units.AU,
@@ -52,6 +52,9 @@ def new_option_parser():
     result.add_option("--no-escapers",
                   action="store_false", dest="with_escapers", default=True,
                   help="don't detect escapers")
+    result.add_option("--no-bound-check",
+                  action="store_false", dest="check_if_bound_on_escaping", default=True,
+                  help="don't check if a particle is bound on escaping")
     result.add_option("--escape_radius", unit=units.AU,
                       dest="escape_radius", type="float", default = 1000000 | units.AU,
                       help="escape radius [%default]")
@@ -66,27 +69,28 @@ class CalculateFieldForParticles(bridge.CalculateFieldForParticles):
     2. low number of points, loop in python is removed by doing matrix calculations (needing N x M memory)
     """
     def get_gravity_at_point(self,radius,x,y,z):
-        positions = self.particles.position
-        mass = self.particles.mass
+        names = ("x","y","z", "mass")
+        px, py, pz, mass = self.particles.get_values_in_store(None, names)
         gravity_constant = -self.gravity_constant
         n = len(x)
         newshape =(n, 1)
         x = x.reshape(newshape) 
         y = y.reshape(newshape) 
         z = z.reshape(newshape) 
-        dx = x - positions.x
-        dy = y - positions.y
-        dz = z - positions.z
+        dx = x - px
+        dy = y - py
+        dz = z - pz
         dr_squared = ((dx ** 2) + (dy  ** 2) + (dz ** 2))
         dr_twothird = dr_squared**1.5
-        ax = gravity_constant * (mass*dx/dr_twothird).sum(1)
-        ay = gravity_constant * (mass*dy/dr_twothird).sum(1)
-        az = gravity_constant * (mass*dz/dr_twothird).sum(1)
+        m_div_dr = mass / dr_twothird
+        ax = gravity_constant * (m_div_dr*dx).sum(1)
+        ay = gravity_constant * (m_div_dr*dy).sum(1)
+        az = gravity_constant * (m_div_dr*dz).sum(1)
 
         
         ax -=  ax[0]
         ay -=  ay[0]
-        az -=   az[0]
+        az -=  az[0]
         #or i,(x, y) in enumerate(zip(ax, ay)):
         #    print i, x.as_quantity_in(units.AU/units.s**2), y.as_quantity_in(units.AU/units.s**2)
         #ddd
@@ -112,16 +116,23 @@ class GravityCodeInField(bridge.GravityCodeInField):
     def kick_with_field_code(self, particles, field_code, dt):
         
         #positions = particles.position
-        names = ('x','y','z')
-        x, y, z = particles.get_values_in_store(None, names)
+        names = ('x','y','z', 'vx', 'vy', 'vz')
+        x, y, z, vx, vy, vz = particles.get_values_in_store(None, names)
         ax,ay,az=field_code.get_gravity_at_point(
             quantities.zero,
             x,
             y,
             z
         )
-        self.update_velocities(particles, dt, ax, ay, az)
-
+        #self.update_velocities(particles, dt, ax, ay, az)
+        names = ('vx','vy','vz')
+        particles.set_values_in_store(
+                None,
+                names,
+                (vx + dt * ax,
+                vy + dt * ay,
+                vz + dt * az)
+        )
     def update_velocities(self,particles, dt,  ax, ay, az):
         if 1:
             names = ('vx','vy','vz')
@@ -141,7 +152,7 @@ class GravityCodeInField(bridge.GravityCodeInField):
     def kick(self, dt):
         copy_of_particles = self.copy_of_particles
         self.channel_from_code_to_copy.copy_attributes(self.required_attributes)
-        kinetic_energy_before = copy_of_particles.kinetic_energy()
+        #kinetic_energy_before = copy_of_particles.kinetic_energy()
 
         for field_code in self.field_codes:
             self.kick_with_field_code(
@@ -152,12 +163,12 @@ class GravityCodeInField(bridge.GravityCodeInField):
 
         self.channel_from_copy_to_code.copy_attributes(["vx","vy","vz"])
 
-        kinetic_energy_after = self.copy_of_particles.kinetic_energy()
-        return kinetic_energy_after - kinetic_energy_before
+        #kinetic_energy_after = self.copy_of_particles.kinetic_energy()
+        return quantities.zero #kinetic_energy_after - kinetic_energy_before
         
 class CreateNiceModel(object):
     
-    def __init__(self, number_of_disk_particles = 1000, disk_mass = 35 | MEarth, inner_disk_radius = 15.5 | units.AU, outer_disk_radius = 34.4 | units.AU):
+    def __init__(self, number_of_disk_particles = 1000, disk_mass = 35.0 | MEarth, inner_disk_radius = 15.5 | units.AU, outer_disk_radius = 34.4 | units.AU):
         self.number_of_disk_particles = number_of_disk_particles
         self.disk_mass = disk_mass
         self.inner_disk_radius = inner_disk_radius
@@ -193,7 +204,7 @@ class CreateNiceModel(object):
         phi = 0
         theta = 0
         particles = make_pebble_disk(star, self.number_of_disk_particles, arange, erange, phi, theta)
-        particles.mass = self.disk_mass/len(particles)
+        particles.mass = self.disk_mass * 1.0 /len(particles)
         return particles
         
     def create_planets(self, star):
@@ -201,9 +212,21 @@ class CreateNiceModel(object):
         theta = 0
         return make_Nice_planets(star, phi, theta)
         
+        
+def potential_energy(pebble, star):
+    r = (pebble.position-star.position).length()
+    return -constants.G*pebble.mass*star.mass/r
+
+def kinetic_energy(pebble, star):
+    return 0.5*pebble.mass * (pebble.velocity-star.velocity).length()**2
+
+def is_bound(pebble, star):
+    binding_energy = potential_energy(pebble, star) +  kinetic_energy(pebble, star)
+    return binding_energy<zero
+
 class RunNiceModel(object):
     
-    def __init__(self, model, dt = None, escape_radius = None, code_name = None, particles_kind = None, with_escapers = None):
+    def __init__(self, model, dt = None, escape_radius = None, code_name = None, particles_kind = None, with_escapers = None, check_if_bound_on_escaping = None):
         self.model = model
         self.star = self.model[0]
         self.time = self.model.collection_attributes.model_time
@@ -214,6 +237,8 @@ class RunNiceModel(object):
         self.code_name = self._get_value_from_model(code_name, self.model, "code_name", "hermite")
         self.particles_kind = self._get_value_from_model(particles_kind, self.model, "particles_kind", "collisionless")
         self.with_escapers = self._get_value_from_model(with_escapers, self.model, "with_escapers", True)
+        self.check_if_bound_on_escaping = self._get_value_from_model(check_if_bound_on_escaping, self.model, "check_if_bound_on_escaping", True)
+        
         
     def _get_value_from_model(self, proposed_value, model, name, default_value):
         if proposed_value is None:
@@ -233,7 +258,10 @@ class RunNiceModel(object):
         escapers = particles[particles.position.lengths()>radius]
         if len(escapers) == 0:
             return escapers
-
+        if self.check_if_bound_on_escaping:
+            escapers = escapers[numpy.asarray([is_bound(x, star) for x in escapers])]
+        if len(escapers) == 0:
+            return escapers
         self.log("removing", len(escapers), " escaping ", kind)
         result = escapers.copy()
         result.escape_time = self.time
@@ -298,6 +326,8 @@ class RunNiceModel(object):
             
             # let the pebbles be kicked by the planets and the sun
             code = GravityCodeInField(pebble_gravity, (planets_and_star,))
+            #code = GravityCodeInField(pebble_gravity, (CalculateFieldForParticles(planets_and_star.particles, constants.G),))
+            
             result.add_code(code)
             
             if self.particles_kind == "collisionless":
@@ -305,6 +335,7 @@ class RunNiceModel(object):
                 code = GravityCodeInField(planets_and_star, (CalculateFieldForParticles(self.star.disk_particles, constants.G),))
                 result.add_code(code)
             elif self.particles_kind == "test":
+                # the pebbles are test particles and do not kick the sun and planets 
                 pass
             
             return result
@@ -321,6 +352,8 @@ class RunNiceModel(object):
         self.model.collection_attributes.particles_kind = self.particles_kind
         self.model.collection_attributes.with_escapers = self.with_escapers
         self.model.collection_attributes.model_time = self.time
+        self.model.collection_attributes.check_if_bound_on_escaping = self.check_if_bound_on_escaping
+        
     
     def get_filename(self):
         return "nice_model-{0}.h5".format(platform.node())

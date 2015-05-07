@@ -12,18 +12,31 @@ from make_planets import *
 from amuse.units import quantities
 
 
-def remove_escapers(stars, radius):
+def potential_energy(pebble, star):
+    r = (pebble.position-star.position).length()
+    return -constants.G*pebble.mass*star.mass/r
+
+def kinetic_energy(pebble, star):
+    return 0.5*pebble.mass * (pebble.velocity-star.velocity).length()**2
+
+def is_bound(pebble, star):
+    binding_energy = potential_energy(pebble, star) +  kinetic_energy(pebble, star)
+    return binding_energy<zero
+
+def remove_escapers(stars, radius, check_bound = True):
     for star in stars:
         pebbles = star.disk_particles
         escapers = pebbles[pebbles.position.lengths()>radius]
         if len(escapers) == 0:
             return
-
-        if 0:
+        
+         
+        if check_bound:
             # we no longer check if an escaper is still bound to a star (as checking
             # if a pebble is bound is time consuming
-            escapers = escapers[numpy.asarray([x is None for x in escapers.star])]
+            escapers = escapers[numpy.asarray([is_bound(x, star) for x in escapers])]
             if len(escapers)>0:
+                print "removing", len(escapers), "escaping pebble(s)"
                 pebbles.remove_particles(escapers)
         else:
             print "removing", len(escapers), "escaping pebble(s)"
