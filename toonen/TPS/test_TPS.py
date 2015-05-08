@@ -2,9 +2,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.units import units, constants
 import numpy as np
 
-#import triples
 import triple_nokozaidt as triple
-#import test_terug_in_time_triple as triple
 test_asserts = True #False
 
 
@@ -265,7 +263,7 @@ class TestSeBa(TestWithMPI):
         M1 = 0.1|units.MSun
         M2 = 0.1|units.MSun
         M3 = 7.|units.MSun
-        a_in = 1.|units.RSun
+        a_in = 10.|units.RSun
         a_out = 1.e6|units.RSun
         e_in = 0.0
         e_out = 0.0
@@ -287,7 +285,7 @@ class TestSeBa(TestWithMPI):
             self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
             self.assertAlmostRelativeEqual(tr.triple.child1.mass, 1.2967 | units.MSun, 2)        
     
-            self.assertEqual(tr.triple.child2.semimajor_axis, 1.0| units.RSun)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 10.0| units.RSun, 2)        
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 4810448 | units.RSun, 2)        
 
         #under the assumption of no wind accretion
@@ -316,26 +314,33 @@ class TestSeBa(TestWithMPI):
         i = 0*np.pi/180.0
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
-#        T_end = 378.5 | units.Myr 
-#        T_end = 380 | units.Myr 
         T_end = 385 | units.Myr 
         tidal_terms = False
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, tidal_terms = tidal_terms)
+
+
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
         print tr.triple.child2.eccentricity, tr.triple.eccentricity
         print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
-        print tr.triple.child2.child1.stellar_type, tr.triple.child2.child2.stellar_type, tr.triple.child1.stellar_type
 
         if test_asserts:
-            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.43694 | units.MSun, 2)        
-            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 4.56000 | units.MSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.43694 | units.MSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 4.56000 | units.MSun, 2)        
+#            self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+#    
+#            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 134.438| units.RSun, 2)  
+#            # because of wind mass loss a_out_final != 1e6RSun      
+#            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000601 | units.RSun, 2)        
+            #nucl timescale mt
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.42158253289 | units.MSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 4.5780860397 | units.MSun, 2)        
             self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
     
-            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 134.438| units.RSun, 2)  
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 144.86198575 | units.RSun, 2)  
             # because of wind mass loss a_out_final != 1e6RSun      
-            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000601 | units.RSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000057.6053 | units.RSun, 2)        
         
         #under the assumption of conservative mass transfer
         M1f = tr.triple.child2.child1.mass
@@ -358,16 +363,13 @@ class TestSeBa(TestWithMPI):
         M2 = 6|units.MSun
         M3 = 0.08|units.MSun
         a_in = 50|units.RSun
-#        a_in = 23|units.RSun op het randje van ms/hg donor, met getijden net ms
         a_out = 1.e6|units.RSun
         e_in = 0.0
         e_out = 0.0
         i = 0*np.pi/180.0
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
-#        T_end = 49.045|units.Myr #nucl mt
         T_end = 49.096|units.Myr 
-#        T_end = 48.96|units.Myr# until RLOF
         tidal_terms = False
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, tidal_terms = tidal_terms)
 
@@ -379,13 +381,22 @@ class TestSeBa(TestWithMPI):
 
 
         if test_asserts:
-            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3578 | units.MSun, 2)        
-            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.6361 | units.MSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3578 | units.MSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.6361 | units.MSun, 2)        
+#            self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+#    
+#            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 352.43 | units.RSun, 2)  
+#            # because of wind mass loss a_out_final != 1e6RSun      
+#            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000466 | units.RSun, 2)        
+            #nucl timescale mt
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3391 | units.MSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.6425 | units.MSun, 2)        
             self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
     
-            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 352.43 | units.RSun, 2)  
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 360.81 | units.RSun, 2)  
             # because of wind mass loss a_out_final != 1e6RSun      
-            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000466 | units.RSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1001327 | units.RSun, 2)        
+
         
         #under the assumption of conservative mass transfer
         M1f = tr.triple.child2.child1.mass
@@ -414,7 +425,6 @@ class TestSeBa(TestWithMPI):
         i = 0*np.pi/180.0
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
-#        T_end = 49.1|units.Myr 
         T_end = 50|units.Myr 
         tidal_terms = False
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, tidal_terms = tidal_terms)
@@ -426,13 +436,22 @@ class TestSeBa(TestWithMPI):
         print tr.triple.child2.child1.stellar_type, tr.triple.child2.child2.stellar_type, tr.triple.child1.stellar_type
 
         if test_asserts:
-            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3591 | units.MSun, 2)        
-            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.6291 | units.MSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3591 | units.MSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.6291 | units.MSun, 2)        
+#            self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+#    
+#            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 700.1299 | units.RSun, 2)  
+#            # because of wind mass loss a_out_final != 1e6RSun      
+#            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000898 | units.RSun, 2)        
+            #nucl timescale mt
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3501065 | units.MSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.629430505 | units.MSun, 2)        
             self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
     
-            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 700.1299 | units.RSun, 2)  
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 710.80786 | units.RSun, 2)  
             # because of wind mass loss a_out_final != 1e6RSun      
-            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000898 | units.RSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1001525 | units.RSun, 2)        
+
         
         #under the assumption of conservative mass transfer
         M1f = tr.triple.child2.child1.mass
@@ -447,6 +466,9 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test8: succeeded'
+
+
+
 
     def test9(self):
         print 'test9'
@@ -611,6 +633,7 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 5092547 | units.RSun, 2)        
 
 
+
         M1f = tr.triple.child2.child1.mass
         M2f = tr.triple.child2.child2.mass
         M3f = tr.triple.child1.mass       
@@ -684,22 +707,19 @@ class TestSeBa(TestWithMPI):
         g_out = 0.5*np.pi
         T_end = 12500|units.Myr 
         dr = 0.005 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr, stop_at_mass_transfer = True)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
         print tr.triple.child2.eccentricity, tr.triple.eccentricity
         print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
-#0.99837511255 [MSun] 0.10000000000 [MSun] 0.080000000000 [MSun]
-#6.7381072278 [RSun] 1001378.8725 [RSun]
-#1e-05 1.00000001572e-05
-#1187758842.6 [Myr**-1] 1417676350.0 [Myr**-1] 21.532817624 [Myr**-1]
+
 
         if test_asserts:
             self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.99837 | units.MSun, 4)        
             self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
             self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
-            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 6.7381| units.RSun, 4)  
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 6.7351| units.RSun, 4)  
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1001378 | units.RSun, 4)        
             self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 1.e-5, 4)  
             self.assertAlmostRelativeEqual(tr.triple.eccentricity, 1.e-5, 4)        
@@ -721,7 +741,6 @@ class TestSeBa(TestWithMPI):
         M2 = 0.1|units.MSun
         M3 = 0.08|units.MSun
         a_in = 35|units.RSun
-#        a_in = 20|units.RSun
         a_out = 1.e6|units.RSun
         e_in = 0.8
         e_out = 1.e-5
@@ -730,16 +749,12 @@ class TestSeBa(TestWithMPI):
         g_out = 0.5*np.pi
         T_end = 20000|units.Myr 
         dr = 0.005 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr, stop_at_mass_transfer = True)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
         print tr.triple.child2.eccentricity, tr.triple.eccentricity
         print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
-#0.99625447119 [MSun] 0.10000000000 [MSun] 0.080000000000 [MSun]
-#11.793358590 [RSun] 1003184.2348 [RSun]
-#1e-05 1.00000029397e-05
-#512459017.52 [Myr**-1] 448153391.25 [Myr**-1] 21.532817624 [Myr**-1]
 
         if test_asserts:
             self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.99625| units.MSun, 4)        
@@ -750,6 +765,8 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1003184 | units.RSun, 4)        
             self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 1.e-5, 4)  
             self.assertAlmostRelativeEqual(tr.triple.eccentricity, 1.e-5, 4)        
+
+
 
 
         a_in_final_theory = a_in * (1-e_in**2)
@@ -774,9 +791,8 @@ class TestSeBa(TestWithMPI):
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
         T_end = 13500 |units.Myr
-#        T_end = 12250|units.Myr 
         dr = 0.005 
-        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr)
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr, stop_at_mass_transfer=True)
 
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
@@ -815,7 +831,6 @@ class TestSeBa(TestWithMPI):
         i = 0*np.pi/180.0
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
-#        T_end = 12250|units.Myr 
         T_end = 13500|units.Myr 
         dr = 0.0005 
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr)
@@ -861,23 +876,16 @@ class TestSeBa(TestWithMPI):
         i = 0*np.pi/180.0
         g_in = 0.5*np.pi
         g_out = 0.5*np.pi
-#        T_end = 12457.6|units.Myr
         T_end = 12500|units.Myr 
         dr = 0.005 
-#        tidal_terms = False
-        tidal_terms = True
+        tidal_terms = False
         tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr, tidal_terms = tidal_terms)
 
         print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
         print tr.triple.child2.eccentricity, tr.triple.eccentricity
         print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
-#0.52058076621 [MSun] 0.10000000000 [MSun] 0.080000000000 [MSun]
-#17728.975288 [RSun] 16846361308. [RSun]
-#1e-05 1e-05
-#-1.5017311664e-09 [Myr**-1] 20762.504913 [Myr**-1] 2.1532817624e-05 [Myr**-1]
         
- 
         if test_asserts:
             self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.52058 | units.MSun, 2)        
             self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
@@ -888,7 +896,7 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 1.00e-5, 2)  
             self.assertAlmostRelativeEqual(tr.triple.eccentricity, 1.00e-5, 2)        
     
-            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 92815335| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 0.033007513673| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 20762.5| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 2.15328e-05| 1./units.Myr, 2)
 
@@ -903,16 +911,8 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 2)        
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
-        Jspin_ch2ch1 = tr.triple.child2.child1.spin_angular_frequency * tr.triple.child2.child1.mass* tr.triple.child2.child1.radius**2 #gyration radius
-        spin1_init = 20790.081940 |1./units.Myr
-        R1_init =  0.88824945030 |units.RSun   
-        Jspin_ch2ch1_init = spin1_init * M1 * R1_init**2 #gyration radius
-        print Jspin_ch2ch1_init, Jspin_ch2ch1
-        if test_asserts:
-            self.assertAlmostRelativeEqual(Jspin_ch2ch1, Jspin_ch2ch1_init, 2)
-
         print 'test18: succeeded'
-        
+
         
     def test19(self):
         print 'test19'
@@ -937,6 +937,7 @@ class TestSeBa(TestWithMPI):
         print tr.triple.child2.eccentricity, tr.triple.eccentricity
         print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
         
+        
         if test_asserts:   
             self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.00496 | units.MSun, 2)        
             self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
@@ -947,10 +948,7 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 1.00e-5, 2)  
             self.assertAlmostRelativeEqual(tr.triple.eccentricity, 1.00e-5, 2)        
     
-#            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 37118045560.| 1./units.Myr, 2)
-#            self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 44765.1| 1./units.Myr, 2)
-#            self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 4.51154e-05| 1./units.Myr, 2)
-            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 28991621040.| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 0.53639697950| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 44765| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 4.5115e-05| 1./units.Myr, 2)
 
@@ -966,14 +964,6 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1.5)        
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 1.5)        
 
-
-        Jspin_ch2ch1 = tr.triple.child2.child1.spin_angular_frequency * tr.triple.child2.child1.mass* tr.triple.child2.child1.radius**2 #gyration radius
-        spin1_init = 44765.655322 |1./units.Myr
-        R1_init =  2.6355930592 |units.RSun   
-        Jspin_ch2ch1_init = spin1_init * M1 * R1_init**2 #gyration radius
-        print Jspin_ch2ch1_init, Jspin_ch2ch1
-        if test_asserts:   
-           self.assertAlmostRelativeEqual(Jspin_ch2ch1, Jspin_ch2ch1_init, 1.5)
 
         print 'test19: succeeded'
 
@@ -1012,7 +1002,7 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 1.00e-5, 2)  
             self.assertAlmostRelativeEqual(tr.triple.eccentricity, 1.00e-5, 2)        
     
-            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 12707810136.| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 0.15315097388| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 40136| 1./units.Myr, 2)
             self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 4.05273e-05| 1./units.Myr, 2)
 
@@ -1028,65 +1018,53 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
 
-        Jspin_ch2ch1 = tr.triple.child2.child1.spin_angular_frequency * tr.triple.child2.child1.mass* tr.triple.child2.child1.radius**2 #gyration radius
-        spin1_init = 40137.635693 |1./units.Myr
-        R1_init =  2.3227672660 |units.RSun   
-        Jspin_ch2ch1_init = spin1_init * M1 * R1_init**2 #gyration radius
-        print Jspin_ch2ch1_init, Jspin_ch2ch1
-        if test_asserts:   
-            self.assertAlmostRelativeEqual(Jspin_ch2ch1, Jspin_ch2ch1_init, 1.5)
-
         print 'test19: succeeded'
 
 
 
-#    def test20(self):
-#        print 'test20'
+    def test20(self):
+        print 'test20'
+
+        M1 = 7.5|units.MSun
+        M2 = 0.1|units.MSun
+        M3 = 0.08|units.MSun
+        a_in = 1.e4|units.RSun 
+        a_out = 1.e10|units.RSun
+        e_in = 0.0
+        e_out = 0.0
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        T_end = 50|units.Myr
+        dr = 0.005 
+        tidal_terms = False
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr, tidal_terms = tidal_terms)
+
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
+        Jspin_ch2ch1 = tr.triple.child2.child1.spin_angular_frequency * tr.triple.child2.child1.mass* tr.triple.child2.child1.radius**2 #gyration radius
+
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
+
+#        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.99851 | units.MSun, 4)        
+#        self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
+#        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+#        
+#        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 10013.6| units.RSun, 4)  
+#        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 10012668194. | units.RSun, 4)        
+#        self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0.001, 4)  
+#        self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0.001, 4)        
 #
-#        M1 = 7.5|units.MSun
-#        M2 = 0.1|units.MSun
-#        M3 = 0.08|units.MSun
-#        a_in = 1.e4|units.RSun 
-#        a_out = 1.e10|units.RSun
-#        e_in = 0.0
-#        e_out = 0.0
-#        i = 0*np.pi/180.0
-#        g_in = 0.5*np.pi
-#        g_out = 0.5*np.pi
-#        T_end = 50|units.Myr
-#        dr = 0.005 
-#        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, maximum_radius_change_factor=dr)
-#
-#        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
-#        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
-#        print tr.triple.child2.eccentricity, tr.triple.eccentricity
-#        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
-#        Jspin_ch2ch1 = tr.triple.child2.child1.spin_angular_frequency * tr.triple.child2.child1.mass* tr.triple.child2.child1.radius**2 #gyration radius
-#
-#        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
-#        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
-#        print tr.triple.child2.eccentricity, tr.triple.eccentricity
-#        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
-#
-##        self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.99851 | units.MSun, 4)        
-##        self.assertEqual(tr.triple.child2.child2.mass, 0.1 | units.MSun)        
-##        self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
-##        
-##        self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 10013.6| units.RSun, 4)  
-##        self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 10012668194. | units.RSun, 4)        
-##        self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0.001, 4)  
-##        self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0.001, 4)        
-##
-##        self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 1187.24| 1./units.Myr, 4)
-##        self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 20763.6| 1./units.Myr, 4)
-##        self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 2.15328e-05| 1./units.Myr, 4)
-#
-#        Jspin_ch2ch1 = tr.triple.child2.child1.spin_angular_frequency * tr.triple.child2.child1.mass* tr.triple.child2.child1.radius**2 #gyration radius
-#        spin1_init = 56416.010036 |1./units.Myr
-#        R1_init =  3.4567384397 |units.RSun   
-#        Jspin_ch2ch1_init = spin1_init * M1 * R1_init**2 #gyration radius
-#        self.assertAlmostRelativeEqual(Jspin_ch2ch1, Jspin_ch2ch1_init, 2)
-#        print 'test20: succeeded'
+#        self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 1187.24| 1./units.Myr, 4)
+#        self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 20763.6| 1./units.Myr, 4)
+#        self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 2.15328e-05| 1./units.Myr, 4)
+
+        print 'test20: succeeded'
 
 
 
@@ -1120,8 +1098,8 @@ class TestSeBa(TestWithMPI):
             
             self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 200.| units.RSun, 2)  
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 20000. | units.RSun, 2)        
-            self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0.77086, 2)  
-            self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0.49903, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 0.939581864833, 2)  
+            self.assertAlmostRelativeEqual(tr.triple.eccentricity, 0.501813404911, 2)        
     
             #initially 9402668 and 10628, difference due to rdot
             self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 9396370.| 1./units.Myr, 2)
@@ -1189,41 +1167,41 @@ if __name__ == '__main__':
 #    test.test5()
 ##
 ###test stable mass transfer in inner system 
-#    test.test6() 
+    test.test6() 
+    print 3/0
 #    test.test7()
 #    test.test8()
 #    
 ##test common envelope evolution in inner system
-#    test.test9() #alpha-ce - need tides to bring the system into corotation -> DR XXX!!!
-#    test.test10() #gamma-ce
-#    test.test11() #double alpha-ce
-##
-#### test contact system in inner system
-#    test.test12() #double alpha-ce
-#    test.test13() #merger
+    test.test9() #alpha-ce - need tides to bring the system into corotation -> DR XXX!!!
+    test.test10() #gamma-ce
+    test.test11() #double alpha-ce
+#
+### test contact system in inner system
+    test.test12() #double alpha-ce # why does orbit shrink after ce?
+    test.test13() #merger # outer system should merge too, not implemented yet
 
 
-###    #test tides
-#    test.test14() #merger 
-#    test.test15() 
-#    test.test16() # darwin-riemann instability XXX!!!
-#    test.test17() # no darwin-riemann instability
+##    #test tides
+    test.test14() #merger 
+    test.test15() #merger
+    test.test16() # darwin-riemann instability XXX!!!    #test 16 not tested
+    test.test17() # no darwin-riemann instability
+
+
 ##
 ##
-####  #test spin-r coupling
-    test.test18()
+####  #test spin-r coupling -> no tidal terms
+#    test.test18()
 #    test.test19()
 #    test.test19_alt()
-#    test.test20() M large timestep issues
-
-
-    #test kozai
+#    test.test20() #M large timestep issues
+#
+#
+#    #test kozai
 #    test.test21()
-    
-    #dynamical instability at initialization
+#    
+##    dynamical instability at initialization
 #    test.test22()
 
-# test dt 
-    # 8, 50Msun succeeds
-    #10, 15MSun crashes
 

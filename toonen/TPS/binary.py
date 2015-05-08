@@ -115,10 +115,152 @@ def dynamic_timescale(star):
 def corotating_spin_angular_frequency_binary(semi, m1, m2):
     return 1./np.sqrt(semi**3/constants.G / (m1+m2))
 
+#Hurley, Pols en Tout 2000, eq 107-108
+def lang_spin_angular_frequency(star):
+    v_rot = 330*star.mass.value_in(units.MSun)**3.3/(15.0+star.mass.value_in(units.MSun)**3.45)
+    w = 45.35 * v_rot/star.radius.value_in(units.RSun)
+    return w|1./units.yr
+
+def copy_outer_orbit_to_inner_orbit(bs, self):
+    if REPORT_FUNCTION_NAMES:
+        print 'Copy_outer_orbit_to_inner_orbit'
+
+    if self.is_triple():
+        bs.semimajor_axis = self.triple.semimajor_axis
+        bs.eccentricity = self.triple.eccentricity
+        bs.argument_of_pericenter = self.triple.argument_of_pericenter
+        bs.longitude_of_ascending_node = self.triple.longitude_of_ascending_node
+        bs.mass_transfer_rate = self.triple.mass_transfer_rate
+        bs.accretion_efficiency_mass_transfer, = self.triple.accretion_efficiency_mass_transfer,
+        bs.accretion_efficiency_wind_child1_to_child2, = self.triple.accretion_efficiency_wind_child1_to_child2,
+        bs.accretion_efficiency_wind_child2_to_child1, = self.triple.accretion_efficiency_wind_child2_to_child1,
+        bs.specific_AM_loss_mass_transfer, = self.triple.specific_AM_loss_mass_transfer,
+        bs.is_stable = self.triple.is_stable
+    
+        #because otherwise dynamical instability
+        # i'd prefer setting the tertiary mass to zero, breaking the link with seba
+        self.triple.semimajor_axis = 1e100|units.RSun
+        self.triple.eccentricity = 0
+                
+        
+def copy_outer_star_to_accretor(self):
+    if REPORT_FUNCTION_NAMES:
+        print 'Copy_outer_star_to_accretor'
+
+    if self.is_triple():        
+        if self.triple.child1.is_star:
+            tertiary_star = self.triple.child1
+            self.triple.child2
+        else:
+            tertiary_star = self.triple.child2 
+            self.triple.child1
+            
+
+        if not bs.child1.is_donor:
+            bs.child1 = tertiary_star
+        else:
+            bs.child2 = tertiary_star
+
+    
 #-------------------------
 
 #-------------------------
 # functions for mass transfer in a binary
+
+def perform_inner_collision(self):
+    if self.is_triple():
+        if self.triple.child1.is_star:
+            self.triple.child2
+        else:
+            self.triple.child1
+        
+        # smaller star is added to big star
+        if bs.child1.radius >= bs.child2.radius:
+            donor = bs.child1
+            accretor = bs.child2
+        else:
+            donor = bs.child2
+            accretor = bs.child1
+    
+        donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]                
+        accretor_in_stellar_code = accretor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]                
+    
+        #no additional mass and Jspin loss from merged object for now
+        J_spin_donor_previous = self.spin_angular_momentum(donor)
+        J_spin_accretor_previous = self.spin_angular_momentum(accretor)
+        J_orbit = self.orbital_angular_momentum(bs)
+        J_spin_new = J_spin_donor_previous + J_spin_accretor_previous + J_orbit
+    
+        #merger
+        donor_in_stellar_code.merge_with_other_star(accretor_in_stellar_code) 
+        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"                           
+              
+        donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
+    
+        #assuming conservation of total angular momentum of the inner binary
+        donor.spin_angular_frequency = J_spin_new / donor.moment_of_inertia_of_star                
+            
+        self.stellar_code.particles.remove_particle(accretor)
+        accretor.mass = 0|units.MSun # necessary for adjust_system_after_ce_in_inner_binary
+    
+        #adjust outer orbit, needs to be before the system becomes a binary
+        #and copy to inner orbit 
+        # weird structure necessary for secular code -> outer orbit is redundant
+        adjust_system_after_ce_in_inner_binary(bs, self)                    
+        copy_outer_orbit_to_inner_orbit(bs, self)
+        copy_outer_star_to_accretor(self)
+        #functions are skipped in binaries, needs to be checked if this works well
+        
+        self.secular_code.parameters.ignore_tertiary = True
+        bs.bin_type = bin_type['collision']         
+        self.save_snapshot() # just to note that it the system has merged
+    
+        self.check_for_RLOF()       
+        if self.has_donor():
+            print 'after adjust_triple_after_ce_in_inner_binary: RLOF'    
+            exit(1)
+            
+        donor.is_donor = False
+        bs.is_stable = True
+        bs.bin_type = bin_type['detached']
+
+
+def perform_inner_merger(bs, donor, accretor, self):
+    if REPORT_BINARY_EVOLUTION:
+        print 'Merger in inner binary through common envelope phase'
+
+    donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]                
+    accretor_in_stellar_code = accretor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]                
+    
+    #no additional mass and Jspin loss from merged object for now
+    J_spin_donor_previous = self.spin_angular_momentum(donor)
+    J_spin_accretor_previous = self.spin_angular_momentum(accretor)
+    J_orbit = self.orbital_angular_momentum(bs)
+    J_spin_new = J_spin_donor_previous + J_spin_accretor_previous + J_orbit
+            
+    #merger
+    donor_in_stellar_code.merge_with_other_star(accretor_in_stellar_code) 
+    self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"                           
+    
+    donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
+    
+    #assuming conservation of total angular momentum of the inner binary
+    donor.spin_angular_frequency = J_spin_new / donor.moment_of_inertia_of_star                
+        
+    self.stellar_code.particles.remove_particle(accretor)
+    accretor.mass = 0|units.MSun # necessary for adjust_system_after_ce_in_inner_binary
+            
+    #adjust outer orbit, needs to be before the system becomes a binary
+    #and copy to inner orbit 
+    # weird structure necessary for secular code -> outer orbit is redundant
+    adjust_system_after_ce_in_inner_binary(bs, self)                    
+    copy_outer_orbit_to_inner_orbit(bs, self)
+    copy_outer_star_to_accretor(self)
+    #functions are skipped in binaries, needs to be checked if this works well
+    
+    self.secular_code.parameters.ignore_tertiary = True
+    bs.bin_type = bin_type['merger']         
+    self.save_snapshot() # just to note that it the system has merged
 
 def common_envelope_efficiency(donor, accretor):
     return const_common_envelope_efficiency
@@ -128,6 +270,7 @@ def envelope_structure_parameter(donor):
     
 def common_envelope_efficiency_gamma(donor, accretor):
     return const_common_envelope_efficiency_gamma
+    
     
 
 # ang.mom balance: \Delta J = \gamma * J * \Delta M / M
@@ -154,20 +297,18 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
 
     Rl_donor_new = roche_radius_dimensionless(donor.core_mass, accretor.mass)*a_new
     Rl_accretor_new = roche_radius_dimensionless(accretor.mass, donor.core_mass)*a_new    
+    if REPORT_BINARY_EVOLUTION:
+        print 'donor:', donor.radius, donor.core_radius, Rl_donor_new
+        print 'accretor:', accretor.radius, accretor.core_radius, Rl_accretor_new
        
     if (donor.core_radius > Rl_donor_new) or (accretor.radius > Rl_accretor_new):
-        print 'Merger in inner binary through common envelope phase (angular momentum balance)'
-        print 'donor:', donor.core_radius, Rl_donor_new
-        print 'accretor:', accretor.radius, Rl_accretor_new
-        
-        bs.bin_type = bin_type['merger']      
-        return
+        perform_inner_merger(bs, donor, accretor, self)                                                           
     else:
         donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
         #check if star changes type     
         donor_in_stellar_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
-        self.channel_from_stellar.copy()
+        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"                           
         donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
         accretor.moment_of_inertia_of_star = self.moment_of_inertia(accretor)        
 
@@ -181,27 +322,29 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
         donor.spin_angular_frequency = corotating_frequency
         accretor.spin_angular_frequency = corotating_frequency
         
-        donor.is_donor = False
-        bs.is_stable = True
-        bs.bin_type = bin_type['detached']
-
 #        adjusting of stellar system
         adjust_system_after_ce_in_inner_binary(bs, self)                    
-        self.instantaneous_evolution = True #skip secular evolution                        
-
-        if REPORT_BINARY_EVOLUTION:
-            print 'After common envelope angular momentum balance' 
-            self.print_binary(bs) 
 
 
+    self.check_for_RLOF()       
+    if self.has_donor():
+        print 'after adjust_triple_after_ce_in_inner_binary: RLOF'    
+        exit(1)
+        
+    donor.is_donor = False
+    bs.is_stable = True
+    bs.bin_type = bin_type['detached']
+    self.instantaneous_evolution = True #skip secular evolution                
 
+
+    
 #Following Webbink 1984
 def common_envelope_energy_balance(bs, donor, accretor, self):
     if REPORT_FUNCTION_NAMES:
         print 'Common envelope energy balance'
 
     if REPORT_BINARY_EVOLUTION:
-        print 'Before common envelope angular momentum balance' 
+        print 'Before common envelope energy balance' 
         self.print_binary(bs) 
 
     bs.bin_type = bin_type['common_envelope_energy_balance']                
@@ -219,19 +362,18 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
     
     Rl_donor_new = roche_radius_dimensionless(donor.core_mass, accretor.mass)*a_new
     Rl_accretor_new = roche_radius_dimensionless(accretor.mass, donor.core_mass)*a_new    
+    if REPORT_BINARY_EVOLUTION:
+        print 'donor:', donor.radius, donor.core_radius, Rl_donor_new
+        print 'accretor:', accretor.radius, accretor.core_radius, Rl_accretor_new
     
     if (donor.core_radius > Rl_donor_new) or (accretor.radius > Rl_accretor_new):
-        print 'Merger in inner binary through common envelope phase (energy balance)'
-        print 'donor:', donor.core_radius, Rl_donor_new
-        print 'accretor:', accretor.radius, Rl_accretor_new
-        bs.bin_type = bin_type['merger']
-        return
+        perform_inner_merger(bs, donor, accretor, self)
     else:
         donor_in_stellar_code = donor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
         #check if star changes type     
         donor_in_stellar_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
-        self.channel_from_stellar.copy()
+        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"                           
         donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
         accretor.moment_of_inertia_of_star = self.moment_of_inertia(accretor)        
 
@@ -245,18 +387,19 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
         donor.spin_angular_frequency = corotating_frequency
         accretor.spin_angular_frequency = corotating_frequency
 
-        donor.is_donor = False
-        bs.is_stable = True
-        bs.bin_type = bin_type['detached']
-
 #        adjusting of stellar system
         adjust_system_after_ce_in_inner_binary(bs, self)                    
-        self.instantaneous_evolution = True #skip secular evolution                
 
-        if REPORT_BINARY_EVOLUTION:
-            print 'After common envelope energy balance' 
-            self.print_binary(bs) 
-
+    self.check_for_RLOF()       
+    if self.has_donor():
+        print 'after adjust_triple_after_ce_in_inner_binary: RLOF'    
+        exit(1)
+        
+    donor.is_donor = False
+    bs.is_stable = True
+    bs.bin_type = bin_type['detached']
+    self.instantaneous_evolution = True #skip secular evolution                
+            
 
 # See appendix of Nelemans YPZV 2001, 365, 491 A&A
 def double_common_envelope_energy_balance(bs, donor, accretor, self):
@@ -264,7 +407,7 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         print 'Double common envelope energy balance'
 
     if REPORT_BINARY_EVOLUTION:
-        print 'Before common envelope angular momentum balance' 
+        print 'Before double common envelope energy balance' 
         self.print_binary(bs) 
 
     bs.bin_type = bin_type['double_common_envelope']                
@@ -283,13 +426,12 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
 
     Rl_donor_new = roche_radius_dimensionless(donor.core_mass, accretor.core_mass)*a_new
     Rl_accretor_new = roche_radius_dimensionless(accretor.core_mass, donor.core_mass)*a_new    
+    if REPORT_BINARY_EVOLUTION:
+        print 'donor:', donor.radius, donor.core_radius, Rl_donor_new
+        print 'accretor:', accretor.radius, accretor.core_radius, Rl_accretor_new
     
     if (donor.core_radius > Rl_donor_new) or (accretor.core_radius > Rl_accretor_new):
-        print 'Merger in inner binary through common envelope phase (double common envelope)'
-        print 'donor:', donor.core_radius, Rl_donor_new, donor.stellar_type
-        print 'accretor:', accretor.radius, Rl_accretor_new, accretor.stellar_type
-        bs.bin_type = bin_type['merger']
-        return
+        perform_inner_merger(bs, donor, accretor, self)
     else:
         #reduce_mass not subtrac mass, want geen adjust_donor_radius
         #check if star changes type     
@@ -298,7 +440,7 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         donor_in_stellar_code.change_mass(-1*donor.envelope_mass, 0.|units.yr)    
         accretor_in_stellar_code = accretor.as_set().get_intersecting_subset_in(self.stellar_code.particles)[0]
         accretor_in_stellar_code.change_mass(-1*accretor.envelope_mass, 0.|units.yr)    
-        self.channel_from_stellar.copy()
+        self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"                           
         donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
         accretor.moment_of_inertia_of_star = self.moment_of_inertia(accretor)        
 
@@ -312,37 +454,48 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
         donor.spin_angular_frequency = corotating_frequency
         accretor.spin_angular_frequency = corotating_frequency
 
-        donor.is_donor = False
-        bs.is_stable = True
-        bs.bin_type = bin_type['detached']
-
 #        adjusting of stellar system
         adjust_system_after_ce_in_inner_binary(bs, self)                    
-        self.instantaneous_evolution = True #skip secular evolution                
 
-        if REPORT_BINARY_EVOLUTION:
-            print 'After double common envelope energy balance' 
-            self.print_binary(bs) 
+            
+    self.check_for_RLOF()       
+    if self.has_donor():
+        print 'after adjust_triple_after_ce_in_inner_binary: RLOF'  
+          
+        exit(1)
+        
+    donor.is_donor = False
+    bs.is_stable = True
+    bs.bin_type = bin_type['detached']
+    self.instantaneous_evolution = True #skip secular evolution                
 
 
-def which_common_envelope_phase(bs, donor, accretor, self):
+def common_envelope_phase(bs, donor, accretor, self):
     if REPORT_FUNCTION_NAMES:
-        print 'Which common envelope phase'
+        print 'Common envelope phase', which_common_envelope
         print 'donor:', donor.stellar_type
         print 'accretor:', accretor.stellar_type        
 
     if donor.stellar_type not in stellar_types_giants and accretor.stellar_type not in stellar_types_giants:
 #        possible options: MS+MS, MS+remnant, remnant+remnant,
 #                          HeMS+HeMS, HeMS+MS, HeMS+remnant
-        print 'Merger in inner binary through common envelope phase (stellar types)'
-        print 'donor:', donor.stellar_type
-        print 'accretor:', accretor.stellar_type
-        bs.bin_type = bin_type['merger']
-        return
+        perform_inner_merger(bs, donor, accretor, self)                                              
 
+        self.check_for_RLOF()       
+        if self.has_donor():
+            print 'after adjust_triple_after_ce_in_inner_binary: RLOF'    
+            exit(1)
+            
+        donor.is_donor = False
+        bs.is_stable = True
+        bs.bin_type = bin_type['detached']
+        self.instantaneous_evolution = True #skip secular evolution                
+
+        return
+    
     if which_common_envelope == 0:
         if donor.stellar_type in stellar_types_giants and accretor.stellar_type in stellar_types_giants:
-            double_common_envelope(bs, donor, accretor, self)
+           double_common_envelope(bs, donor, accretor, self)
         else:
             common_envelope_energy_balance(bs, donor, accretor, self)
     elif which_common_envelope == 1:
@@ -355,7 +508,7 @@ def which_common_envelope_phase(bs, donor, accretor, self):
         Js_a = self.spin_angular_momentum(accretor)        
         Jb = self.orbital_angular_momentum(bs)
         Js = max(Js_d, Js_a)
-        print "Darwin Riemann instability? donor/accretor:", Js_d, Js_a, Jb, Jb/3.        
+#        print "Darwin Riemann instability? donor/accretor:", Js_d, Js_a, Jb, Jb/3.        
         if donor.stellar_type in stellar_types_giants and accretor.stellar_type in stellar_types_giants:
             #giant+giant
             double_common_envelope_energy_balance(bs, donor, accretor, self)
@@ -368,19 +521,9 @@ def which_common_envelope_phase(bs, donor, accretor, self):
         else:
             #giant+normal(non-giant, non-remnant)
             common_envelope_angular_momentum_balance(bs, donor, accretor, self)   
-       
 
-def common_envelope_phase(bs, donor, accretor, self):
-    if REPORT_FUNCTION_NAMES:
-        print 'Common envelope phase'
 
-    #perform CE in binary
-    which_common_envelope_phase(bs, donor, accretor, self)
 
-#    adjusting of stellar system
-#    adjust_system_after_ce_in_inner_binary(bs, self)                    
-#    self.instantaneous_evolution = True #skip secular evolution                
-       
 
 def contact_system(bs, star1, star2, self):
     if REPORT_FUNCTION_NAMES:
@@ -389,12 +532,13 @@ def contact_system(bs, star1, star2, self):
     bs.bin_type = bin_type['contact']                
     self.save_snapshot()        
 
-
     #for now no W Ursae Majoris evolution
     #so for now MS-MS contact binaries merge in common_envelope_phase
     #if stable mass transfer is implemented, then also the timestep needs to be adjusted
-    common_envelope_phase(bs, star1, star2, self)  
-
+    if star1.mass >= star2.mass:
+        common_envelope_phase(bs, star1, star2, self)  
+    else:
+        common_envelope_phase(bs, star2, star1, self)  
 
 def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
 
@@ -411,53 +555,45 @@ def adiabatic_expansion_due_to_mass_loss(a_i, Md_f, Md_i, Ma_f, Ma_i):
     return a_i
    
        
-            
-def adjust_triple_after_ce_in_inner_binary(bs, ce_binary, tertiary_star, self):
-# Assumption: Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
-# Instanteneous effect
-    if REPORT_FUNCTION_NAMES:
-        print 'Adjust triple after ce in inner_binary'
-
-    M_com_after_ce = self.get_mass(ce_binary)
-    M_com_before_ce = ce_binary.previous_mass
-    
-    # accretion_efficiency
-    M_accretor_before_ce = tertiary_star.mass 
-    M_accretor_after_ce = tertiary_star.mass 
-    
-    a_new = adiabatic_expansion_due_to_mass_loss(bs.semimajor_axis, M_com_after_ce, M_com_before_ce, M_accretor_after_ce, M_accretor_before_ce)
-    bs.semimajor_axis = a_new
-#    bs.eccentricity = minimum_eccentricity
-#    bs.argument_of_pericenter = 
-#    bs.inner_longitude_of_ascending_node =  
-#    bs.child1.spin_angular_frequency = 
-
-    self.check_for_RLOF()       
-    if self.has_donor():
-        print 'adjust_triple_after_ce_in_inner_binary: RLOF'    
-        exit(1)
-            
-
 def adjust_system_after_ce_in_inner_binary(bs, self):
+    # Assumption: Unstable mass transfer (common-envelope phase) in the inner binary, affects the outer binary as a wind. 
+    # Instanteneous effect
     if REPORT_FUNCTION_NAMES:
-        print 'Adjust system after ce in inner_binary'
+        print 'Adjust system after ce in inner binary'
 
-    system = bs
-    while True:
-        try:    
-            system = system.parent
-            if not system.child1.is_star and system.child2.is_star:
-                adjust_triple_after_ce_in_inner_binary(system, system.child1, system.child2, self)                
-            elif not system.child2.is_star and system.child1.is_star:
-                adjust_triple_after_ce_in_inner_binary(system, system.child2, system.child1, self)                            
-            else:
-                print 'adjust_system_after_ce_in_inner_binary: type of system unknown'
-                exit(2)
-                                        
-        except AttributeError:
-            #when there is no parent
-            break
+    if self.is_triple():
+        M_com_after_ce = self.get_mass(bs)
+        M_com_before_ce = bs.previous_mass
+        
+        if self.triple.child1.is_star:
+            tertiary_star = self.triple.child1
+        else:
+            tertiary_star = self.triple.child2 
+        # accretion_efficiency
+        M_accretor_before_ce = tertiary_star.mass 
+        M_accretor_after_ce = tertiary_star.mass 
+        
+        a_new = adiabatic_expansion_due_to_mass_loss(self.triple.semimajor_axis, M_com_after_ce, M_com_before_ce, M_accretor_after_ce, M_accretor_before_ce)
+        self.triple.semimajor_axis = a_new
+    
 
+# nice but difficult to update self.triple       
+#    system = bs
+#    while True:
+#        try:    
+#            system = system.parent
+#            if not system.child1.is_star and system.child2.is_star:
+#                system = adjust_triple_after_ce_in_inner_binary(system, system.child1, system.child2, self)                
+#            elif not system.child2.is_star and system.child1.is_star:
+#                system = adjust_triple_after_ce_in_inner_binary(system, system.child2, system.child1, self)                            
+#            else:
+#                print 'adjust_system_after_ce_in_inner_binary: type of system unknown'
+#                exit(2)
+#                                        
+#        except AttributeError:
+#            #when there is no parent
+#            break
+#
 
 
 def stable_mass_transfer(bs, donor, accretor, self):
@@ -470,6 +606,8 @@ def stable_mass_transfer(bs, donor, accretor, self):
         self.save_snapshot()        
     else:
         bs.bin_type = bin_type['stable_mass_transfer']                
+
+    self.secular_code.parameters.check_for_inner_RLOF = False
 
     Md = donor.mass
     Ma = accretor.mass
@@ -494,8 +632,10 @@ def stable_mass_transfer(bs, donor, accretor, self):
     # for now, only conservative mass transfer   
     accretor_in_stellar_code.change_mass(-1.*dm, -1.*dt)
 
-    self.channel_from_stellar.copy()
+    self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"  
 
+    self.update_stellar_parameters()
+            
     Md_new = donor.mass
     Ma_new = accretor.mass
     accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
@@ -508,10 +648,9 @@ def stable_mass_transfer(bs, donor, accretor, self):
         
     bs.accretion_efficiency_mass_transfer = accretion_efficiency
 
-
+    
 def semi_detached(bs, donor, accretor, self):
 #only for binaries (consisting of two stars)
-
     if REPORT_FUNCTION_NAMES:
         print 'Semi-detached'
         print bs.semimajor_axis, donor.mass, accretor.mass, donor.stellar_type, accretor.stellar_type
@@ -519,11 +658,9 @@ def semi_detached(bs, donor, accretor, self):
 
     if bs.is_stable:
         stable_mass_transfer(bs, donor, accretor, self)
-        self.first_contact = False
         #adjusting triple is done in secular evolution code
     else:        
         common_envelope_phase(bs, donor, accretor, self)
-
            
     #possible problem if companion or tertiary accretes significantly from this
 #    self.update_previous_stellar_parameters() #previous_mass, previous_radius for safety check
@@ -554,7 +691,6 @@ def triple_mass_transfer(bs, donor, accretor, self):
 
     if bs.is_stable:
         triple_stable_mass_transfer(bs, donor, accretor, self)
-        self.first_contact = False
         
         # possible the outer binary needs part_dt_mt as well. 
         #adjusting triple is done in secular evolution code
@@ -566,7 +702,6 @@ def triple_mass_transfer(bs, donor, accretor, self):
         
         #implementation is missing
         #snapshot
-
 
 #-------------------------
 
@@ -615,6 +750,7 @@ def detached(bs, self):
     # wind accretion here:
     # update accretion efficiency of wind mass loss
     if self.is_binary(bs):
+            
         bs.accretion_efficiency_wind_child1_to_child2 = 0.0
         bs.accretion_efficiency_wind_child2_to_child1 = 0.0
 
@@ -677,6 +813,8 @@ def detached(bs, self):
               
     #reset parameters after mass transfer
 #    bs.mass_transfer_rate = 0.0 | units.MSun/units.yr
+
+#    return bs
 #-------------------------
 
 #-------------------------
@@ -711,8 +849,7 @@ def resolve_binary_interaction(bs, self):
     
             if bs.child1.is_donor:
                 if bs.child2.child1.is_donor or bs.child2.child2.is_donor:
-                    print 'rlof in inner and outer binary'
-                triple_mass_transfer(bs, bs.child1, bs.child2, self)
+                    triple_mass_transfer(bs, bs.child1, bs.child2, self)
             else:
                 detached(bs, self)
                 
@@ -724,7 +861,8 @@ def resolve_binary_interaction(bs, self):
    else:
         print 'resolve binary interaction: type of system unknown'
         print bs.is_star, bs.child1.is_star, bs.child1.is_donor
-        exit(2)                    
+        exit(2)      
+        
 #-------------------------
         
 #-------------------------
@@ -863,8 +1001,8 @@ def mass_transfer_timescale(binary, star):
         exit(2)
     
     #For now thermal timescale donor
-    mtt = kelvin_helmholds_timescale(star)
-#    mtt = nuclear_evolution_timescale(star)
+#    mtt = kelvin_helmholds_timescale(star)
+    mtt = nuclear_evolution_timescale(star)
 
     return mtt
 #-------------------------
