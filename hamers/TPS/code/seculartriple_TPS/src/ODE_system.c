@@ -129,13 +129,13 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     double effective_inner_mass_transfer_rate = inner_accretion_efficiency_mass_transfer*inner_mass_transfer_rate; // always 0 or negative
     if (star1_is_donor == TRUE)  // m1 transfers mass; m2 gains a fraction of this
     {
-        m1_dot += effective_inner_mass_transfer_rate;
+        m1_dot += inner_mass_transfer_rate;
         m2_dot += -effective_inner_mass_transfer_rate;
     }
     else if (star2_is_donor == TRUE) // m2 transfers mass; m1 gains a fraction of this
     {
         m1_dot += -effective_inner_mass_transfer_rate;
-        m2_dot += effective_inner_mass_transfer_rate;
+        m2_dot += inner_mass_transfer_rate;
     }
 
     /***************************************************************
