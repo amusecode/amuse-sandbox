@@ -9,7 +9,6 @@ REPORT_MASS_TRANSFER_STABILITY = False
 numerical_error  = 1.e-6
 minimum_eccentricity = 1.e-5
 
-
 which_common_envelope = 2
 #0 alpha + dce
 #1 gamma + dce
@@ -76,12 +75,10 @@ def stellar_evolution_timescale(star):
         print "Stellar evolution timescale:"
         
     if star.stellar_type in [0,1,7]|units.stellar_type:
-#        print 't_ev', (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr), star.mass, star.stellar_type
         return (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr)
     elif star.stellar_type in stellar_types_compact_objects:
         return np.inf|units.Myr 
     else:        
-#        print 0.1*star.age, 0.1*star.age, star.mass, star.stellar_type     
         return 0.1*star.age
 
 
@@ -93,13 +90,13 @@ def nuclear_evolution_timescale(star):
     if star.stellar_type in [0,1,7]|units.stellar_type:
         return (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr)
     else: #t_nuc ~ delta t * R/ delta R, other prescription gave long timescales in SeBa which destables the mass transfer
-        t_nuc = star.radius / star.time_derivative_of_radius
-
+        if star.time_derivative_of_radius <= (quantities.zero+numerical_error**2)|units.RSun/units.yr:
         #when star is shrinking
-        if t_nuc < quantities.zero:
 #            t_nuc = 0.1*main_sequence_time() # in SeBa
             t_nuc = 0.1*star.age         
-    
+        else: 
+            t_nuc = star.radius / star.time_derivative_of_radius
+
         return t_nuc
 
 def kelvin_helmholds_timescale(star):
@@ -150,10 +147,10 @@ def copy_outer_star_to_accretor(self):
     if self.is_triple():        
         if self.triple.child1.is_star:
             tertiary_star = self.triple.child1
-            self.triple.child2
+            bs = self.triple.child2
         else:
             tertiary_star = self.triple.child2 
-            self.triple.child1
+            bs = self.triple.child1
             
 
         if not bs.child1.is_donor:
@@ -198,7 +195,10 @@ def perform_inner_collision(self):
         donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
     
         #assuming conservation of total angular momentum of the inner binary
-        donor.spin_angular_frequency = J_spin_new / donor.moment_of_inertia_of_star                
+        spin_angular_frequency = J_spin_new / donor.moment_of_inertia_of_star                
+        critical_spin_angular_frequency = np.sqrt(constants.G * donor.mass/donor.radius**3)
+        donor.spin_angular_frequency = min(spin_angular_frequency, critical_spin_angular_frequency)
+
             
         self.stellar_code.particles.remove_particle(accretor)
         accretor.mass = 0|units.MSun # necessary for adjust_system_after_ce_in_inner_binary
@@ -212,11 +212,17 @@ def perform_inner_collision(self):
         #functions are skipped in binaries, needs to be checked if this works well
         
         self.secular_code.parameters.ignore_tertiary = True
+        self.secular_code.parameters.check_for_dynamical_stability = False
+        self.secular_code.parameters.check_for_outer_collision = False
+        self.secular_code.parameters.check_for_outer_RLOF = False
+
         bs.bin_type = bin_type['collision']         
         self.save_snapshot() # just to note that it the system has merged
     
         self.check_for_RLOF()       
         if self.has_donor():
+            print self.triple.child2.child1.mass, self.triple.child2.child2.mass, self.triple.child2.semimajor_axis, self.triple.child2.eccentricity, self.triple.child2.child1.is_donor, self.triple.child2.child2.is_donor
+            print self.triple.child1.mass, self.triple.semimajor_axis, self.triple.eccentricity, self.triple.child1.is_donor
             print 'after adjust_triple_after_ce_in_inner_binary: RLOF'    
             exit(1)
             
@@ -245,7 +251,9 @@ def perform_inner_merger(bs, donor, accretor, self):
     donor.moment_of_inertia_of_star = self.moment_of_inertia(donor)        
     
     #assuming conservation of total angular momentum of the inner binary
-    donor.spin_angular_frequency = J_spin_new / donor.moment_of_inertia_of_star                
+    spin_angular_frequency = J_spin_new / donor.moment_of_inertia_of_star                
+    critical_spin_angular_frequency = np.sqrt(constants.G * donor.mass/donor.radius**3)
+    donor.spin_angular_frequency = min(spin_angular_frequency, critical_spin_angular_frequency)
         
     self.stellar_code.particles.remove_particle(accretor)
     accretor.mass = 0|units.MSun # necessary for adjust_system_after_ce_in_inner_binary
@@ -259,6 +267,9 @@ def perform_inner_merger(bs, donor, accretor, self):
     #functions are skipped in binaries, needs to be checked if this works well
     
     self.secular_code.parameters.ignore_tertiary = True
+    self.secular_code.parameters.check_for_dynamical_stability = False
+    self.secular_code.parameters.check_for_outer_collision = False
+    self.secular_code.parameters.check_for_outer_RLOF = False
     bs.bin_type = bin_type['merger']         
     self.save_snapshot() # just to note that it the system has merged
 
@@ -314,8 +325,6 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
 
         bs.semimajor_axis = a_new
         bs.eccentricity = minimum_eccentricity
-#        bs.argument_of_pericenter = 
-#        bs.inner_longitude_of_ascending_node =  
 
         #set to synchronization
         corotating_frequency = corotating_spin_angular_frequency_binary(a_new, donor.mass, accretor.mass)
@@ -328,6 +337,8 @@ def common_envelope_angular_momentum_balance(bs, donor, accretor, self):
 
     self.check_for_RLOF()       
     if self.has_donor():
+        print self.triple.child2.child1.mass, self.triple.child2.child2.mass, self.triple.child2.semimajor_axis, self.triple.child2.eccentricity, self.triple.child2.child1.is_donor, self.triple.child2.child2.is_donor
+        print self.triple.child1.mass, self.triple.semimajor_axis, self.triple.eccentricity, self.triple.child1.is_donor
         print 'after adjust_triple_after_ce_in_inner_binary: RLOF'    
         exit(1)
         
@@ -379,8 +390,6 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
 
         bs.semimajor_axis = a_new
         bs.eccentricity = minimum_eccentricity
-#        bs.argument_of_pericenter = 
-#        bs.inner_longitude_of_ascending_node =  
 
         #set to synchronization
         corotating_frequency = corotating_spin_angular_frequency_binary(a_new, donor.mass, accretor.mass)
@@ -392,6 +401,8 @@ def common_envelope_energy_balance(bs, donor, accretor, self):
 
     self.check_for_RLOF()       
     if self.has_donor():
+        print self.triple.child2.child1.mass, self.triple.child2.child2.mass, self.triple.child2.semimajor_axis, self.triple.child2.eccentricity, self.triple.child2.child1.is_donor, self.triple.child2.child2.is_donor
+        print self.triple.child1.mass, self.triple.semimajor_axis, self.triple.eccentricity, self.triple.child1.is_donor
         print 'after adjust_triple_after_ce_in_inner_binary: RLOF'    
         exit(1)
         
@@ -446,8 +457,6 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
 
         bs.semimajor_axis = a_new
         bs.eccentricity = minimum_eccentricity
-#        bs.argument_of_pericenter = 
-#        bs.inner_longitude_of_ascending_node =  
 
         #set to synchronization
         corotating_frequency = corotating_spin_angular_frequency_binary(a_new, donor.mass, accretor.mass)
@@ -460,8 +469,9 @@ def double_common_envelope_energy_balance(bs, donor, accretor, self):
             
     self.check_for_RLOF()       
     if self.has_donor():
-        print 'after adjust_triple_after_ce_in_inner_binary: RLOF'  
-          
+        print self.triple.child2.child1.mass, self.triple.child2.child2.mass, self.triple.child2.semimajor_axis, self.triple.child2.eccentricity, self.triple.child2.child1.is_donor, self.triple.child2.child2.is_donor
+        print self.triple.child1.mass, self.triple.semimajor_axis, self.triple.eccentricity, self.triple.child1.is_donor
+        print 'after adjust_triple_after_ce_in_inner_binary: RLOF'            
         exit(1)
         
     donor.is_donor = False
@@ -483,6 +493,8 @@ def common_envelope_phase(bs, donor, accretor, self):
 
         self.check_for_RLOF()       
         if self.has_donor():
+            print self.triple.child2.child1.mass, self.triple.child2.child2.mass, self.triple.child2.semimajor_axis, self.triple.child2.eccentricity, self.triple.child2.child1.is_donor, self.triple.child2.child2.is_donor
+            print self.triple.child1.mass, self.triple.semimajor_axis, self.triple.eccentricity, self.triple.child1.is_donor
             print 'after adjust_triple_after_ce_in_inner_binary: RLOF'    
             exit(1)
             
@@ -885,35 +897,39 @@ def mass_transfer_stability(binary, self):
         if Js >= Jb/3. :
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Darwin Riemann instability", Js_1, Js_2, Jb, Jb/3.
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr     
+            mt1 = -1.* binary.child1.mass / dynamic_timescale(binary.child1)
+            mt2 = -1.* binary.child2.mass / dynamic_timescale(binary.child2)  
+            binary.mass_transfer_rate = min(mt1, mt2) # minimum because mt<0
             binary.is_stable = False
             
         elif binary.child1.is_donor and binary.child2.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Contact"
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+            mt1 = -1.* binary.child1.mass / dynamic_timescale(binary.child1)
+            mt2 = -1.* binary.child2.mass / dynamic_timescale(binary.child2)  
+            binary.mass_transfer_rate = min(mt1, mt2) # minimum because mt<0
             binary.is_stable = False    
 
         elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass*q_crit:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonor1>3*Macc "
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+            binary.mass_transfer_rate = -1.* binary.child1.mass / dynamic_timescale(binary.child1)
             binary.is_stable = False
         elif binary.child2.is_donor and binary.child2.mass > binary.child1.mass*q_crit:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonor2>3*Macc "
-            binary.mass_transfer_rate= 0.0 | units.MSun/units.yr
+            binary.mass_transfer_rate= -1.* binary.child2.mass / dynamic_timescale(binary.child2) 
             binary.is_stable = False
             
         elif binary.child1.is_donor and binary.child1.stellar_type in stellar_types_giants_conv_env and binary.child1.mass > binary.child2.mass*q_crit_giants_conv_env: 
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonorgiant1>Macc "
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+            binary.mass_transfer_rate = -1.* binary.child1.mass / dynamic_timescale(binary.child1)
             binary.is_stable = False
         elif binary.child2.is_donor and binary.child2.stellar_type in stellar_types_giants_conv_env and binary.child2.mass > binary.child1.mass*q_crit_giants_conv_env:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonorgiant2>Macc "
-            binary.mass_transfer_rate= 0.0 | units.MSun/units.yr
+            binary.mass_transfer_rate= -1.* binary.child2.mass / dynamic_timescale(binary.child2)
             binary.is_stable = False
             
         elif binary.child1.is_donor:
@@ -960,19 +976,19 @@ def mass_transfer_stability(binary, self):
         if Js >= Jb/3. :
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Darwin Riemann instability: ", Js, Jb, Jb/3.
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr  
+            binary.mass_transfer_rate = -1.* star.mass / dynamic_timescale(star)
             binary.is_stable = False          
             
         elif star.is_donor and star.mass > self.get_mass(companion)*q_crit:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonor1>3*Macc"
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+            binary.mass_transfer_rate = -1.* star.mass / dynamic_timescale(star)
             binary.is_stable = False
             
         elif star.is_donor and star.stellar_type in stellar_types_giants_conv_env and star.mass > self.get_mass(companion)*q_crit_giants_conv_env:
             if REPORT_MASS_TRANSFER_STABILITY:
                 print "Mass transfer stability: Mdonorgiant1>Macc "
-            binary.mass_transfer_rate = 0.0 | units.MSun/units.yr
+            binary.mass_transfer_rate = -1.* star.mass / dynamic_timescale(star)
             binary.is_stable = False
             
         elif star.is_donor:
@@ -1003,7 +1019,6 @@ def mass_transfer_timescale(binary, star):
     #For now thermal timescale donor
 #    mtt = kelvin_helmholds_timescale(star)
     mtt = nuclear_evolution_timescale(star)
-
     return mtt
 #-------------------------
         
