@@ -236,6 +236,15 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('delta_m3', dtype='float64', direction=function.IN)
         function.addParameter('f1', dtype='float64',direction=function.IN,description = "")         
         function.addParameter('f2', dtype='float64',direction=function.IN,description = "")         
+        function.addParameter('V1_prime_x', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('V1_prime_y', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('V1_prime_z', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('V2_prime_x', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('V2_prime_y', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('V2_prime_z', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('V3_prime_x', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('V3_prime_y', dtype='float64',direction=function.OUT,description = "")
+        function.addParameter('V3_prime_z', dtype='float64',direction=function.OUT,description = "")
         function.addParameter('e1_vec_x_p', dtype='float64',direction=function.OUT,description = "")
         function.addParameter('e1_vec_y_p', dtype='float64',direction=function.OUT,description = "")
         function.addParameter('e1_vec_z_p', dtype='float64',direction=function.OUT,description = "")
@@ -604,19 +613,47 @@ class SecularTripleInterface(CodeInterface):
         return function
 
     @legacy_function
-    def set_include_spin_radius_mass_coupling_terms():
+    def set_include_spin_radius_mass_coupling_terms_star1():
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
         function.result_type = 'int32'
         return function    
         
     @legacy_function
-    def get_include_spin_radius_mass_coupling_terms():
+    def get_include_spin_radius_mass_coupling_terms_star1():
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def set_include_spin_radius_mass_coupling_terms_star2():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
+        function.result_type = 'int32'
+        return function    
+        
+    @legacy_function
+    def get_include_spin_radius_mass_coupling_terms_star2():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_include_spin_radius_mass_coupling_terms_star3():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool',direction=function.IN,description = "..")
+        function.result_type = 'int32'
+        return function    
+        
+    @legacy_function
+    def get_include_spin_radius_mass_coupling_terms_star3():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool',direction=function.OUT,description = "..")
+        function.result_type = 'int32'
+        return function
+        
     @legacy_function
     def set_include_inner_RLOF_terms():
         function = LegacyFunctionSpecification()
@@ -895,9 +932,23 @@ class SecularTriple(InCodeComponentImplementation):
             default_value = False
         )        
         object.add_method_parameter(
-            "get_include_spin_radius_mass_coupling_terms",
-            "set_include_spin_radius_mass_coupling_terms",
-            "include_spin_radius_mass_coupling_terms",
+            "get_include_spin_radius_mass_coupling_terms_star1",
+            "set_include_spin_radius_mass_coupling_terms_star1",
+            "include_spin_radius_mass_coupling_terms_star1",
+            "..", 
+            default_value = False
+        )
+        object.add_method_parameter(
+            "get_include_spin_radius_mass_coupling_terms_star2",
+            "set_include_spin_radius_mass_coupling_terms_star2",
+            "include_spin_radius_mass_coupling_terms_star2",
+            "..", 
+            default_value = False
+        )  
+        object.add_method_parameter(
+            "get_include_spin_radius_mass_coupling_terms_star3",
+            "set_include_spin_radius_mass_coupling_terms_star3",
+            "include_spin_radius_mass_coupling_terms_star3",
             "..", 
             default_value = False
         )        
@@ -1144,6 +1195,15 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### f2
             ),
             (
+                unit_l/unit_t,              ### V1_prime_x
+                unit_l/unit_t,              ### V1_prime_y
+                unit_l/unit_t,              ### V1_prime_z
+                unit_l/unit_t,              ### V2_prime_x
+                unit_l/unit_t,              ### V2_prime_y
+                unit_l/unit_t,              ### V2_prime_z
+                unit_l/unit_t,              ### V3_prime_x
+                unit_l/unit_t,              ### V3_prime_y
+                unit_l/unit_t,              ### V3_prime_z
                 object.NO_UNIT,             ### e1_vec_x_p
                 object.NO_UNIT,             ### e1_vec_y_p
                 object.NO_UNIT,             ### e1_vec_z_p
@@ -1446,11 +1506,13 @@ class SecularTriple(InCodeComponentImplementation):
                 star2.spin_angular_frequency = spin_angular_frequency2
                 star3.spin_angular_frequency = spin_angular_frequency3
 
-            if parameters.include_spin_radius_mass_coupling_terms == True:
+            if parameters.include_spin_radius_mass_coupling_terms_star1 == True:
                 star1.spin_angular_frequency = spin_angular_frequency1
+            if parameters.include_spin_radius_mass_coupling_terms_star2 == True:
                 star2.spin_angular_frequency = spin_angular_frequency2
+            if parameters.include_spin_radius_mass_coupling_terms_star3 == True:
                 star3.spin_angular_frequency = spin_angular_frequency3
-
+                
             inner_binary.semimajor_axis = a_in
             inner_binary.eccentricity = e_in
             outer_binary.semimajor_axis = a_out
@@ -1548,8 +1610,14 @@ class SecularTriple(InCodeComponentImplementation):
         
         return R_L_star1,R_L_star2,R_L_star3
 
-    def compute_effect_of_SN_on_triple(self,vkick_1,vkick_2,vkick_3,delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly):
+    def compute_effect_of_SN_on_triple(self,Vkick_1,Vkick_2,Vkick_3,delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly):
         triples = self.triples
+        
+        
+        #################################################
+        ### convention: new mass = old mass - delta_m ###
+        ### i.e., delta_m>0 for mass loss             ###
+        #################################################
         
         for index_triple, triple in enumerate(triples):
             inner_binary,outer_binary,star1,star2,star3 = give_binaries_and_stars(self,triple)
@@ -1565,12 +1633,21 @@ class SecularTriple(InCodeComponentImplementation):
                 print 'PRE vec',e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z,h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z
             
             ### effect of SN on orbital vectors ###
-            e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
+            V1_prime_x,V1_prime_y,V1_prime_z, \
+                V2_prime_x,V2_prime_y,V2_prime_z, \
+                V3_prime_x,V3_prime_y,V3_prime_z, \
+                e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
                 h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime = \
-                self.compute_effect_of_SN_on_orbital_vectors(m1,m2,m3,e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z, \
+                self.compute_effect_of_SN_on_orbital_vectors(m1,m2,m3, \
+                    e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z, \
                     h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z, \
-                    vkick_1[0],vkick_1[1],vkick_1[2],vkick_2[0],vkick_2[1],vkick_2[2],vkick_3[0],vkick_3[1],vkick_3[2],
+                    Vkick_1[0],Vkick_1[1],Vkick_1[2],Vkick_2[0],Vkick_2[1],Vkick_2[2],Vkick_3[0],Vkick_3[1],Vkick_3[2],
                     delta_m_1,delta_m_2,delta_m_3,inner_true_anomaly,outer_true_anomaly)
+            
+            unit_v = unit_l/unit_t
+            V1_prime = [V1_prime_x.value_in(unit_v),V1_prime_y.value_in(unit_v),V1_prime_z.value_in(unit_v)] | unit_v
+            V2_prime = [V2_prime_x.value_in(unit_v),V2_prime_y.value_in(unit_v),V2_prime_z.value_in(unit_v)] | unit_v
+            V3_prime = [V3_prime_x.value_in(unit_v),V3_prime_y.value_in(unit_v),V3_prime_z.value_in(unit_v)] | unit_v
             
             if self.parameters.verbose == True:
                 print 'POST vec',e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
@@ -1578,9 +1655,11 @@ class SecularTriple(InCodeComponentImplementation):
             
             ### post-SN -- from orbital vectors to orbital elements (with new reference frame) ###
             a_in_prime,a_out_prime,e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime = \
-                self.compute_orbital_elements_from_orbital_vectors(m1,m2,m3,e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime, \
-                e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime,h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime, \
-                h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime)
+                self.compute_orbital_elements_from_orbital_vectors(m1-delta_m_1, m2-delta_m_2, m3-delta_m_3, \
+                    e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime, \
+                    e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
+                    h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime, \
+                    h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime)
             
             if self.parameters.verbose == True:
                 print 'POST orb',a_in_prime.value_in(units.AU),a_out_prime.value_in(units.AU),e_in_prime,e_out_prime,INCL_rel_prime,AP_in_prime,AP_out_prime,LAN_in_prime,LAN_out_prime
@@ -1594,6 +1673,8 @@ class SecularTriple(InCodeComponentImplementation):
             outer_binary.argument_of_pericenter = AP_out_prime
             inner_binary.longitude_of_ascending_node = LAN_in_prime
             outer_binary.longitude_of_ascending_node = LAN_out_prime
+
+            return V1_prime,V2_prime,V3_prime
 
 def print_CVODE_output(self,CVODE_flag):
     if self.parameters.verbose == False: return
@@ -1840,7 +1921,7 @@ def extract_data_and_give_args(self,triple,inner_binary,outer_binary,star1,star2
 #    moment_of_inertia_star1 = moment_of_inertia_star2 = moment_of_inertia_star3 = 1.0e8 | units.MSun*units.RSun**2
 #    moment_of_inertia_dot_star1 = moment_of_inertia_dot_star2 = moment_of_inertia_dot_star3 = 0.0 | units.MSun*units.RSun**2/units.yr
     inner_spin_angular_momentum_wind_accretion_efficiency_child1_to_child2 = inner_spin_angular_momentum_wind_accretion_efficiency_child2_to_child1 = 0.0
-    if parameters.include_spin_radius_mass_coupling_terms == True:
+    if parameters.include_spin_radius_mass_coupling_terms_star1 == True or parameters.include_spin_radius_mass_coupling_terms_star2 == True or parameters.include_spin_radius_mass_coupling_terms_star3 == True:
         try:
             spin_angular_frequency1 = star1.spin_angular_frequency
             spin_angular_frequency2 = star2.spin_angular_frequency

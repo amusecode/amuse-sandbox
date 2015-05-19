@@ -12,6 +12,9 @@ int compute_effect_of_SN_on_orbital_vectors
     double Vkick3_vec_x, double Vkick3_vec_y, double Vkick3_vec_z,
     double delta_m1, double delta_m2, double delta_m3,
     double f1, double f2,
+    double *V1_prime_x, double *V1_prime_y, double *V1_prime_z,
+    double *V2_prime_x, double *V2_prime_y, double *V2_prime_z, 
+    double *V3_prime_x, double *V3_prime_y, double *V3_prime_z,
     double *e1_vec_x_p, double *e1_vec_y_p, double *e1_vec_z_p,
     double *e2_vec_x_p, double *e2_vec_y_p, double *e2_vec_z_p,
     double *h1_vec_x_p, double *h1_vec_y_p, double *h1_vec_z_p,
@@ -67,11 +70,12 @@ int compute_effect_of_SN_on_orbital_vectors
     double r1_vec[3],r2_vec[3];
     double v1_vec[3],v2_vec[3];
 
-//    double r1_p,r2_p;
-//    double v1_p,v2_p;
+    /* '_p' denotes 'prime', i.e. after the SN */
     double r1_vec_p[3],r2_vec_p[3];
     double v1_vec_p[3],v2_vec_p[3];
     
+    /* post-SN masses */
+    /* note sign convention */
     double m1_p = m1 - delta_m1;
     double m2_p = m2 - delta_m2;
     double m3_p = m3 - delta_m3;
@@ -92,6 +96,7 @@ int compute_effect_of_SN_on_orbital_vectors
         v1_vec[i] = v1*( -sin_f1*e1_vec_unit[i] + (e1+cos_f1)*q1_vec_unit[i] );
         v2_vec[i] = v2*( -sin_f2*e2_vec_unit[i] + (e2+cos_f2)*q2_vec_unit[i] );
     
+        /* pre-SN velocities of the stars */
         r1_CM_vec[i] = r2_CM_vec[i] + (m3/(m1+m2+m3))*r2_vec[i];
         v1_CM_vec[i] = v2_CM_vec[i] + (m3/(m1+m2+m3))*v2_vec[i];
         R3_vec[i] = r2_CM_vec[i] - ((m1+m2)/(m1+m2+m3))*r2_vec[i];
@@ -102,12 +107,13 @@ int compute_effect_of_SN_on_orbital_vectors
         R2_vec[i] = r1_CM_vec[i] - (m1/(m1+m2))*r1_vec[i];
         V2_vec[i] = v1_CM_vec[i] - (m1/(m1+m2))*v1_vec[i];
 
+        /* post-SN velocities of the stars (positions are assumed to be unchanged) */
         V1_vec_p[i] = V1_vec[i] + Vkick1_vec[i];
         V2_vec_p[i] = V2_vec[i] + Vkick2_vec[i];
         V3_vec_p[i] = V3_vec[i] + Vkick3_vec[i];
         
         r1_vec_p[i] = r1_vec[i];
-        r2_vec_p[i] = ((m1_p*R1_vec[i] + m2_p*R2_vec[i])/(m1_p+m2_p)) - R3_vec[i];
+        r2_vec_p[i] = ((m1_p*R1_vec[i] + m2_p*R2_vec[i])/(m1_p+m2_p)) - R3_vec[i]; /* RELATIVE position vector of outer binary changes because CM position of inner binary changes */
         v1_vec_p[i] = V1_vec_p[i] - V2_vec_p[i];
         v2_vec_p[i] = ((m1_p*V1_vec_p[i] + m2_p*V2_vec_p[i])/(m1_p+m2_p)) - V3_vec_p[i];
     }
@@ -130,6 +136,18 @@ int compute_effect_of_SN_on_orbital_vectors
 //    printf("test e 2 %g %g %g\n",e1_vec_p[0],e1_vec_p[1],e1_vec_p[2]);
 //    printf("test h 1 %g %g %g\n",h1_vec[0],h1_vec[1],h1_vec[2]);
 //    printf("test h 2 %g %g %g\n",h1_vec_p[0],h1_vec_p[1],h1_vec_p[2]);
+
+    *V1_prime_x = V1_vec_p[0];
+    *V1_prime_y = V1_vec_p[1];
+    *V1_prime_z = V1_vec_p[2];
+
+    *V2_prime_x = V2_vec_p[0];
+    *V2_prime_y = V2_vec_p[1];
+    *V2_prime_z = V2_vec_p[2];
+
+    *V3_prime_x = V3_vec_p[0];
+    *V3_prime_y = V3_vec_p[1];
+    *V3_prime_z = V3_vec_p[2];
 
     *e1_vec_x_p = e1_vec_p[0];
     *e1_vec_y_p = e1_vec_p[1];

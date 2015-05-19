@@ -76,7 +76,9 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     bool include_inner_wind_terms = data->include_inner_wind_terms;
     bool include_outer_wind_terms = data->include_outer_wind_terms;
     bool include_magnetic_braking_terms = data->include_magnetic_braking_terms;
-    bool include_spin_radius_mass_coupling_terms = data->include_spin_radius_mass_coupling_terms;
+    bool include_spin_radius_mass_coupling_terms_star1 = data->include_spin_radius_mass_coupling_terms_star1;
+    bool include_spin_radius_mass_coupling_terms_star2 = data->include_spin_radius_mass_coupling_terms_star2;
+    bool include_spin_radius_mass_coupling_terms_star3 = data->include_spin_radius_mass_coupling_terms_star3;
     bool include_inner_RLOF_terms = data->include_inner_RLOF_terms;
     bool include_outer_RLOF_terms = data->include_outer_RLOF_terms;
     bool star1_is_donor = data->star1_is_donor;
@@ -780,7 +782,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     }
     
     /* changes of moment inertia, wind & AM accretion */
-    if (include_spin_radius_mass_coupling_terms == TRUE)
+    if (include_spin_radius_mass_coupling_terms_star1 == TRUE)
     {
         /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */
         spin_angular_frequency1_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency1,m1,R1,moment_of_inertia_star1,moment_of_inertia_dot_star1, wind_mass_loss_rate_star1,threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero);
@@ -820,7 +822,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
     }
 
     /* changes of moment inertia, wind & AM accretion */
-    if (include_spin_radius_mass_coupling_terms == TRUE)
+    if (include_spin_radius_mass_coupling_terms_star2 == TRUE)
     {
         /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */
         spin_angular_frequency2_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency2,m2,R2,moment_of_inertia_star2,moment_of_inertia_dot_star2, wind_mass_loss_rate_star2,threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero);
@@ -860,7 +862,7 @@ int fev_delaunay(realtype t, N_Vector yev, N_Vector ydot, void *data_f)
         }
         
         /* changes of moment inertia, wind & AM accretion */
-        if (include_spin_radius_mass_coupling_terms == TRUE)
+        if (include_spin_radius_mass_coupling_terms_star3 == TRUE)
         {
             /* changes in the spin frequency due to 1) changes in the moment of inertia and 2) loss of spin AM in the wind */        
             spin_angular_frequency3_dot_moment_of_inertia_plus_wind_changes = spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes(spin_angular_frequency3,m3,R3,moment_of_inertia_star3,moment_of_inertia_dot_star3, wind_mass_loss_rate_star3,threshold_value_of_spin_angular_frequency_for_setting_spin_angular_frequency_dot_moment_of_inertia_plus_wind_changes_zero);

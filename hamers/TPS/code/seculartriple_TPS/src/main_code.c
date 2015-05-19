@@ -35,7 +35,9 @@ bool include_inner_wind_terms,include_outer_wind_terms;
 
 bool ignore_tertiary;
 bool include_magnetic_braking_terms;
-bool include_spin_radius_mass_coupling_terms;
+bool include_spin_radius_mass_coupling_terms_star1;
+bool include_spin_radius_mass_coupling_terms_star2;
+bool include_spin_radius_mass_coupling_terms_star3;
 bool include_inner_RLOF_terms,include_outer_RLOF_terms;
 bool include_linear_mass_change,include_linear_radius_change;
 bool check_for_dynamical_stability_at_initialisation = true;
@@ -165,7 +167,9 @@ int evolve(
     data->include_inner_RLOF_terms = include_inner_RLOF_terms;
     data->include_outer_RLOF_terms = include_outer_RLOF_terms;
     data->include_magnetic_braking_terms = include_magnetic_braking_terms;
-    data->include_spin_radius_mass_coupling_terms = include_spin_radius_mass_coupling_terms;
+    data->include_spin_radius_mass_coupling_terms_star1 = include_spin_radius_mass_coupling_terms_star1;
+    data->include_spin_radius_mass_coupling_terms_star2 = include_spin_radius_mass_coupling_terms_star2;
+    data->include_spin_radius_mass_coupling_terms_star3 = include_spin_radius_mass_coupling_terms_star3;
     data->star1_is_donor = star1_is_donor;
     data->star2_is_donor = star2_is_donor;
     data->star3_is_donor = star3_is_donor;
@@ -720,12 +724,28 @@ int set_include_magnetic_braking_terms(int value){
     include_magnetic_braking_terms = value == 1;
     return 0;
 }
-int get_include_spin_radius_mass_coupling_terms(int *value){
-    *value = include_spin_radius_mass_coupling_terms ? 1 : 0;
+int get_include_spin_radius_mass_coupling_terms_star1(int *value){
+    *value = include_spin_radius_mass_coupling_terms_star1 ? 1 : 0;
     return 0;
 }
-int set_include_spin_radius_mass_coupling_terms(int value){
-    include_spin_radius_mass_coupling_terms = value == 1;
+int set_include_spin_radius_mass_coupling_terms_star1(int value){
+    include_spin_radius_mass_coupling_terms_star1 = value == 1;
+    return 0;
+}
+int get_include_spin_radius_mass_coupling_terms_star2(int *value){
+    *value = include_spin_radius_mass_coupling_terms_star2 ? 1 : 0;
+    return 0;
+}
+int set_include_spin_radius_mass_coupling_terms_star2(int value){
+    include_spin_radius_mass_coupling_terms_star2 = value == 1;
+    return 0;
+}
+int get_include_spin_radius_mass_coupling_terms_star3(int *value){
+    *value = include_spin_radius_mass_coupling_terms_star3 ? 1 : 0;
+    return 0;
+}
+int set_include_spin_radius_mass_coupling_terms_star3(int value){
+    include_spin_radius_mass_coupling_terms_star3 = value == 1;
     return 0;
 }
 int get_include_inner_RLOF_terms(int *value){
