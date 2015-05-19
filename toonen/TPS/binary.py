@@ -72,7 +72,7 @@ def roche_radius(bin, primary, self):
 #for comparison with kozai timescale
 def stellar_evolution_timescale(star):
     if REPORT_FUNCTION_NAMES:
-        print "Stellar evolution timescale:"
+        print "Stellar evolution timescale"
         
     if star.stellar_type in [0,1,7]|units.stellar_type:
         return (0.1 * star.mass * nucleair_efficiency * constants.c**2 / star.luminosity).in_(units.Gyr)
@@ -95,7 +95,7 @@ def nuclear_evolution_timescale(star):
 #            t_nuc = 0.1*main_sequence_time() # in SeBa
             t_nuc = 0.1*star.age         
         else: 
-            t_nuc = star.radius / star.time_derivative_of_radius
+            t_nuc = star.radius / star.time_derivative_of_radius #does not include the effect of mass loss on R
 
         return t_nuc
 
@@ -644,14 +644,15 @@ def stable_mass_transfer(bs, donor, accretor, self):
     # for now, only conservative mass transfer   
     accretor_in_stellar_code.change_mass(-1.*dm, -1.*dt)
 
+    #to adjust radius to mass loss and increase  
+    self.stellar_code.evolve_model(self.time)
     self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"  
-
     self.update_stellar_parameters()
             
     Md_new = donor.mass
     Ma_new = accretor.mass
     accretion_efficiency = (Ma_new-Ma)/(Md-Md_new)
-    if abs(accretion_efficiency - 1.0) > numerical_error or abs(Md-Md_new - -1.*(Ma-Ma_new)) > numerical_error |units.MSun:
+    if abs(accretion_efficiency - 1.0) > numerical_error and abs(Md-Md_new - -1.*(Ma-Ma_new)) > numerical_error |units.MSun:
         print 'stable_mass_transfer: non conservative mass transfer'
         print Md, Ma, donor.previous_mass, accretor.previous_mass
         print Md_new, Ma_new, Md-Md_new, Ma-Ma_new, accretion_efficiency
@@ -659,6 +660,11 @@ def stable_mass_transfer(bs, donor, accretor, self):
         exit(1)
         
     bs.accretion_efficiency_mass_transfer = accretion_efficiency
+
+    corotation_spin = corotating_spin_angular_frequency_binary(bs.semimajor_axis, donor.mass, accretor.mass)
+    donor.spin_angular_frequency = corotation_spin
+    accretor.spin_angular_frequency = corotation_spin
+
 
     
 def semi_detached(bs, donor, accretor, self):

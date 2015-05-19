@@ -3,7 +3,7 @@ from amuse.units import units, constants
 import numpy as np
 
 import triple_nokozaidt as triple
-test_asserts = True #False
+test_asserts = True
 
 
 class TestSeBa(TestWithMPI):
@@ -468,6 +468,173 @@ class TestSeBa(TestWithMPI):
             self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
 
         print 'test8: succeeded'
+
+
+
+
+
+
+
+    def test6_with_tides(self):
+        print 'test6'
+        
+        M1 = 3.0|units.MSun
+        M2 = 2.0|units.MSun
+        M3 = 0.08|units.MSun
+        a_in = 15|units.RSun
+        a_out = 1.e6|units.RSun
+        e_in = 0.0
+        e_out = 0.0
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        T_end = 385 | units.Myr 
+        tidal_terms = True
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, tidal_terms = tidal_terms)
+
+
+
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
+
+        if test_asserts:
+            #nucl timescale mt
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 0.4476487 | units.MSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 4.547591 | units.MSun, 2)        
+            self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+    
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 130.23696 | units.RSun, 2)  
+            # because of wind mass loss a_out_final != 1e6RSun      
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000939 | units.RSun, 2)        
+        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 1383819872| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 29230375| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 1651407| 1./units.Myr, 2)
+        
+
+        #under the assumption of conservative mass transfer
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
+        a_in_final_theory =  a_in * (M1 * M2 / M1f / M2f)**2 #conservative mass transfer
+        a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
+        print a_in_final_theory, a_out_final_theory
+        
+        if test_asserts:
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1.5)        
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
+
+        print 'test6 with tides: succeeded'
+
+    def test7_with_tides(self):
+        print 'test7'
+
+        M1 = 7.0|units.MSun
+        M2 = 6|units.MSun
+        M3 = 0.08|units.MSun
+        a_in = 50|units.RSun
+        a_out = 1.e6|units.RSun
+        e_in = 0.0
+        e_out = 0.0
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        T_end = 50|units.Myr 
+        tidal_terms = True
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, tidal_terms = tidal_terms)
+
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
+        print tr.triple.child2.child1.stellar_type, tr.triple.child2.child2.stellar_type, tr.triple.child1.stellar_type
+
+
+        if test_asserts:
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.34661 | units.MSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.64483 | units.MSun, 2)        
+            self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+    
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 360.22 | units.RSun, 2)  
+            # because of wind mass loss a_out_final != 1e6RSun      
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1000654.9252 | units.RSun, 2)        
+
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 21841671| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 9763575| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 1651407| 1./units.Myr, 2)
+        
+        #under the assumption of conservative mass transfer
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
+        a_in_final_theory =  a_in * (M1 * M2 / M1f / M2f)**2 #conservative mass transfer
+        a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
+        print a_in_final_theory, a_out_final_theory
+        
+        if test_asserts:
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1.5)        
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
+
+        print 'test7 with tides: succeeded'
+
+    def test8_with_tides(self):
+        print 'test8'
+
+        M1 = 7.0|units.MSun
+        M2 = 6|units.MSun
+        M3 = 0.08|units.MSun
+        a_in = 100|units.RSun
+        a_out = 1.e6|units.RSun
+        e_in = 0.0
+        e_out = 0.0
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        T_end = 50|units.Myr 
+        tidal_terms = True
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, tidal_terms = tidal_terms)
+
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
+        print tr.triple.child2.child1.stellar_type, tr.triple.child2.child2.stellar_type, tr.triple.child1.stellar_type
+
+        if test_asserts:
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.3518307 | units.MSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.mass, 11.6299890 | units.MSun, 2)        
+            self.assertEqual(tr.triple.child1.mass, 0.08 | units.MSun)        
+    
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 712.398| units.RSun, 2)  
+            # because of wind mass loss a_out_final != 1e6RSun      
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1001393 | units.RSun, 2)        
+        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.spin_angular_frequency, 166720249| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child2.child2.spin_angular_frequency, 3493846| 1./units.Myr, 2)
+            self.assertAlmostRelativeEqual(tr.triple.child1.spin_angular_frequency, 1651407| 1./units.Myr, 2)
+        
+        #under the assumption of conservative mass transfer
+        M1f = tr.triple.child2.child1.mass
+        M2f = tr.triple.child2.child2.mass
+        M3f = tr.triple.child1.mass       
+        a_in_final_theory =  a_in * (M1 * M2 / M1f / M2f)**2 #conservative mass transfer
+        a_out_final_theory = a_out * (M1+M2+M3) / (M1f+M2f+M3f) # wind
+        print a_in_final_theory, a_out_final_theory
+
+        if test_asserts:
+            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 1.5)        
+            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
+
+        print 'test8 with tides: succeeded'
+
+
+
+
+
+
+
 
 
 
@@ -1154,7 +1321,7 @@ if __name__ == '__main__':
 #    test.test2()
 #    test.test2_alt()
 #    test.test3()
-    test.test4()
+#    test.test4()
 ##
 ###test wind mass loss outer system
 #    test.test5()
@@ -1163,6 +1330,11 @@ if __name__ == '__main__':
 #    test.test6() 
 #    test.test7()
 #    test.test8()
+
+    test.test6_with_tides() 
+    test.test7_with_tides()
+#    test.test8_with_tides()
+
 #    
 ##test common envelope evolution in inner system
 #    test.test9() #alpha-ce - need tides to bring the system into corotation -> DR XXX!!!
