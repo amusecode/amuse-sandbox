@@ -20,14 +20,19 @@ def scatter_plot(stars, time, nstep, subplot, lim = 50):
     
     particles.move_to_center()
     star = stars[0]
+    offset = star.position
+    stars.position -= offset
+    
     subplot.scatter(stars.x.value_in(units.AU), stars.y.value_in(units.AU), c='r', s=m)
     
     for star, color in zip(stars, colors):
         if len(star.disk_particles) > 0:
+            star.disk_particles.position -= offset
             subplot.scatter(star.disk_particles.x.value_in(units.AU), star.disk_particles.y.value_in(units.AU), c=color, s=1)
     
     colors = ['r', 'b', 'g','y']
     for star, color in zip(stars, colors):
+        star.planets.position -= offset
         subplot.scatter(star.planets.x.value_in(units.AU), star.planets.y.value_in(units.AU), color=colors, s=10)
 
     subplot.set_xlabel("X [AU]")
@@ -153,5 +158,5 @@ if __name__ == "__main__":
     if o.with_gui:
         pyplot.show()
         
-    pyplot.savefig(o.filename + '-'+ o.plot_type +'.png')#,bbox_inches='tight')
+    figure.savefig(o.filename + '-'+ o.plot_type +'.png')#,bbox_inches='tight')
 #   mencoder "mf://xy*.png" -mf fps=20 -ovc x264 -o movie.avi

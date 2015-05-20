@@ -60,8 +60,8 @@ def remove_escaping_planets(stars, radius):
 def new_option_parser():
     result = OptionParser()
     result.add_option("--seed", 
-                      dest="seed", type="int", default = 666,
-                      help="random number seed [%default]")
+                      dest="seed", type="int", default = -1,
+                      help="random number seed (-1 for no seed) [%default]")
     result.add_option("-N", 
                       dest="Nstars", type="int", default = 1,
                       help="Number of stars [%default]")
@@ -78,6 +78,7 @@ def new_option_parser():
                       dest="n", type="int", default = 1000,
                       help="Number of pebbels per star [%default]")
     return result
+
 
 
 class CalculateFieldForParticles(bridge.CalculateFieldForParticles):
@@ -106,15 +107,16 @@ class CalculateFieldForParticles(bridge.CalculateFieldForParticles):
         az = gravity_constant * (mass*dz/dr_twothird).sum(1)
 
         
-        ax -=  ax[0]
-        ay -=  ay[0]
-        az -=   az[0]
+        #ax -=  ax[0]
+        # ay -=  ay[0]
+        #az -=   az[0]
         #or i,(x, y) in enumerate(zip(ax, ay)):
         #    print i, x.as_quantity_in(units.AU/units.s**2), y.as_quantity_in(units.AU/units.s**2)
         #ddd
         return ax, ay, az
     
     
+
 class GravityCodeInField(bridge.GravityCodeInField):
     """
     faster algorithm to calculcate the gravity for a code
@@ -177,7 +179,7 @@ class GravityCodeInField(bridge.GravityCodeInField):
         kinetic_energy_after = self.copy_of_particles.kinetic_energy()
         return kinetic_energy_after - kinetic_energy_before
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     o, arguments  = new_option_parser().parse_args()
     #    random.seed(seed=o.seed)
     
@@ -202,13 +204,17 @@ if __name__ in ('__main__', '__plot__'):
         arange = [15.5, 34] | units.AU
         erange = [0., 0.] 
         Ndisk = o.n
+        if o.seed < 0:
+            rng = random.RandomState()
+        else:
+            rng = random.RandomState(o.seed)
         for star in stars:
 #            phi = numpy.radians(random.uniform(0, 90, 1)[0])#rotate under x
 #            theta = numpy.radians(random.uniform(0, 180, 1)[0]) #rotate under y
             phi = 0
             theta = 0
-            star.disk_particles = make_pebble_disk(star, Ndisk, arange, erange, phi, theta)
-            star.planets = make_Nice_planets(star, phi, theta)
+            star.disk_particles = make_pebble_disk(star, Ndisk, arange, erange, phi, theta, rng)
+            star.planets = make_Nice_planets(star, phi, theta, rng)
             MEarth = 5.97219e+24 * units.kg
             Mdisk = 35.0 | MEarth
             star.disk_particles.mass = Mdisk/len(star.disk_particles)
@@ -281,3 +287,4 @@ if __name__ in ('__main__', '__plot__'):
     print "total time of this run in seconds: ", t1 - t0
     print "number of days to reach billion years:", \
         (((1.0 | units.Gyr)/time)*(t1 - t0)).as_quantity_in(units.day)
+

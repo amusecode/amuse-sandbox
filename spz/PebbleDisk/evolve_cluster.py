@@ -183,7 +183,7 @@ def new_option_parser():
     return result
 
 
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     o, arguments  = new_option_parser().parse_args()
     #    random.seed(seed=o.seed)
     

@@ -34,9 +34,10 @@ def EulerAngles(phi, theta, chi):
          [cost*sinc, cosp*cosc + sinp*sint*sinc, -sinp*cosc + cosp*sint*sinc],
          [-sint,  sinp*cost,  cosp*cost]])
 
-def posvel_from_orbital_elements(Mstar, pebble, kepler):
-
-    mean_anomaly = random.uniform(0, 2*numpy.pi, 1)
+def posvel_from_orbital_elements(Mstar, pebble, kepler, rng = None):
+    if rng is None:
+        rng = random
+    mean_anomaly = rng.uniform(0, 2*numpy.pi, 1)
     kepler.initialize_from_elements(
         Mstar, 
         pebble.semimajor_axis, 
@@ -47,27 +48,29 @@ def posvel_from_orbital_elements(Mstar, pebble, kepler):
 
     phi = 0
     theta = 0
-    psi = random.uniform(0, 360, 1)[0]
+    psi = rng.uniform(0, 360, 1)[0]
     psi = numpy.radians(psi) #rotate under z
     rotate(pebble, phi, theta, psi) # theta and phi in radians            
 
-def make_pebble_disk(central_particle, Ndisk, arange, erange, phi=None, theta=None):
-
+def make_pebble_disk(central_particle, Ndisk, arange, erange, phi=None, theta=None, rng = None):
+    if rng is None:
+        rng = random
+        
     disk_particles = Particles(Ndisk)
-    disk_particles.semimajor_axis = random.uniform(arange[0].value_in(units.AU), arange[1].value_in(units.AU), size=Ndisk) | units.AU
-    disk_particles.eccentricity = random.uniform(*erange, size=Ndisk)
+    disk_particles.semimajor_axis = rng.uniform(arange[0].value_in(units.AU), arange[1].value_in(units.AU), size=Ndisk) | units.AU
+    disk_particles.eccentricity = rng.uniform(*erange, size=Ndisk)
     disk_particles.radius = 100 | units.km
     converter = nbody_system.nbody_to_si(central_particle.mass, arange[-1])
     kepler = Kepler(converter)
     kepler.initialize_code()
 
     if phi is None:
-        phi = numpy.radians(random.uniform(0, 90, 1)[0])#rotate under x
+        phi = numpy.radians(rng.uniform(0, 90, 1)[0])#rotate under x
     if theta is None:
-        theta = numpy.radians(random.uniform(0, 180, 1)[0]) #rotate under y
+        theta = numpy.radians(rng.uniform(0, 180, 1)[0]) #rotate under y
     psi = 0
     for dpi in disk_particles:
-        posvel_from_orbital_elements(central_particle.mass, dpi, kepler)
+        posvel_from_orbital_elements(central_particle.mass, dpi, kepler, rng)
         rotate(dpi, phi, theta, psi) # theta and phi in radians            
 
     disk_particles.position += central_particle.position
@@ -92,7 +95,7 @@ def new_option_parser():
                       help="random number seed [%default]")
     return result
 
-if __name__ in ('__main__', '__plot__'):
+if __name__ == '__main__':
     o, arguments  = new_option_parser().parse_args()
     random.seed(seed=o.seed)
 

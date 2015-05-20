@@ -11,6 +11,8 @@ from evolve_disk import *
 from make_planets import *
 from amuse.units import quantities
 
+data = 10
+data * data
 
 MEarth = 5.97219e+24 * units.kg
 
@@ -168,11 +170,17 @@ class GravityCodeInField(bridge.GravityCodeInField):
         
 class CreateNiceModel(object):
     
-    def __init__(self, number_of_disk_particles = 1000, disk_mass = 35.0 | MEarth, inner_disk_radius = 15.5 | units.AU, outer_disk_radius = 34.4 | units.AU):
+    def __init__(self, number_of_disk_particles = 1000, disk_mass = 35.0 | MEarth, inner_disk_radius = 15.5 | units.AU, outer_disk_radius = 34.4 | units.AU, seed = -1):
         self.number_of_disk_particles = number_of_disk_particles
         self.disk_mass = disk_mass
         self.inner_disk_radius = inner_disk_radius
         self.outer_disk_radius = outer_disk_radius
+        self.seed = seed
+        if self.seed < 0:
+            self.rng = random.RandomState()
+        else:
+            self.rng = random.RandomState(self.seed)
+
 
     def start(self):
         sun = self.create_sun()
@@ -200,19 +208,21 @@ class CreateNiceModel(object):
     
     def create_disk_particles(self, star):
         arange = [self.inner_disk_radius,  self.outer_disk_radius]
-        erange = [0., 0.] 
+        erange = [0., 0.]     
         phi = 0
         theta = 0
-        particles = make_pebble_disk(star, self.number_of_disk_particles, arange, erange, phi, theta)
+        particles = make_pebble_disk(star, self.number_of_disk_particles, arange, erange, phi, theta, self.rng)
         particles.mass = self.disk_mass * 1.0 /len(particles)
         return particles
         
+
     def create_planets(self, star):
         phi = 0
         theta = 0
-        return make_Nice_planets(star, phi, theta)
+        return make_Nice_planets(star, phi, theta, self.rng)
         
         
+
 def potential_energy(pebble, star):
     r = (pebble.position-star.position).length()
     return -constants.G*pebble.mass*star.mass/r
@@ -226,7 +236,7 @@ def is_bound(pebble, star):
 
 class RunNiceModel(object):
     
-    def __init__(self, model, dt = None, escape_radius = None, code_name = None, particles_kind = None, with_escapers = None, check_if_bound_on_escaping = None):
+    def __init__(self, model, dt = None, escape_radius = None, code_name = None, particles_kind = None, with_escapers = None, check_if_bound_on_escaping = None, seed = -1):
         self.model = model
         self.star = self.model[0]
         self.time = self.model.collection_attributes.model_time
@@ -238,8 +248,10 @@ class RunNiceModel(object):
         self.particles_kind = self._get_value_from_model(particles_kind, self.model, "particles_kind", "collisionless")
         self.with_escapers = self._get_value_from_model(with_escapers, self.model, "with_escapers", True)
         self.check_if_bound_on_escaping = self._get_value_from_model(check_if_bound_on_escaping, self.model, "check_if_bound_on_escaping", True)
+        self.seed = seed
         
         
+
     def _get_value_from_model(self, proposed_value, model, name, default_value):
         if proposed_value is None:
             if hasattr(model.collection_attributes, name):
@@ -353,8 +365,10 @@ class RunNiceModel(object):
         self.model.collection_attributes.with_escapers = self.with_escapers
         self.model.collection_attributes.model_time = self.time
         self.model.collection_attributes.check_if_bound_on_escaping = self.check_if_bound_on_escaping
+        self.model.collection_attributes.seed = self.seed
         
     
+
     def get_filename(self):
         return "nice_model-{0}.h5".format(platform.node())
     
@@ -383,6 +397,7 @@ class RunNiceModel(object):
         
     
 
+
 def print_model(model):
     print '*' * 50
     print model.collection_attributes
@@ -399,7 +414,7 @@ if __name__ == "__main__":
             stars.collection_attributes.code_name = o.newcode
         
     else:
-        uc =  CreateNiceModel(o.ndisk, o.disk_mass, o.inner_disk_radius, o.outer_disk_radius)
+        uc =  CreateNiceModel(o.ndisk, o.disk_mass, o.inner_disk_radius, o.outer_disk_radius, o.seed)
         uc.start()
         stars = uc.result
         stars.collection_attributes.code_name = o.code
@@ -409,7 +424,7 @@ if __name__ == "__main__":
         
         
     
-    uc = RunNiceModel(stars, dt = o.dt)
+    uc = RunNiceModel(stars, dt = o.dt, seed = o.seed)
     
     
     if not is_restart:
@@ -423,3 +438,4 @@ if __name__ == "__main__":
     print "total time of this run in seconds: ", t1 - t0
     print "number of days to reach billion years:", \
         (((1.0 | units.Gyr)/uc.time)*(t1 - t0)).as_quantity_in(units.day)
+

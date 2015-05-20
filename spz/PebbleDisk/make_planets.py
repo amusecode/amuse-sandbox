@@ -34,9 +34,11 @@ def EulerAngles(phi, theta, chi):
          [cost*sinc, cosp*cosc + sinp*sint*sinc, -sinp*cosc + cosp*sint*sinc],
          [-sint,  sinp*cost,  cosp*cost]])
 
-def posvel_from_orbital_elements(Mstar, pebble, kepler):
-
-    mean_anomaly = random.uniform(0, 2*numpy.pi, 1)
+def posvel_from_orbital_elements(Mstar, pebble, kepler, rng = None):
+    if rng is None:
+        rng = random
+        
+    mean_anomaly = rng.uniform(0, 2*numpy.pi, 1)
     kepler.initialize_from_elements(
         Mstar, 
         pebble.semimajor_axis, 
@@ -47,13 +49,16 @@ def posvel_from_orbital_elements(Mstar, pebble, kepler):
 
     phi = 0
     theta = 0
-    psi = random.uniform(0, 360, 1)[0]
+    psi = rng.uniform(0, 360, 1)[0]
     psi = numpy.radians(psi) #rotate under z
     rotate(pebble, phi, theta, psi) # theta and phi in radians            
 
 # ref: 2005Natur.435..466G
-def make_Nice_planets(central_particle, phi=None, theta=None):
 
+def make_Nice_planets(central_particle, phi=None, theta=None, rng = None):
+    if rng is None:
+        rng = random
+        
     planet_particles = Particles(4)
     planet_particles.semimajor_axis = [5.45, 8.18, 11.5, 14.2] | units.AU
     planet_particles.eccentricity = 0.0
@@ -74,18 +79,19 @@ def make_Nice_planets(central_particle, phi=None, theta=None):
     kepler.initialize_code()
 
     if phi is None:
-        phi = numpy.radians(random.uniform(0, 90, 1)[0])#rotate under x
+        phi = numpy.radians(rng.uniform(0, 90, 1)[0])#rotate under x
     if theta is None:
-        theta = numpy.radians(random.uniform(0, 180, 1)[0]) #rotate under y
+        theta = numpy.radians(rng.uniform(0, 180, 1)[0]) #rotate under y
     psi = 0
     for dpi in planet_particles:
-        posvel_from_orbital_elements(central_particle.mass, dpi, kepler)
+        posvel_from_orbital_elements(central_particle.mass, dpi, kepler, rng)
         rotate(dpi, phi, theta, psi) # theta and phi in radians            
 
     planet_particles.position += central_particle.position
     planet_particles.velocity += central_particle.velocity
 
     return planet_particles
+
 
 def make_planets(central_particle, Nplanets, arange, erange, mrange, phi=None, theta=None):
 
