@@ -1332,7 +1332,7 @@ if __name__ == '__main__':
 #    test.test8()
 
     test.test6_with_tides() 
-    test.test7_with_tides()
+#    test.test7_with_tides()
 #    test.test8_with_tides()
 
 #    

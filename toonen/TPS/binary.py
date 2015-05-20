@@ -620,6 +620,8 @@ def stable_mass_transfer(bs, donor, accretor, self):
         bs.bin_type = bin_type['stable_mass_transfer']                
 
     self.secular_code.parameters.check_for_inner_RLOF = False
+    self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star1 = False
+    self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star2 = False
 
     Md = donor.mass
     Ma = accretor.mass

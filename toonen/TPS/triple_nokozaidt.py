@@ -2,7 +2,6 @@
 ##              computes the evolution of a given triple
 ##              given any initial conditions (M, m, l, A, a, E, e, i, G, g, O, o, T, z).
  
-
 from amuse.community.seba.interface import SeBa
 from binary import *
 
@@ -254,7 +253,6 @@ class Triple_Class:
         self.secular_code.parameters.include_outer_wind_terms = True
         self.secular_code.parameters.include_inner_RLOF_terms = True
         self.secular_code.parameters.include_outer_RLOF_terms = True
-        self.secular_code.parameters.include_spin_radius_mass_coupling_terms = True
         self.secular_code.parameters.include_magnetic_braking_terms = False # not tested
 
         self.secular_code.parameters.include_inner_tidal_terms = tidal_terms
@@ -272,6 +270,10 @@ class Triple_Class:
 
         self.secular_code.parameters.check_for_inner_RLOF = True 
         self.secular_code.parameters.check_for_outer_RLOF = True 
+        
+        self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star1 = True
+        self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star2 = True
+        self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star3 = True
         
          # accuracy of secular code
 #        self.secular_code.parameters.input_precision = 1.0e-10#1.0e-5
@@ -1513,8 +1515,6 @@ class Triple_Class:
                 print 'relative wind mass losses:', dm
                         
             if (abs(dm) > error_dm) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants):
-#                print 'Change in mass in a single time_step larger then', error_dm
-#                print dm, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type
                 print self.triple.number, stellar_system.mass.value_in(units.MSun), 
                 print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
                 print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, dm, 0
@@ -1532,10 +1532,7 @@ class Triple_Class:
                     #so tides and spin change due to moment of inertia change are not important, 
                     #therefore the radius change is not important
 
-#                if (abs(dr) > error_dr) and not (stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_dr):
                     successfull_dr = False
-#                    print 'Change in radius in a single time_step larger then', error_dr
-#                    print dr, stellar_system.time_derivative_of_radius, stellar_system.mass, stellar_system.previous_mass, stellar_system.stellar_type, stellar_system.previous_stellar_type, self.has_stellar_type_changed(stellar_system)
                     print self.triple.number, stellar_system.mass.value_in(units.MSun), 
                     print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
                     print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, dr, 1
@@ -1575,21 +1572,27 @@ class Triple_Class:
 #                    self.channel_from_stellar.copy()
         self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate",  "temperature"])  #"gyration_radius_sq"                          
         self.update_stellar_parameters()          
-        
-        if dt_new <= minimum_time_step:
-            return True, 0, 0    
-        
+                
         if nr_unsuccessfull > 1:
             for i_rec in range(nr_unsuccessfull):
+                triple_number = self.triple.number
+                if dt_new <= minimum_time_step:
+                    triple_number += 0.5
                 dr = (star_unsuccessfull[i_rec].radius - star_unsuccessfull[i_rec].previous_radius)/star_unsuccessfull[i_rec].radius        
-                print self.triple.number, star_unsuccessfull[i_rec].mass.value_in(units.MSun), 
+                print triple_number, star_unsuccessfull[i_rec].mass.value_in(units.MSun), 
                 print star_unsuccessfull[i_rec].previous_mass.value_in(units.MSun), star_unsuccessfull[i_rec].age.value_in(units.Myr),
                 print star_unsuccessfull[i_rec].stellar_type.value, star_unsuccessfull[i_rec].previous_stellar_type.value, dr, 2                        
         else:
             dr = (star_unsuccessfull.radius - star_unsuccessfull.previous_radius)/star_unsuccessfull.radius        
-            print self.triple.number, star_unsuccessfull.mass.value_in(units.MSun), 
+            triple_number = self.triple.number
+            if dt_new <= minimum_time_step:
+                triple_number += 0.5
+            print triple_number, star_unsuccessfull.mass.value_in(units.MSun), 
             print star_unsuccessfull.previous_mass.value_in(units.MSun), star_unsuccessfull.age.value_in(units.Myr),
             print star_unsuccessfull.stellar_type.value, star_unsuccessfull.previous_stellar_type.value, dr, 2                        
+
+        if dt_new <= minimum_time_step:
+            return True, 0, 0    
 
         return self.safety_check_time_step()                        
         
@@ -1835,7 +1838,7 @@ class Triple_Class:
                 self.stellar_code.evolve_model(self.time)
                 self.channel_from_stellar.copy_attributes(["age", "mass","envelope_mass", "core_mass", "radius", "core_radius", "convective_envelope_radius",  "convective_envelope_mass", "stellar_type", "luminosity", "wind_mass_loss_rate", "temperature"]) #"gyration_radius_sq"                           
                 self.update_stellar_parameters()     
-                         
+         
                 successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()        
                 while successfull_step == False:
                     successfull_step, nr_unsuccessfull, star_unsuccessfull = self.recall_memory_one_step_stellar(nr_unsuccessfull, star_unsuccessfull)
@@ -1876,7 +1879,6 @@ class Triple_Class:
                 if REPORT_TRIPLE_EVOLUTION:
                     print 'Secular evolution'
 
-                self.safety_check_time_step()
                 self.channel_to_secular.copy()
                 
                 # if mass transfer should only take place for a fraction of the timestep
@@ -1921,13 +1923,13 @@ class Triple_Class:
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
-                
-            #should also do safety check time_step here -> only make sure that mass loss and radius change from stable mass transfer is not too large -> determine_time_step_mt
-#            self.check_for_RLOF()            
+            #reset by stable_mass_transfer() in binary.py
             self.secular_code.parameters.check_for_inner_RLOF = True
+            self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star1 = True
+            self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star2 = True
+
             if self.check_stopping_conditions()==False:
-                break
-                
+                break                
             if not self.stop_at_collision and self.triple.inner_collision == True:
                 perform_inner_collision(self)
 
