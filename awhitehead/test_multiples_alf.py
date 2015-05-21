@@ -142,7 +142,7 @@ def init_smalln():
     #SMALLN = SmallN(redirection="none", debugger="xterm")
     SMALLN = SmallN(redirection="none")
     SMALLN.parameters.timestep_parameter = 0.1
-    SMALLN.parameters.cm_index = 2001
+    #SMALLN.parameters.cm_index = 2001
 
 def init_kepler(star1, star2):
     try:
@@ -237,6 +237,7 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     kep.initialize_code()
 
     multiples_code = None
+    Xtra=numpy.zeros(2)
 
     #-----------------------------------------------------------------
 
@@ -268,6 +269,25 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
         total_mass = stars.mass.sum()
         ke = pa.kinetic_energy(stars)
         kT = ke/(1.5*number_of_stars)
+
+        # Set dynamical radii (assuming virial equilibrium and standard
+        # units).  Note that this choice should be refined, and updated
+        # as the system evolves.  Probably the choice of radius should be
+        # made entirely in the multiples module.  TODO.  In these units,
+        # M = 1 and <v^2> = 0.5, so the mean 90-degree turnaround impact
+        # parameter is
+        #
+        #		b_90 = G (m_1+m_2) / vrel^2
+        #		     = 2 <m> / 2<v^2>
+        #		     = 2 / N			for equal masses
+        #
+        # Taking r_i = m_i / 2<v^2> = m_i in virial equilibrium means
+        # that, approximately, "contact" means a 90-degree deflection (r_1
+        # + r_2 = b_90).  A more conservative choice with r_i less than
+        # this value will isolates encounters better, but also place more
+        # load on the large-N dynamical module.
+
+        stars.radius = stars.mass.number | nbody_system.length
 
         if number_of_binaries > 0:
 
@@ -309,6 +329,8 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
                 newstar.mass = new_mass
                 newstar.position = stars[i].position + (1-fac)*dr
                 newstar.velocity = stars[i].velocity + (1-fac)*dv
+                newstar.radius = newstar.mass.number | nbody_system.length
+                #newstar.radius = 3.0*stars[i].radius    # HACK: try to force collision
                 # stars[i].mass = mass
                 stars[i].position = stars[i].position - fac*dr
                 stars[i].velocity = stars[i].velocity - fac*dv
@@ -350,24 +372,6 @@ def run_ph4(options, time=None, stars=None, mc_root_to_tree=None, randomize=True
     ke = pa.kinetic_energy(stars)
     kT = ke/(1.5*number_of_stars)
 
-    # Set dynamical radii (assuming virial equilibrium and standard
-    # units).  Note that this choice should be refined, and updated
-    # as the system evolves.  Probably the choice of radius should be
-    # made entirely in the multiples module.  TODO.  In these units,
-    # M = 1 and <v^2> = 0.5, so the mean 90-degree turnaround impact
-    # parameter is
-    #
-    #		b_90 = G (m_1+m_2) / vrel^2
-    #		     = 2 <m> / 2<v^2>
-    #		     = 2 / N			for equal masses
-    #
-    # Taking r_i = m_i / 2<v^2> = m_i in virial equilibrium means
-    # that, approximately, "contact" means a 90-degree deflection (r_1
-    # + r_2 = b_90).  A more conservative choice with r_i less than
-    # this value will isolates encounters better, but also place more
-    # load on the large-N dynamical module.
-
-    stars.radius = stars.mass.number | nbody_system.length
 
     # print "IDs:", stars.id.number
 

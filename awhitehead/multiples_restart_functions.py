@@ -28,10 +28,18 @@ def write_state_to_file(time, stars_python,gravity_code, multiples_code, write_f
         }
 
         for root, tree in multiples_code.root_to_tree.iteritems():
-            #multiples.print_multiple_simple(tree,kep)
-            root_in_particles = root.as_particle_in_set(particles)
-            subset = tree.get_tree_subset().copy()
-            root_in_particles.components = subset
+            try:
+                #multiples.print_multiple_simple(tree,kep)
+                root_in_particles = root.as_particle_in_set(particles)
+                subset = tree.get_tree_subset().copy()
+                root_in_particles.components = subset
+            except AttributeError as e:
+                try:
+                    print "Attribute error on writing: %s" % e
+                    multiples.print_multiple_simple(tree,kep)
+                except:
+                    pass
+
         io.write_set_to_file(particles,write_file+".stars.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist)
         io.write_set_to_file(stars_python,write_file+".stars_python.hdf5",'hdf5',version='2.0', append_to_file=False, copy_history=cp_hist)
         config = {'time' : time,
@@ -79,8 +87,9 @@ def read_state_from_file(restart_file, gravity_code,resolve_collision_code_creat
     for root in stars:
         if hasattr(root, 'components') and not root.components is None:
             root_to_tree[root] = datamodel.trees.BinaryTreeOnParticle(root.components[0])
+    gravity_code.set_begin_time(bookkeeping['model_time'])
     gravity_code.particles.add_particles(stars)
-    gravity_code.model_time = bookkeeping['model_time']
+    gravity_code.commit_particles()
 
 
     multiples_code = multiples.Multiples(gravity_code, resolve_collision_code_creation_function, kep)
@@ -95,7 +104,7 @@ def read_state_from_file(restart_file, gravity_code,resolve_collision_code_creat
     multiples_code.multiples_internal_tidal_correction = bookkeeping['multiples_internal_tidal_correction']
     multiples.root_index = bookkeeping['root_index']
     multiples_code.root_to_tree = root_to_tree
-    multiples_code.set_model_time = bookkeeping['model_time']
+    #multiples_code.set_model_time = bookkeeping['model_time']
     
     with open(restart_file + ".conf", "rb") as f:
         config = pickle.load(f)
