@@ -21,9 +21,21 @@ def new_option_parser():
     result.add_option("--seed", 
                       dest="seed", type="int", default = 666,
                       help="random number seed [%default]")
-    result.add_option("-f", "--file",
+    result.add_option("-i", "--input",
                       dest="filename", default = "",
-                      help="input filename")
+                      help="name of the input filename for the initial modal (default empty, model will be generated)")
+    result.add_option("-o", "--output",
+                      dest="output_filename", default = "",
+                      help="name of the output filename (default nice_mode-<computer node name>.h5)")
+    result.add_option("--index",
+                      dest="set_index", type="int", default = -1,
+                      help="index in the reversed history of the set to restart the calculation from")
+    result.add_option("--save-step",
+                      dest="save_step", type="int", default = 10,
+                      help="number of large steps to do before saving (default 10)")
+    result.add_option("--large-step",
+                      dest="large_step", type="int", default = 1000,
+                      help="number of small steps in one large step, escaper detection is done per large step, so is time reporting(default 1000)")
     result.add_option("-t", unit=units.yr,
                       dest="endtime", type="float", default = 2000|units.yr,
                       help="time to run to [%default]")
@@ -63,6 +75,7 @@ def new_option_parser():
     return result
 
 
+
 class CalculateFieldForParticles(bridge.CalculateFieldForParticles):
     """
     faster algorithm to calculcate the gravity field of a particle set
@@ -90,15 +103,16 @@ class CalculateFieldForParticles(bridge.CalculateFieldForParticles):
         az = gravity_constant * (m_div_dr*dz).sum(1)
 
         
-        ax -=  ax[0]
-        ay -=  ay[0]
-        az -=  az[0]
+        #ax -=  ax[0]
+        #ay -=  ay[0]
+        #az -=  az[0]
         #or i,(x, y) in enumerate(zip(ax, ay)):
         #    print i, x.as_quantity_in(units.AU/units.s**2), y.as_quantity_in(units.AU/units.s**2)
         #ddd
         return ax, ay, az
     
     
+
 class GravityCodeInField(bridge.GravityCodeInField):
     """
     faster algorithm to calculcate the gravity for a code
@@ -236,7 +250,7 @@ def is_bound(pebble, star):
 
 class RunNiceModel(object):
     
-    def __init__(self, model, dt = None, escape_radius = None, code_name = None, particles_kind = None, with_escapers = None, check_if_bound_on_escaping = None, seed = -1):
+    def __init__(self, model, dt = None, escape_radius = None, code_name = None, particles_kind = None, with_escapers = None, check_if_bound_on_escaping = None, seed = -1, output_filename = "", save_step = 10, large_step = 1000):
         self.model = model
         self.star = self.model[0]
         self.time = self.model.collection_attributes.model_time
@@ -249,8 +263,12 @@ class RunNiceModel(object):
         self.with_escapers = self._get_value_from_model(with_escapers, self.model, "with_escapers", True)
         self.check_if_bound_on_escaping = self._get_value_from_model(check_if_bound_on_escaping, self.model, "check_if_bound_on_escaping", True)
         self.seed = seed
+        self.output_filename = output_filename
+        self.save_step = save_step
+        self.large_step = large_step
         
-        
+
+
 
     def _get_value_from_model(self, proposed_value, model, name, default_value):
         if proposed_value is None:
@@ -370,8 +388,12 @@ class RunNiceModel(object):
     
 
     def get_filename(self):
-        return "nice_model-{0}.h5".format(platform.node())
+        if self.output_filename:
+            return self.output_filename
+        else:
+            return "nice_model-{0}.h5".format(platform.node())
     
+
     def save(self, append_to_file = True):
         self.put_parameters_in_model()
         write_set_to_file(self.model, self.get_filename(), "amuse", append_to_file=append_to_file, version="2.0")
@@ -383,19 +405,20 @@ class RunNiceModel(object):
         print "starting at time: ", self.time.as_quantity_in(units.yr)
         while self.time < end_time:
             istep += 1
-            self.time  += 1000*self.dt
+            self.time  += self.large_step*self.dt
             print "evolving to time: ", self.time.as_quantity_in(units.yr)
             self.code.evolve_model(self.time - self.time_offset)
-            for channel in self.channels:
-                channel.copy()
-            print " evolved to time: ", self.time.in_(units.yr)
-            if istep%10 == 0:
+            print " evolved to time: ", self.time.in_(units.yr), istep, istep%self.save_step, self.save_step
+            if istep%self.save_step == 0:
+                for channel in self.channels:
+                    channel.copy()
                 self.save()
             if self.with_escapers and istep%20 == 0:
                 self.remove_escaping_pebbles(self.star, self.escape_radius)
                 self.remove_escaping_planets(self.star, self.escape_radius)
         
     
+
 
 
 def print_model(model):
@@ -408,10 +431,17 @@ if __name__ == "__main__":
     #    random.seed(seed=o.seed)
     
     is_restart = o.filename and os.path.exists(o.filename)
+    print o.filename, os.path.exists(o.filename)
     if is_restart:
-        stars = read_set_from_file(o.filename, "amuse", close_file=True).copy()
-        if o.newcode:
-            stars.collection_attributes.code_name = o.newcode
+        with read_set_from_file(o.filename, "amuse", close_file=False, return_context = True) as set:
+            if o.set_index >= 0:
+                stars = list(reversed(list(set.iter_history())))[o.set_index]
+                stars = stars.copy()
+            else:
+                stars = set.copy()
+                
+            if o.newcode:
+                stars.collection_attributes.code_name = o.newcode
         
     else:
         uc =  CreateNiceModel(o.ndisk, o.disk_mass, o.inner_disk_radius, o.outer_disk_radius, o.seed)
@@ -421,13 +451,13 @@ if __name__ == "__main__":
         stars.collection_attributes.particles_kind = o.particles_kind
         stars.collection_attributes.with_escapers = o.with_escapers
         stars.collection_attributes.escape_radius = o.escape_radius
+        stars.collection_attributes.seed = o.seed
         
         
     
-    uc = RunNiceModel(stars, dt = o.dt, seed = o.seed)
+    uc = RunNiceModel(stars, dt = o.dt, seed = stars.collection_attributes.seed, output_filename = o.output_filename, save_step = o.save_step, large_step = o.large_step)
     
-    
-    if not is_restart:
+    if not is_restart or not (o.output_filename == o.filename):
         uc.save(False)
     print_model(uc.model)
     t0 = pytime.time() | units.s
