@@ -3,11 +3,14 @@ from amuse.ext.bridge import bridge
 from amuse.units import quantities
 
 class VacuumBoundary_CosmoBridge(bridge):
-    def __init__(self,z0,cosmology,*args,approx=True,**kwargs):
+    def __init__(self,z0,cosmology,*args,**kwargs):
         self.cosmology=cosmology
         bridge.__init__(self,*args,**kwargs)
         self.time=self.cosmology.agefromz(z0)
-        self.approx=approx
+        if 'approx' in kwargs:
+          self.approx=kwargs['approx']
+        else:
+          self.approx=True
 
     def cosmo_fac(self,time):
         a=self.cosmology.afromage(time)

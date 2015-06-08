@@ -1,0 +1,14 @@
+example.amuse is generated with:
+
+in IDL:
+
+tophat, N=20,M=0.002, z0=100., zcollaps=30.,omegam=1.0-0.726,omegab=0.05,H0=50.,gasN=0
+wgadget,'example'
+
+then reading in and converting with amuse:
+set=read_set_from_file("example","gadget")
+p=ParticlesWithUnitsConverted( set[1],
+    conv.as_converter_from_si_to_generic())
+
+where convert is a converter from generic:
+conv=generic_unit_converter.ConvertBetweenGenericAndSiUnits(3.085678e21 | units.cm, 1.989e43 | units.g, 1e5 | units.cm / units.s)
