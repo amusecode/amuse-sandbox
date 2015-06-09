@@ -14,13 +14,14 @@ from amuse.datamodel import Particles
 from amuse.support.console import set_printing_strategy
 from amuse.io import write_set_to_file
 from amuse.units import quantities
-from math import sqrt
+from math import sqrt, isnan
 import numpy as np
 
 REPORT_TRIPLE_EVOLUTION = False 
+REPORT_SN_EVOLUTION = True
 REPORT_DT = False 
 REPORT_DEBUG = False
-REPORT_USER_WARNINGS = False
+REPORT_USER_WARNINGS = True
 
 no_stellar_evolution = False
 
@@ -43,6 +44,10 @@ maximum_time_step_factor_after_stable_mt = 5.
 time_step_factor_kozai = 0.025 # 0.2*0.1, 0.2-> for error in kozai timescale, 0.1-> 10 steps per cycle
 kozai_type_factor = 10.
 
+which_SN_kick_distribution = 2
+#0  Paczynski 1990, 348, 485
+#1  Hansen & Phinney 1997, 291, 569
+#2  No kick 
 
 stellar_types_SN_remnants = [13,14,15]|units.stellar_type # remnant types created through a supernova
 stellar_types_remnants = [7,8,9,10,11,12,13,14,15]|units.stellar_type
@@ -60,11 +65,13 @@ class Triple_Class:
             inner_longitude_of_ascending_node, 
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms,      
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, 
-            stop_at_init_mass_transfer, file_name, file_type):
+            stop_at_inner_collision, stop_at_outer_collision, stop_at_dynamical_instability, 
+            stop_at_mass_transfer, stop_at_init_mass_transfer, stop_at_SN, 
+            file_name, file_type):
         
         self.set_stopping_conditions(stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, stop_at_init_mass_transfer)
+            stop_at_inner_collision, stop_at_outer_collision, stop_at_dynamical_instability, stop_at_mass_transfer, 
+            stop_at_init_mass_transfer, stop_at_SN)
             
         if inner_primary_mass < inner_secondary_mass:
             spare = inner_primary_mass
@@ -137,7 +144,8 @@ class Triple_Class:
             
 
     def set_stopping_conditions(self, stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer, stop_at_init_mass_transfer):
+            stop_at_inner_collision, stop_at_outer_collision, stop_at_dynamical_instability, stop_at_mass_transfer,     
+            stop_at_init_mass_transfer, stop_at_SN):
 
 #        if stop_at_merger == False:
 #            print 'stop_at_merger = False not possible yet, implementation is missing' 
@@ -148,21 +156,26 @@ class Triple_Class:
         if stop_at_triple_mass_transfer == False:
             print 'stop_at_triple_mass_transfer = False not possible yet, implementation is missing' 
             exit(1)
-        if stop_at_collision == False:
-            print 'stop_at_collision = False not possible yet, implementation is missing' 
+        if stop_at_outer_collision == False:
+            print 'stop_at_outer_collision = False not possible yet, implementation is missing' 
             exit(1)
         if stop_at_dynamical_instability == False:
             print 'stop_at_dynamical_instability = False not possible' 
             exit(1)
+#        if stop_at_SN == False:
+#            print 'stop_at_SN = False not possible yet, implementation is missing' 
+#            exit(1)
                             
         self.stop_at_merger = stop_at_merger            
         self.stop_at_disintegrated = stop_at_disintegrated            
         self.stop_at_triple_mass_transfer = stop_at_triple_mass_transfer            
-        self.stop_at_collision = stop_at_collision            
+        self.stop_at_inner_collision = stop_at_inner_collision            
+        self.stop_at_outer_collision = stop_at_outer_collision            
         self.stop_at_dynamical_instability = stop_at_dynamical_instability            
         self.stop_at_mass_transfer = stop_at_mass_transfer            
         self.stop_at_init_mass_transfer = stop_at_init_mass_transfer
-
+        self.stop_at_SN = stop_at_SN
+    
     def make_stars(self, inner_primary_mass, inner_secondary_mass, outer_mass, inner_semimajor_axis, outer_semimajor_axis):
         stars = Particles(3)
         stars.is_star = True
@@ -637,6 +650,18 @@ class Triple_Class:
         return False            
     
 
+    def has_stellar_type_changed_into_SN_remnant(self, stellar_system = None):
+        if stellar_system == None:
+            stellar_system = self.triple
+
+        if stellar_system.is_star:
+            if stellar_system.stellar_type != stellar_system.previous_stellar_type and stellar_system.stellar_type in stellar_types_SN_remnants:
+                return True
+        else:
+            if self.has_stellar_type_changed_into_SN_remnant(stellar_system.child1) or self.has_stellar_type_changed_into_SN_remnant(stellar_system.child2):
+                return True                        
+            
+        return False            
 
 
     def has_stellar_type_changed(self, stellar_system = None):
@@ -838,7 +863,8 @@ class Triple_Class:
             if REPORT_TRIPLE_EVOLUTION:
                 print 'Roche lobe radii:', Rl1, Rl2, Rl3
                 print 'Stellar radii:', bin.child1.radius, bin.child2.radius, star.radius
-                print 'binary Roche lobe radii:', roche_radius(bin, bin.child1, self), roche_radius(bin, bin.child2, self)
+                print 'binary Roche lobe radii:', roche_radius(bin, bin.child1, self), roche_radius(bin, bin.child2, self), roche_radius(self.triple, star, self)
+                print 'eccentric binary Roche lobe radii:', roche_radius(bin, bin.child1, self)* (1-bin.eccentricity), roche_radius(bin, bin.child2, self)* (1-bin.eccentricity), roche_radius(self.triple, star, self)*(1-self.triple.eccentricity)
                 print 'Masses:', bin.child1.mass, bin.child2.mass, star.mass
                 print 'Semi:', bin.semimajor_axis
                 print 'Stellar type:', bin.child1.stellar_type, bin.child2.stellar_type, star.stellar_type
@@ -1347,78 +1373,181 @@ class Triple_Class:
     #-------
 
     #-------
+    #SN functions
+    #based on SeBa (Portegies Zwart et al. 1996, Toonen et al. 2012)
+    
+    def anomaly_converter(self, e_a, ecc, m_a):
+    #    mean_anomaly = eccentric_anomaly - ecc*sin(eccentric_anomaly)
+        return e_a - ecc * np.sin(e_a) - m_a
+
+    #Paczynski 1990, 348, 485
+    def kick_velocity_paczynski(self):
+        return self.random_paczynski_velocity(270|units.km/units.s)
+
+
+    #Paczynski 1990, 348, 485
+    #taken from SeBa (Portegies Zwart et al. 1996, Toonen et al. 2012)
+    def random_paczynski_velocity(self, v_disp):
+    #Velocity distribution used by Paczynski, B., 1990, ApJ 348, 485.
+    #with a dispersion of 270 km/s.
+    #Phinney uses the same distribution with a dispersion of 600 km/s.
+    #The distribution:
+    #P(u)du = \frac{4}{\pi} \cdot \frac{du}{(1+u^2)^2},
+    #u=v/v_d,
+    #v_d is the dispersion velocity = 270 or 600 km/s respectively.
+
+        max_distr = 4./np.pi
+        v_max = 4
+        prob = max_distr*np.random.uniform(0., 1.)
+        velocity = v_max*np.random.uniform(0., 1.)
+        dist_value = max_distr/(1+velocity**2.)**2.
+    
+        while(prob > dist_value):
+            prob = max_distr*np.random.uniform(0., 1.)
+            velocity = v_max*np.random.uniform(0., 1.)
+            dist_value = max_distr/(1+velocity**2.)**2.
+        
+        vector = self.random_direction()
+        return velocity*v_disp*vector
+    
+    #Hansen & Phinney 1997, 291, 569
+    def kick_velocity_hansen(self):
+        return self.random_maxwellian_velocity(300|units.km/units.s)
+    
+    #taken from SeBa (Portegies Zwart et al. 1996, Toonen et al. 2012)
+    def random_maxwellian_velocity(self, v_disp):
+        v1d_disp = v_disp/np.sqrt(3.)
+        v = np.random.normal(0., 1., 3)
+        return v*v1d_disp
+    
+    def random_direction(self):
+    
+        theta_kick = np.arccos(np.random.uniform(-1, 1))
+        phi_kick   = np.random.uniform(0, 2*np.pi)
+        x_kick = np.sin(theta_kick)*np.cos(phi_kick)
+        y_kick = np.sin(theta_kick)*np.sin(phi_kick)
+        z_kick = np.cos(theta_kick)
+        
+    #    print 'test random direction:', x_kick**2+y_kick**2+z_kick**2
+    #    print [x_kick, y_kick, z_kick]
+        return [x_kick, y_kick, z_kick]
+	    
+
+    def get_SN_kick(self, star):
+        if star.stellar_type != star.previous_stellar_type and star.stellar_type in stellar_types_SN_remnants:
+            if which_SN_kick_distribution == 1: #Hansen & Phinney 1997, 291, 569
+                return self.kick_velocity_hansen()
+            elif which_SN_kick_distribution == 2: 
+                return [0.,0.,0.]|units.kms
+            else: # Paczynski 1990, 348, 485
+                return self.kick_velocity_paczynski()
+        else:
+            return [0.,0.,0.]|units.kms
+        
     def adjust_system_after_supernova_kick(self):
-        SN_star_in_stellar_code = self.stellar_code.stopping_conditions.supernova_detection.particles(0)
-        print SN_star_in_stellar_code
-
-        SN_star = SN_star_in_stellar_code.as_set().get_intersecting_subset_in(self.triple)[0] # this will probably not work :-)
-
-        system = SN_star
-        try:
-            parent = system.parent             
-        except AttributeError:            
-            #SN_star is a single star
-            #adjust velocity of SN_star
-            # this should only be done for single stars, so for an exception in the first iteration
-            return  
-              
-              
-        while True:
-            try:    
-                system = system.parent
-                self.adjust_binary_after_supernova_kick(system)  
-            except AttributeError:
-                #when there is no parent
-                break
-
-
-    def adjust_binary_after_supernova_kick(self, system):
-        if self.is_binary(system):
-            print 'adjust double star after supernova kick'
-            #adjust orbit, separation and eccentricity
-                       
-            if system.eccentricity < 0:
-                print 'e<0'
-                exit(0)            
-            elif system.eccentricity >= 1:
-                print 'System becomes unbound'
-                exit(0)
-            else: 
-                pericenter = system.semimajor_axis*(1-system.eccentricity)
-                if pericenter < system.child1.radius + system.child2.radius:
-                    print 'Collision'
-                    exit(0)
+        if self.triple.is_star:
+            #only velocity kick needs to be taken into account here
+            #not followed currently
+            return False
+        elif self.secular_code.parameters.ignore_tertiary == True:
+            #SN kick in binary
+            #not implemented currently
+            print "Supernova in binary at time = ",self.time 
+            exit(1)                   
+        elif not self.is_triple():
+            print 'SN only implemented in triple'
+            exit(1)
+                    
             
-            #adjust systematic velocity
+        #SN in triple
+        if self.triple.child1.is_star:
+            star = self.triple.child1
+            bin = self.triple.child2
+        else:
+            star = self.triple.child2
+            bin = self.triple.child1
+    
+        #convention in secular code: dm > 0
+        dm1 = bin.child1.previous_mass - bin.child1.mass
+        dm2 = bin.child2.previous_mass - bin.child2.mass
+        dm3 = star.previous_mass - star.mass
+ 
+        #secular code requires the mass of the stars to be the mass prior to the SN
+        bin.child1.mass = bin.child1.previous_mass 
+        bin.child2.mass = bin.child2.previous_mass
+        star.mass = star.previous_mass 
+ 
+        # determine stellar anomaly
+        # mean anomaly increases uniformly from 0 to 2\pi radians during each orbit
+        from scipy import optimize
+        inner_ecc = bin.eccentricity
+        outer_ecc = self.triple.eccentricity
 
-        else: #binary    
-            print 'adjust binary after supernova kick'
-            #adjust orbit, separation and eccentricity, inclination
-            #adjust systematic velocity
+        inner_mean_anomaly = np.random.uniform(0., 2.*np.pi)  
+        inner_eccentric_anomaly = optimize.brentq(self.anomaly_converter, 0., 2.*np.pi, args=(inner_ecc, inner_mean_anomaly))
+        inner_true_anomaly = 2.* np.arctan2(np.sqrt(1-inner_ecc) * np.cos(inner_eccentric_anomaly/2.), np.sqrt(1+inner_ecc) * np.sin(inner_eccentric_anomaly/2.))
 
-            if system.eccentricity < 0:
-                print 'e<0'
-                exit(0)            
-            elif system.eccentricity >= 1:
-                print 'System becomes unbound'
-                exit(0)
-            else: 
-                pericenter = system.semimajor_axis*(1-system.eccentricity)
-                if system.child1.is_star and not system.child2.is_star:
-                    if pericenter < system.child1.radius + system.child2.semimajor_axis:
-                        print 'Unstable?'
-                        exit(0)
-                elif not system.child1.is_star and system.child2.is_star:
-                    if pericenter < system.child1.semimajor_axis + system.child2.radius:
-                        print 'Unstable?'
-                        exit(0)
-                else:
-                    print 'adjust_binary_after_supernova_kick: type of system unknown'
-                    exit(2)
-                
-                
+        outer_mean_anomaly = np.random.uniform(0., 2.*np.pi)  
+        outer_eccentric_anomaly = optimize.brentq(self.anomaly_converter, 0., 2.*np.pi, args=(outer_ecc, outer_mean_anomaly))
+        outer_true_anomaly = 2.* np.arctan2(np.sqrt(1-outer_ecc) * np.cos(outer_eccentric_anomaly/2.), np.sqrt(1+outer_ecc) * np.sin(outer_eccentric_anomaly/2.))
 
-     
+        vel_kick1 = self.get_SN_kick(bin.child1)
+        vel_kick2 = self.get_SN_kick(bin.child2)
+        vel_kick3 = self.get_SN_kick(star)
+
+        if REPORT_SN_EVOLUTION:
+            print 'before SN'
+            print '\n\ntime:', self.time, self.previous_time, self.time-self.previous_time
+            print 'eccentricity:', inner_ecc, outer_ecc
+            print 'inner anomaly:', inner_mean_anomaly, inner_eccentric_anomaly, inner_true_anomaly
+            print 'outer anomaly:', outer_mean_anomaly, outer_eccentric_anomaly, outer_true_anomaly
+            print 'vel_kicks:', vel_kick1, vel_kick2, vel_kick3          
+
+        self.channel_to_secular.copy()
+        V1, V2, V3 = self.secular_code.compute_effect_of_SN_on_triple(vel_kick1, vel_kick2, vel_kick3, dm1, dm2, dm3, inner_true_anomaly, outer_true_anomaly)
+        self.channel_from_secular.copy() 
+        
+        #as secular code required the mass of the stars to be the mass prior to the SN
+        #reset mass to after SN
+        bin.child1.mass = bin.child1.previous_mass - dm1
+        bin.child2.mass = bin.child2.previous_mass - dm2
+        star.mass = star.previous_mass - dm3
+
+        if REPORT_SN_EVOLUTION:
+            print 'after SN'
+            print 'eccentricity:', bin.eccentricity, self.triple.eccentricity
+            print 'semi-major axis:', bin.semimajor_axis, self.triple.semimajor_axis
+
+
+        if bin.eccentricity >= 1.0 or bin.eccentricity < 0.0 or bin.semimajor_axis <=0.0|units.RSun or isnan(bin.semimajor_axis.value_in(units.RSun)):
+            if REPORT_SN_EVOLUTION:
+                print "Inner orbit dissociated by SN at time = ",self.time                 
+            return False
+        elif self.triple.eccentricity >= 1.0 or self.triple.eccentricity < 0.0 or self.triple.semimajor_axis <=0.0|units.RSun or isnan(self.triple.semimajor_axis.value_in(units.RSun)):
+            if REPORT_SN_EVOLUTION:
+                print "Outer orbit dissociated by SN at time = ",self.time 
+
+            self.triple.semimajor_axis = 1e100|units.RSun
+            self.triple.eccentricity = 0
+
+            self.secular_code.parameters.ignore_tertiary = True
+            self.secular_code.parameters.check_for_dynamical_stability = False
+            self.secular_code.parameters.check_for_outer_collision = False
+            self.secular_code.parameters.check_for_outer_RLOF = False
+
+
+        if self.stop_at_SN:
+            if REPORT_SN_EVOLUTION:
+                print "Supernova at time = ",self.time 
+                print self.triple.child2.child1.mass, self.triple.child2.child1.stellar_type
+                print self.triple.child2.child2.mass, self.triple.child2.child2.stellar_type
+                print self.triple.child1.mass, self.triple.child1.stellar_type
+            return False            
+
+        #skip secular and skip stellar interaction
+        #check for rlof
+        self.check_for_RLOF() 
+        return True
         
     #-------
 
@@ -1636,37 +1765,19 @@ class Triple_Class:
     def check_stopping_conditions_stellar_interaction(self):              
         if self.stop_at_merger and self.has_merger():
             if REPORT_TRIPLE_EVOLUTION:
-                print 'Merger at time/Myr = ",self.time.value_in(units.Myr)'                               
+                print 'Merger at time = ',self.time                              
             return False    
         if self.stop_at_disintegrated and self.has_disintegrated():
             if REPORT_TRIPLE_EVOLUTION:
-                print 'Disintegration of system at time/Myr = ",self.time.value_in(units.Myr)'              
+                print 'Disintegration of system at time = ',self.time              
             return False
-        elif self.contains_SN_remnant():
-            if REPORT_TRIPLE_EVOLUTION:
-                print "Supernova at time/Myr = ",self.time.value_in(units.Myr) 
-                print self.triple.child2.child1.mass, self.triple.child2.child1.stellar_type
-                print self.triple.child2.child2.mass, self.triple.child2.child2.stellar_type
-                print self.triple.child1.mass, self.triple.child1.stellar_type
-            return False            
-#            if self.stellar_code.stopping_conditions.supernova_detection.is_set():
-#                if REPORT_TRIPLE_EVOLUTION:
-#                    print "Supernova at time/Myr = ",self.time.value_in(units.Myr) 
-##                print self.stellar_code.stopping_condition.supernova_detection.particles(0)
-##                self.adjust_system_after_supernova_kick()
-##                exit(0)                   
-##                self.instantaneous_evolution == False
-##                print 'how do I restart the secular code?'                
-##                self.secular_code.model_time = self.time
-##                continue # the while loop, skip resolve_stellar_interaction and secular evolution
-#                return False
         return True            
             
             
     def check_stopping_conditions_stellar(self):  
         if self.stop_at_triple_mass_transfer and self.has_tertiary_donor():
             if REPORT_TRIPLE_EVOLUTION:
-                print 'Mass transfer in outer binary of triple at time/Myr = ",self.time.value_in(units.Myr)'
+                print 'Mass transfer in outer binary of triple at time = ',self.time
             self.triple.bin_type = bin_type['rlof']
             self.determine_mass_transfer_timescale() # to set the stability
             #it's possible that there is mass transfer in the inner and outer binary
@@ -1676,7 +1787,7 @@ class Triple_Class:
             return False                                   
         elif self.stop_at_mass_transfer and self.has_donor():
             if REPORT_TRIPLE_EVOLUTION:
-                print "Mass transfer at time/Myr = ",self.time.value_in(units.Myr) 
+                print 'Mass transfer at time = ',self.time
             if self.is_binary(self.triple.child2):
                 self.triple.child2.bin_type = bin_type['rlof'] 
             elif self.is_binary(self.triple.child1):
@@ -1686,24 +1797,6 @@ class Triple_Class:
                 exit(-1)    
             self.determine_mass_transfer_timescale() # to set the stability
             return False
-        elif self.contains_SN_remnant():
-            if REPORT_TRIPLE_EVOLUTION:
-                print "Supernova at time/Myr = ",self.time.value_in(units.Myr) 
-                print self.triple.child2.child1.mass, self.triple.child2.child1.stellar_type
-                print self.triple.child2.child2.mass, self.triple.child2.child2.stellar_type
-                print self.triple.child1.mass, self.triple.child1.stellar_type
-            return False            
-#            if self.stellar_code.stopping_conditions.supernova_detection.is_set():
-#                if REPORT_TRIPLE_EVOLUTION:
-#                    print "Supernova at time/Myr = ",self.time.value_in(units.Myr) 
-##                print self.stellar_code.stopping_condition.supernova_detection.particles(0)
-##                self.adjust_system_after_supernova_kick()
-##                exit(0)                   
-##                self.instantaneous_evolution == False
-##                print 'how do I restart the secular code?'                
-##                self.secular_code.model_time = self.time
-##                continue # the while loop, skip resolve_stellar_interaction and secular evolution
-#                return False
         return True
             
             
@@ -1714,17 +1807,17 @@ class Triple_Class:
         if self.stop_at_dynamical_instability and self.triple.dynamical_instability == True:
             self.triple.dynamical_instability = True    #necessary?
             if REPORT_TRIPLE_EVOLUTION:
-                print "Dynamical instability at time/Myr = ",self.time.value_in(units.Myr)
+                print "Dynamical instability at time = ",self.time
             return False
-        if self.stop_at_collision and self.triple.inner_collision == True:
+        if self.stop_at_inner_collision and self.triple.inner_collision == True:
             self.triple.child2.bin_type = bin_type['collision']
             if REPORT_TRIPLE_EVOLUTION:
-                print "Inner collision at time/Myr = ",self.time.value_in(units.Myr)
+                print "Inner collision at time = ",self.time
             return False
-        if self.stop_at_collision and self.triple.outer_collision == True:
+        if self.stop_at_outer_collision and self.triple.outer_collision == True:
             self.triple.bin_type = bin_type['collision']
             if REPORT_TRIPLE_EVOLUTION:
-                print "Outer collision at time/Myr = ",self.time.value_in(units.Myr)
+                print "Outer collision at time = ",self.time
             return False
         if self.time - self.secular_code.model_time > numerical_error|units.Myr:
             print 'triple time > sec time: should not be possible', self.time, self.secular_code.model_time
@@ -1741,7 +1834,7 @@ class Triple_Class:
         if stellar_system.is_star:
             if stellar_system.spin_angular_frequency < 0.0|1./units.Myr: 
                 if REPORT_DEBUG:
-                  print "Error in spin at time/Myr = ",self.time.value_in(units.Myr)
+                  print "Error in spin at time = ",self.time
                 print self.triple.number, stellar_system.mass.value_in(units.MSun), 
                 print stellar_system.previous_mass.value_in(units.MSun), stellar_system.age.value_in(units.Myr),
                 print stellar_system.stellar_type.value, stellar_system.previous_stellar_type.value, stellar_system.spin_angular_frequency.value_in(1./units.Myr), 3
@@ -1755,7 +1848,7 @@ class Triple_Class:
     def check_error_flag_secular(self):    
         if self.triple.error_flag_secular < 0:
             if REPORT_TRIPLE_EVOLUTION:
-                print "Error in secular code at time/Myr = ",self.time.value_in(units.Myr)
+                print "Error in secular code at time = ",self.time
                 print self.triple.error_flag_secular
             return False
         return True                
@@ -1842,11 +1935,18 @@ class Triple_Class:
                 successfull_step, nr_unsuccessfull, star_unsuccessfull = self.safety_check_time_step()        
                 while successfull_step == False:
                     successfull_step, nr_unsuccessfull, star_unsuccessfull = self.recall_memory_one_step_stellar(nr_unsuccessfull, star_unsuccessfull)
-                
+
+                # if SN has taken place
+                if self.has_stellar_type_changed_into_SN_remnant():
+                    if REPORT_TRIPLE_EVOLUTION:
+                        print "Supernova at time = ", self.time, dt
+                    if self.adjust_system_after_supernova_kick()==False:
+                        break  
+
                 self.check_for_RLOF() 
                 if self.check_stopping_conditions_stellar()==False:
                     break  
-
+                                      
                 #find beginning of RLOF
                 if self.has_donor() and self.triple.bin_type == 'detached' and self.triple.child2.bin_type == 'detached':
                     self.rewind_to_begin_of_rlof_stellar(dt)
@@ -1898,8 +1998,8 @@ class Triple_Class:
                     
                     exit(1)
                 elif self.has_donor() and self.triple.bin_type == 'detached' and self.triple.child2.bin_type == 'detached':
-#                    if self.check_stopping_conditions_stellar()==False:
-#                                    break
+                    if self.check_stopping_conditions_stellar()==False:
+                                    break
 
                     self.rewind_to_begin_of_rlof_secular()
                     self.triple.child2.semimajor_axis = previous_semimajor_axis_in
@@ -1916,6 +2016,11 @@ class Triple_Class:
                     break
                 if self.check_spin_angular_frequency()==False:
                     break
+                if self.check_stopping_conditions()==False:
+                    break                
+                if not self.stop_at_inner_collision and self.triple.inner_collision == True:
+                    perform_inner_collision(self)
+                    
                                         
             else:
                 if REPORT_TRIPLE_EVOLUTION:
@@ -1923,16 +2028,6 @@ class Triple_Class:
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
                 
-            #reset by stable_mass_transfer() in binary.py
-            self.secular_code.parameters.check_for_inner_RLOF = True
-            self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star1 = True
-            self.secular_code.parameters.include_spin_radius_mass_coupling_terms_star2 = True
-
-            if self.check_stopping_conditions()==False:
-                break                
-            if not self.stop_at_collision and self.triple.inner_collision == True:
-                perform_inner_collision(self)
-
 
             if REPORT_DEBUG:
                 # for plotting data
@@ -1958,6 +2053,9 @@ class Triple_Class:
                 moi1_array.append(self.triple.child2.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
                 moi2_array.append(self.triple.child2.child2.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
                 moi3_array.append(self.triple.child1.moment_of_inertia_of_star.value_in(units.RSun**2*units.MSun))
+            
+            
+            
             
         self.save_snapshot()        
             
@@ -2530,8 +2628,9 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             tend= 5.0 |units.Myr, number = 0, maximum_radius_change_factor = 0.005,
             tidal_terms = True,
             stop_at_merger = True, stop_at_disintegrated = True, stop_at_triple_mass_transfer = True,
-            stop_at_collision = True, stop_at_dynamical_instability = True, stop_at_mass_transfer = False,
-            stop_at_init_mass_transfer = False, file_name = "triple.hdf", file_type = "hdf5" ):
+            stop_at_inner_collision = True, stop_at_outer_collision = True, stop_at_dynamical_instability = True, 
+            stop_at_mass_transfer = True, stop_at_init_mass_transfer = True, stop_at_SN = True,
+            file_name = "triple.hdf", file_type = "hdf5" ):
 
 
     set_printing_strategy("custom", 
@@ -2546,6 +2645,7 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
     outer_argument_of_pericenter = float(outer_argument_of_pericenter)
     inner_longitude_of_ascending_node = float(inner_longitude_of_ascending_node)
 
+
     triple_class_object = Triple_Class(inner_primary_mass, inner_secondary_mass, outer_mass,
             inner_semimajor_axis, outer_semimajor_axis,
             inner_eccentricity, outer_eccentricity,
@@ -2554,8 +2654,9 @@ def main(inner_primary_mass= 1.3|units.MSun, inner_secondary_mass= 0.5|units.MSu
             inner_longitude_of_ascending_node, 
             metallicity, tend, number, maximum_radius_change_factor, tidal_terms, 
             stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-            stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer,
-            stop_at_init_mass_transfer, file_name, file_type)
+            stop_at_inner_collision, stop_at_outer_collision, stop_at_dynamical_instability, 
+            stop_at_mass_transfer, stop_at_init_mass_transfer, stop_at_SN, 
+            file_name, file_type)
 
 
     if triple_class_object.triple.dynamical_instability_at_initialisation == True:
@@ -2635,14 +2736,18 @@ def parse_arguments():
                       help="stop at disintegrated [%default] %unit")
     parser.add_option("--stop_at_triple_mass_transfer", dest="stop_at_triple_mass_transfer", action="store_false", default = True,
                       help="stop at triple mass transfer [%default] %unit")
-    parser.add_option("--stop_at_collision", dest="stop_at_collision", action="store_false",default = True,
-                      help="stop at collision [%default] %unit")
+    parser.add_option("--stop_at_inner_collision", dest="stop_at_inner_collision", action="store_false",default = True,
+                      help="stop at collision in inner binary[%default] %unit")
+    parser.add_option("--stop_at_outer_collision", dest="stop_at_outer_collision", action="store_false",default = True,
+                      help="stop at collision in outer binary[%default] %unit")
     parser.add_option("--stop_at_dynamical_instability", dest="stop_at_dynamical_instability", action="store_false", default = True,
                       help="stop at dynamical instability [%default] %unit")
-    parser.add_option("--stop_at_mass_transfer", dest="stop_at_mass_transfer", action="store_true", default = False,
+    parser.add_option("--stop_at_mass_transfer", dest="stop_at_mass_transfer", action="store_false", default = True,
                       help="stop at mass transfer [%default] %unit")
-    parser.add_option("--stop_at_init_mass_transfer", dest="stop_at_init_mass_transfer", action="store_true", default = False,
+    parser.add_option("--stop_at_init_mass_transfer", dest="stop_at_init_mass_transfer", action="store_false", default = True,
                       help="stop if initially mass transfer[%default] %unit")
+    parser.add_option("--stop_at_SN", dest="stop_at_SN", action="store_false", default = True,
+                      help="stop at supernova [%default] %unit")
     parser.add_option("-f", dest="file_name", type ="string", default = "triple.hdf",#"triple.txt"
                       help="file name[%default]")
     parser.add_option("-F", dest="file_type", type ="string", default = "hdf5",#"txt"
@@ -2670,9 +2775,9 @@ if __name__ == '__main__':
             print 'Choose a different system. There is mass transfer in the given triple at initialization.'
     else:    
         triple_class_object.evolve_model()
-#        if REPORT_DEBUG:
-#            plot_function(triple_class_object)
-#            triple_class_object.print_stellar_system()
+        if REPORT_DEBUG:
+            plot_function(triple_class_object)
+            triple_class_object.print_stellar_system()
 
         if REPORT_TRIPLE_EVOLUTION:
             print 'Simulation has finished succesfully'

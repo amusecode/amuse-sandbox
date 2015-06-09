@@ -134,8 +134,6 @@ def copy_outer_orbit_to_inner_orbit(bs, self):
         bs.specific_AM_loss_mass_transfer, = self.triple.specific_AM_loss_mass_transfer,
         bs.is_stable = self.triple.is_stable
     
-        #because otherwise dynamical instability
-        # i'd prefer setting the tertiary mass to zero, breaking the link with seba
         self.triple.semimajor_axis = 1e100|units.RSun
         self.triple.eccentricity = 0
                 

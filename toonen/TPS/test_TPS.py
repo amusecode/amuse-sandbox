@@ -90,6 +90,7 @@ class TestSeBa(TestWithMPI):
         print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
         print tr.triple.child2.eccentricity, tr.triple.eccentricity
         print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
+        print tr.triple.child2.child1.stellar_type, tr.triple.child2.child2.stellar_type, tr.triple.child1.stellar_type
 
 #0.00100025844189 0.00099996533347
 #2.3147618017e+13 [Myr**-1] 55942.028509 [Myr**-1] 59.335481569 [Myr**-1]
@@ -1309,6 +1310,132 @@ class TestSeBa(TestWithMPI):
 
 
 
+    # wind in inner system, massive star with SN
+    def test23(self):
+        print 'test23'
+    
+        M1 = 9|units.MSun
+        M2 = 1|units.MSun
+        M3 = 1|units.MSun
+        a_in = 1.e4|units.RSun
+        a_out = 1.e6|units.RSun
+        e_in = 0.0
+        e_out = 0.0
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        T_end = 33.34|units.Myr
+        tidal_terms = False
+        stop_at_SN = True
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, tidal_terms = tidal_terms, 
+        stop_at_SN = stop_at_SN)
+
+
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.child1.previous_mass, tr.triple.child2.child2.previous_mass, tr.triple.child1.previous_mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
+
+#just before SN
+#        if test_asserts:
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.22811 | units.MSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child1.previous_mass, 8.52456 | units.MSun, 2)        
+#            self.assertEqual(tr.triple.child2.child2.mass, 1. | units.MSun)        
+#            self.assertEqual(tr.triple.child1.mass, 1. | units.MSun)                
+#            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 10499 | units.RSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1045174 | units.RSun, 2)        
+#        
+#        #under the assumption of no wind accretion
+#        M_child1 = tr.triple.child2.child1.previous_mass + tr.triple.child2.child2.previous_mass
+#        M_child2 = M_child1 + tr.triple.child1.previous_mass
+#        a_in_final_theory =  a_in * (M1+M2) / M_child1
+#        a_out_final_theory = a_out * (M1+M2+M3) / M_child2
+#        print a_in_final_theory, a_out_final_theory
+#        if test_asserts:
+#            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
+
+        if test_asserts:
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.22811 | units.MSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.previous_mass, 8.52456 | units.MSun, 2)        
+            self.assertEqual(tr.triple.child2.child2.mass, 1. | units.MSun)        
+            self.assertEqual(tr.triple.child1.mass, 1. | units.MSun)                
+#            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, -4615.4878113 | units.RSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, -20197.418621 | units.RSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.eccentricity, 3.2747492923, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.eccentricity, 44.5759681379, 2)        
+
+
+#SeBa
+#get_total_mass() = 8.51507
+#core_mass = 1.22828
+#m_comp_0 = 1
+
+        print 'test23: succeeded'
+
+    # wind in inner system, massive star with SN kick
+    def test24(self):
+        print 'test24'
+    
+        M1 = 9|units.MSun
+        M2 = 8.5|units.MSun
+        M3 = 1|units.MSun
+        a_in = 1.e4|units.RSun
+        a_out = 1.e6|units.RSun
+        e_in = 0.0
+        e_out = 0.0
+        i = 0*np.pi/180.0
+        g_in = 0.5*np.pi
+        g_out = 0.5*np.pi
+        T_end = 33.5|units.Myr
+        tidal_terms = False
+        stop_at_SN = True 
+        tr = triple.main(inner_primary_mass = M1, inner_secondary_mass = M2, outer_mass = M3, inner_semimajor_axis = a_in, outer_semimajor_axis = a_out, inner_eccentricity = e_in, outer_eccentricity = e_out, relative_inclination= i, inner_argument_of_pericenter = g_in, outer_argument_of_pericenter = g_out, tend = T_end, tidal_terms = tidal_terms, 
+        stop_at_SN = stop_at_SN)
+
+
+        print tr.triple.child2.child1.mass, tr.triple.child2.child2.mass, tr.triple.child1.mass
+        print tr.triple.child2.child1.previous_mass, tr.triple.child2.child2.previous_mass, tr.triple.child1.previous_mass
+        print tr.triple.child2.semimajor_axis, tr.triple.semimajor_axis
+        print tr.triple.child2.eccentricity, tr.triple.eccentricity
+        print tr.triple.child2.child1.spin_angular_frequency, tr.triple.child2.child2.spin_angular_frequency, tr.triple.child1.spin_angular_frequency
+
+#before SN
+#        if test_asserts:
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.22811 | units.MSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.child2.child1.previous_mass, 8.52456 | units.MSun, 2)        
+#            self.assertEqual(tr.triple.child2.child2.mass, 1. | units.MSun)        
+#            self.assertEqual(tr.triple.child1.mass, 1. | units.MSun)                
+#            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, 10499 | units.RSun, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, 1045174 | units.RSun, 2)        
+#        
+#        #under the assumption of no wind accretion
+#        M_child1 = tr.triple.child2.child1.previous_mass + tr.triple.child2.child2.previous_mass
+#        M_child2 = M_child1 + tr.triple.child1.previous_mass
+#        a_in_final_theory =  a_in * (M1+M2) / M_child1
+#        a_out_final_theory = a_out * (M1+M2+M3) / M_child2
+#        print a_in_final_theory, a_out_final_theory
+#        if test_asserts:
+#            self.assertAlmostRelativeEqual(tr.triple.child2.semimajor_axis, a_in_final_theory, 2)        
+#            self.assertAlmostRelativeEqual(tr.triple.semimajor_axis, a_out_final_theory, 2)        
+
+        if test_asserts:
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.mass, 1.22811 | units.MSun, 2)        
+            self.assertAlmostRelativeEqual(tr.triple.child2.child1.previous_mass, 8.52456 | units.MSun, 2)        
+            self.assertEqual(tr.triple.child2.child2.mass, 8.405757934 | units.MSun)        
+            self.assertEqual(tr.triple.child1.mass, 1. | units.MSun)                
+
+#SeBa:
+#get_total_mass() = 8.52818,
+#core_mass = 1.22828
+#m_comp_0 = 8.39485
+
+
+        print 'test24: succeeded'
+
+
+
 
 if __name__ == '__main__':
     test = TestSeBa()
@@ -1331,7 +1458,7 @@ if __name__ == '__main__':
 #    test.test7()
 #    test.test8()
 
-    test.test6_with_tides() 
+#    test.test6_with_tides() 
 #    test.test7_with_tides()
 #    test.test8_with_tides()
 
@@ -1368,4 +1495,6 @@ if __name__ == '__main__':
 #    dynamical instability at initialization
 #    test.test22()
 
-
+#    massive stars with SN
+    test.test23() 
+    test.test24() 

@@ -119,7 +119,7 @@ class Generate_initial_triple:
     #setup stellar system
     def __init__(self, in_primary_mass_max, in_primary_mass_min, 
                         in_mass_ratio_max, in_mass_ratio_min, 
-                        out_mass_ratio_max, out_mass_ratio_min, 
+                        out_mass_ratio_max, out_mass_ratio_min, out_mass_max,
                         in_semi_max, in_semi_min, out_semi_max, out_semi_min, 
                         in_ecc_max, in_ecc_min, out_ecc_max, out_ecc_min, 
                         incl_max, incl_min,
@@ -132,14 +132,13 @@ class Generate_initial_triple:
                         if in_primary_mass_distr == 5:
                             convergence = False
                             while convergence == False:
-                                convergence = self.generate_mass_and_semi_eggleton(in_primary_mass_max, in_primary_mass_min, in_semi_max, in_semi_min, 
-                                            out_semi_max, out_semi_min)                            
+                                convergence = self.generate_mass_and_semi_eggleton(in_primary_mass_max, in_primary_mass_min, out_mass_max, in_semi_max, in_semi_min, out_semi_max, out_semi_min)                            
                         else:    
                             convergence = False
                             while convergence == False:
                                 convergence = self.generate_mass(in_primary_mass_max, in_primary_mass_min, 
                                         in_mass_ratio_max, in_mass_ratio_min,
-                                            out_mass_ratio_max, out_mass_ratio_min,
+                                            out_mass_ratio_max, out_mass_ratio_min,out_mass_max, 
                                             in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr)
                                 
                             self.generate_semi(in_semi_max, in_semi_min, 
@@ -161,7 +160,7 @@ class Generate_initial_triple:
     #-------                        
     def generate_mass(self, in_primary_mass_max, in_primary_mass_min, 
                         in_mass_ratio_max, in_mass_ratio_min,
-                        out_mass_ratio_max, out_mass_ratio_min,
+                        out_mass_ratio_max, out_mass_ratio_min, out_mass_max, 
                         in_primary_mass_distr, in_mass_ratio_distr, out_mass_ratio_distr):
 
         if in_primary_mass_max == in_primary_mass_min:
@@ -212,7 +211,8 @@ class Generate_initial_triple:
                out_mass_ratio = flat_distr(out_mass_ratio_min, out_mass_ratio_max)
                self.out_mass = out_mass_ratio * (self.in_primary_mass + self.in_secondary_mass)
 
-        if self.out_mass > in_primary_mass_max:
+        print self.out_mass, out_mass_max
+        if self.out_mass > out_mass_max:
                 return False
         return True  
 
@@ -379,7 +379,7 @@ class Generate_initial_triple:
 #-------
 
 # Eggleton 2009, 399, 1471
-    def generate_mass_and_semi_eggleton(self, in_primary_mass_max, in_primary_mass_min, in_semi_max, in_semi_min, 
+    def generate_mass_and_semi_eggleton(self, in_primary_mass_max, in_primary_mass_min, out_mass_max, in_semi_max, in_semi_min, 
                         out_semi_max, out_semi_min):
 #        U0_mass = [0., .01, .09, .32, 1., 3.2, 11, 32, np.inf]|units.MSun
 #        U0_l0 = [0.40, 0.40, 0.40, 0.40, 0.50, 0.75, 0.88, 0.94, 0.96]#        U0_l1 = [0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.20, 0.60, 0.80]#        U0_l2 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.20, 0.33, 0.82, 0.90]#        U0_l3 = [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00]
@@ -472,7 +472,7 @@ class Generate_initial_triple:
                 return False
             if self.out_semi < out_semi_min or self.out_semi > out_semi_max:
                 return False
-            if self.out_mass > in_primary_mass_max:
+            if self.out_mass > out_mass_max:
                 return False                         
                                                          
             return True
@@ -496,9 +496,10 @@ class Generate_initial_triple:
 #-------
 
 #-------
+
 def evolve_model(in_primary_mass_max, in_primary_mass_min, 
                         in_mass_ratio_max, in_mass_ratio_min, 
-                        out_mass_ratio_max, out_mass_ratio_min, 
+                        out_mass_ratio_max, out_mass_ratio_min, out_mass_max,
                         in_semi_max, in_semi_min, out_semi_max, out_semi_min, 
                         in_ecc_max, in_ecc_min, out_ecc_max, out_ecc_min, 
                         incl_max, incl_min,
@@ -509,18 +510,18 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
                         in_aop_distr, out_aop_distr, in_loan_distr,                                                                      
                         metallicity, tend, number, initial_number, seed,
                         stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-                        stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer,
+                        stop_at_inner_collision, stop_at_outer_collision, 
+                        stop_at_dynamical_instability, stop_at_mass_transfer, stop_at_SN,
                         file_name, file_type):
 
 
-    
     i_n = 0
     nr_ids = 0 #number of systems that is dynamically unstable at initialisation
     nr_imt = 0 #number of systems that has mass transfer at initialisation
     while i_n < number:
         triple_system = Generate_initial_triple(in_primary_mass_max, in_primary_mass_min, 
                     in_mass_ratio_max, in_mass_ratio_min, 
-                    out_mass_ratio_max, out_mass_ratio_min, 
+                    out_mass_ratio_max, out_mass_ratio_min, out_mass_max, 
                     in_semi_max, in_semi_min, out_semi_max, out_semi_min, 
                     in_ecc_max, in_ecc_min, out_ecc_max, out_ecc_min, 
                     incl_max, incl_min,
@@ -554,9 +555,10 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
                     inner_longitude_of_ascending_node = triple_system.in_loan, 
                     metallicity = metallicity, tend = tend, number = number_of_system, 
                     stop_at_merger = stop_at_merger, stop_at_disintegrated = stop_at_disintegrated,
-                    stop_at_triple_mass_transfer = stop_at_triple_mass_transfer, stop_at_collision = stop_at_collision, 
+                    stop_at_triple_mass_transfer = stop_at_triple_mass_transfer, 
+                    stop_at_inner_collision = stop_at_inner_collision, stop_at_outer_collision = stop_at_outer_collision,
                     stop_at_dynamical_instability = stop_at_dynamical_instability, stop_at_mass_transfer = stop_at_mass_transfer, 
-                    stop_at_init_mass_transfer = stop_at_init_mass_transfer,
+                    stop_at_init_mass_transfer = stop_at_init_mass_transfer, stop_at_SN = stop_at_SN,
                     file_name = file_name, file_type = file_type)                        
 
         if tr.triple.dynamical_instability_at_initialisation == True:
@@ -571,7 +573,7 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
 
 def test_initial_parameters(in_primary_mass_max, in_primary_mass_min, 
                         in_mass_ratio_max, in_mass_ratio_min, 
-                        out_mass_ratio_max, out_mass_ratio_min, 
+                        out_mass_ratio_max, out_mass_ratio_min, out_mass_max, 
                         in_semi_max, in_semi_min, out_semi_max, out_semi_min, 
                         in_ecc_max, in_ecc_min,  out_ecc_max, out_ecc_min, 
                         incl_max, incl_min,
@@ -582,7 +584,8 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
                         in_aop_distr, out_aop_distr, in_loan_distr,                    
                         metallicity, tend, number, initial_number, seed,
                         stop_at_merger, stop_at_disintegrated, stop_at_triple_mass_transfer,
-                        stop_at_collision, stop_at_dynamical_instability, stop_at_mass_transfer,
+                        stop_at_inner_collision, stop_at_outer_collision, 
+                        stop_at_dynamical_instability, stop_at_mass_transfer, stop_at_SN,
                         file_name, file_type):
 
     if (in_primary_mass_min < min_mass) or (in_primary_mass_max > max_mass):
@@ -609,6 +612,10 @@ def test_initial_parameters(in_primary_mass_max, in_primary_mass_min,
         
     if (out_mass_ratio_max < out_mass_ratio_min):
         print 'error: maximum outer mass ratio smaller than minimum mass ratio'
+        exit(1)
+        
+    if (out_mass_max > max_mass) :
+        print 'error: outer mass not in allowed range: <=', max_mass
         exit(1)
         
 
@@ -720,7 +727,9 @@ def parse_arguments():
                       help="minimum of outer mass ratio [%default]")
     parser.add_option("--q_distr", dest="out_mass_ratio_distr", type="int", default = 0,
                       help="outer mass ratio distribution [Flat]")
-                      
+    parser.add_option("--l_max", unit=units.MSun, 
+                      dest="out_mass_max", type="float", default = 100|units.MSun,
+                      help="maximum of outer mass [%default]")
 
     parser.add_option("--A_min", unit=units.RSun,
                       dest="in_semi_min", type="float", 
@@ -821,12 +830,16 @@ def parse_arguments():
                       help="stop at disintegrated [%default] %unit")
     parser.add_option("--stop_at_triple_mass_transfer", dest="stop_at_triple_mass_transfer", action="store_false", default = True,
                       help="stop at triple mass transfer [%default] %unit")
-    parser.add_option("--stop_at_collision", dest="stop_at_collision", action="store_false",default = True,
-                      help="stop at collision [%default] %unit")
+    parser.add_option("--stop_at_inner_collision", dest="stop_at_inner_collision", action="store_false",default = True,
+                      help="stop at collision in inner binary[%default] %unit")
+    parser.add_option("--stop_at_outer_collision", dest="stop_at_outer_collision", action="store_false",default = True,
+                      help="stop at collision in outer binary[%default] %unit")
     parser.add_option("--stop_at_dynamical_instability", dest="stop_at_dynamical_instability", action="store_false", default = True,
                       help="stop at dynamical instability [%default] %unit")
     parser.add_option("--stop_at_mass_transfer", dest="stop_at_mass_transfer", action="store_true", default = False,
                       help="stop at mass transfer [%default] %unit")
+    parser.add_option("--stop_at_SN", dest="stop_at_SN", action="store_false", default = True,
+                      help="stop at supernova [%default] %unit")
     parser.add_option("-f", dest="file_name", type ="string", default = "triple_nokozaidt.hdf",#"triple.txt"
                       help="file name[%default]")
     parser.add_option("-F", dest="file_type", type ="string", default = "hdf5",#"txt"
