@@ -1677,8 +1677,8 @@ class SecularTriple(InCodeComponentImplementation):
             inner_binary.longitude_of_ascending_node = LAN_in_prime
             outer_binary.longitude_of_ascending_node = LAN_out_prime
 
-            #return V1_prime,V2_prime,V3_prime,cos_phi1
-            return V1_prime,V2_prime,V3_prime
+            return V1_prime,V2_prime,V3_prime,cos_phi1
+            #return V1_prime,V2_prime,V3_prime
 
 def print_CVODE_output(self,CVODE_flag):
     if self.parameters.verbose == False: return
