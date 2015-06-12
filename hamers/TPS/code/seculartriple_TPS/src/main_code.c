@@ -89,7 +89,16 @@ int evolve(
     if (e_out<=tiny_double) { e_out = tiny_double; }    
     if (INCL_in<=tiny_double) { INCL_in = tiny_double; }
     if (INCL_out<=tiny_double) { INCL_out = tiny_double; }
-    
+
+    if (INCL_in > M_PI-tiny_double)
+    {
+        INCL_in = M_PI-tiny_double;
+    }
+    if (INCL_out > M_PI-tiny_double)
+    {
+        INCL_out = M_PI-tiny_double;
+    }
+
 //    if (spin_angular_frequency1<=tiny_double) { spin_angular_frequency1 = tiny_double; }
 //    if (spin_angular_frequency2<=tiny_double) { spin_angular_frequency2 = tiny_double; }
 //    if (spin_angular_frequency3<=tiny_double) { spin_angular_frequency3 = tiny_double; }

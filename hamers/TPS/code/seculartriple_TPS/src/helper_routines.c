@@ -18,7 +18,8 @@ int compute_effect_of_SN_on_orbital_vectors
     double *e1_vec_x_p, double *e1_vec_y_p, double *e1_vec_z_p,
     double *e2_vec_x_p, double *e2_vec_y_p, double *e2_vec_z_p,
     double *h1_vec_x_p, double *h1_vec_y_p, double *h1_vec_z_p,
-    double *h2_vec_x_p, double *h2_vec_y_p, double *h2_vec_z_p
+    double *h2_vec_x_p, double *h2_vec_y_p, double *h2_vec_z_p,
+    double *cos_phi1
 )
 {
     double e1_vec[3] = {e1_vec_x,e1_vec_y,e1_vec_z};
@@ -88,6 +89,7 @@ int compute_effect_of_SN_on_orbital_vectors
     
     double r2_CM_vec[3] = {0.0,0.0,0.0};
     double v2_CM_vec[3] = {0.0,0.0,0.0};
+
     
     for (int i=0; i<3; i++)
     {
@@ -117,6 +119,9 @@ int compute_effect_of_SN_on_orbital_vectors
         v1_vec_p[i] = V1_vec_p[i] - V2_vec_p[i];
         v2_vec_p[i] = ((m1_p*V1_vec_p[i] + m2_p*V2_vec_p[i])/(m1_p+m2_p)) - V3_vec_p[i];
     }
+
+    double Vkick1_vec_dot_v1_vec = dot3(Vkick1_vec,v1_vec);
+    *cos_phi1 = Vkick1_vec_dot_v1_vec/( norm3(Vkick1_vec)*norm3(v1_vec) );
 
 //    printf("pre 1 %g %g %g %g %g %g\n",r1_vec[0],r1_vec[1],r1_vec[2],v1_vec[0],v1_vec[1],v1_vec[2]);
 //    printf("pre 2 %g %g %g %g %g %g\n",r2_vec[0],r2_vec[1],r2_vec[2],v2_vec[0],v2_vec[1],v2_vec[2]);
@@ -200,7 +205,12 @@ int compute_orbital_vectors_from_orbital_elements(double m1, double m2, double m
     {
         INCL_rel = tiny_double;
     }
-        
+
+    if (INCL_rel > M_PI-tiny_double)
+    {
+        INCL_rel = M_PI-tiny_double;
+    }
+
     double cos_INCL_rel = cos(INCL_rel);
     double cos_AP1 = cos(AP1);
     double cos_AP2 = cos(AP2);

@@ -16,7 +16,8 @@ int compute_effect_of_SN_on_orbital_vectors
     double *e1_vec_x_p, double *e1_vec_y_p, double *e1_vec_z_p,
     double *e2_vec_x_p, double *e2_vec_y_p, double *e2_vec_z_p,
     double *h1_vec_x_p, double *h1_vec_y_p, double *h1_vec_z_p,
-    double *h2_vec_x_p, double *h2_vec_y_p, double *h2_vec_z_p
+    double *h2_vec_x_p, double *h2_vec_y_p, double *h2_vec_z_p,
+    double *cos_phi1
 );
 int compute_eccentricity_vector(double total_mass, double r[3], double v[3], double e_vec[3]);
 int compute_h_vector(double mu, double r[3], double v[3], double h_vec[3]);
