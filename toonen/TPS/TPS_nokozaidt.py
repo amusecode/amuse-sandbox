@@ -211,7 +211,7 @@ class Generate_initial_triple:
                out_mass_ratio = flat_distr(out_mass_ratio_min, out_mass_ratio_max)
                self.out_mass = out_mass_ratio * (self.in_primary_mass + self.in_secondary_mass)
 
-        print self.out_mass, out_mass_max
+#        print self.out_mass, out_mass_max
         if self.out_mass > out_mass_max:
                 return False
         return True  
@@ -533,6 +533,14 @@ def evolve_model(in_primary_mass_max, in_primary_mass_min,
                 
         if REPORT:
            triple_system.print_triple()
+
+#        print  triple_system.in_primary_mass, triple_system.in_secondary_mass, triple_system.out_mass, 
+#        print  triple_system.in_semi, triple_system.out_semi,
+#        print  triple_system.in_ecc, triple_system.out_ecc,
+#        print  triple_system.incl,
+#        print  triple_system.in_aop, triple_system.out_aop,
+#        print  triple_system.in_loan, triple_system.in_loan -np.pi
+
 
         if (min_mass > triple_system.in_primary_mass) or (min_mass > triple_system.in_secondary_mass) or (min_mass > triple_system.out_mass):
                 if REPORT:

@@ -488,6 +488,10 @@ class Triple_Class:
         if stellar_system.is_star:
             stellar_system.gyration_radius = 0.
             stellar_system.apsidal_motion_constant = self.apsidal_motion_constant(stellar_system) 
+
+            if stellar_system.core_radius > stellar_system.radius:
+                #can happen very late on the agb before WD formation
+                stellar_system.core_radius = stellar_system.radius                
             stellar_system.moment_of_inertia_of_star = self.moment_of_inertia(stellar_system)
 
             if stellar_system.convective_envelope_radius < 0|units.RSun:
@@ -495,7 +499,8 @@ class Triple_Class:
                 exit(1)
             if stellar_system.convective_envelope_radius == 0|units.RSun:
                 stellar_system.convective_envelope_mass = 1.e-10 |units.MSun    
-                stellar_system.convective_envelope_radius = 1.e-10 |units.RSun    
+                stellar_system.convective_envelope_radius = 1.e-10 |units.RSun   
+                 
         else:
             self.update_stellar_parameters(stellar_system.child1)        
             self.update_stellar_parameters(stellar_system.child2)
@@ -777,6 +782,7 @@ class Triple_Class:
             I = k2*(star.mass - star.core_mass)*star.radius**2 + k3*star.core_mass*star.core_radius**2
             if REPORT_DEBUG:
                 print 'moi:', I, k2, k3, star.mass, star.core_mass, star.radius, star.core_radius, k2*(star.mass - star.core_mass)*star.radius**2, k3*star.core_mass*star.core_radius**2
+                
             return I                   
         else:
             print 'moment_of_inertia: structure stellar system unknown'        
@@ -870,6 +876,7 @@ class Triple_Class:
                 print 'Stellar type:', bin.child1.stellar_type, bin.child2.stellar_type, star.stellar_type
                 print 'Spin:', bin.child1.spin_angular_frequency, bin.child2.spin_angular_frequency, star.spin_angular_frequency
                 
+
             bin.child1.is_donor = False
             bin.child2.is_donor = False
             star.is_donor = False
@@ -2027,7 +2034,6 @@ class Triple_Class:
                     print 'skip secular'
                 self.secular_code.model_time = self.time
                 self.instantaneous_evolution = False
-                
 
             if REPORT_DEBUG:
                 # for plotting data
