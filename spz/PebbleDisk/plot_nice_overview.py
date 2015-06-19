@@ -37,11 +37,12 @@ def scatter_plot(stars, time, nstep, subplot, lim = 50):
 
     subplot.set_xlabel("X [AU]")
     subplot.set_ylabel("Y [AU]")
-    subplot.set_title("Time = "+str(time.as_quantity_in(units.yr)))
+    subplot.set_title("Time = "+str(time.as_quantity_in(units.yr))+ " I: " +str(nstep))
 
     subplot.set_xlim(-lim, lim)
     subplot.set_ylim(-lim, lim)
     
+
 def ae_plot(particles, time, nstep, subplot, xlim = (0,20)):
     subplot.set_ylim(0, 1)
     subplot.semilogx()
@@ -95,7 +96,14 @@ def new_option_parser():
     result.add_option("-t", "--plot-type", 
                       dest="plot_type", default = "xy",
                       help="plot type (xy, xz, planets, pebbles)")
+    result.add_option("-i", "--start-index", 
+                      dest="start_index", default = 0, type='int',
+                      help="first index of the history to select  (default: start of history)")
+    result.add_option("-j", "--end-index", 
+                      dest="end_index", default = -1, type='int',
+                      help="last index of the history to select (default: end of history)")
     return result
+
 
 if __name__ == "__main__":
     o, arguments  = new_option_parser().parse_args()
@@ -108,7 +116,9 @@ if __name__ == "__main__":
     history = list(stored_stars.iter_history())
     all_steps = list(reversed(history[1:]))
     converter = nbody_system.nbody_to_si(stored_stars.mass.sum(), 100 | units.AU)
-    
+    if o.end_index < 0:
+        o.end_index = None
+    all_steps = all_steps[o.start_index:o.end_index]
     
     time = 1 | units.yr
     
@@ -132,6 +142,7 @@ if __name__ == "__main__":
         step_size -= 1
     nstep = 1
     for i, x in enumerate(all_steps[::step_size]):
+        nstep = o.start_index + (i * step_size)
         if (i > 8): 
             break
         stars = x.copy()
@@ -160,3 +171,4 @@ if __name__ == "__main__":
         
     figure.savefig(o.filename + '-'+ o.plot_type +'.png')#,bbox_inches='tight')
 #   mencoder "mf://xy*.png" -mf fps=20 -ovc x264 -o movie.avi
+

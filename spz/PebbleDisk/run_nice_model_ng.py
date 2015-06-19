@@ -210,8 +210,11 @@ class CreateNiceModel(object):
         self.result.collection_attributes.inner_disk_radius = self.inner_disk_radius
         self.result.collection_attributes.outer_disk_radius = self.outer_disk_radius
         self.result.collection_attributes.model_time = 0 | units.yr
+        superset = ParticlesSuperset([self.result, sun.planets, sun.disk_particles])
+        superset.move_to_center()
         return self.result
         
+
     def create_sun(self):
         sun = Particle()
         sun.mass = 1 | units.MSun
@@ -308,11 +311,12 @@ class RunNiceModel(object):
         star.escaped_planets.add_particles(escapers)
         
     def length_scale(self):
-        if len(self.star.disk_particles) == 0:
+        if True or len(self.star.disk_particles) == 0:
             return 100 | units.AU
         else:
             return (self.star.disk_particles.position - self.star.position).lengths().max()
         
+
     def mass_scale(self):
         return self.star.mass
     
@@ -327,9 +331,10 @@ class RunNiceModel(object):
         
         code.particles.add_particles(self.star.planets)
         self.channels.append(code.particles.new_channel_to(self.star.planets))
-        code.particles.move_to_center()
+        
         return code
     
+
     def get_code_factory(self):
         if self.code_name == "hermite":
             return Hermite
@@ -347,7 +352,6 @@ class RunNiceModel(object):
         elif self.particles_kind == "gravitational":
             planets_and_star.particles.add_particles(self.star.disk_particles)
             self.channels.append(planets_and_star.particles.new_channel_to(self.star.disk_particles))
-            planets_and_star.particles.move_to_center()
             return planets_and_star
         else:
             result = bridge.Bridge(timestep=self.dt, use_threading=True)
@@ -370,6 +374,7 @@ class RunNiceModel(object):
             
             return result
         
+
     def copy_to_model(self):
         for channel in self.channels:
             channel.copy()

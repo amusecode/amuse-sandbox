@@ -148,8 +148,14 @@ class HermiteIntegrator(object):
         n = len(self.jparticles)
         self.jmass = self.jparticles.mass.reshape([n,1])
         
+        self.ikey = self.iparticles.key
+        self.jkey = self.jparticles.key.reshape([n,1])
+        self.mask = self.ikey == self.jkey     # (~(self.ikey == self.jkey)) * 1.0
+        
+        
+        
         self.length_unit = self.jpos.unit
-        self.time_unit = self.length_unit / self.jvel.unit                                                          
+        self.time_unit = self.length_unit / self.jvel.unit                                                                              
         self.mass_unit = self.imass.unit
         self.speed_unit = self.length_unit / self.time_unit
         self.wu = 1
@@ -187,6 +193,7 @@ class HermiteIntegrator(object):
             dt = dt.value_in(self.time_unit)
         self.store_start_values()
         self.predict(dt)
+        self.calculate_derivatives()
         self.correct(dt)
 
 
@@ -197,7 +204,9 @@ class HermiteIntegrator(object):
 
 
     def get_time_estimate(self, dr_squared, dv_squared, acc, G):
-        estimate1 = ((dr_squared ** 2) / (dv_squared ** 2)).sum(1)
+        tmp = ((dr_squared ** 2) / (dv_squared ** 2))
+        tmp[self.mask] = 0
+        estimate1 = tmp.sum(1)
         estimate2 = ( dr_squared.sum(1)) / ( self.G_squared * (self.lengths_squared(acc) * self.total_mass_squared  ))
         return numpy.sqrt(numpy.sqrt( min(estimate1.min(), estimate2.min()) ))
 
@@ -207,8 +216,9 @@ class HermiteIntegrator(object):
         n = len(jpos)
         ni = len(ipos)
         newshape =(n, 1, 3)
-        jpos = jpos.reshape(newshape)                                                                 
-        jvel = jvel.reshape(newshape)                                                     
+        mask = self.mask
+        jpos = jpos.reshape(newshape)                                                                                                                     
+        jvel = jvel.reshape(newshape)                                                                                                         
         dpos = jpos - ipos
         dvel = jvel - ivel
         dr_squared = self.lengths_squared(dpos)
@@ -216,14 +226,19 @@ class HermiteIntegrator(object):
         dr = dr_squared**0.5
         dr_qubed = dr * dr_squared
         drdv = (dpos * dvel).sum(2)
-        drdv_dr_squared = drdv / dr_squared
+        one_div_dr = 1.0 / dr_qubed
+        one_div_dr[mask] = 0
+        
+        drdv_dr_squared =(drdv / dr_squared)
+        drdv_dr_squared[mask] = 0
+        
         newshape =(n,ni,1)
-        m_div_dr_qubed = (imass / dr_qubed).reshape(newshape)
+        m_div_dr_qubed = imass * one_div_dr
+        m_div_dr_qubed = (m_div_dr_qubed).reshape(newshape)
         acc = self.min_G * (dpos * m_div_dr_qubed).sum(1)
         jerk = self.min_G * ( (dvel - 3.0 * drdv_dr_squared.reshape(newshape) * dpos) * m_div_dr_qubed).sum(1) ;
         
-        
-        return acc, jerk, self.get_time_estimate(dr_squared, dv_squared, (dpos / dr_qubed.reshape(newshape)).sum(1), G)
+        return acc, jerk, self.get_time_estimate(dr_squared, dv_squared, (dpos * (one_div_dr).reshape(newshape)).sum(1), G)
 
 
 
@@ -240,17 +255,12 @@ class HermiteIntegrator(object):
 
         self.jpos = self.jpos + (self.jvel * dt) + (self.acceleration*dt_squared) + (self.jerk*dt_cubed)
         self.jvel = self.jvel + (self.acceleration * dt) + (self.jerk*dt_squared)
-        self.calculate_derivatives()
 
 
 
     def correct(self, dt):
-        self.jvel = self.start_jvel
-        self.jvel =  self.jvel + (self.start_acceleration + self.acceleration) * (dt / 2.0)
-        self.jvel =  self.jvel + (self.start_jerk         - self.jerk) * (dt ** 2 / 12.0)
-        self.jpos = self.start_jpos
-        self.jpos = self.jpos +(self.start_jvel         + self.jvel) * (dt / 2.0)
-        self.jpos = self.jpos + (self.start_acceleration - self.acceleration) * (dt**2 / 12.0)
+        self.jvel = self.start_jvel + ((self.start_acceleration + self.acceleration) * (dt / 2.0)) + ((self.start_jerk         - self.jerk) * (dt ** 2 / 12.0))
+        self.jpos = self.start_jpos + ((self.start_jvel         + self.jvel) * (dt / 2.0))         + ((self.start_acceleration - self.acceleration) * (dt**2 / 12.0))
 
 
     def store_start_values(self):
@@ -280,7 +290,56 @@ class HermiteIntegrator(object):
 
     def lengths_squared(self, value):
         if self.wu:
-         return (value*value).sum(value.ndim - 1)
+            return (value*value).sum(value.ndim - 1)
         else:
-         return value.lengths_squared()
+            return value.lengths_squared()
+
+    def movejtoi(self): 
+        self.ipos = self.jpos.copy()
+        self.ivel = self.jvel.copy()
+
+
+
+class HermiteCode(object):
+    
+    def __init__(self):
+        self.particles = datamodel.Particles()
+        self.orbiters = self.particles
+        self.central_particles = self.particles
+        self.begin_time = 0 | nbody_system.time
+        self.time = self.begin_time
+        self.dtparameter = 0.03
+        self.G = nbody_system.G
+    
+
+
+    def evolve_model(self, end_time):
+        integrator = HermiteIntegrator(self.particles, self.particles, self.G)
+        integrator.setup(False)
+        while self.time < end_time:
+            integrator.step(self.dt)
+            self.time += self.dt
+            self.dt = self.calculcate_timestep_from_collision_time(self.orbiters.collection_attributes.collision_time)
+            integrator.movejtoi()
+        integrator.update_set()
+
+
+
+
+
+    def commit_particles(self):
+        integrator = HermiteIntegrator(self.central_particles, self.orbiters, self.G)
+        integrator.setup(True)
+        integrator.calculate_derivatives()
+        integrator.update_set()
+        self.time = self.begin_time
+        self.dt = self.calculcate_timestep_from_collision_time(self.orbiters.collection_attributes.collision_time)
+        
+
+
+
+
+    def calculcate_timestep_from_collision_time(self, collision_time):
+        return self.dtparameter * collision_time
+
 
