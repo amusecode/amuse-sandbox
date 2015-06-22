@@ -258,6 +258,9 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('h2_vec_y_p', dtype='float64',direction=function.OUT,description = "") 
         function.addParameter('h2_vec_z_p', dtype='float64',direction=function.OUT,description = "")   
         function.addParameter('cos_phi1', dtype='float64',direction=function.OUT,description = "")   
+        function.addParameter('cos_phi2', dtype='float64',direction=function.OUT,description = "")   
+        function.addParameter('R', dtype='float64',direction=function.OUT,description = "")   
+        function.addParameter('v_sys', dtype='float64',direction=function.OUT,description = "")   
         function.result_type = 'float64'
         return function
     
@@ -1218,6 +1221,9 @@ class SecularTriple(InCodeComponentImplementation):
                 unit_h,                     ### h2_vec_y_p
                 unit_h,                     ### h2_vec_z_p
                 object.NO_UNIT,             ### cos_phi1
+                object.NO_UNIT,             ### cos_phi2
+                unit_l,                     ### R
+                unit_l/unit_t,              ### v_sys
                 object.ERROR_CODE,
             )
         )
@@ -1640,7 +1646,7 @@ class SecularTriple(InCodeComponentImplementation):
                 V3_prime_x,V3_prime_y,V3_prime_z, \
                 e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
                 h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime, \
-                cos_phi1 = \
+                cos_phi1,cos_phi2,R,v_sys = \
                 self.compute_effect_of_SN_on_orbital_vectors(m1,m2,m3, \
                     e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z, \
                     h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z, \
@@ -1677,7 +1683,7 @@ class SecularTriple(InCodeComponentImplementation):
             inner_binary.longitude_of_ascending_node = LAN_in_prime
             outer_binary.longitude_of_ascending_node = LAN_out_prime
 
-            return V1_prime,V2_prime,V3_prime,cos_phi1
+            return V1_prime,V2_prime,V3_prime,cos_phi1,cos_phi2,R,v_sys
             #return V1_prime,V2_prime,V3_prime
 
 def print_CVODE_output(self,CVODE_flag):

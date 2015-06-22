@@ -19,7 +19,7 @@ int compute_effect_of_SN_on_orbital_vectors
     double *e2_vec_x_p, double *e2_vec_y_p, double *e2_vec_z_p,
     double *h1_vec_x_p, double *h1_vec_y_p, double *h1_vec_z_p,
     double *h2_vec_x_p, double *h2_vec_y_p, double *h2_vec_z_p,
-    double *cos_phi1
+    double *cos_phi1, double *cos_phi2, double *R, double *v_sys
 )
 {
     double e1_vec[3] = {e1_vec_x,e1_vec_y,e1_vec_z};
@@ -45,7 +45,7 @@ int compute_effect_of_SN_on_orbital_vectors
     
     double a1 = h1*h1*(m1+m2)/( CONST_G*m1*m1*m2*m2*jsq1 );
     double a2 = h2*h2*(m1+m2+m3)/( CONST_G*(m1+m2)*(m1+m2)*m3*m3*jsq2 );
-    
+
     cross3(h1_vec,e1_vec,q1_vec);
     cross3(h2_vec,e2_vec,q2_vec);
     double q1 = norm3(q1_vec);
@@ -87,18 +87,20 @@ int compute_effect_of_SN_on_orbital_vectors
     double r1_CM_vec[3],r1_CM_vec_p[3];
     double v1_CM_vec[3],v1_CM_vec_p[3];
     
+    /* without loss of generality, set the initial CM of the triple to the origin */
     double r2_CM_vec[3] = {0.0,0.0,0.0};
     double v2_CM_vec[3] = {0.0,0.0,0.0};
 
+    double v_sys_vec[3];
     
     for (int i=0; i<3; i++)
     {
+        /* pre-SN */
         r1_vec[i] = r1*( cos_f1*e1_vec_unit[i] + sin_f1*q1_vec_unit[i] );
         r2_vec[i] = r2*( cos_f2*e2_vec_unit[i] + sin_f2*q2_vec_unit[i] );
         v1_vec[i] = v1*( -sin_f1*e1_vec_unit[i] + (e1+cos_f1)*q1_vec_unit[i] );
         v2_vec[i] = v2*( -sin_f2*e2_vec_unit[i] + (e2+cos_f2)*q2_vec_unit[i] );
     
-        /* pre-SN velocities of the stars */
         r1_CM_vec[i] = r2_CM_vec[i] + (m3/(m1+m2+m3))*r2_vec[i];
         v1_CM_vec[i] = v2_CM_vec[i] + (m3/(m1+m2+m3))*v2_vec[i];
         R3_vec[i] = r2_CM_vec[i] - ((m1+m2)/(m1+m2+m3))*r2_vec[i];
@@ -109,24 +111,49 @@ int compute_effect_of_SN_on_orbital_vectors
         R2_vec[i] = r1_CM_vec[i] - (m1/(m1+m2))*r1_vec[i];
         V2_vec[i] = v1_CM_vec[i] - (m1/(m1+m2))*v1_vec[i];
 
-        /* post-SN velocities of the stars (positions are assumed to be unchanged) */
+        /* post-SN (positions are assumed to be unchanged) */
         V1_vec_p[i] = V1_vec[i] + Vkick1_vec[i];
         V2_vec_p[i] = V2_vec[i] + Vkick2_vec[i];
         V3_vec_p[i] = V3_vec[i] + Vkick3_vec[i];
         
-        r1_vec_p[i] = r1_vec[i];
-        r2_vec_p[i] = ((m1_p*R1_vec[i] + m2_p*R2_vec[i])/(m1_p+m2_p)) - R3_vec[i]; /* RELATIVE position vector of outer binary changes because CM position of inner binary changes */
-        v1_vec_p[i] = V1_vec_p[i] - V2_vec_p[i];
-        v2_vec_p[i] = ((m1_p*V1_vec_p[i] + m2_p*V2_vec_p[i])/(m1_p+m2_p)) - V3_vec_p[i];
+        r1_CM_vec_p[i] = ((m1_p*R1_vec[i] + m2_p*R2_vec[i])/(m1_p+m2_p)); /* inner CM position changes because of mass loss */
+        v1_CM_vec_p[i] = ((m1_p*V1_vec_p[i] + m2_p*V2_vec_p[i])/(m1_p+m2_p)); /* inner CM velocity changes because of mass loss and/or kick velocities */
+        
+        r1_vec_p[i] = r1_vec[i]; /* inner relative position vector does not change */
+        r2_vec_p[i] = r1_CM_vec_p[i] - R3_vec[i]; /* RELATIVE position vector of outer binary changes because CM position of inner binary changes */
+        v1_vec_p[i] = V1_vec_p[i] - V2_vec_p[i]; /* only changed by kicks */
+        v2_vec_p[i] = v1_CM_vec_p[i] - V3_vec_p[i];
+        
+        //temp[i] = (delta_m1/(m1+m2-delta_m1))*(v1_CM_vec[i] - V1_vec[i]);
+        //temp[i] = v1_CM_vec_p[i] - v1_CM_vec[i];
+        v_sys_vec[i] = v2_vec_p[i] - v2_vec[i];
+        
     }
 
-    double Vkick1_vec_dot_v1_vec = dot3(Vkick1_vec,v1_vec);
-    *cos_phi1 = Vkick1_vec_dot_v1_vec/( norm3(Vkick1_vec)*norm3(v1_vec) );
+    *cos_phi1 = dot3(Vkick1_vec,v1_vec)/( norm3(Vkick1_vec)*norm3(v1_vec) );
+    //*cos_phi2 = dot3(v1_CM_vec_p,v2_vec)/(norm3(v1_CM_vec_p)*norm3(v2_vec));
+    *cos_phi2 = dot3(v_sys_vec,v2_vec)/(norm3(v_sys_vec)*norm3(v2_vec));
+    
+    *R = norm3(r2_vec_p);
+    //*v_sys = norm3(v1_CM_vec_p);
+    *v_sys = norm3(v_sys_vec);
+    
+//    printf("code V0 %g\n",norm3(v2_vec));
+//    printf("R0 %g\n",norm3(r2_vec));
+//    printf("R %g\n",norm3(r2_vec_p));
+    
+#ifdef IGNORE
+    //printf("test %g\n",norm3(v1_CM_vec)/norm3(V1_vec)*(m1+m2));
+    //printf("expr1 %g %g %g\n",v1_CM_vec_p[0]-v1_CM_vec[0],v1_CM_vec_p[1]-v1_CM_vec[1],v1_CM_vec_p[2]-v1_CM_vec[2]);
+    //printf("expr2 %g %g %g\n",temp[0],temp[1],temp[2]);
 
-//    printf("pre 1 %g %g %g %g %g %g\n",r1_vec[0],r1_vec[1],r1_vec[2],v1_vec[0],v1_vec[1],v1_vec[2]);
-//    printf("pre 2 %g %g %g %g %g %g\n",r2_vec[0],r2_vec[1],r2_vec[2],v2_vec[0],v2_vec[1],v2_vec[2]);
-//    printf("post 1 %g %g %g %g %g %g\n",r1_vec_p[0],r1_vec_p[1],r1_vec_p[2],v1_vec_p[0],v1_vec_p[1],v1_vec_p[2]);
-//    printf("post 2 %g %g %g %g %g %g\n",r2_vec_p[0],r2_vec_p[1],r2_vec_p[2],v2_vec_p[0],v2_vec_p[1],v2_vec_p[2]);
+    printf("pre rv1 %g %g %g %g %g %g\n",r1_vec[0],r1_vec[1],r1_vec[2],v1_vec[0],v1_vec[1],v1_vec[2]);
+    printf("pre rv2 %g %g %g %g %g %g\n",r2_vec[0],r2_vec[1],r2_vec[2],v2_vec[0],v2_vec[1],v2_vec[2]);
+    printf("pre rvcm1 %g %g %g %g %g %g\n",r1_CM_vec[0],r1_CM_vec[1],r1_CM_vec[2],v1_CM_vec[0],v1_CM_vec[1],v1_CM_vec[2]);
+    printf("post rv1 %g %g %g %g %g %g\n",r1_vec_p[0],r1_vec_p[1],r1_vec_p[2],v1_vec_p[0],v1_vec_p[1],v1_vec_p[2]);
+    printf("post rv2 %g %g %g %g %g %g\n",r2_vec_p[0],r2_vec_p[1],r2_vec_p[2],v2_vec_p[0],v2_vec_p[1],v2_vec_p[2]);
+    printf("post rvcm1 %g %g %g %g %g %g\n",r1_CM_vec_p[0],r1_CM_vec_p[1],r1_CM_vec_p[2],v1_CM_vec_p[0],v1_CM_vec_p[1],v1_CM_vec_p[2]);
+#endif
 
     double e1_vec_p[3],h1_vec_p[3];
     double e2_vec_p[3],h2_vec_p[3];
