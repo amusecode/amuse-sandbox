@@ -38,6 +38,7 @@ class MultiplexingGravitationalDynamicsInterface(PythonCodeInterface, gd.Gravita
             implementation_factory = MultiplexingGravitationalDynamicsImplementation
         PythonCodeInterface.__init__(self, implementation_factory = implementation_factory, **options)
     
+
     @legacy_function
     def new_multiplexed_particle():
         """
@@ -561,14 +562,15 @@ class MultiplexingGravitationalDynamicsImplementation(object):
         new_particles.vz = vz
         new_particles.radius = radius
         new_particles.index_of_the_set = index_of_the_set
-        self.particles.add_particles(new_particles)
         index_of_the_particle.value = new_particles.key
+        self.add_particles(new_particles)
         return 0
         
 
 
+
     def get_mass(self, index_of_the_particle, mass):
-        subset = self.particles._subset(index_of_the_particle)
+        subset = self.select_particles(index_of_the_particle)
         if not len(subset) == len(index_of_the_particle):
             mass.value = [0] * len(index_of_the_particle)
             return -1
@@ -576,6 +578,7 @@ class MultiplexingGravitationalDynamicsImplementation(object):
             mass.value = subset.mass
             return 0
         
+
 
 
     def get_position(self, index_of_the_particle, x, y, z):
@@ -620,9 +623,10 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
 
     def set_mass(self, index_of_the_particle, mass):
-        self.particles._subset(index_of_the_particle).mass = mass
+        self.select_particles(index_of_the_particle).mass = mass
         return 0
         
+
 
 
 
@@ -796,6 +800,12 @@ class MultiplexingGravitationalDynamicsImplementation(object):
     def synchronize_model(self):
         return 0
         
+
+
+    def add_particles(self, particles):
+        self.particles.add_particles(particles)
+        
+
 
 
 class MultiplexingGravitationalDynamicsCode(gd.GravitationalDynamics):

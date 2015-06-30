@@ -15,6 +15,8 @@ import numpy
 
 
 
+import multiplexing_gd
+
 class DiskCode(object):
     
     def __init__(self):
