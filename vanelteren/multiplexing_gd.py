@@ -552,7 +552,6 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
     def new_multiplexed_particle(self, index_of_the_particle, mass, x, y, z, vx, vy, vz, radius, index_of_the_set):
         new_particles = datamodel.Particles(len(mass), keys_generator = self.keys_generator)
-        print "new_multiplexed_particle", mass
         new_particles.mass = mass
         new_particles.x = x
         new_particles.y = y
@@ -666,9 +665,10 @@ class MultiplexingGravitationalDynamicsImplementation(object):
 
     def delete_particle(self, index_of_the_particle):
         subset = self.select_particles(index_of_the_particle)
-        self.particles.remove_particles(subset)
+        self.remove_particles(subset)
         return 0
         
+
 
 
 
@@ -805,6 +805,12 @@ class MultiplexingGravitationalDynamicsImplementation(object):
     def add_particles(self, particles):
         self.particles.add_particles(particles)
         
+
+
+
+    def remove_particles(self, particles):
+        self.particles.remove_particles(particles)
+
 
 
 
