@@ -34,7 +34,7 @@
  * *******/
  
 #include "helper_routines.h"
-#include "tidal_friction_parameters.h"
+//#include "tidal_friction_parameters.h"
 #include "ODE_system.h"
 
 #define CONST_G			    (double)	3.94852492465e+13
