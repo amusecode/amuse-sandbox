@@ -261,6 +261,14 @@ class SecularTripleInterface(CodeInterface):
         function.addParameter('cos_phi2', dtype='float64',direction=function.OUT,description = "")   
         function.addParameter('R', dtype='float64',direction=function.OUT,description = "")   
         function.addParameter('v_sys', dtype='float64',direction=function.OUT,description = "")   
+        function.addParameter('r1dotvk', dtype='float64',direction=function.OUT,description = "")   
+        function.addParameter('v1dotvk', dtype='float64',direction=function.OUT,description = "")   
+        function.addParameter('r1dotvsys', dtype='float64',direction=function.OUT,description = "")           
+        function.addParameter('v1dotvsys', dtype='float64',direction=function.OUT,description = "")           
+        function.addParameter('r2dotvsys', dtype='float64',direction=function.OUT,description = "")           
+        function.addParameter('v2dotvsys', dtype='float64',direction=function.OUT,description = "")           
+        function.addParameter('r1dotr2', dtype='float64',direction=function.OUT,description = "")           
+        function.addParameter('r1dotv2', dtype='float64',direction=function.OUT,description = "")           
         function.result_type = 'float64'
         return function
     
@@ -1224,6 +1232,14 @@ class SecularTriple(InCodeComponentImplementation):
                 object.NO_UNIT,             ### cos_phi2
                 unit_l,                     ### R
                 unit_l/unit_t,              ### v_sys
+                unit_l*unit_l/unit_t,       ### r1dotvk
+                unit_l**2/(unit_t**2),      ### v1dotvk
+                unit_l*unit_l/unit_t,       ### r1dotvsys
+                unit_l**2/(unit_t**2),      ### v1dotvsys
+                unit_l*unit_l/unit_t,       ### r2dotvsys
+                unit_l**2/(unit_t**2),      ### v2dotvsys
+                unit_l**2,                  ### r1dotr2
+                unit_l**2/unit_t,           ### r1dotv2
                 object.ERROR_CODE,
             )
         )
@@ -1646,7 +1662,9 @@ class SecularTriple(InCodeComponentImplementation):
                 V3_prime_x,V3_prime_y,V3_prime_z, \
                 e_in_vec_x_prime,e_in_vec_y_prime,e_in_vec_z_prime,e_out_vec_x_prime,e_out_vec_y_prime,e_out_vec_z_prime, \
                 h_in_vec_x_prime,h_in_vec_y_prime,h_in_vec_z_prime,h_out_vec_x_prime,h_out_vec_y_prime,h_out_vec_z_prime, \
-                cos_phi1,cos_phi2,R,v_sys = \
+                cos_phi1,cos_phi2,R,v_sys, \
+                r1dotvk, v1dotvk, \
+                r1dotvsys, v1dotvsys, r2dotvsys, v2dotvsys, r1dotr2, r1dotv2 = \
                 self.compute_effect_of_SN_on_orbital_vectors(m1,m2,m3, \
                     e_in_vec_x,e_in_vec_y,e_in_vec_z,e_out_vec_x,e_out_vec_y,e_out_vec_z, \
                     h_in_vec_x,h_in_vec_y,h_in_vec_z,h_out_vec_x,h_out_vec_y,h_out_vec_z, \
@@ -1683,7 +1701,7 @@ class SecularTriple(InCodeComponentImplementation):
             inner_binary.longitude_of_ascending_node = LAN_in_prime
             outer_binary.longitude_of_ascending_node = LAN_out_prime
 
-            return V1_prime,V2_prime,V3_prime,cos_phi1,cos_phi2,R,v_sys
+            return V1_prime,V2_prime,V3_prime,cos_phi1,cos_phi2,R,v_sys,r1dotvk, v1dotvk, r1dotvsys, v1dotvsys, r2dotvsys, v2dotvsys, r1dotr2, r1dotv2
             #return V1_prime,V2_prime,V3_prime
 
 def print_CVODE_output(self,CVODE_flag):

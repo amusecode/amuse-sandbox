@@ -19,10 +19,7 @@ int compute_effect_of_SN_on_orbital_vectors
     double *e2_vec_x_p, double *e2_vec_y_p, double *e2_vec_z_p,
     double *h1_vec_x_p, double *h1_vec_y_p, double *h1_vec_z_p,
     double *h2_vec_x_p, double *h2_vec_y_p, double *h2_vec_z_p,
-    double *cos_phi1, double *cos_phi2, double *R, double *v_sys,
-    double *r1dotvk, double *v1dotvk,
-    double *r1dotvsys, double *v1dotvsys, double *r2dotvsys, double *v2dotvsys,
-    double *r1dotr2, double *r1dotv2
+    double *cos_phi1, double *cos_phi2, double *R, double *v_sys
 )
 {
     double e1_vec[3] = {e1_vec_x,e1_vec_y,e1_vec_z};
@@ -129,8 +126,7 @@ int compute_effect_of_SN_on_orbital_vectors
         
         //temp[i] = (delta_m1/(m1+m2-delta_m1))*(v1_CM_vec[i] - V1_vec[i]);
         //temp[i] = v1_CM_vec_p[i] - v1_CM_vec[i];
-        //v_sys_vec[i] = v2_vec_p[i] - v2_vec[i];
-        v_sys_vec[i] = v1_CM_vec_p[i] - v1_CM_vec[i];
+        v_sys_vec[i] = v2_vec_p[i] - v2_vec[i];
         
     }
 
@@ -141,18 +137,6 @@ int compute_effect_of_SN_on_orbital_vectors
     *R = norm3(r2_vec_p);
     //*v_sys = norm3(v1_CM_vec_p);
     *v_sys = norm3(v_sys_vec);
-    
-    *r1dotvk = dot3(r1_vec,Vkick1_vec);
-    *v1dotvk = dot3(v1_vec,Vkick1_vec);
-
-    *r1dotvsys = dot3(r1_vec,v_sys_vec);
-    *v1dotvsys = dot3(v1_vec,v_sys_vec);
-
-    *r2dotvsys = dot3(r2_vec,v_sys_vec);
-    *v2dotvsys = dot3(v2_vec,v_sys_vec);
-    
-    *r1dotr2 = dot3(r1_vec,r2_vec);
-    *r1dotv2 = dot3(r1_vec,v2_vec);
     
 //    printf("code V0 %g\n",norm3(v2_vec));
 //    printf("R0 %g\n",norm3(r2_vec));
