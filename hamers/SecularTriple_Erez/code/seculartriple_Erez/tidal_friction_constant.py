@@ -17,6 +17,7 @@ MAIN_SEQUENCE=1|units.stellar_type
 CHeB=4|units.stellar_type
 HeMS=7|units.stellar_type
 HeWD=10|units.stellar_type
+PRE_MAIN_SEQUENCE=17|units.stellar_type
 
 def check_for_radiative_damping(stellar_type,mass):
     if (stellar_type==MAIN_SEQUENCE and mass.value_in(units.MSun) >= 1.25):
@@ -27,7 +28,7 @@ def check_for_radiative_damping(stellar_type,mass):
         return False
    
 def check_for_convective_damping(stellar_type):    
-    if stellar_type < HeWD:
+    if (stellar_type < HeWD) or (stellar_type == PRE_MAIN_SEQUENCE):
         return True
     else:
         return False

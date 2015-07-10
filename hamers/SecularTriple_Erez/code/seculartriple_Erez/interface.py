@@ -713,11 +713,11 @@ class SecularTriple(InCodeComponentImplementation):
                 luminosity_star1 = star1.luminosity
                 luminosity_star2 = star2.luminosity
 
-                m1_envelope = star1.envelope_mass
-                m2_envelope = star2.envelope_mass
+                m1_envelope = star1.convective_envelope_mass
+                m2_envelope = star2.convective_envelope_mass
 
-                R1_envelope = star1.envelope_radius
-                R2_envelope = star2.envelope_radius
+                R1_envelope = star1.convective_envelope_radius
+                R2_envelope = star2.convective_envelope_radius
                 
                 AMC_star1 = star1.apsidal_motion_constant
                 AMC_star2 = star2.apsidal_motion_constant
@@ -740,9 +740,9 @@ class SecularTriple(InCodeComponentImplementation):
 
                 luminosity_star3 = star3.luminosity
 
-                m3_envelope = star3.envelope_mass
+                m3_envelope = star3.convective_envelope_mass
 
-                R3_envelope = star3.envelope_radius
+                R3_envelope = star3.convective_envelope_radius
                 
                 AMC_star3 = star3.apsidal_motion_constant
                 gyration_radius_star3 = star3.gyration_radius
