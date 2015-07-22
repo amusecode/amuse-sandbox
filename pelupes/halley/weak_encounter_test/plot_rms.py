@@ -6,14 +6,15 @@ import cPickle
 
 import numpy
 
-c="bgry"
+c="bgryc"
 
 filenames=["t_rms_0.00",
            "t_rms_0.20",
+           "t_rms_0.50",
           "t_rms_1.00",
           "t_rms_5.00"]
 
-labels=["0.xM_jup","0.2xM_jup","1.xM_jup","5.xM_jup"]
+labels=["0.xM_jup","0.2xM_jup","0.5xM_jup","1.xM_jup","5.xM_jup"]
 
 for i,filename in enumerate(filenames):
   f=open(filename,"r")

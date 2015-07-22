@@ -148,7 +148,7 @@ if __name__=="__main__":
   f=pyplot.figure(figsize=(12,6))
   pyplot.show()
 
-  run(0.)
-  run(0.2)
-  run(1.)
-  run(5.)
+  run(0.5)
+  #~ run(0.2)
+  #~ run(1.)
+  #~ run(5.)
