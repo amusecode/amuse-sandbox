@@ -19,9 +19,8 @@ const_common_envelope_efficiency_gamma = 1.75
 
 stellar_types_compact_objects = [10,11,12,13,14]|units.stellar_type
 stellar_types_giants = [2,3,4,5,6,8,9]|units.stellar_type
-q_crit = 3.
-q_crit_giants_conv_env = 0.9
-stellar_types_giants_conv_env = [3,5,6,8,9]|units.stellar_type
+#q_crit = 3.
+#q_crit_giants_conv_env = 0.9
 nucleair_efficiency = 0.007 # nuc. energy production eff, Delta E = 0.007 Mc^2
 
 
@@ -885,6 +884,22 @@ def resolve_binary_interaction(bs, self):
         
 #-------------------------
 #functions for the stability of mass transfer
+def q_crit(star):
+    #following Hurley, Tout, Pols 2002
+    if star.stellar_type in [8,9]|units.stellar_type:
+        return 0.784
+    elif star.stellar_type in [3,4,5,6]|units.stellar_type:
+        x=0.3
+        return (1.67-x+2*(star.core_mass/star.mass)**5)/2.13
+    elif star.stellar_type == 0|units.stellar_type:
+        return 0.695
+    elif star.stellar_type in stellar_types_compact_objects:#eventhough ns & bh shouldn't be donors... 
+        return 0.628
+    else: 
+        return 3
+        
+    
+
 def mass_transfer_stability(binary, self):
     if REPORT_FUNCTION_NAMES:
         print 'Mass transfer stability'
@@ -916,27 +931,17 @@ def mass_transfer_stability(binary, self):
             binary.mass_transfer_rate = min(mt1, mt2) # minimum because mt<0
             binary.is_stable = False    
 
-        elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass*q_crit:
+        elif binary.child1.is_donor and binary.child1.mass > binary.child2.mass*q_crit(binary.child1):
             if REPORT_MASS_TRANSFER_STABILITY:
-                print "Mass transfer stability: Mdonor1>3*Macc "
+                print "Mass transfer stability: Mdonor1>Macc*q_crit "
             binary.mass_transfer_rate = -1.* binary.child1.mass / dynamic_timescale(binary.child1)
             binary.is_stable = False
-        elif binary.child2.is_donor and binary.child2.mass > binary.child1.mass*q_crit:
+        elif binary.child2.is_donor and binary.child2.mass > binary.child1.mass*q_crit(binary.child2):
             if REPORT_MASS_TRANSFER_STABILITY:
-                print "Mass transfer stability: Mdonor2>3*Macc "
+                print "Mass transfer stability: Mdonor2>Macc*q_crit "
             binary.mass_transfer_rate= -1.* binary.child2.mass / dynamic_timescale(binary.child2) 
             binary.is_stable = False
             
-        elif binary.child1.is_donor and binary.child1.stellar_type in stellar_types_giants_conv_env and binary.child1.mass > binary.child2.mass*q_crit_giants_conv_env: 
-            if REPORT_MASS_TRANSFER_STABILITY:
-                print "Mass transfer stability: Mdonorgiant1>Macc "
-            binary.mass_transfer_rate = -1.* binary.child1.mass / dynamic_timescale(binary.child1)
-            binary.is_stable = False
-        elif binary.child2.is_donor and binary.child2.stellar_type in stellar_types_giants_conv_env and binary.child2.mass > binary.child1.mass*q_crit_giants_conv_env:
-            if REPORT_MASS_TRANSFER_STABILITY:
-                print "Mass transfer stability: Mdonorgiant2>Macc "
-            binary.mass_transfer_rate= -1.* binary.child2.mass / dynamic_timescale(binary.child2)
-            binary.is_stable = False
             
         elif binary.child1.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:
@@ -985,17 +990,12 @@ def mass_transfer_stability(binary, self):
             binary.mass_transfer_rate = -1.* star.mass / dynamic_timescale(star)
             binary.is_stable = False          
             
-        elif star.is_donor and star.mass > self.get_mass(companion)*q_crit:
+        elif star.is_donor and star.mass > self.get_mass(companion)*q_crit(star):
             if REPORT_MASS_TRANSFER_STABILITY:
-                print "Mass transfer stability: Mdonor1>3*Macc"
+                print "Mass transfer stability: Mdonor1>Macc*q_crit"
             binary.mass_transfer_rate = -1.* star.mass / dynamic_timescale(star)
             binary.is_stable = False
             
-        elif star.is_donor and star.stellar_type in stellar_types_giants_conv_env and star.mass > self.get_mass(companion)*q_crit_giants_conv_env:
-            if REPORT_MASS_TRANSFER_STABILITY:
-                print "Mass transfer stability: Mdonorgiant1>Macc "
-            binary.mass_transfer_rate = -1.* star.mass / dynamic_timescale(star)
-            binary.is_stable = False
             
         elif star.is_donor:
             if REPORT_MASS_TRANSFER_STABILITY:

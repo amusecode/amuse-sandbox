@@ -18,7 +18,7 @@ from math import sqrt, isnan
 import numpy as np
 
 REPORT_TRIPLE_EVOLUTION = False 
-REPORT_SN_EVOLUTION = True
+REPORT_SN_EVOLUTION = False
 REPORT_DT = False 
 REPORT_DEBUG = False
 REPORT_USER_WARNINGS = True
@@ -2748,7 +2748,7 @@ def parse_arguments():
                       help="stop at collision in outer binary[%default] %unit")
     parser.add_option("--stop_at_dynamical_instability", dest="stop_at_dynamical_instability", action="store_false", default = True,
                       help="stop at dynamical instability [%default] %unit")
-    parser.add_option("--stop_at_mass_transfer", dest="stop_at_mass_transfer", action="store_false", default = True,
+    parser.add_option("--stop_at_mass_transfer", dest="stop_at_mass_transfer", action="store_true", default = False,
                       help="stop at mass transfer [%default] %unit")
     parser.add_option("--stop_at_init_mass_transfer", dest="stop_at_init_mass_transfer", action="store_false", default = True,
                       help="stop if initially mass transfer[%default] %unit")
