@@ -422,7 +422,7 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodesWithDifferentGr
         print "copy to boundary dt:", dt
         
     def copy_to_boundary_cells(self):
-        if 1:
+        if 0:
             pool = AsyncRequestsPool()
             def handle_result(request, group, offsets):
                 result = request.result()
@@ -499,8 +499,8 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodesWithDifferentGr
                     timesteps.append(x.code.get_timestep())
                     #print x.code.get_timestep()
             #print timesteps
-            min_timestep = timesteps.min()
-            print min_timestep, (min_timestep + code.model_time) >= time, code.model_time - time
+            min_timestep = timesteps.max()
+            print min_timestep, (min_timestep + code.model_time) >= time, code.model_time - time, timesteps.max()
             print (code.model_time - time)/time
             #if code.model_time == 0.0 | t_unit:
             #if code.model_time == 0.0 | t_unit:
@@ -642,7 +642,7 @@ class CalculateLinearWave1D(object):
         self.use_boundaries = use_boundaries
         
     def new_instance_of_code(self):
-        if 0:
+        if 1:
             if self.name_of_the_code == 'athena':
                 self.name_of_the_code = 'capreole'
             else:
@@ -686,7 +686,9 @@ class CalculateLinearWave1D(object):
             if not is_live:
                 continue
             local_mesh = list(mesh_for_code)
-            #local_mesh[1] *= i #(1 + (i%2))
+            
+            local_mesh[1] *= (1 + (i%2))
+            
             instance.parameters.mesh_size = list(local_mesh)
             i += 1
             
@@ -915,7 +917,7 @@ class CalculateLinearWave1D(object):
 
 import sys
 def main():
-    number_of_grid_points = 40
+    number_of_grid_points = 20
     name_of_the_code = 'athena'
     number_of_steps = 2000
     vflow_factor = -1.0
@@ -969,7 +971,7 @@ def main():
         ys.append(y)
         rho = grid.rho[0,...,0].value_in(density)
         print rho-1.0,colors[i % len(colors)]
-        line = plot1.scatter(y,rho, c = colors[i % len(colors)])#[0]
+        line = plot1.scatter(y,rho, c = colors[i % len(colors)], edgecolor = 'none')#[0]
         lines.append(line)
     code0 = model1.codes[0]
     boundary0 = code0.get_boundary_grid("ybound2")

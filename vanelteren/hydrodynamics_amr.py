@@ -764,44 +764,49 @@ class HydrodynamcisAMR(object):
         code = self.nodes[0].code
         t_unit = code.get_timestep().unit
         while ((code.model_time - time)/time) < -1e-14:
-            timesteps = [] | t_unit
-            for x in self.nodes:
-                if not x.is_ghost:
-                    timesteps.append(x.code.get_timestep())
-            min_timestep = timesteps.min()
-            
-            #if code.model_time == 0.0 | t_unit:
-            #    min_timestep = time
-                
-            if (min_timestep + code.model_time) >= time and time == endtime:
-                for x in self.nodes:
-                    if not x.is_ghost:
-                        x.code.parameters.must_evolve_to_exact_time = True
-            for x in self.nodes:
-                if not x.is_ghost:
-                    x.code.set_timestep(min_timestep)
-            
-            pool = AsyncRequestsPool()
-            for x in self.nodes:
-                if not x.is_ghost:
-                    request = x.code.evolve_model.async(time)
-                    pool.add_request(request, lambda x : x.result())
-            pool.waitall()
-            
+            timestep = self.get_timestep_from_codes()
+            self.set_timestep(code.model_time, time, endtime, timestep)
            
+            self.evolve_all_codes(time)
+            
             self.copy_to_boundary_cells()
+            
             self.step += 1
             if self.step % 5 == 0:
                 print "refining the grid...", self.step,  code.model_time
                 has_refined = self.refine_grid()
                 print "...done refined = ", has_refined
                 code = self.nodes[0].code
+    
+    def get_timestep_from_codes(self):
+        timesteps = [] | t_unit
+            for x in self.livenodes():
+                timesteps.append(x.code.get_timestep())
+        return timesteps.min()
+        
+    def set_timestep(self, current_time, nexttime, endtime, timestep):
+        if (timestep + current_time) >= nexttime and nexttime == endtime:
+            for x in self.livenodes():
+                x.code.parameters.must_evolve_to_exact_time = True
+        for x in self.livenodes():
+            x.code.set_timestep(timestep)
+    
+    def evolve_all_codes(self):
+        pool = AsyncRequestsPool()
+        for x in self.livenodes():
+            request = x.code.evolve_model.async(time)
+            pool.add_request(request, lambda x : x.result())
+        pool.waitall()
             
-    def itergrids(self):
+    def livenodes(self):
         for x in self.nodes:
             if not x.is_ghost:
-                for grid in x.code.itergrids():
-                    yield OffsetGrid(grid, x.offset)
+                yield x
+                
+    def itergrids(self):
+        for x in self.livenodes():
+            for grid in x.code.itergrids():
+                yield OffsetGrid(grid, x.offset)
                     
     def refine_grid(self):
         refined_nodes = []
