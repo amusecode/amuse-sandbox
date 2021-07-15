@@ -28,7 +28,7 @@ def main(temperature, radius, mass, resolution, uvmatch, brmatch, verbose):
     pyplot.savefig('./spectrum.png')
     pyplot.show()
 
-    print "Done!"
+    print("Done!")
 
 def new_option_parser():
     result = OptionParser()

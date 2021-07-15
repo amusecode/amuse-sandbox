@@ -9,7 +9,7 @@ uvblue is used as a package.
 When this script is invoked from a command line, the given spectrum
 will be plotted using Matplotlib.
 """
-from __future__ import division, print_function
+
 import gzip
 import logging
 from optparse import OptionParser

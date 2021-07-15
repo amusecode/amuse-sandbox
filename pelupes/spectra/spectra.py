@@ -95,21 +95,21 @@ def closest_spectrum(Teff,metallicity=0.0,eta=2,logg=5.0,uvmatch=True,brmatch=Tr
             met_cl=brOK[index_br,2]*0.1
             eta_cl=brOK[index_br,3]
             if verbose:
-                    print "booth libraries used"
+                    print("booth libraries used")
     elif (uv_flag and not br_flag):
             T_cl=uvOK[index_uv,0]
             logg_cl=uvOK[index_uv,1]*0.1
             met_cl=uvOK[index_uv,2]*0.1
             eta_cl=uvOK[index_uv,3]
             if verbose:
-                    print "just UVBLUE library used"
+                    print("just UVBLUE library used")
     elif (br_flag and not uv_flag):
             T_cl=brOK[index_br,0]
             logg_cl=brOK[index_br,1]*0.1
             met_cl=brOK[index_br,2]*0.1
             eta_cl=brOK[index_br,3]
             if verbose:
-                    print "just BLUERED library used"
+                    print("just BLUERED library used")
     else:
             raise Exception("BUG: Not supported case")
 
@@ -137,11 +137,11 @@ def read_spectrum(Teff=50000,metallicity=0.0,eta=2,logg=5,verbose=False):
     if not path.isfile(uvfile):
             uvfile=None
             if verbose:
-                    print "UVBLUE file does not exist"
+                    print("UVBLUE file does not exist")
     if not path.isfile(brfile):
             brfile=None
             if verbose:
-                    print "BLUERED file does not exist"
+                    print("BLUERED file does not exist")
     if ((uvfile is None) and (brfile is None) ):
             raise Exception("No library file to read")
 
@@ -183,10 +183,10 @@ def check_metallicity(meta):
      if not (meta in _br) | (meta in _uv):
              raise Exception("Not available metallicity")
      if not (meta in _br):
-             print "WARNING: metallicity available just in the BLUERED database"
+             print("WARNING: metallicity available just in the BLUERED database")
              out="uv"
      if not (meta in _uv):
-             print "WARNING: metallicity available just in the UVBLUE database"
+             print("WARNING: metallicity available just in the UVBLUE database")
              out="br"
  
      return out
@@ -197,9 +197,9 @@ def plot_available_data(metallicity=0.0):
      from matplotlib import pyplot
  
      _br,_uv=obtain_available_metallicity()
-     print "available metallicities:"
-     print "BLUERED",_br
-     print "UVBLUE", _uv
+     print("available metallicities:")
+     print("BLUERED",_br)
+     print("UVBLUE", _uv)
  
      meta=metallicity*10.
  
@@ -281,12 +281,12 @@ class Spectrum:
                                          uvmatch=uvmatch,
                                          brmatch=brmatch)
             if verbose:
-                    print "Closest spectrum in the library:"
-                    print "Teff  : %5.2f [K]" %T_ref
-                    print "metallicity : %5.2f" %met_ref
-                    print "log(g) : %5.2f" %lg_ref
-                    print "eta : %5.2f" %eta_ref
-                    print ""
+                    print("Closest spectrum in the library:")
+                    print("Teff  : %5.2f [K]" %T_ref)
+                    print("metallicity : %5.2f" %met_ref)
+                    print("log(g) : %5.2f" %lg_ref)
+                    print("eta : %5.2f" %eta_ref)
+                    print("")
 
             self.Tref=units.K(T_ref)
             self.logg_ref=lg_ref
@@ -314,8 +314,8 @@ class Spectrum:
                             self.resolution=res
                     elif resolution > res:
                             if verbose:
-                                    print "Warning: input resolution had to be smaller than", res
-                                    print "Using", res,"instead"
+                                    print("Warning: input resolution had to be smaller than", res)
+                                    print("Using", res,"instead")
                             self.resolution=res
 
                     elif resolution <= res:
@@ -330,8 +330,8 @@ class Spectrum:
                             self.lambda_resolution=l_res
                     elif lambda_resolution > l_res:
                             if verbose:
-                                    print "Warning: input lambda resolution had to be smaller than", l_res
-                                    print "Using", l_res,"instead"
+                                    print("Warning: input lambda resolution had to be smaller than", l_res)
+                                    print("Using", l_res,"instead")
                             self.lambda_resolution=l_res
 
                     elif lambda_resolution <= l_res:
@@ -365,7 +365,7 @@ class Spectrum:
 
                     if self.resolution < uvdata.resolution:
                       if verbose:
-                              print "broaden UVBLUE spectrum from R= %5.2f to R= %5.2f" %(uvdata.resolution,self.resolution)
+                              print("broaden UVBLUE spectrum from R= %5.2f to R= %5.2f" %(uvdata.resolution,self.resolution))
                       uv_flam=uvblue.broaden_spectrum(uvdata.lamb,uvdata.fnlam,res=self.resolution,_res=uvdata.resolution)
                     else:
                       uv_flam=uvdata.fnlam
@@ -375,7 +375,7 @@ class Spectrum:
                     
                     if self.resolution < brdata.resolution:
                             if verbose:
-                                    print "broaden BLUERED spectrum from R= %5.2f to R= %5.2f" %(brdata.resolution,self.resolution)
+                                    print("broaden BLUERED spectrum from R= %5.2f to R= %5.2f" %(brdata.resolution,self.resolution))
                             br_flam=bluered.broaden_spectrum(brdata.lamb,brdata.fnlam,res=self.resolution,_res=brdata.resolution)
                     else:
                             br_flam=brdata.fnlam
@@ -444,7 +444,7 @@ class Spectrum:
                     elif resolution <= uvdata.resolution:
                             self.resolution=resolution
                             if verbose:
-                                    print "broaden UVBLUE spectrum from R= %5.2f to R= %5.2f" %(uvdata.resolution,self.resolution)
+                                    print("broaden UVBLUE spectrum from R= %5.2f to R= %5.2f" %(uvdata.resolution,self.resolution))
                             uv_flam=uvblue.broaden_spectrum(uvdata.lamb,uvdata.fnlam,res=self.resolution)
                             int_flag=True
 
@@ -506,7 +506,7 @@ class Spectrum:
                     elif resolution <= brdata.resolution:
                             self.resolution=resolution
                             if verbose:
-                                    print "broaden BLUERED spectrum from R= %5.2f to R= %5.2f" %(brdata.resolution,self.resolution)
+                                    print("broaden BLUERED spectrum from R= %5.2f to R= %5.2f" %(brdata.resolution,self.resolution))
                             br_flam=bluered.broaden_spectrum(brdata.lamb,brdata.fnlam,res=self.resolution)
                             int_flag=True
 
