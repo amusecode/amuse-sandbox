@@ -95,7 +95,7 @@ def closest_spectrum(Teff,metallicity=0.0,eta=2,logg=5.0,uvmatch=True,brmatch=Tr
             met_cl=brOK[index_br,2]*0.1
             eta_cl=brOK[index_br,3]
             if verbose:
-                    print("booth libraries used")
+                    print("both libraries used")
     elif (uv_flag and not br_flag):
             T_cl=uvOK[index_uv,0]
             logg_cl=uvOK[index_uv,1]*0.1
@@ -151,7 +151,7 @@ def read_spectrum(Teff=50000,metallicity=0.0,eta=2,logg=5,verbose=False):
 def obtain_available_data():
 
     brOK=numpy.loadtxt(brdir+"br_available.txt")
-    uvOK=numpy.loadtxt(brdir+"uv_available.txt")
+    uvOK=numpy.loadtxt(uvdir+"uv_available.txt")
 
     return brOK,uvOK
 
@@ -192,63 +192,78 @@ def check_metallicity(meta):
      return out
 
 
-def plot_available_data(metallicity=0.0):
+def plot_available_data():
 
-     from matplotlib import pyplot
+    from matplotlib import pyplot
  
-     _br,_uv=obtain_available_metallicity()
-     print("available metallicities:")
-     print("BLUERED",_br)
-     print("UVBLUE", _uv)
+    _br,_uv=obtain_available_metallicity()
+    print("available metallicities:")
+    print("BLUERED",_br)
+    print("UVBLUE", _uv)
+
+    all_metal=sorted(set([int(10*x)/10 for x in _br+_uv]))
+    print(all_metal)
  
-     meta=metallicity*10.
+    f,axs=pyplot.subplots(3,3, figsize=(9,9))
  
-     check=check_metallicity(metallicity)
-     BR,UV=obtain_available_data()
+
+    for im,metallicity in enumerate(all_metal):
+          
+         ax=axs[im//3, im%3]
  
-     br=list()
-     uv=list()
-     for i in range(0,len(BR)):
-             if BR[i,2]==meta :
-                     br.append(BR[i,:])
- 
-     for i in range(0,len(UV)):
-             if UV[i,2]==meta :
-                     uv.append(UV[i,:])
- 
+         meta=metallicity*10.
      
-     br=numpy.array(br)
-     uv=numpy.array(uv)
+         check=check_metallicity(metallicity)
+         BR,UV=obtain_available_data()
+     
+         br=list()
+         uv=list()
+         for i in range(0,len(BR)):
+                 if BR[i,2]==meta :
+                         br.append(BR[i,:])
+     
+         for i in range(0,len(UV)):
+                 if UV[i,2]==meta :
+                         uv.append(UV[i,:])
+     
+         
+         br=numpy.array(br)
+         uv=numpy.array(uv)
+    
+         if (check=="br"):
+                 uv=br*0.
+         elif (check=="uv"):
+                 br=uv*0.
+    
+         ax.set_xlabel("Temperature [K]")
+         ax.set_ylabel("log(g)")
+    
+         Tmax=max(max(uv[:,0]),max(br[:,0]))
+         Tmin=min(min(uv[:,0]),min(br[:,0])) 
+    
+         gmax=0.1*max((max(uv[:,1]),max(br[:,1])))
+         gmin=0.1*min((min(uv[:,1]),min(br[:,1])))
+     
+         margin=0.1
+     
+         ax.set_xlim((Tmax+margin*Tmax,Tmin-margin*Tmax))
+         ax.set_ylim((gmax+margin*gmax,gmin-margin*gmax))
+     
+         ax.text(Tmax*0.5,gmax*0.0,"metallicity=%2.1f" % round(meta*0.1,2),ha="center")
+         if (check=="ok"):
+                 ax.plot(uv[:,0],uv[:,1]/10.,"ob",label="UVBLUE")
+                 ax.plot(br[:,0],br[:,1]/10.,"or",label="BLUERED")
+         elif (check=="br"):
+                 ax.plot(br[:,0],br[:,1]/10.,"or",label="BLUERED")
+         elif (check=="uv"):
+                 ax.plot(uv[:,0],uv[:,1]/10.,"ob",label="UVBLUE")
+    
+         if(im==3): 
+            handles, labels = ax.get_legend_handles_labels()
+    f.legend(handles, labels, loc='lower left')
 
-     if (check=="br"):
-             uv=br*0.
-     elif (check=="uv"):
-             br=uv*0.
-
-     pyplot.xlabel("Temperature [K]")
-     pyplot.ylabel("log(g)")
-
-     Tmax=max(max(uv[:,0]),max(br[:,0]))
-     Tmin=min(min(uv[:,0]),min(br[:,0])) 
-
-     gmax=0.1*max((max(uv[:,1]),max(br[:,1])))
-     gmin=0.1*min((min(uv[:,1]),min(br[:,1])))
- 
-     margin=0.1
- 
-     pyplot.xlim((Tmax+margin*Tmax,Tmin-margin*Tmax))
-     pyplot.ylim((gmax+margin*gmax,gmin-margin*gmax))
- 
-     pyplot.text(Tmax*0.5,gmax*0.0,"metallicity=%2.1f" % round(meta*0.1,2),ha="center")
-     if (check=="ok"):
-             pyplot.plot(uv[:,0],uv[:,1]/10.,"ob",label="UVBLUE")
-             pyplot.plot(br[:,0],br[:,1]/10.,"or",label="BLUERED")
-     elif (check=="br"):
-             pyplot.plot(br[:,0],br[:,1]/10.,"or",label="BLUERED")
-     elif (check=="uv"):
-             pyplot.plot(uv[:,0],uv[:,1]/10.,"ob",label="UVBLUE")
-
-     pyplot.legend(loc=2)
+    pyplot.tight_layout()
+    pyplot.show()
 
 class Spectrum:
         def __init__(self,star,
@@ -544,3 +559,7 @@ class Spectrum:
              
             self.flux=flam 
             self.lamb=lamb.in_(units.angstrom)
+            self.BBflux=B_lambda(self.lamb,self.Teff)
+
+if __name__=="__main__":
+    plot_available_data()

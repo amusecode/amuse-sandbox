@@ -20,11 +20,14 @@ def main(temperature, radius, mass, resolution, uvmatch, brmatch, verbose):
 
     sp=spectra.Spectrum(star, metallicity,eta, uvmatch, brmatch, lambda_resolution, resolution, verbose)
 
-    wavelenth = sp.lamb.number
-    flux = sp.flux.number
-
+    wavelenth = sp.lamb.value_in(units.angstrom)
+    flux = sp.flux.value_in(units.erg*units.s**-1*units.cm**-2*units.angstrom**-1)
+    BBflux = sp.BBflux.value_in(units.erg*units.s**-1*units.cm**-2*units.angstrom**-1)
 
     pyplot.semilogy(wavelenth, flux)
+    pyplot.semilogy(wavelenth, BBflux, ":")
+    pyplot.xlabel("angstrom")
+    pyplot.ylabel("erg * s**-1 * cm**-2 * angstrom**-1")
     pyplot.savefig('./spectrum.png')
     pyplot.show()
 

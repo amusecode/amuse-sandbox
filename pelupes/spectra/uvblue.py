@@ -141,18 +141,18 @@ class UVBlue(object):
 
         f = _uncompress(filename)
 
-        s = f.next().split()
+        s = next(f).split()
         teff, grav, metal = float(s[0]), float(s[1]), float(s[2])
-        s = f.next().split()
+        s = next(f).split()
         nwl, wlbeg, wlend = float(s[0]), float(s[1]), float(s[2])
-        s = f.next().split()
+        s = next(f).split()
         resolu, ratio = float(s[0]), float(s[1])
 
         #info('Reading spectrum... Teff: %d  Log g: %.1f  [M/H]: %+.1f'
         #     % (teff, grav, metal))
 
         lamb = wlbeg * ratio ** np.arange(nwl, dtype=float)
-        res = np.zeros(nwl)
+        res = np.zeros(int(nwl))
         flam = []
         fclam = []
         for o in f:
